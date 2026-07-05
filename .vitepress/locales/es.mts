@@ -25,6 +25,14 @@ export const es: LocaleSpecificConfig<DefaultTheme.Config> = {
     returnToTopLabel: 'Volver arriba',
     sidebarMenuLabel: 'Índice',
     darkModeSwitchLabel: 'Apariencia',
+    // Se muestra en cada página mediante .vitepress/theme/LicenseNotice.vue:
+    // el footer integrado de VitePress nunca se muestra si hay una barra
+    // lateral, que es el caso en todo el sitio.
+    license: {
+      message: 'Este contenido se publica bajo la',
+      linkText: 'licencia CC BY-SA 4.0',
+      linkHref: 'https://creativecommons.org/licenses/by-sa/4.0/deed.es'
+    },
     socialLinks: [{ icon: 'github', link: 'https://github.com/AI-for-dev/hands-on-harness' }]
   }
 }

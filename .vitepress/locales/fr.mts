@@ -28,6 +28,14 @@ export const fr: LocaleSpecificConfig<DefaultTheme.Config> = {
     returnToTopLabel: 'Revenir en haut',
     sidebarMenuLabel: 'Sommaire',
     darkModeSwitchLabel: 'Apparence',
+    // Affiché sur chaque page via .vitepress/theme/LicenseNotice.vue : le
+    // footer standard de VitePress ne s'affiche jamais quand une sidebar
+    // est présente, ce qui est notre cas partout.
+    license: {
+      message: 'Ce contenu est publié sous licence',
+      linkText: 'CC BY-SA 4.0',
+      linkHref: 'https://creativecommons.org/licenses/by-sa/4.0/deed.fr'
+    },
     socialLinks: [{ icon: 'github', link: 'https://github.com/AI-for-dev/hands-on-harness' }]
   }
 }

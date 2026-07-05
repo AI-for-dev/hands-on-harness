@@ -25,6 +25,14 @@ export const en: LocaleSpecificConfig<DefaultTheme.Config> = {
     returnToTopLabel: 'Return to top',
     sidebarMenuLabel: 'Contents',
     darkModeSwitchLabel: 'Appearance',
+    // Shown on every page via .vitepress/theme/LicenseNotice.vue: VitePress'
+    // built-in footer never shows when a sidebar is present, which is the
+    // case everywhere here.
+    license: {
+      message: 'This content is published under the',
+      linkText: 'CC BY-SA 4.0 license',
+      linkHref: 'https://creativecommons.org/licenses/by-sa/4.0/deed.en'
+    },
     socialLinks: [{ icon: 'github', link: 'https://github.com/AI-for-dev/hands-on-harness' }]
   }
 }

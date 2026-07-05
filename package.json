@@ -1,4 +1,5 @@
 {
+  "license": "BSD-3-Clause",
   "devDependencies": {
     "vitepress": "^2.0.0-alpha.17",
     "js-yaml": "^4.1.0"
