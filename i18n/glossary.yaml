@@ -1,0 +1,38 @@
+# Glossaire de traduction
+#
+# Ce fichier fait partie des "règles de traduction" : toute modification
+# invalide automatiquement les traductions déjà générées (voir manifest.json
+# et scripts/i18n/lib/config.mjs), qui seront donc régénérées au prochain
+# `npm run i18n:translate`.
+#
+# Objectif : garantir qu'un terme technique est TOUJOURS traduit de la même
+# façon, quel que soit le modèle local utilisé.
+
+# Noms propres / produits à ne jamais traduire, à recopier tels quels.
+doNotTranslate:
+  - VitePress
+  - Ollama
+  - Claude Code
+  - Markdown
+  - GitHub
+  - Hands-on Harness
+
+# Traductions figées pour le vocabulaire technique du cours.
+# Complète cette liste au fur et à mesure des besoins : chaque entrée
+# ajoutée réduit la variance entre modèles.
+terms:
+  - fr: harnais
+    en: harness
+    es: harness
+    note: >-
+      Terme technique du cours (harnais d'agent/LLM), à ne pas traduire
+      littéralement par "arnés" (harnais physique).
+  - fr: invite système
+    en: system prompt
+    es: system prompt
+  - fr: garde-fou
+    en: guardrail
+    es: barrera de seguridad
+  - fr: modèle de langage
+    en: language model
+    es: modelo de lenguaje

@@ -1,0 +1,14 @@
+{
+  "devDependencies": {
+    "vitepress": "^2.0.0-alpha.17",
+    "js-yaml": "^4.1.0"
+  },
+  "scripts": {
+    "docs:dev": "vitepress dev",
+    "docs:build": "vitepress build",
+    "docs:preview": "vitepress preview",
+    "i18n:translate": "node scripts/i18n/translate.mjs",
+    "i18n:translate:dry": "node scripts/i18n/translate.mjs --dry-run",
+    "i18n:translate:force": "node scripts/i18n/translate.mjs --force"
+  }
+}

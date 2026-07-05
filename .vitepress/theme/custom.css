@@ -1,0 +1,73 @@
+/*
+ * Habillage "livre" : typographie serif pour la lecture longue, teintes
+ * papier/encre plutôt que blanc/noir purs, contenu resserré sur une largeur
+ * de lecture confortable, et une légère animation d'entrée qui donne
+ * l'impression de tourner une page à chaque navigation.
+ */
+
+:root {
+  --vp-font-family-base: 'Iowan Old Style', 'Palatino Linotype', Palatino, Georgia, ui-serif,
+    serif;
+
+  /* Teinte "papier" en mode clair */
+  --vp-c-bg: #faf7f0;
+  --vp-c-bg-alt: #f2ede1;
+  --vp-c-bg-soft: #ede6d6;
+}
+
+.dark {
+  /* Teinte "encre" en mode sombre */
+  --vp-c-bg: #1a1815;
+  --vp-c-bg-alt: #211e19;
+  --vp-c-bg-soft: #29251e;
+}
+
+/* Largeur et confort de lecture d'une page de livre */
+.vp-doc {
+  line-height: 1.75;
+}
+
+.vp-doc > div > h1:first-child {
+  margin-bottom: 0.25em;
+}
+
+.vp-doc > div > h1:first-child + p em:only-child {
+  display: block;
+  color: var(--vp-c-text-2);
+  font-size: 1.05em;
+  margin-top: 0;
+  margin-bottom: 2rem;
+}
+
+.vp-doc h2 {
+  border-top: 1px solid var(--vp-c-divider);
+  padding-top: 1.5rem;
+}
+
+/* Numérotation visuelle des chapitres dans la sidebar */
+.VPSidebarItem.level-0 > .item .text {
+  font-family: var(--vp-font-family-base);
+}
+
+/* "Tourner la page" : légère entrée en fondu/glissé à chaque changement de
+   route. Rejoué à chaque montage du composant de contenu. */
+.vp-doc {
+  animation: page-turn 0.4s ease-out;
+}
+
+@keyframes page-turn {
+  from {
+    opacity: 0;
+    transform: translateX(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .vp-doc {
+    animation: none;
+  }
+}
