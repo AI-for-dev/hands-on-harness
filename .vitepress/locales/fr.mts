@@ -28,6 +28,6 @@ export const fr: LocaleSpecificConfig<DefaultTheme.Config> = {
     returnToTopLabel: 'Revenir en haut',
     sidebarMenuLabel: 'Sommaire',
     darkModeSwitchLabel: 'Apparence',
-    socialLinks: [{ icon: 'github', link: 'https://github.com/vuejs/vitepress' }]
+    socialLinks: [{ icon: 'github', link: 'https://github.com/AI-for-dev/hands-on-harness' }]
   }
 }
