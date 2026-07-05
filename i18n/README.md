@@ -36,6 +36,22 @@ node scripts/i18n/translate.mjs --lang=en          # une seule langue
 node scripts/i18n/translate.mjs --lang=en,es --force
 ```
 
+## pre-commit
+
+Un hook local (`i18n-translations-up-to-date`, dans `.pre-commit-config.yaml`)
+bloque le commit si une page française a été modifiée sans que sa
+traduction ne soit régénérée, ou si une traduction déjà livrée reste
+marquée `needsReview` (voir plus haut). Installation (une fois, après
+avoir cloné le dépôt) :
+
+```bash
+pre-commit install
+```
+
+En cas de blocage : lancer `npm run i18n:translate`, puis `git add` les
+fichiers `content/en/`/`content/es/` et `i18n/manifest.json` régénérés, et
+recommit.
+
 ## Ne retraduire que ce qui change
 
 Pour chaque fichier source et chaque langue, `i18n/manifest.json` retient un

@@ -1,0 +1,38 @@
+name: pre-commit
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+concurrency:
+  group: pre-commit-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  pre-commit:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      # Le hook local "i18n-translations-up-to-date" est en `language:
+      # system` : il lance directement `node scripts/i18n/translate.mjs
+      # --dry-run`, qui importe js-yaml depuis node_modules. Sans Node ni
+      # `npm ci` avant pre-commit, ce hook échouerait pour une mauvaise
+      # raison (dépendance manquante) plutôt que sur un vrai écart de
+      # traduction.
+      - name: Setup Node
+        uses: actions/setup-node@v6
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+
+      - name: Run pre-commit
+        uses: pre-commit/action@v3.0.1

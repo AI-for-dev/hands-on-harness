@@ -1,0 +1,24 @@
+repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v5.0.0
+    hooks:
+      - id: trailing-whitespace
+      - id: end-of-file-fixer
+      - id: check-merge-conflict
+      - id: check-added-large-files
+        args: ["--maxkb=1000"]
+      - id: check-json
+      - id: check-yaml
+
+  - repo: local
+    hooks:
+      - id: i18n-translations-up-to-date
+        name: Traductions i18n à jour (fr -> en/es)
+        description: >-
+          Blocks the commit if a French page has not yet been
+          retranslated, or if an already delivered translation is marked
+          needsReview in i18n/manifest.json. See i18n/README.md.
+        entry: node scripts/i18n/translate.mjs --dry-run
+        language: system
+        pass_filenames: false
+        files: ^(content/(?!en/|es/).*\.md|i18n/(glossary\.yaml|style-guide\.md|prompts/.*\.md|config\.json))$

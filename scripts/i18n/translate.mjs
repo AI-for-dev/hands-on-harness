@@ -188,6 +188,27 @@ async function main() {
 
   const verb = args.dryRun ? 'à traduire' : 'traduits'
   console.log(`\n${translatedCount} fichier(s) ${verb}, ${upToDateCount} déjà à jour.`)
+
+  const needsReviewCount = Object.values(manifest)
+    .flatMap((byLang) => Object.values(byLang))
+    .filter((entry) => entry.needsReview).length
+
+  if (needsReviewCount > 0) {
+    console.warn(
+      `\n⚠ ${needsReviewCount} traduction(s) marquée(s) needsReview dans i18n/manifest.json ` +
+        `(grep needsReview i18n/manifest.json pour les lister).`
+    )
+  }
+
+  // Utilisé par le hook pre-commit "i18n-translations-up-to-date" : un
+  // dry-run qui trouve du travail à faire, ou une traduction déjà livrée
+  // mais jamais relue, doit bloquer le commit plutôt que de le laisser
+  // passer silencieusement. `process.exit` explicite (plutôt que
+  // `process.exitCode`) pour ne dépendre d'aucune subtilité de la boucle
+  // d'événements côté appelant (pre-commit, CI, etc.).
+  if (args.dryRun && (translatedCount > 0 || needsReviewCount > 0)) {
+    process.exit(1)
+  }
 }
 
 main().catch((err) => {
