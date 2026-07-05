@@ -1,21 +1,21 @@
 # Hands-on Harness
 
-Cours sur les harnais (harnesses) d'agents/LLM, écrit en français et publié
-automatiquement en anglais et en espagnol (voir `i18n/README.md`).
+Course on agent/LLM harnesses, written in French and automatically
+published in English and Spanish (see `i18n/README.md`).
 
-## Développement
+## Development
 
-Après avoir cloné le dépôt, installer les hooks pre-commit (traductions à
-jour, hygiène des fichiers) :
+After cloning the repository, install the pre-commit hooks (up-to-date
+translations, file hygiene):
 
 ```bash
 pre-commit install
 ```
 
-## Licence
+## License
 
-Ce dépôt combine deux licences selon la nature du contenu :
+This repository combines two licenses depending on the type of content:
 
-- **Contenu du cours** (`content/`, pages en français et traductions
-  générées) : [CC BY-SA 4.0](LICENSE-CONTENT).
-- **Code** (scripts, configuration VitePress, thème) : [BSD-3-Clause](LICENSE).
+- **Course content** (`content/`, French pages and generated translations):
+  [CC BY-SA 4.0](LICENSE-CONTENT).
+- **Code** (scripts, VitePress configuration, theme): [BSD-3-Clause](LICENSE).
