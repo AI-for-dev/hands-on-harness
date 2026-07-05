@@ -1,0 +1,39 @@
+name: Build check
+
+# Vérifie que le site VitePress build correctement avant de merger dans
+# main. La publication réelle sur GitHub Pages (deploy.yml) ne se déclenche
+# que sur push vers main, une fois la PR mergée.
+on:
+  pull_request:
+    branches: [main]
+
+concurrency:
+  group: build-check-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Setup Node
+        uses: actions/setup-node@v6
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Cache VitePress
+        uses: actions/cache@v4
+        with:
+          path: .vitepress/cache
+          key: ${{ runner.os }}-vitepress-${{ hashFiles('content/**', 'package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-vitepress-
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build with VitePress
+        run: npm run docs:build
