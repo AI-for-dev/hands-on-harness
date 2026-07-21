@@ -13,14 +13,14 @@
   },
   "index.md": {
     "en": {
-      "unitHash": "40a22bde02bbdb3f0492de4021fd27366171e8e684476a6cfa37720902dd62f0",
+      "unitHash": "3577e5a039ee8f3bb793bdf0ac132cfb74d9c56e8e52a1f77960720ffd59bf1b",
       "model": "pi:ilaas/qwen-3.6-35b-instruct",
-      "translatedAt": "2026-07-05T15:59:39.985Z"
+      "translatedAt": "2026-07-21T13:53:33.458Z"
     },
     "es": {
-      "unitHash": "40a22bde02bbdb3f0492de4021fd27366171e8e684476a6cfa37720902dd62f0",
+      "unitHash": "3577e5a039ee8f3bb793bdf0ac132cfb74d9c56e8e52a1f77960720ffd59bf1b",
       "model": "pi:ilaas/qwen-3.6-35b-instruct",
-      "translatedAt": "2026-07-05T16:00:12.646Z"
+      "translatedAt": "2026-07-21T13:53:42.521Z"
     }
   },
   "markdown-examples.md": {
@@ -45,6 +45,18 @@
       "unitHash": "6039e5535e9f4626590b13175f82f1310698fd9c9b822d2f1e1d84bcd4f700b3",
       "model": "pi:ilaas/qwen-3.6-35b-instruct",
       "translatedAt": "2026-07-05T16:00:16.831Z"
+    }
+  },
+  "historique.md": {
+    "en": {
+      "unitHash": "43076c3ece4428d776f05dff8562266440ffa4862226ac140ddf44cb74d82bd7",
+      "model": "pi:ilaas/qwen-3.6-35b-instruct",
+      "translatedAt": "2026-07-21T13:57:43.794Z"
+    },
+    "es": {
+      "unitHash": "43076c3ece4428d776f05dff8562266440ffa4862226ac140ddf44cb74d82bd7",
+      "model": "pi:ilaas/qwen-3.6-35b-instruct",
+      "translatedAt": "2026-07-21T13:57:48.181Z"
     }
   }
 }

@@ -1,0 +1,11 @@
+# I1 History
+
+The evolution of LLMs and their ecosystem has unfolded at a breathtaking pace. Recall that ChatGPT was launched to the public in late November 2022. Since then, a proliferation of techniques and tools has emerged:
+
+- **2022: Intelligent completion** — Models begin predicting and completing code on the fly, directly within the editor. It’s like classic autocomplete, but powered by LLMs trained on billions of lines of public code.
+- **2022–2023: Prompt engineering** — With ChatGPT accessible to the general public, developers discover that the phrasing of the question drastically impacts the quality of the LLM’s response. Prompt engineering involves crafting highly precise and structured instructions to achieve better results.
+- **2023–2024: RAG (Retrieval-Augmented Generation)** — An LLM alone does not know your specific codebase or internal documentation. A RAG system augments the model’s knowledge by providing relevant documents before generating a response.
+- **2023–2024: Agent (LLM + Tools)** — Instead of simply posting a question and receiving an answer, we create intelligent agents capable of acting: executing code, querying databases, calling APIs, or reading files.
+- **Late 2024: MCP (Model Context Protocol)** — An open standard from Anthropic that normalizes how LLMs communicate with external tools. MCP defines a unified protocol: any LLM implementing the protocol can use any MCP-compliant tool (files, APIs, databases, etc.).
+- **2025: Context engineering** — An evolution of prompt engineering. It’s no longer just about phrasing the question correctly; you must optimize the context provided to the model: choosing the right documents, structuring information, ensuring example relevance, and managing history. This is a more holistic approach to maximizing response quality.
+- **2025: Harness** — A framework or infrastructure that cohesively integrates all the above concepts. The harness automatically manages context, available tools, code execution, permissions, and more. This is the logical progression: after mastering individual building blocks, assemble them into an integrated, intelligent system. Its role is to build a system that is as autonomous as possible to tackle complex and lengthy tasks.
