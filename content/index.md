@@ -2,53 +2,56 @@
 
 *Une formation pour vous faire découvrir les harnais et les dompter*
 
-## Contexte
+## Contexte et positionnement
 
-L'utilisation des Large Language Models (LLM) dans nos tâches quotidiennes devient de plus en plus importante, que ce soit dans la retranscription de réunions, l'analyse de documents ou encore le codage d'applications. Nous nous concentrerons dans la suite sur leur impact dans un cadre de développement logiciel.
+Ce support de formation à été créé dans le cadre de l'ANF IA4Dev du 19 au 22 octobre 2026 [https://ia4dev-2026.sciencesconf.org/](https://ia4dev-2026.sciencesconf.org/). L'utilisation des Large Language Models (LLM), que ce soit pour le codage ou d'autres tâches, pose évidemment des problématiques importantes d'un point de vue juridique (propriété du code...), social et environnemental. Nous avons fait le choix lors de l'ANF de faire intervenir plusieurs personnes sur ces sujets mais nous n'avons pas développé ces aspects dans ce support. Les personnes intéresssés pourront toutefois trouver quelques références sur ces questions en annexe.
 
-L'évolution des LLM ainsi que leur écosystème se sont développés à une vitesse folle. Rappelons que ChatGPT a été proposé au grand public fin novembre 2022. Depuis, une multiplication de techniques et d'outils a vu le jour :
+Il est évident que construire une formation sur l'IA pour aider au développement logiciel pose question. Est-ce qu'il s'agit de manière implicite de faire la promotion de l'usage de l'IA pour coder ? Notre choix de ne pas développer ici les problématiques juridiques, sociales et environnementales, pose même la question de manière plus critique : ne met-on pas en annexe dans ce support ce qui devrait être les informations premières et le coeur de la formation pour se positionner en connaissance de cause ?
 
-- **2022 : complétion intelligente** — Les modèles commencent à prédire et compléter le code à la volée, directement dans l'éditeur. C'est comme l'autocomplétion classique, mais alimentée par des LLM entraînés sur des milliards de lignes de code public.
-- **2022-2023 : prompt engineering** — Avec ChatGPT accessible au grand public, les développeurs découvrent que la formulation de la question impacte énormément la qualité de la réponse du LLM. Le prompt engineering consiste à construire des instructions très précises et structurées pour obtenir de meilleurs résultats.
-- **2023-2024 : RAG (Retrieval-Augmented Generation)** — Le LLM seul ne connaît pas votre base de code spécifique ou votre documentation interne. Un RAG permet d'augmenter les connaissances du modèle en lui fournissant des documents pertinents avant de répondre.
-- **2023-2024 : agent (LLM + outils)** — Au lieu de poster juste une question et de recevoir la réponse, nous créons des agents intelligents qui peuvent agir : exécuter du code, consulter une base de données, appeler une API, lire des fichiers.
-- **Fin 2024 : MCP (Model Context Protocol)** — Un standard ouvert d'Anthropic qui normalise la façon dont les LLM communiquent avec les outils externes. MCP définit un protocole unifié : tout LLM implémentant le protocole peut utiliser n'importe quel outil implémentant MCP (fichiers, APIs, bases de données, etc.).
-- **2025 : context engineering** — Évolution du prompt engineering. Il ne s'agit plus uniquement de bien formuler la question, il faut optimiser le contexte fourni au modèle : choix des documents, structuration des informations, pertinence des exemples, gestion de l'historique. C'est une approche plus holistique pour maximiser la qualité des réponses.
-- **2025 : harnais (harness)** — Un cadre ou une infrastructure qui intègre tous les concepts précédents de manière cohésive. Le harnais gère automatiquement le contexte, les outils disponibles, l'exécution du code, les permissions, etc. C'est l'évolution logique : après avoir appris les briques individuelles, les assembler dans un système intégré et intelligent. Son rôle est de construire un système qui soit le plus autonome possible pour pouvoir travailler sur des tâches complexes et longues.
+Nous avons eu la chance d'avoir eu dans le comité d'organisation de cette ANF des positionnements très différents. Cette diversité a été la source de nombreuses discussions et cette formation n'a aucunement pour objectif de convaincre quiconque d'utiliser ou de ne pas utiliser l'IA.
+Il est vrai qu'en montrant comment faire à traver ce support nous participons à la diffusion de la pratique.
 
-Les outils ont également fortement évolué afin de répondre à ces avancées : ChatGPT, Copilot, Claude Code, OpenCode ou plus récemment Pi.
+Au moment de la rédaction de ces lignes, Linus Torvalds, le fondateur de Linux, a fait une déclaration proche du positionnement de ce support pédagogique :
 
-## Enjeux
+> "L'IA est un outil, tout comme d'autres outils que nous utilisons. Et c'est clairement un outil utile.
+> Il n'était peut-être pas aussi "clair" il y a seulement un an, mais ce n'est plus une question aujourd'hui.
+> Il y a d'autres questions autour de l'IA (comme ce à quoi l'économie de l'IA ressemblera réellement à la fin), mais "est-ce utile" n'est plus l'une de ces questions. Quiconque en doute n'a clairement pas réellement utilisé l'IA.
+> Oui, cela peut également être un outil quelque peu douloureux, tant pour la charge de travail des mainteneurs que du point de vue de "ça continue de trouver des bugs embarrassants".
+> Mais la solution n'est pas de mettre la tête dans le sable et de chanter "La La La, je ne t'entends pas" à pleine voix comme certains semblent le faire.
+> La solution est de s'assurer que ces outils LLM _aident_ les mainteneurs au lieu de leur causer de la douleur. Il n'y a pas de question de ce côté-là.
+> Nous ne forçons personne à l'utiliser, mais j'ignorerai très bruyamment les personnes qui essaient de contredire d'autres sur leur utilisation.
+> Et non, l'IA n'est pas parfaite. Mais bordel, quiconque souligne les problèmes de l'IA ferait mieux de se regarder dans le miroir en même temps.
+> Parce que ce n'est pas comme si l'intelligence naturelle était toujours si géniale non plus."
+> 
+> —— Linus Torvalds [https://www.phoronix.com/news/Linux-Is-Not-Anti-AI](https://www.phoronix.com/news/Linux-Is-Not-Anti-AI)
 
-En seulement 4 ans, le paysage des LLM pour le codage n'a cessé de se modifier, de devenir plus performant, mais aussi de se complexifier. Avant même que vous maîtrisiez un concept ou un outil, vous devez déjà en apprendre un autre. Les développeurs (et non développeurs) surfent sur cette vague gigantesque au péril de la qualité logicielle. Car aujourd'hui, nous en sommes bien là : comment utiliser efficacement ces outils sans perdre la maîtrise ? En quoi ces outils peuvent nous aider au quotidien ?
 
-De grandes annonces nous faisaient miroiter que nous étions au moins 50&nbsp;% plus productifs grâce aux LLM. Le constat est beaucoup plus nuancé. Des études montrent que, sur des codes complexes, l'usage des LLM peut être contre-productif [1]. Pour un usage courant, des études montrent que les développeurs passent plus de temps à refaire le travail après s'être aperçus que l'ajout des LLM dans la base de code était erroné [2]. Nous voyons de plus en plus de Pull Requests qui s'ouvrent sur des logiciels open source où la qualité n'est pas au rendez-vous. Le mainteneur devient alors un relecteur complètement accaparé à relire le travail verbeux, et souvent non structuré, produit par des agents et non relu par le contributeur qui ne s'est pas familiarisé avec le code auquel il prétend contribuer. Si le travail de relecture est mal fait, des processus de refonte apparaissent là encore limitants, voire impactants négativement la productivité [3].
+Dans notre cas, il s'agit d'aider pas seulement les mainteneurs mais plus globalement les utilisateurs de l'IA, ceux qui aimeraient l'utiliser ou même ceux qui ne sont pas vraiment certain de s'en servir mais qui ont envie de mieux comprendre et savoir comment ça marche. L'organisation de cette ANF nous a montré qu'il y a une forte demande dans ce sens. La question n'est donc pas : devez-vous servir de l'IA ou pas ? (car nous vous laissons vraiment juge de cette dernière) mais si je veux l'utiliser dans le cadre de l'ESR de manière pertinente, comment puis-je faire ?
 
-Nous observons de plus en plus de projets open source qui ferment l'accès à l'ouverture de Pull Request par défaut et demandent à engager une discussion avec d'éventuels contributeurs avant de leur donner les droits.
+Il est évident que ce qui va être présenté principalement dans ce support, c'est-à-dire l'utilisation d'un harnais, correspond à un usage un peu avancé. D'une certaine façon, il est possible de simplement connecter son environnement de développement (IDE) à un fournisseur d'IA et d'utiliser des commandes souvent intégrées ou accessibles via des plugins : chat, edit et agent. La question de quel fournisseur d'IA est fondamental ? Ici, suivant les cadres dans lesquels vous travaillez, les réponses vont variées. De plus, elles risquent d'évoluer avec le temps et nous vous invitons à vous renseigner sur la questions.
 
-Concernant l'usage du MCP, la réalité est là encore plus nuancée que les promesses initiales. Malgré l'augmentation du nombre total de tokens disponibles dans la fenêtre de contexte des nouveaux LLM (nous sommes récemment passés à 1M de tokens), il est connu depuis un petit moment que les modèles réagissent très mal dès que nous avons rempli 40&nbsp;% de la taille globale du contexte [4]. D'autres études sont encore plus alarmistes et montrent que ce n'est pas un pourcentage, mais plutôt un nombre de tokens à ne pas dépasser qui se situe autour de 100K tokens [5]. Vous verrez cette zone sous le nom de « dumb zone » [6], « context-rot » ou, comme dans le papier original, « lost in the middle ». L'utilisation des MCP et de tous les outils qui existent aujourd'hui ajoute un préambule dans le contexte qui peut vous faire arriver dans la « dumb zone » avant même d'avoir commencé à poser votre première question. Les réponses que vous obtiendrez ne seront alors plus fiables.
+Dans cette formation, nous allons appuyer sur l'offre d'IlaaS [https://www.ilaas.fr/](https://www.ilaas.fr/) car elle permet d'utiliser des modèles plus gros et performants que ce qu'il est possible pour la grande majorité d'entre nous d'installer en local [https://blog.stephane-robert.info/docs/developper/programmation/python/ollama/] (https://blog.stephane-robert.info/docs/developper/programmation/python/ollama/)). Nous avons conscience que toutes les universités ne sont pas dans IlaaS et pour ceux et celles dans l'ESR qui souhaite juste avoir accès à un modèle pour tester sans forcément construire un harnais, nous vous renvoyons vers l'API Albert de la DINUM [https://ia.numerique.gouv.fr/outils-ia/albert-api/](https://ia.numerique.gouv.fr/outils-ia/albert-api/).
 
-Alors, est-il possible de revenir à une maîtrise de l'IA dans le cadre du développement logiciel ? Comment ne pas perdre son esprit critique et continuer à l'exercer face à cette facilité de génération de code ? Comment devenir orchestrateur et non pas simple observateur ?
+Avant d'entrer dans le coeur de la formation, c'est-à-dire le harnais et son utilisation, nous allons détailler un peu l'historique, les modèles (ceux qui sont assez facilement accesibles et ceux que nous visons dans un futur proche car cette formation a été l'occasion d'impulser une dynamique dans ce sens) et quelques harnais disponibles et pourquoi nous avons choisi Pi.
 
-## Objectifs
+Dans une deuxième partie, nous verrons le fonctionnement de Pi et allons créer une première extension. Les notions de 
 
-Le développement logiciel constitue un pilier fondamental du progrès de la recherche et de l'industrie. Il est par conséquent primordial d'accompagner les personnes qui développent face aux évolutions métiers induites par l'intégration des LLM et des agents IA.
 
-Cette formation vise à dresser un panorama des outils, des modèles existants et de leurs mécanismes de fonctionnement. Elle a également pour ambition de développer un esprit critique face aux potentielles dérives liées à leur usage, afin de promouvoir une utilisation éthique et responsable de ces technologies.
+## Plan de la formation
 
-Le programme comportera de nombreuses parties pratiques afin que les participants puissent, à l'issue de la formation, intégrer ces outils dans leurs pratiques quotidiennes.
+1. **Se reperer dans le paysage actuel des LLM et des harnais**
+   - [Historique](./historique)
+   - Modèles et fournisseurs
+   - Les harnais
+       - [Qu'est-ce qu'un harnais ?](./quest-ce-quun-harnais)
+       - Quelques harnais
 
-## Public cible et pré-requis
+2. **Prendre en main Pi**
+   - Installer et configurer Pi
+   - Configurer l'accès à IlaaS
+   - Découverte de Herdr 
+   - Découvrir les commandes et quelques premières extensions de Pi
 
-- **Public** : toute personne ayant une activité de développement logiciel.
-- **Pré-requis** : expérience en programmation (au minimum 1-2 ans) ; aucune expertise IA requise, même si une expérience minimale est un plus.
-- **Niveau** : juniors aux confirmés.
-
-## Références
-
-1. [https://metr.org/blog/2025-07-10-early-2025-ai-experienced-os-dev-study/](https://metr.org/blog/2025-07-10-early-2025-ai-experienced-os-dev-study/)
-2. [https://www.jonas.rs/2025/02/09/report-summary-gitclear-ai-code-quality-research-2025.html](https://www.jonas.rs/2025/02/09/report-summary-gitclear-ai-code-quality-research-2025.html)
-3. [https://youtu.be/tbDDYKRFjhk?t=549](https://youtu.be/tbDDYKRFjhk?t=549)
-4. [https://arxiv.org/abs/2307.03172](https://arxiv.org/abs/2307.03172)
-5. [https://agentpatterns.ai/context-engineering/context-window-dumb-zone/](https://agentpatterns.ai/context-engineering/context-window-dumb-zone/)
-6. [https://www.youtube.com/watch?v=rmvDxxNubIg](https://www.youtube.com/watch?v=rmvDxxNubIg)
+3. **Construire et adapter son harnais**
+   - Créer une première extension
+   - ...

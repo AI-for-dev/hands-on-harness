@@ -1,0 +1,12 @@
+# I1 Historico
+
+
+La evolución de los LLM y su ecosistema ha sido vertiginosa. Recordemos que ChatGPT se lanzó al público en noviembre de 2022. Desde entonces, han aparecido muchas técnicas y herramientas nuevas:
+
+- **2022 : autocompletado inteligente** — Los modelos comienzan a predecir y completar el código en tiempo real, directamente en el editor. Es como el autocompletado clásico, pero impulsado por LLM entrenados en miles de millones de líneas de código público.
+- **2022-2023 : prompt engineering** — Con ChatGPT disponible para todos los usuarios, los desarrolladores descubren que la forma de formular la pregunta influye enormemente en la calidad de la respuesta del LLM. El prompt engineering consiste en construir instrucciones precisas y estructuradas para obtener mejores resultados.
+- **2023-2024 : RAG (Retrieval-Augmented Generation)** — Un LLM solo no conoce tu base de código específica ni tu documentación interna. Un RAG permite aumentar los conocimientos del modelo proporcionándole documentos relevantes antes de responder.
+- **2023-2024 : agente (LLM + herramientas)** — En lugar de solo hacer una pregunta y recibir una respuesta, creamos agentes inteligentes que pueden actuar: ejecutar código, consultar una base de datos, llamar a una API, leer archivos.
+- **Final 2024 : MCP (Model Context Protocol)** — Un estándar abierto de Anthropic que normaliza la forma en que los LLM se comunican con herramientas externas. MCP define un protocolo unificado: cualquier LLM que implemente el protocolo puede usar cualquier herramienta que cumpla con MCP (archivos, APIs, bases de datos, etc.).
+- **2025 : context engineering** — Una evolución del prompt engineering. Ya no se trata solo de formular bien la pregunta, sino de optimizar el contexto que se le da al modelo: elección de documentos, estructuración de la información, relevancia de los ejemplos, manejo del historial. Es un enfoque más holístico para maximizar la calidad de las respuestas.
+- **2025 : harness** — Un marco o infraestructura que integra todos los conceptos anteriores de manera cohesiva. El harness gestiona automáticamente el contexto, las herramientas disponibles, la ejecución del código, los permisos, etc. Es la evolución natural: después de aprender las piezas individuales, ensamblarlas en un sistema integrado e inteligente. Su papel es construir un sistema lo más autónomo posible para trabajar en tareas complejas y prolongadas.
