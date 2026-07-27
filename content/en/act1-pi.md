@@ -58,7 +58,7 @@ You will need to enter the API key provided to you. The models listed are those 
 
 If everything went well, you should be able to use Pi. Start your first interactive session with `pi` in your terminal and verify that you have a prompt. Something like this:
 
-![](./figures/pi.png)
+![](/figures/pi.png)
 
 You can observe the different elements that make up Pi (context, skills, extensions) as well as the default model used in the bottom right corner (here `(ilaas) qwen-3.6-35b-instruct`).
 
