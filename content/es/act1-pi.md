@@ -58,7 +58,7 @@ Deberás indicar la api key que te haya sido proporcionada. Los modelos anunciad
 
 Si todo ha ido bien, deberías poder utilizar Pi. Inicia una primera sesión interactiva con `pi` en tu terminal y verifica que tienes un prompt. Algo como
 
-![](./figures/pi.png)
+![](/figures/pi.png)
 
 Puedes observar los diferentes elementos que componen Pi (contexto, skills, extensiones) así como el modelo predeterminado utilizado en la esquina inferior derecha (aquí `(ilaas) qwen-3.6-35b-instruct`).
 
