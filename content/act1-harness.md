@@ -10,7 +10,7 @@ L'introduction a présenté une frise des techniques apparues depuis fin 2022. N
 
 Au commencement, il y a le prompt. On s'aperçoit vite que la façon de formuler une demande change radicalement la réponse, et le *prompt engineering* consiste à formuler mieux. Mais un modèle bien interrogé reste ignorant de votre base de code et de votre documentation interne. Le RAG comble ce manque : il va chercher les documents pertinents et les fournit au modèle avant qu'il réponde mais nécessite une construction pouvant être fastidieuse.
 
-Le modèle sait alors mieux répondre, mais il ne fait toujours que répondre. Il ne peut pas agir. L'agent comble ce manque en lui donnant des outils : exécuter du code, lire un fichier, appeler une API. Chaque outil devant être décrit et connecté, la multiplication des intégrations devient vite ingérable, et le MCP normalise la façon dont un modèle dialogue avec des outils externes. Les outils peuvent parfois être de bons remplaçants au RAG. 
+Le modèle sait alors mieux répondre, mais il ne fait toujours que répondre. Il ne peut pas agir. L'agent comble ce manque en lui donnant des outils : exécuter du code, lire un fichier, appeler une API. Chaque outil devant être décrit et connecté, la multiplication des intégrations devient vite ingérable, et le MCP normalise la façon dont un modèle dialogue avec des outils externes. Les outils peuvent parfois être de bons remplaçants au RAG.
 
 À ce stade, on dispose d'un modèle capable d'aller chercher de l'information et d'agir. Reste à décider ce que l'on met dans sa fenêtre de contexte et dans quel ordre. C'est le *context engineering*, prolongement du *prompt engineering* : il ne s'agit plus seulement de bien poser la question, mais d'optimiser tout le contexte fourni au modèle.
 
