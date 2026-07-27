@@ -49,14 +49,14 @@
   },
   "act1-pi.md": {
     "en": {
-      "unitHash": "fe438e13bc631602d66f19da729fab2bc4a2e8992010706bc09ceb20631d8748",
+      "unitHash": "becd096e65418f9e9a389cf0c754e24c12eae1e9e3523a166413c075a3684adf",
       "model": "pi:ilaas/qwen-3.6-35b-instruct",
-      "translatedAt": "2026-07-27T16:34:41.104Z"
+      "translatedAt": "2026-07-27T18:02:13.241Z"
     },
     "es": {
-      "unitHash": "fe438e13bc631602d66f19da729fab2bc4a2e8992010706bc09ceb20631d8748",
+      "unitHash": "becd096e65418f9e9a389cf0c754e24c12eae1e9e3523a166413c075a3684adf",
       "model": "pi:ilaas/qwen-3.6-35b-instruct",
-      "translatedAt": "2026-07-27T16:34:53.819Z"
+      "translatedAt": "2026-07-27T18:02:25.562Z"
     }
   },
   "annexes.md": {
