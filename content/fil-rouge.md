@@ -30,7 +30,7 @@ neon/
   .git/               un historique réel, sur plusieurs commits
 ```
 
-La séparation entre la logique pure et le rendu est partiellement respectée. Là où elle ne l'est pas, c'est délibéré : cela nous donne l'occasion d'un refactor testable. Les tests se lancent avec `node --test game/`, sans outil supplémentaire, ce qui sert autant de garde-fou au harnais que de support aux évaluations.
+La séparation entre la logique pure et le rendu est partiellement respectée. Là où elle ne l'est pas, c'est délibéré : cela nous donne l'occasion d'un refactor testable. Les tests se lancent avec `npm test`, équivalent à `node --test "game/**/*.test.js"`, sans outil supplémentaire, ce qui sert autant de garde-fou au harnais que de support aux évaluations.
 
 ## Le backlog
 

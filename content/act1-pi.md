@@ -42,11 +42,13 @@ Vous devez éditer ce fichier `~/.pi/agent/models.json` et le remplir de la mani
                 {
                     "id": "gemma-4-31b",
                     "contextWindow": 128000,
-                    "reasoning": true
+                    "reasoning": true,
+                    "cost": { "input": 0.14, "output": 0.28, "cacheRead": 0.0028, "cacheWrite": 0 }
                 },
                 {
                     "id": "qwen-3.6-35b-instruct",
-                    "contextWindow": 256000
+                    "contextWindow": 256000,
+                    "cost": { "input": 0.14, "output": 0.28, "cacheRead": 0.0028, "cacheWrite": 0 }
                 }
             ]
         },
@@ -55,6 +57,14 @@ Vous devez éditer ce fichier `~/.pi/agent/models.json` et le remplir de la mani
 ```
 
 Vous devrez renseigner l'api key qui vous aura été fournie. Les modèles annoncés sont ceux disponibles lors de la formation. N'hésitez pas à aller sur la page d'IlaaS pour les mises à jour (https://www.ilaas.fr/liste-des-modeles-llms/).
+
+::: info Le bloc `cost` n'est pas une donnée du fournisseur
+Le champ `cost` est optionnel et vaut zéro par défaut. Sans lui, la commande `/session` vous annoncera un coût de 0,00 € sur toutes vos sessions, ce qui vous priverait d'un indicateur dont nous nous servirons beaucoup par la suite.
+
+Les tarifs ci-dessus, exprimés au million de tokens, sont ceux pratiqués sur le marché pour un modèle de gabarit comparable. Ils ne correspondent à aucune facturation réelle : votre usage d'ILaaS ne vous est pas facturé au token. Ils ne sont là que pour obtenir un ordre de grandeur.
+
+Retenez surtout ceci, car c'est déjà une leçon de harnais : le coût qu'affiche un agent de code n'est pas une information qu'il reçoit du fournisseur, c'est une multiplication qu'il effectue à partir d'un champ de configuration que vous avez écrit. Un chiffre affiché n'est pas un chiffre vérifié.
+:::
 
 Si tout s'est bien passé, vous devrez pouvoir utiliser Pi. Lancez une première session interactive avec `pi` dans votre terminal et vérifier que vous avez un prompt. Quelque chose comme
 
@@ -67,6 +77,7 @@ Vous pouvez jouer avec en lui posant des questions, observer la boucle et voir c
 ## Les premières commandes utiles
 
 - Les outils
+
     Comme dit en introduction de cette partie, Pi est livré avec 4 outils. Pour obtenir la liste, il vous suffit de tapez
 
     ```
@@ -112,55 +123,62 @@ Vous pouvez jouer avec en lui posant des questions, observer la boucle et voir c
     ```
 
     ::: info Exercice
-    Faites un export de votre session en html (format par défaut) et ouvrez ce fichier. Vous pouvez enfin voir à quoi ressemble de "system prompt" minimal de Pi !
+    Faites un export de votre session en html (format par défaut) et ouvrez ce fichier.
     :::
 
 Nous avons fait le tour des principales commandes que nous jugeons utiles pour le moment. Nous en verrons d'autres au cours de ce périple.
 
 ## Comprendre le contenu des répertoires Pi
 
-## Installer une extension
+Pi distingue deux répertoires portant le même nom `.pi/`, et il faut apprendre à les différencier tout de suite pour ne pas s'y perdre.
 
+Le premier vit dans votre répertoire personnel, `~/.pi/agent/`. C'est la configuration globale, celle qui s'applique par défaut à tous vos projets : vous y avez déjà touché en éditant `~/.pi/agent/models.json` pour déclarer vos fournisseurs de modèles. On y trouve aussi `settings.json`, pour les préférences générales (fournisseur et modèle par défaut, thème, proxy...), et `trust.json`, qui mémorise d'une session à l'autre les projets auxquels vous avez choisi de faire confiance.
 
+Le second vit à la racine de votre projet, `.pi/`, celui que vous versionnez avec le reste du dépôt. Il contient les éléments propres au projet en cours : un `settings.json` qui surcharge le global (les objets imbriqués sont fusionnés, pas remplacés dans leur ensemble), et surtout les répertoires que nous remplirons nous-mêmes tout au long de la formation, à commencer par `skills/` pour les outils que nous écrirons.
 
+Cette distinction n'est pas qu'une commodité de rangement. Les skills déclarés dans le répertoire global se chargent sans vérification particulière : ils vous suivent partout. Ceux du projet, eux, ne se chargent qu'une fois ce projet marqué comme sûr, précisément dans ce `trust.json` mentionné plus haut. C'est un premier aperçu très concret de la brique de sûreté que nous reconstruirons plus loin : un harnais qui exécuterait sans discernement du code trouvé dans n'importe quel dépôt cloné serait une faille en soi.
+
+Retenez cette règle simple pour la suite : ce qui doit s'appliquer partout va dans `~/.pi/agent/`, ce qui est propre au dépôt NÉON va dans son `.pi/` local, et c'est ce second répertoire que nous allons peupler au fil des modules qui suivent.
+
+## Les extensions
+
+Pi ne se limite pas à ses quatre outils de base et est complètement extensible. On peut lui ajouter n'importe quelles actions via le mécanisme `pi.on(...)` déjà mentionné qui permet de modifier le comportement dans la boucle agentique. On peut également changer l'interface utilisateur appelé TUI en ajoutant des informations dans les différentes zones. Ces changements de comportements rendent Pi extrêmement intéressant car c'est vous qui êtes l'architecte de votre harnais. Il vous suffit de créer une extension pour vos besoins. Vous pouvez bien évidemment la distribuer ou vous servir d'extensions réalisées par la communauté. Pour en trouver, la galerie officielle sur [pi.dev/packages](https://pi.dev/packages) est la meilleure des ressources.
+
+Une extension se distribue comme un paquet npm ou comme un dépôt git, et s'installe avec `pi install` :
+
+```
+pi install npm:@tintinweb/pi-subagents
+pi install git:github.com/user/repo
+```
+
+Par défaut, l'installation est globale : le paquet est déposé dans `~/.pi/agent/npm/` (ou `~/.pi/agent/git/<hôte>/<chemin>` pour un dépôt git), et l'extension devient disponible dans toutes vos sessions Pi, sur tous vos projets. Ajoutez `-l` à la commande pour l'installer en local à la place : le paquet atterrit alors dans `.pi/npm/`, et l'extension n'est active que pour ce projet, une fois celui-ci marqué comme sûr, exactement comme nous l'avons vu au paragraphe précédent pour les skills. Pour retirer un paquet, la commande symétrique est `pi remove npm:@foo/bar`.
+
+Pour essayer une extension sans l'installer, que ce soit un paquet ou un simple fichier local, l'option `-e` (ou `--extension`) la charge pour la seule durée de la session en cours :
+
+```
+pi -e npm:@tintinweb/pi-subagents
+pi -e ./mon-extension.ts
+```
+
+C'est le réflexe à adopter avant de s'engager sur une extension trouvée dans l'annuaire communautaire. Gardez toutefois à l'esprit qu'une extension s'exécute avec l'intégralité de vos permissions système : n'installez, et ne testez, que ce que vous êtes prêt à faire tourner en confiance.
 
 ## Les quatre extensions
 
-Pour incarner la grille des briques, nous nous appuierons sur quatre extensions, chacune correspondant à une brique. `pi-rtk-optimizer` prendra en charge le contexte et la compaction. `@tintinweb/pi-subagents` fournira la délégation. `pi-hermes-memory` portera la mémoire. `pi-lens` complétera l'observabilité et l'outillage de code. Les permissions et les outils, eux, seront reconstruits à la main dans `.pi/skills/`.
+Nous aurions pu vous faire construire vos propres extensions, mais étant donné le temps imparti et le fait que vous ne connaissez certainement nu l'outil Pi, ni la structure d'un harnais, cela aurait été une perte de temps et de motivation. Nous espérons qu'à la fin de cette formation, vous aurez les idées assez claires pour avoir des idées d'amélioration de votre harnais au travers de nouvelles extensions de Pi.
 
-Nous les introduisons ici comme un inventaire ; chaque extension sera présentée en détail au moment où sa brique est reconstruite.
+Pour construire notre harnais, nous nous appuierons sur quatre extensions :
 
-## La table de correspondance
+- `pi-rtk-optimizer` prendra en charge le contexte et la compaction,
+- `@tintinweb/pi-subagents` fournira la délégation,
+- `pi-hermes-memory` portera la mémoire,
+- `pi-lens` complétera l'observabilité et l'outillage de code.
 
-Le fil conducteur de la formation tient dans une table à trois colonnes. La première rappelle l'invariant, c'est-à-dire le principe durable de chaque brique. La deuxième montre comment un harnais réel le réalise, en s'appuyant sur ce que le *leak* nous apprend de Claude Code. La troisième indique comment nous le reconstruisons sur Pi. Une quatrième colonne reste vide : c'est la vôtre, à remplir avec vos propres intentions d'usage.
+Les permissions et les outils, eux, seront reconstruits à la main dans `.pi/skills/`.
 
-| Invariant           | Dans Claude Code                 | Reconstruit sur Pi                   | Votre harnais ? |
-| ------------------- | -------------------------------- | ------------------------------------ | --------------- |
-| Contexte et cache   | frontière statique / dynamique   | `pi-rtk-optimizer`                   |                 |
-| Outils              | plugins gardés par permission    | skills dans `.pi/skills/`            |                 |
-| Délégation          | sous-agent isolé, exposé en outil| `@tintinweb/pi-subagents`           |                 |
-| Mémoire             | lecture/écriture + filtrage      | `pi-hermes-memory`                   |                 |
-| Sûreté              | modes et règles de refus         | pipeline `.pi/skills/permissions/`  |                 |
-
-## Un cadrage honnête
-
-Deux points doivent être dits clairement avant de commencer.
-
-Le premier est que notre but n'est pas d'égaler Claude Code. La reconstruction que nous menons est minimale, et elle le restera. Ce que nous cherchons, c'est à comprendre assez bien chaque brique pour être capable d'en construire une adaptée à nos besoins.
-
-Le second est une tension que nous préférons aborder de front. Claude Code sait désormais écrire son propre harnais à la volée, selon la tâche. On peut alors se demander à quoi bon apprendre à le construire à la main. La réponse tient en une phrase : on ne pilote, on n'audite et on n'adapte que ce que l'on comprend. Savoir construire manuellement reste la condition pour garder la main sur ce que l'agent fait à votre place.
-
-## En pratique
-
-Récupérez l'état du dépôt de la formation, faites répondre Pi via l'accès aux modèles, et remplissez la quatrième colonne de la table avec vos propres usages : sur quel type de tâches aimeriez-vous fiabiliser votre travail ? Cette colonne vous accompagnera jusqu'au capstone de l'acte 4.
-
-::: warning Un piège à connaître
-L'événement `input` se déclenche *avant* l'expansion des skills. Si vous préfixez vos entrées par une commande `/`, elle risque de ne pas être reconnue au moment où votre hook s'exécute. Nous y reviendrons quand nous brancherons des hooks sur cet événement.
+::: info Exercice
+Installez en local (`-l`) l'une des quatre extensions présentées juste après, vérifiez qu'elle apparaît bien dans `.pi/npm/`. Lancez Pi, vous devriez la voir dans la section extension. Vous pouvez essayer de la retirer avec `pi remove`.
 :::
 
 ## Pour aller plus loin
 
 - Le [site officiel de Pi](https://pi.dev/) et sa [documentation](https://github.com/earendil-works/pi/tree/main/packages/coding-agent/docs).
-- [Awesome Pi Coding Agent](https://awesome-pi.site/extensions/), l'annuaire communautaire des extensions et ressources autour de Pi.
-- Le paquet [`@earendil-works/pi-coding-agent`](https://www.npmjs.com/package/@earendil-works/pi-coding-agent) sur npm, pour les versions et l'installation.
-- Anthropic, [A harness for every task](https://claude.com/blog/a-harness-for-every-task-dynamic-workflows-in-claude-code), sur la capacité de Claude Code à écrire son propre harnais.
