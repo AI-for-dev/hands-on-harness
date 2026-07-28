@@ -11,16 +11,76 @@
       "translatedAt": "2026-07-28T09:26:10.156Z"
     }
   },
-  "quest-ce-quun-harnais.md": {
+  "act1-harness.md": {
     "en": {
-      "unitHash": "562ea6db3a8df9cbb504aebc0d18556944fc033af2437484524849d288fc77ab",
+      "unitHash": "072390689d303038045565501dd891f116503e5762546e2ee4714d665489e390",
       "model": "pi:ilaas/gemma-4-31b",
-      "translatedAt": "2026-07-28T09:27:03.248Z"
+      "translatedAt": "2026-07-28T12:05:46.550Z"
     },
     "es": {
-      "unitHash": "562ea6db3a8df9cbb504aebc0d18556944fc033af2437484524849d288fc77ab",
+      "unitHash": "072390689d303038045565501dd891f116503e5762546e2ee4714d665489e390",
       "model": "pi:ilaas/gemma-4-31b",
-      "translatedAt": "2026-07-28T09:27:09.681Z"
+      "translatedAt": "2026-07-28T12:05:57.455Z"
+    }
+  },
+  "act1-llm.md": {
+    "en": {
+      "unitHash": "b9644315b1d003b39e2d221fa04fc0f0e2701fa1c36b4448300097d62305ef55",
+      "model": "pi:ilaas/gemma-4-31b",
+      "translatedAt": "2026-07-28T11:45:25.326Z"
+    },
+    "es": {
+      "unitHash": "b9644315b1d003b39e2d221fa04fc0f0e2701fa1c36b4448300097d62305ef55",
+      "model": "pi:ilaas/gemma-4-31b",
+      "translatedAt": "2026-07-28T11:45:59.988Z"
+    }
+  },
+  "act1-pi.md": {
+    "en": {
+      "unitHash": "c3c6e690e33680873966002b508dc148829ee223d6456846256ee64a9b0bd21a",
+      "model": "pi:ilaas/gemma-4-31b",
+      "translatedAt": "2026-07-28T12:06:05.211Z"
+    },
+    "es": {
+      "unitHash": "c3c6e690e33680873966002b508dc148829ee223d6456846256ee64a9b0bd21a",
+      "model": "pi:ilaas/gemma-4-31b",
+      "translatedAt": "2026-07-28T12:06:16.624Z"
+    }
+  },
+  "fil-rouge.md": {
+    "en": {
+      "unitHash": "96f62e6a41c159835ffcc9d352000d7e7fa005b3344ad176be8801cce36b355f",
+      "model": "pi:ilaas/gemma-4-31b",
+      "translatedAt": "2026-07-28T11:49:41.359Z"
+    },
+    "es": {
+      "unitHash": "96f62e6a41c159835ffcc9d352000d7e7fa005b3344ad176be8801cce36b355f",
+      "model": "pi:ilaas/gemma-4-31b",
+      "translatedAt": "2026-07-28T11:49:54.137Z"
+    }
+  },
+  "methode.md": {
+    "en": {
+      "unitHash": "7ee867468cb645d5d2b7d93e871f0ac2d426faca473631dfe735761c26c82fe3",
+      "model": "pi:ilaas/gemma-4-31b",
+      "translatedAt": "2026-07-28T11:50:10.952Z"
+    },
+    "es": {
+      "unitHash": "7ee867468cb645d5d2b7d93e871f0ac2d426faca473631dfe735761c26c82fe3",
+      "model": "pi:ilaas/gemma-4-31b",
+      "translatedAt": "2026-07-28T11:50:26.492Z"
+    }
+  },
+  "act2-contexte.md": {
+    "en": {
+      "unitHash": "074359a5d6454483269447b6e5fee1f0e80e571cc0b84119d0c3f745c59b3f13",
+      "model": "pi:ilaas/gemma-4-31b",
+      "translatedAt": "2026-07-28T12:30:28.337Z"
+    },
+    "es": {
+      "unitHash": "074359a5d6454483269447b6e5fee1f0e80e571cc0b84119d0c3f745c59b3f13",
+      "model": "pi:ilaas/gemma-4-31b",
+      "translatedAt": "2026-07-28T12:30:51.693Z"
     }
   }
 }

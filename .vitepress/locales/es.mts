@@ -13,12 +13,25 @@ export const es: LocaleSpecificConfig<DefaultTheme.Config> = {
     nav: [{ text: 'Índice', link: '/es/' }],
     sidebar: [
       {
-        text: 'Índice',
+        text: 'Introducción',
         items: [
-          { text: 'Introducción', link: '/es/' },
-          { text: '1. ¿Qué es un harness?', link: '/es/quest-ce-quun-harnais' }
+          { text: 'Presentación', link: '/es/' },
+          { text: 'El método', link: '/es/methode' },
+          { text: 'El hilo conductor: NÉON', link: '/es/fil-rouge' }
+        ]
+      },
+      {
+        text: 'Acto 1 - Fundamentos',
+        items: [
+          { text: 'Los LLM en 2026', link: '/es/act1-llm' },
+          { text: '¿Por qué un harness y de qué está hecho?', link: '/es/act1-harness' },
+          { text: 'El harness de partida: Pi', link: '/es/act1-pi' }
         ]
       }
+      // El acto 2 empieza por `act2-contexte`, que solo se añade aquí cuando
+      // `npm run i18n:translate` haya generado content/es/act2-contexte.md.
+      // Un enlace de la barra lateral hacia una página inexistente rompe la
+      // compilación.
     ],
     outline: { level: [2, 3], label: 'En esta página' },
     docFooter: { prev: 'Página anterior', next: 'Página siguiente' },
