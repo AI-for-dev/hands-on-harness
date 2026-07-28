@@ -12,6 +12,16 @@ repos:
 
   - repo: local
     hooks:
+      - id: i18n-unit-tests
+        name: Tests unitaires des scripts i18n
+        description: >-
+          Runs the i18n unit tests (segmentation, segment index, integrity
+          checks) whenever the scripts themselves change.
+        entry: npm test --silent
+        language: system
+        pass_filenames: false
+        files: ^scripts/
+
       - id: i18n-translations-up-to-date
         name: Traductions i18n à jour (fr -> en/es)
         description: >-

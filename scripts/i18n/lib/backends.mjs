@@ -1,5 +1,26 @@
 import { spawn } from 'node:child_process'
 
+// Un modèle peut partir en génération infinie sur une entrée qui le déroute :
+// constaté en pratique, `pi` a alors produit assez de sortie pour dépasser la
+// taille maximale d'une chaîne V8 et faire tomber le script entier
+// (`RangeError: Invalid string length`) au bout de plusieurs minutes de
+// traduction. On coupe donc au-delà d'une taille et d'une durée qu'aucune
+// traduction légitime n'atteint, et l'appelant retente.
+//
+// La taille est proportionnée à l'entrée : une traduction fait au plus
+// l'ordre de grandeur de sa source, et la marge (x20, avec un plancher pour
+// les fragments très courts) laisse de la place à un modèle un peu bavard.
+// C'est ce qui fait la différence entre couper une génération folle au bout
+// d'une seconde et attendre plusieurs minutes qu'elle atteigne un plafond
+// absolu.
+const OUTPUT_SIZE_RATIO = 20
+const MIN_OUTPUT_BYTES = 64 * 1024
+const CALL_TIMEOUT_MS = 300_000
+
+function maxOutputBytes(userPrompt) {
+  return Math.max(MIN_OUTPUT_BYTES, userPrompt.length * OUTPUT_SIZE_RATIO)
+}
+
 // pi (https://pi.dev) est un harnais en ligne de commande qui sait parler à
 // de très nombreux providers (ilaas, github-copilot, opencode-go, etc.) et
 // modèles derrière une seule et même interface : plutôt que de réimplémenter
@@ -15,7 +36,16 @@ function runPi(backendConfig, systemPrompt, userPrompt) {
       '--no-tools',
       '--no-session',
       '--print',
-      '--mode', 'json',
+      // --mode text plutôt que json : en mode json, pi émet un flux NDJSON
+      // d'évènements de streaming dont chacun reporte le message en cours, ce
+      // qui rend la sortie quadratique en longueur de réponse. Mesuré sur ce
+      // corpus : 531 ko de stdout pour 450 caractères traduits, et plusieurs
+      // mégaoctets sur un paragraphe long - au point de déclencher la coupure
+      // de sécurité ci-dessous sur des traductions parfaitement normales. En
+      // mode text, pi n'imprime que le texte final de l'assistant : 444 octets
+      // pour la même traduction, et les jetons de raisonnement des modèles qui
+      // en produisent restent exclus (vérifié avec --thinking high).
+      '--mode', 'text',
       '--system-prompt', systemPrompt
     ]
     if (backendConfig.thinking) args.push('--thinking', backendConfig.thinking)
@@ -24,10 +54,40 @@ function runPi(backendConfig, systemPrompt, userPrompt) {
 
     let stdout = ''
     let stderr = ''
-    child.stdout.on('data', (chunk) => { stdout += chunk })
+    let aborted = null
+
+    const abort = (message) => {
+      if (aborted) return
+      aborted = message
+      child.kill('SIGKILL')
+      reject(new Error(message))
+    }
+
+    const timer = setTimeout(
+      () => abort(`pi n'a pas répondu en ${CALL_TIMEOUT_MS / 1000} s`),
+      CALL_TIMEOUT_MS
+    )
+    timer.unref()
+
+    const limit = maxOutputBytes(userPrompt)
+    child.stdout.on('data', (chunk) => {
+      if (aborted) return
+      stdout += chunk
+      if (stdout.length > limit) {
+        abort(
+          `pi a produit plus de ${Math.round(limit / 1024)} ko pour ` +
+            `${Math.round(userPrompt.length / 1024)} ko de source (génération qui s'emballe ?)`
+        )
+      }
+    })
     child.stderr.on('data', (chunk) => { stderr += chunk })
-    child.on('error', reject)
+    child.on('error', (err) => {
+      clearTimeout(timer)
+      reject(err)
+    })
     child.on('close', (code) => {
+      clearTimeout(timer)
+      if (aborted) return
       if (code !== 0) {
         reject(new Error(`pi a quitté avec le code ${code}: ${stderr || stdout}`))
         return
@@ -38,37 +98,6 @@ function runPi(backendConfig, systemPrompt, userPrompt) {
     child.stdin.write(userPrompt)
     child.stdin.end()
   })
-}
-
-// La sortie --mode json de pi est un flux NDJSON d'évènements (streaming
-// inclus) : on ne garde que le dernier évènement "turn_end", qui porte le
-// message assistant final déjà assemblé, et on n'en extrait que les blocs
-// de type "text" (ce qui exclut au passage tout bloc "thinking" pour les
-// modèles qui en produisent).
-function extractPiText(stdout) {
-  let lastTurn = null
-  for (const line of stdout.split('\n')) {
-    if (line.trim() === '') continue
-    let event
-    try {
-      event = JSON.parse(line)
-    } catch {
-      continue
-    }
-    if (event.type === 'turn_end') lastTurn = event
-  }
-  if (!lastTurn) {
-    throw new Error(`Impossible de trouver la réponse de pi dans sa sortie JSON:\n${stdout}`)
-  }
-  return lastTurn.message.content
-    .filter((block) => block.type === 'text')
-    .map((block) => block.text)
-    .join('')
-}
-
-async function callPi(backendConfig, systemPrompt, userPrompt) {
-  const stdout = await runPi(backendConfig, systemPrompt, userPrompt)
-  return extractPiText(stdout)
 }
 
 async function callOllama(backendConfig, systemPrompt, userPrompt) {
@@ -84,7 +113,8 @@ async function callOllama(backendConfig, systemPrompt, userPrompt) {
       ],
       stream: false,
       options
-    })
+    }),
+    signal: AbortSignal.timeout(CALL_TIMEOUT_MS)
   })
   if (!res.ok) {
     throw new Error(`Ollama a répondu ${res.status}: ${await res.text()}`)
@@ -109,7 +139,8 @@ async function callOpenAICompatible(backendConfig, systemPrompt, userPrompt) {
         { role: 'system', content: systemPrompt },
         { role: 'user', content: userPrompt }
       ]
-    })
+    }),
+    signal: AbortSignal.timeout(CALL_TIMEOUT_MS)
   })
   if (!res.ok) {
     throw new Error(`Backend OpenAI-compatible a répondu ${res.status}: ${await res.text()}`)
@@ -123,7 +154,7 @@ export async function translateText(config, systemPrompt, userPrompt) {
   if (!backendConfig) {
     throw new Error(`Backend inconnu dans i18n/config.json: "${config.backend}"`)
   }
-  if (config.backend === 'pi') return callPi(backendConfig, systemPrompt, userPrompt)
+  if (config.backend === 'pi') return runPi(backendConfig, systemPrompt, userPrompt)
   if (config.backend === 'ollama') return callOllama(backendConfig, systemPrompt, userPrompt)
   if (config.backend === 'openai_compatible') return callOpenAICompatible(backendConfig, systemPrompt, userPrompt)
   throw new Error(`Backend non supporté: "${config.backend}" (attendu: "pi", "ollama" ou "openai_compatible")`)
