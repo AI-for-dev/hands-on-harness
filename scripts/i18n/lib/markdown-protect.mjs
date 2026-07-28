@@ -1,14 +1,19 @@
-// Protège les blocs de code (```/~~~) pour qu'un LLM ne les traduise ni ne
-// les altère : on les remplace par un jeton opaque avant l'appel au modèle,
-// puis on les restitue tels quels après traduction.
+// Protects code blocks (```/~~~) so that an LLM neither translates nor alters
+// them: each is replaced by an opaque marker before the model call, then
+// restored verbatim afterwards.
 //
-// La capture `{3,}` (au lieu de `` ``` `` figé) et le backreference \1 sont
-// importants pour les fences imbriquées : un exemple qui montre comment
-// écrire un bloc ```js s'enrobe souvent dans une fence à 4 backticks
-// (````md ... ````). Sans capturer la longueur exacte de l'ouvrant, la
-// fermeture la plus proche (les 3 backticks internes) serait prise à tort
-// pour la fin du bloc protégé.
-const FENCE_RE = /^(`{3,}|~{3,})[^\n]*\n[\s\S]*?^\1[ \t]*$/gm
+// Capturing `{3,}` (rather than hardcoding `` ``` ``) and backreferencing \2
+// matter for nested fences: an example showing how to write a ```js block is
+// often wrapped in a 4-backtick fence (````md ... ````). Without capturing the
+// exact opening length, the nearest closing fence (the inner 3 backticks) would
+// wrongly be taken as the end of the protected block.
+//
+// The opening indentation is captured (\1) and required on the closing fence: a
+// code block inside a list item is indented by two or four spaces, and the
+// course does that often. Without it, those blocks went to the model as
+// ordinary text - with the expected result: "translated" commands (`/tools`,
+// `\resume`).
+const FENCE_RE = /^([ \t]*)(`{3,}|~{3,})[^\n]*\n[\s\S]*?^\1\2[ \t]*$/gm
 
 export function protectCodeBlocks(markdown) {
   const blocks = []

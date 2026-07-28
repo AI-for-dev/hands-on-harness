@@ -5,6 +5,7 @@
     "js-yaml": "^4.1.0"
   },
   "scripts": {
+    "test": "node --test \"scripts/**/*.test.mjs\"",
     "docs:dev": "vitepress dev",
     "docs:build": "vitepress build",
     "docs:preview": "vitepress preview",
