@@ -41,10 +41,10 @@ For a request as trivial as "just say OK", without context files, skills, or ext
 
 A model call is billed in three categories, expressed per million tokens. Here are the rates for the two models we will compare throughout the module:
 
-| model | input | output | cache read |
-| --- | --- | --- | --- |
-| `deepseek-v4-flash` | 0.14 $ | 0.28 $ | 0.0028 $ |
-| `deepseek-v4-pro` | 1.74 $ | 3.48 $ | 0.0145 $ |
+| model              | input | output | cache read |
+| ------------------- | ------ | ------ | ---------------- |
+| `deepseek-v4-flash` | 0,14 $ | 0,28 $ | 0,0028 $         |
+| `deepseek-v4-pro`   | 1,74 $ | 3,48 $ | 0,0145 $         |
 
 These rates are those published by [opencode Zen](https://opencode.ai/docs/zen/), the service used by the training. Pi copies them into `~/.pi/agent/models-store.json`, where the benchmark tool will read them.
 
@@ -53,20 +53,45 @@ Two gaps emerge. The first separates the two models, as the `pro` costs 12.4 tim
 This second gap is what makes a coding agent economically viable, because an agent re-reads its full history every turn and would otherwise pay twenty times the price of its context over a twenty-turn session.
 
 ::: info Exercise (in-class)
-In a session, ask three consecutive questions about the same file and type `/session` after each one, observing the token line: cache reading increases while the turn cost collapses.
+In an interactive session, ask five consecutive questions about the same file by typing `/session` after each one, and change the model with `/model` before the fourth. The questions must explicitly forbid any file rereading; otherwise, a new tool output will be added to the context and clutter the reading.
 
-Here is what we measured over a session of six calls, intentionally switching models on the fifth:
+Here is the exact sequence we measured, presented here in non-interactive mode so that it is reproducible as is. The `-c` option continues the previous session, and accents are omitted in the commands without affecting the result:
 
-| call | model | input | cache read | cost |
-| --- | --- | --- | --- | --- |
-| 1 | `flash` | 1,675 | 0 | 0.000254 $ |
-| 2 | `flash` | 307 | 1,664 | 0.000081 $ |
-| 3 | `flash` | 66 | 2,048 | 0.000053 $ |
-| 4 | `flash` | 118 | 2,048 | 0.000087 $ |
-| 5 | `pro` | 2,521 | **0** | **0.005455 $** |
-| 6 | `pro` | 148 | 2,432 | 0.000362 $ |
+```bash
+cd /chemin/vers/neon
 
-The cache activates as early as the second call, even within the same turn, and it reduces the cost by a factor of three to five. Switching models on the fifth call resets the cache read to zero and makes the entire prefix paid for at full price: this single turn costs fifteen times more than the next one with the same model.
+pi -p --provider opencode-go --model deepseek-v4-flash -nc -ns -np -ne \
+  "Lis game/theme.js et dis en une phrase ce que fait ce fichier."
+
+pi -p -c --provider opencode-go --model deepseek-v4-flash -nc -ns -np -ne \
+  "En une phrase, cite une couleur qui y est definie. Ne relis aucun fichier."
+
+pi -p -c --provider opencode-go --model deepseek-v4-flash -nc -ns -np -ne \
+  "En une phrase, combien de couleurs au total ? Ne relis aucun fichier."
+
+pi -p -c --provider opencode-go --model deepseek-v4-pro -nc -ns -np -ne \
+  "En une phrase, confirme ce nombre. Ne relis aucun fichier."
+
+pi -p -c --provider opencode-go --model deepseek-v4-pro -nc -ns -np -ne \
+  "En une phrase, redis ce nombre. Ne relis aucun fichier."
+```
+
+These five turns result in six model calls because the first turn consumes two: one to request reading `theme.js`, and a second to respond once the tool output has returned.
+
+| call | turn | prompt | model | input | cache read | cost |
+| ----- | ---- | -------------------------- | ------- | ------ | ---------------- | -------------- |
+| 1     | 1    | "Read `game/theme.js`..."   | `flash` | 1 675  | 0                | $0.000254     |
+| 2     | 1    | (continuation, after the read) | `flash` | 307    | 1 664            | $0.000081     |
+| 3     | 2    | "name a color..."          | `flash` | 66     | 2 048            | $0.000053     |
+| 4     | 3    | "how many colors..."        | `flash` | 118    | 2 048            | $0.000087     |
+| 5     | 4    | "confirm this number..."    | `pro`   | 2 521  | **0**            | **$0.005455** |
+| 6     | 5    | "repeat this number..."     | `pro`   | 148    | 2 432            | $0.000362     |
+
+Caching is active from the second call, including within the same turn, and it reduces the cost by a factor of three to five. Switching the model in the fourth turn resets the cache read to zero and causes the entire prefix to be paid for at the full rate: this single turn costs fifteen times more than the next one, with the same model.
+:::
+
+::: warning If `pi -p` freezes without displaying anything
+When running from a script, redirect standard input with `< /dev/null`. In non-interactive mode, `pi` waits on its standard input as long as it remains open, which blocks indefinitely when called from a tool that provides a pipe instead of a terminal. The benchmark below encounters the same trap and handles it in the same way.
 :::
 
 Caching only works on an **unchanged prefix**, which leads to the context ordering rule: everything that varies must be placed after what is stable. A timestamp or a `git status` slipped into the system prompt invalidates everything that follows—including tools, the question, and history—meaning you pay full price every turn, whereas the same data placed in the current turn's message costs nothing since it is already in the varying zone.
@@ -83,14 +108,18 @@ We chose it because it consists of two halves of which only one might be complet
 
 We use four criteria:
 
-| criterion | mechanical? |
+| criterion | mechanically verifiable? |
 | --- | --- |
 | `npm test` passes | yes |
-| no exports from `game/neon.js` renamed or deleted | yes |
+| no export from `game/neon.js` renamed or deleted | yes |
 | only `game/neon.js` is modified, so the ticket scope is respected | yes |
-| the "performance" half of the ticket has been addressed | **no** |
+| the "performance" half of the ticket has been addressed | **only superficially** |
 
-The first three are computable, while the fourth, which nonetheless determines if the work is done, requires reading the diff. Keep this friction in mind: it will return in the module conclusion, and module 3.2 will address it.
+The first three can be read unambiguously from a return code or a file list. The fourth, which nonetheless decides if the ticket is addressed, cannot be reduced so easily, and the way it resists is worth examining in detail.
+
+Our harness approaches this using a pattern: it searches the diff for a grid index calculation, as that is how we expect collisions to stop iterating through all bricks. This approximation misled us twice during the module's preparation. First, it flagged a diff as unaddressed that performed the correct calculation but named its bounds differently, which is a matter of fine-tuning. More importantly, it was unable to judge a solution of a different form: an agent maintained a list of remaining bricks, which reduces the workload as the game progresses without changing the worst-case scenario, and deciding if this counts as "addressed" requires an opinion rather than a test.
+
+A textual pattern therefore answers the question "does this diff look like the expected solution", whereas the actual question is "does this diff solve the problem". This gap is exactly what the LLM-judge in module 3.2 is meant to bridge, and that is why this column is marked with an asterisk in the following tables: review the diffs it declares as addressed before relying on them.
 
 ::: warning Each run works on a disposable copy
 A benchmark that modifies the repository measures the last modification rather than the configuration. The script provided below copies NÉON into a temporary directory upon each execution, and you must do the same if you are measuring manually.
@@ -182,21 +211,27 @@ Use the available tools (read, write, edit, bash) to inspect and modify files.
 Answer in the language of the user.
 ```
 
-Relaunch the same task and compare. Here is what we obtained with the same model and reasoning effort:
+Run the same task again and compare. Our first measurement, one execution on each side, showed the following:
 
-| | Pi system prompt | stripped system prompt | ratio |
-| --- | --- | --- | --- |
-| turns | 9 | 26 | ×2.9 |
-| tool calls | 10 | 27 | ×2.7 |
-| output tokens | 2,551 | 16,162 | ×6.3 |
-| cost | $0.0025 | $0.0087 | **×3.5** |
-| duration | 128 s | 126 s | equal |
-| files touched | `neon.js` | `neon.js` and `neon.test.js` | spills over |
+|                  | Pi system prompt      | amputated system prompt  | ratio   |
+| ---------------- | -------------------- | --------------------------- | -------- |
+| turns            | 9                    | 26                          | ×2.9     |
+| tool calls       | 10                   | 27                          | ×2.7     |
+| output tokens    | 2,551                | 16,162                      | ×6.3     |
+| cost             | $0.0025              | $0.0087                    | **×3.5** |
+| duration        | 128 s                | 126 s                       | equal    |
+| files touched    | `neon.js`            | `neon.js` and `neon.test.js` | spills over |
 
-The task is completed successfully in both cases, with green tests, the refactor performed, and the API preserved, meaning no capability was lost. The stripped agent simply groped around three times longer before succeeding, and it started rewriting the tests without being asked.
+The task is completed successfully in both cases, with green tests, the refactor performed, and the API preserved, which means that no capability was lost.
 :::
 
-The result can be put this way: the system prompt adds no capability, since tools are declared to the model via their JSON schema and not through prose, but it adds discipline, and discipline is what determines the cost. Here, 550 well-written tokens divide the cost by three and a half. This is also why a harness is not just a well-crafted system prompt: Pi's fits in 550 tokens, and the rest of the work happens elsewhere.
+::: warning What three repetitions did to this table
+The 3.5x cost factor **did not survive** the repetitions. Across three executions on each side, the median for the amputated group is $0.0043 compared to $0.0041 for the base, which is indistinguishable. The only remaining difference is in the number of turns, which increases from 10 to 13.
+
+We are leaving this table on the page rather than removing it, because the error is instructive and is exactly what the next section warns you about. We made this mistake while preparing this module, and three repetitions were enough to correct it.
+:::
+
+The system prompt therefore adds no capability, as tools are declared to the model via their JSON schema rather than prose, and its influence on the cost is smaller than our first measurement suggested. What it provides is visible in the conduct of the work, with an agent that fumbles more when deprived of its conventions. This is also why a harness is not just a well-crafted system prompt: Pi's fits in 550 tokens, and the rest of the work happens elsewhere.
 
 #### A throttled window to observe compaction
 
@@ -264,15 +299,15 @@ The chosen plan is the simplest that remains readable: a **base**, then one vari
 The base reproduces what someone discovering the tool does, with the fast model, no reasoning effort requested, a vague prompt, no `AGENTS.md`, the default system prompt, the normal window, and no extensions. Every other cell changes only one thing and is read as a deviation from this base.
 
 | cell | what changes |
-| --- | --- |
-| base | nothing, it is the reference |
+| ---------------- | -------------------------------------------------------------- |
+| base | nothing, this is the reference |
 | `+thinking` | `--thinking high` |
-| `+framed prompt` | the prompt specifies the scope and the stop criterion |
+| `+framed prompt` | the prompt defines the scope and the stopping criterion |
 | `+AGENTS.md` | the rules file is present |
-| `-sys. prompt` | the system prompt is replaced by three lines |
+| `-sys prompt` | the system prompt is replaced by three lines |
 | `+rtk` | the `pi-rtk-optimizer` extension is loaded |
 | `pro (neglected)` | the large model, everything else unchanged |
-| `flash (careful)` | the small model with reasoning, framed prompt, and `AGENTS.md` |
+| `flash (polished)` | the small model with reasoning, framed prompt, and `AGENTS.md` |
 
 The last two lines form the 2x2 on which the conclusion of the module depends.
 
@@ -282,9 +317,9 @@ The framed prompt differs from the vague prompt by three additions rather than i
 
 Each cell is executed three times, for a reason we discovered the hard way. Here are three strictly identical executions: same model, same effort, same prompt, same repository:
 
-| | run a | run b | run c | median | range |
-| --- | --- | --- | --- | --- | --- |
-| cost | $0.0104 | $0.0052 | $0.0050 | $0.0052 | **×2.08** |
+|      | run a    | run b    | run c    | median   | range     |
+| ---- | -------- | -------- | -------- | -------- | --------- |
+| cost | $0.0104  | $0.0052  | $0.0050  | $0.0052  | **×2.08** |
 
 By expanding to four executions, the range rises to **×4.2**, the turns vary from 7 to 23, the `bash` calls from 2 to 13, and the diff from 34 to 167 inserted lines.
 
@@ -330,17 +365,32 @@ In our case, the cause was an open standard input, which `spawn` provides by def
 
 Here is what we obtained in July 2026, on `opencode-go`, with NÉON, excluding context files, skills, and unrequested extensions.
 
-RESULTATS_BANC
+| cell | n | min cost | median | max | range | avg turns | tests | API | scope | perf |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| base | 3 | $0.0036 | $0.0041 | $0.0094 | ×2.60 | 10 | 3/3 | 3/3 | 2/3 | 0/3 |
+| `+thinking` | 3 | $0.0028 | $0.0051 | $0.0052 | ×1.86 | 10 | 3/3 | 3/3 | 2/3 | 0/3 |
+| `+structured prompt` | 3 | $0.0039 | $0.0045 | $0.0048 | ×1.23 | 12 | 3/3 | 3/3 | **3/3** | **2/3** |
+| `+AGENTS.md` | 3 | $0.0030 | $0.0052 | $0.0055 | ×1.80 | 8 | 3/3 | 3/3 | 2/3 | 1/3 |
+| `-system prompt` | 3 | $0.0036 | $0.0043 | $0.0058 | ×1.60 | 13 | 3/3 | 3/3 | 2/3 | 0/3 |
+| `+rtk` | 3 | $0.0034 | $0.0050 | $0.0062 | ×1.82 | 10 | 3/3 | 3/3 | 2/3 | 0/3 |
+| `pro (neglected)` | 3 | $0.0355 | $0.0489 | $0.0498 | ×1.40 | 10 | 3/3 | 3/3 | 2/3 | 0/3 |
+| `flash (careful)` | 3 | $0.0047 | $0.0063 | $0.0067 | ×1.44 | 16 | 3/3 | 3/3 | **3/3** | **2/3** |
+
+The first four scoring columns come from the benchmark. The fifth, concerning the "performance" half of the ticket, was filled manually by reviewing the twenty-four diffs, and it counts as solved only when the collision stops iterating through all blocks, i.e., when the code calculates the grid cells hit by the ball. Three runs simply used a table of remaining active blocks, which reduces the workload as the game progresses but leaves the worst-case scenario unchanged; we counted these as unsolved.
 
 These figures are not intended to be taken at face value or copied in a year. Rerun the benchmark: that is precisely what it is for, and the table you obtain will replace this one.
 
 What these measurements allow us to say, and nothing more:
 
-- The gap between `flash` and `pro` is measured in tens, well above the dispersion, making it a real effect.
-- Removing the system prompt multiplies the cost by 3.5, which exceeds the dispersion, but only slightly.
-- The effect of `rtk` on the median cost is around 10%, which remains within the dispersion and allows for no conclusion.
+- **The prompt is the only isolated lever that changes the result.** The structured prompt is the only single-variable cell to reach 3/3 for scope and 2/3 for performance, while also showing the lowest dispersion in the table. Its cost is indistinguishable from that of the base.
+- **The same content placed in `AGENTS.md` does not have the same effect.** Yet, the rule file used here contains the instruction "one task = one ticket", and it scores 2/3 for scope compared to 3/3 for the equivalent instruction written in the prompt. With only three repetitions, this gap requires confirmation, but it is worth verifying on your own tasks.
+- **Removing the system prompt costs nothing in money, only in turns.** The median is $0.0043 compared to $0.0041 for the base, while the number of turns increases from 10 to 13. Our isolated measurement suggested a cost factor of 3.5: that was noise, and three repetitions were enough to show it.
+- **`rtk` provides no gain here.** The median is slightly higher than that of the base, and the dispersion drops from ×2.60 to ×1.82, which remains too inconclusive to draw a conclusion.
+- **Switching to `pro` increases the cost twelvefold** without improving a single scoring column.
 
-You have just practiced an evaluation, in the sense that you compare behaviors on the same task, with repetitions and knowing that the measurement is noisy, whereas a test answers yes or no to a closed question. Module 3.2 will formalize this practice with evaluation files and an LLM-judge, but you already grasp the essentials.
+This last line deserves a second look, because it contradicts the most common intuition: paying twelve times more bought nothing at all for this task.
+
+You have just performed an evaluation, in the sense of comparing behaviors on the same task, with repetitions and an awareness of noisy measurements, whereas a test answers a closed question with a yes or no. Module 3.2 will formalize this practice with evaluation files and an LLM-judge, and the column we have just filled in by hand is exactly what this judge will need to handle.
 
 ### The 2x2
 
@@ -350,9 +400,17 @@ The levers in this module cost attention and time, while the model is bought, wh
 Compare the two extreme cells of the matrix: the well-equipped `flash` that has reasoning, a framed prompt, and an `AGENTS.md`, and the poorly equipped `pro` that receives a vague prompt and nothing else. Look at the cost, then the four criteria, then the diffs.
 :::
 
-We expect the former to win, in accordance with Addy Osmani's thesis that *"a decent model with a great harness beats a great model with a bad harness"*, which is also the thesis of this entire course.
+Based on our measurements, the small, well-equipped model wins on all three fronts:
 
-This comparison may nevertheless fail, and its failure in your case would be a result to note rather than an incident to hide, since a significantly more capable model can absorb a neglected context and it is useful to know at what capacity gap this becomes true. The question deserves to be asked again with each new model generation.
+| | `flash (refined)` | `pro (neglected)` |
+| --- | --- | --- |
+| median cost | $0.0063 | $0.0489 |
+| scope respected | 3/3 | 2/3 |
+| half performance processed | 2/3 | 0/3 |
+
+The `pro` costs **7.8 times more** for work where no single execution handles the part that required reading the ticket to the end. This is Addy Osmani's thesis, *"a decent model with a great harness beats a great model with a bad harness"*, verified on a real task with three repetitions per cell.
+
+This comparison may nevertheless fail elsewhere, and failure in your case would be a result to note rather than an incident to hide, since a significantly more capable model can absorb a neglected context and it is useful to know from which gap in capability this becomes true. The question deserves to be asked again with each new generation of models, and the benchmark is there to ask it.
 
 ## Generalizing
 
@@ -360,13 +418,13 @@ Five principles survive Pi, `opencode-go`, and the version of the packages you h
 
 **What is stable in front, what varies behind.** The cache only works on an unchanged prefix and costs fifty times less than the input, meaning that any volatile data placed early in the context—whether it be a timestamp, a git state, or a date—invalidates everything that follows.
 
-**Saying when to stop is half of a good prompt.** Our executions failed more often due to overflow than incompetence, and an explicit stopping criterion costs one sentence to avoid having to reread an entire diff.
+**Stating when to stop is half of a good prompt.** Our executions failed more often due to overflow than incompetence, and the framed prompt is the only isolated lever in the matrix to bring the scope back to 3/3, for the same cost and the lowest dispersion in the table. Three sentences in the request are worth more than a model ten times more expensive.
 
-**The rules file is a checklist, not a style guide.** It enters the context at every turn, which makes it powerful and costly; hence the interest in keeping it short, sourcing each rule from an observed failure, and refactoring it rather than lengthening it. A line budget remains the simplest way to stick to it.
+**The rules file is a checklist, not a style guide.** It enters the context every turn, making it powerful and costly; this is why it is important to keep it short, base every rule on an observed failure, and refactor it rather than lengthen it. Our measurements add a nuance we didn't expect: for equal content, an instruction written in the turn's prompt was better followed than one stored in `AGENTS.md`, which suggests reserving the file for permanent rules and repeating in the request what applies to the day's task.
 
 **An exposed setting is not an understood setting.** Between the flag you type and the request that is sent, there is code and mapping tables, as shown by `--thinking medium`, which does not exist on half of the models without any warning being given.
 
-**An agent is noisy, and without repetitions you measure nothing.** We observed a factor of 4 between two identical executions, which makes any gap smaller than this order of magnitude uninterpretable. Three repetitions and three numbers—minimum, median, and maximum—constitute the honest minimum.
+**An agent is noisy, and without repetitions you measure nothing.** We observed a factor of 4 between two identical executions, and the matrix base cell still shows a range of ×2.60 over three executions, making any deviation smaller than this order of magnitude uninterpretable. We ourselves published a factor of 3.5 on the system prompt before seeing it disappear on the third run. Three repetitions and three numbers - minimum, median, and maximum - constitute the honest minimum.
 
 ### The `rtk` case, and the transition to Act 2
 
@@ -374,7 +432,7 @@ Five principles survive Pi, `opencode-go`, and the version of the packages you h
 
 The reason is arithmetic: `rtk` targets tool outputs, but `bash` outputs only represent 6 to 22% of the total on this repository, with the rest coming from file reads. A repository of 617 lines does not produce verbose builds, ten-minute test suites, or `git logs` of three hundred commits, so there is almost nothing to compact.
 
-Only one result emerges, and it is not the one we were looking for: the dispersion is lower with `rtk`, at ×1.33 versus ×2.08 without, which suggests that the extension would make the agent more predictable rather than cheaper. With three repetitions, we cannot state this as a fact.
+The only difference that stands out is not about the median cost, which is slightly higher than the baseline, but about the dispersion, which goes from ×2.60 without the extension to ×1.82 with it. The hypothesis of an agent becoming more predictable rather than cheaper deserves further investigation, but three repetitions are not enough to support it, especially since the structured prompt cell performs better on this criterion without installing anything at all.
 
 The takeaway is that a harness component is only as valuable as the workload you give it to process, and that the calculation will likely reverse on a repository with a verbose build and chatty continuous integration. You will be able to redo this, as you have the benchmark.
 
@@ -390,16 +448,16 @@ Three pieces: the first two are used throughout the day, and the third will be u
 
 **3. The decision sheet**, one line per lever:
 
-| lever | measured effect | adopted? | why |
-| --- | --- | --- | --- |
-| model choice | | | |
-| reasoning effort | | | |
-| framed prompt | | | |
-| `AGENTS.md` | | | |
-| system prompt | | | |
-| scheduling / cache | | | |
-| compaction | | | |
-| `rtk` | | | |
+| lever                 | measured effect | adopted? | why |
+| ---------------------- | ------------ | -------- | -------- |
+| model choice           |              |          |          |
+| reasoning effort       |              |          |          |
+| structured prompt      |              |          |          |
+| `AGENTS.md`            |              |          |          |
+| system prompt          |              |          |          |
+| scheduling / cache     |              |          |          |
+| compaction             |              |          |          |
+| `rtk`                  |              |          |          |
 
 This sheet constitutes the first actual entry in the "your harness?" column of the mapping table, for the "context" row. The following five modules will do the same for their respective components, so that you will approach the capstone with a table informed by experience rather than a blank page.
 
