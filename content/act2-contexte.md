@@ -225,9 +225,11 @@ La tâche est menée à bien dans les deux cas, avec des tests verts, le refacto
 :::
 
 ::: warning Ce que trois répétitions ont fait de ce tableau
-Le facteur 3,5 sur le coût **n'a pas survécu** aux répétitions. Sur trois exécutions de chaque côté, la médiane de la cellule amputée est de 0,0043 $ contre 0,0041 $ pour la base, ce qui est indiscernable. Le seul écart qui subsiste porte sur le nombre de tours, qui passe de 10 à 13.
+Le facteur 3,5 sur le coût **n'a pas survécu** aux répétitions. Sur dix exécutions de chaque côté, la médiane de la cellule amputée est de 0,0051 $ contre 0,0042 $ pour la base, un écart bien inférieur à la dispersion de chacune des deux cellules.
 
-Nous laissons ce tableau dans la page plutôt que de le retirer, parce que l'erreur est instructive et qu'elle est exactement celle contre laquelle la section suivante vous met en garde. Nous l'avons commise en préparant ce module, et trois répétitions ont suffi à la corriger.
+Ce qui subsiste, en revanche, se lit ailleurs et n'est pas mince : le nombre de tours médian passe de 10,5 à 13,5, le respect du périmètre s'effondre de 7/10 à 4/10, et la dispersion devient la pire de toute la matrice. Privé de ses conventions, l'agent garde ses capacités et perd sa tenue.
+
+Nous laissons le tableau à une exécution dans la page plutôt que de le retirer, parce que l'erreur qu'il contient est exactement celle contre laquelle la section suivante vous met en garde, et que nous l'avons commise en préparant ce module.
 :::
 
 Le prompt système n'ajoute donc aucune capacité, puisque les outils sont déclarés au modèle par leur schéma JSON et non par de la prose, et son influence sur la facture est plus faible que ne le suggérait notre première mesure. Ce qu'il apporte se lit dans la conduite du travail, avec un agent qui tâtonne davantage lorsqu'on le prive de ses conventions. C'est aussi la raison pour laquelle un harnais ne se résume pas à un prompt système bien tourné : celui de Pi tient en 550 tokens, et tout le reste du travail se joue ailleurs.
@@ -312,17 +314,19 @@ Les deux dernières lignes forment le 2×2 sur lequel se joue la conclusion du m
 
 Le prompt cadré se distingue du prompt vague par trois ajouts plutôt que par sa longueur : le **périmètre**, qui interdit de toucher aux tests et de traiter une autre issue, les **deux moitiés du travail**, qui demandent explicitement de sortir la collision du rendu et d'arrêter de scanner toutes les briques, et le **critère d'arrêt**, qui dit que le travail est fini quand les tests passent et que les exports ont gardé leur nom. Ce dernier ajout est le plus rentable des trois, puisque la majorité de nos échecs viennent de débordements plutôt que d'erreurs.
 
-#### Trois répétitions, et pourquoi
+#### Combien de répétitions, et pourquoi
 
-Chaque cellule est exécutée trois fois, pour une raison que nous avons découverte à nos dépens. Voici trois exécutions strictement identiques, même modèle, même effort, même prompt, même dépôt :
+Chaque cellule est exécutée plusieurs fois, pour une raison que nous avons découverte à nos dépens. Voici trois exécutions strictement identiques, même modèle, même effort, même prompt, même dépôt :
 
 |      | run a    | run b    | run c    | médiane  | étendue   |
 | ---- | -------- | -------- | -------- | -------- | --------- |
 | coût | 0,0104 $ | 0,0052 $ | 0,0050 $ | 0,0052 $ | **×2,08** |
 
-En élargissant à quatre exécutions, l'étendue monte à **×4,2**, les tours varient de 7 à 23, les appels à `bash` de 2 à 13 et le diff de 34 à 167 lignes insérées.
+Sur dix exécutions de cette même configuration, l'étendue atteint **×3,50**, les tours varient de 7 à 24 et le diff de 34 à 167 lignes insérées. Un agent n'est pas déterministe, et l'écart entre deux exécutions d'une même configuration est du même ordre de grandeur que l'effet de la plupart des leviers, si bien qu'une exécution unique par cellule mesure le bruit plutôt que le levier.
 
-Un agent n'est pas déterministe, et l'écart entre deux exécutions d'une même configuration est du même ordre de grandeur que l'effet de la plupart des leviers, si bien qu'une exécution unique par cellule mesure le bruit plutôt que le levier. Le banc affiche donc un minimum, une médiane et un maximum, et jamais un chiffre unique, ce qui vous oblige à regarder la dispersion avant de conclure.
+Le banc affiche donc un minimum, une médiane et un maximum, et jamais un chiffre unique, ce qui vous oblige à regarder la dispersion avant de conclure.
+
+Le nombre de répétitions est un paramètre parce que le bon choix dépend de ce que vous cherchez. **Trois suffisent à voir la dispersion**, ce qui est l'objectif en salle et tient en une dizaine de minutes. **Départager deux leviers proches en demande beaucoup plus**, et les colonnes de notation sont les plus exigeantes puisqu'elles comptent des succès : un 2/3 contre 3/3 ne veut à peu près rien dire, là où un 4/10 contre 10/10 se défend. Le tableau de référence publié plus bas est calculé à dix répétitions pour cette raison.
 
 #### Le script
 
@@ -364,32 +368,42 @@ Dans notre cas, la cause était une entrée standard laissée ouverte, que `spaw
 
 Voici ce que nous avons obtenu en juillet 2026, sur `opencode-go`, avec NÉON, en excluant les fichiers de contexte, les skills et les extensions non demandées.
 
-| cellule | n | coût min | médiane | max | étendue | tours méd. | tests | API | périmètre | perf |
-| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| base | 3 | 0,0036 $ | 0,0041 $ | 0,0094 $ | ×2,60 | 10 | 3/3 | 3/3 | 2/3 | 0/3 |
-| `+thinking` | 3 | 0,0028 $ | 0,0051 $ | 0,0052 $ | ×1,86 | 10 | 3/3 | 3/3 | 2/3 | 0/3 |
-| `+prompt cadré` | 3 | 0,0039 $ | 0,0045 $ | 0,0048 $ | ×1,23 | 12 | 3/3 | 3/3 | **3/3** | **2/3** |
-| `+AGENTS.md` | 3 | 0,0030 $ | 0,0052 $ | 0,0055 $ | ×1,80 | 8 | 3/3 | 3/3 | 2/3 | 1/3 |
-| `-prompt sys.` | 3 | 0,0036 $ | 0,0043 $ | 0,0058 $ | ×1,60 | 13 | 3/3 | 3/3 | 2/3 | 0/3 |
-| `+rtk` | 3 | 0,0034 $ | 0,0050 $ | 0,0062 $ | ×1,82 | 10 | 3/3 | 3/3 | 2/3 | 0/3 |
-| `pro (négligé)` | 3 | 0,0355 $ | 0,0489 $ | 0,0498 $ | ×1,40 | 10 | 3/3 | 3/3 | 2/3 | 0/3 |
-| `flash (soigné)` | 3 | 0,0047 $ | 0,0063 $ | 0,0067 $ | ×1,44 | 16 | 3/3 | 3/3 | **3/3** | **2/3** |
+Le tableau ci-dessous est produit avec **dix répétitions par cellule**, soit 80 exécutions, pour 0,93 $ et environ trente-cinq minutes de temps réel. Le banc que vous lancerez en salle est réglé sur trois répétitions, ce qui suffit à voir la dispersion mais pas à départager les écarts modestes.
 
-Les quatre premières colonnes de notation viennent du banc. La cinquième, celle qui porte sur la moitié « performance » du ticket, a été remplie à la main en lisant les vingt-quatre diffs, et elle compte comme traitée uniquement lorsque la collision cesse de parcourir toutes les briques, c'est-à-dire quand le code calcule les cellules de la grille touchées par la balle. Trois exécutions se contentent d'un tableau des briques encore vivantes, ce qui réduit le travail à mesure que la partie avance mais laisse le pire cas inchangé, et nous les avons comptées comme non traitées.
+| cellule | n | coût min | médiane | max | étendue | tours méd. | tests | API | périmètre | perf* |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| base | 10 | 0,0029 $ | 0,0042 $ | 0,0101 $ | ×3,50 | 10,5 | 10/10 | 10/10 | 7/10 | 0/10 |
+| `+thinking` | 10 | 0,0039 $ | 0,0051 $ | 0,0097 $ | ×2,49 | 11 | 10/10 | 10/10 | 6/10 | 0/10 |
+| `+prompt cadré` | 10 | 0,0031 $ | 0,0046 $ | 0,0059 $ | ×1,88 | 10 | 10/10 | 10/10 | **10/10** | 2/10 |
+| `+AGENTS.md` | 10 | 0,0020 $ | **0,0036 $** | 0,0063 $ | ×3,17 | **7,5** | 10/10 | 10/10 | 9/10 | 0/10 |
+| `-prompt sys.` | 10 | 0,0035 $ | 0,0051 $ | 0,0128 $ | ×3,71 | 13,5 | 10/10 | 10/10 | **4/10** | 0/10 |
+| `+rtk` | 10 | 0,0040 $ | 0,0049 $ | 0,0059 $ | **×1,46** | 10,5 | 10/10 | 10/10 | 8/10 | 0/10 |
+| `pro (négligé)` | 10 | 0,0428 $ | 0,0538 $ | 0,1026 $ | ×2,40 | 9,5 | 10/10 | 10/10 | 5/10 | 2/10 |
+| `flash (soigné)` | 10 | 0,0028 $ | 0,0044 $ | 0,0064 $ | ×2,26 | 10 | 10/10 | 10/10 | **10/10** | 1/10 |
 
 Ces chiffres n'ont pas vocation à être crus sur parole ni recopiés dans un an. Relancez le banc : c'est précisément ce à quoi il sert, et le tableau que vous obtiendrez remplacera celui-ci.
 
-Ce que ces mesures autorisent à dire, et rien de plus :
+Ce que ces mesures autorisent à dire :
 
-- **Le prompt est le seul levier isolé qui change le résultat.** Le prompt cadré est la seule cellule à une variable qui atteigne 3/3 sur le périmètre et 2/3 sur la performance, et elle affiche au passage la dispersion la plus faible du tableau. Son coût est indiscernable de celui de la base.
-- **Le même contenu placé dans `AGENTS.md` n'a pas le même effet.** Le fichier de règles utilisé ici contient pourtant la consigne « une tâche = un ticket », et il obtient 2/3 sur le périmètre contre 3/3 pour la consigne équivalente écrite dans le prompt. Avec trois répétitions, cet écart demande confirmation, mais il vaut la peine d'être vérifié sur vos propres tâches.
-- **L'amputation du prompt système ne coûte rien en argent, seulement en tours.** La médiane est de 0,0043 $ contre 0,0041 $ pour la base, alors que le nombre de tours passe de 10 à 13. Notre mesure isolée annonçait un facteur 3,5 sur le coût : c'était du bruit, et trois répétitions ont suffi à le montrer.
-- **`rtk` ne fait rien gagner ici.** La médiane est légèrement supérieure à celle de la base, et la dispersion passe de ×2,60 à ×1,82, ce qui reste trop peu tranché pour conclure.
-- **Le passage à `pro` multiplie le coût par douze** sans améliorer une seule colonne de notation.
+- **Écrire le périmètre et le critère d'arrêt dans la demande supprime les débordements.** Les deux cellules qui contiennent le prompt cadré atteignent 10/10, soit vingt exécutions sans un seul débordement, contre 7/10 pour la base. C'est le résultat le mieux établi du tableau, et il coûte trois phrases.
+- **Priver l'agent du prompt système de Pi coûte de la discipline.** Le périmètre tombe à 4/10, le nombre de tours médian monte à 13,5, et la dispersion devient la pire du tableau à ×3,71. Le coût médian, lui, ne bouge presque pas.
+- **Payer douze fois plus cher n'achète rien.** Le `pro` négligé coûte 0,0538 $ contre 0,0042 $ pour la base, respecte moins bien le périmètre (5/10 contre 7/10) et ne fait pas mieux ailleurs.
+- **`rtk` ne change pas le coût mais resserre la dispersion.** Sa médiane est celle de la base à un centième de centime près, alors que son étendue est la plus faible du tableau, ×1,46 contre ×3,50. C'est le seul effet de l'extension que ces mesures soutiennent, et ce n'est pas celui qu'on lui prête d'habitude.
+- **Aucune configuration ne traite la moitié difficile du ticket.** La colonne `perf*` plafonne à 2/10, y compris pour les cellules les mieux outillées. Arrêter de scanner toutes les briques demandait de lire le ticket jusqu'au bout, et aucun des leviers de ce module n'y suffit.
 
-Cette dernière ligne mérite d'être regardée deux fois, parce qu'elle contredit l'intuition la plus répandue : payer douze fois plus cher n'a rien acheté du tout sur cette tâche.
+Ce dernier point est le plus important, et il annonce la suite de la formation. Le contexte bien tenu rend l'agent discipliné, économe et prévisible, sans le rendre rigoureux. Obtenir la rigueur demandera un relecteur indépendant et une boucle de vérification, ce qui est le sujet des modules sur la délégation et les workflows.
 
-Vous venez de pratiquer une évaluation, au sens où l'on compare des comportements sur une même tâche, avec des répétitions et en sachant la mesure bruitée, là où un test répond par oui ou par non à une question fermée. Le module 3.2 formalisera cette pratique avec des fichiers d'évaluation et un LLM-juge, et la colonne que nous venons de remplir à la main est exactement ce que ce juge devra prendre en charge.
+::: warning Trois répétitions ne suffisaient pas, et nous en avons fait les frais
+Nous avons d'abord publié ce tableau avec trois répétitions par cellule. Deux affirmations n'ont pas survécu au passage à dix.
+
+Nous écrivions que la consigne « une tâche = un ticket » tenait mieux dans le prompt que dans `AGENTS.md`, sur la foi d'un 3/3 contre 2/3. À dix répétitions, `AGENTS.md` obtient 9/10 : l'écart s'est évaporé, et le fichier de règles fonctionne bien. Il est même la cellule la moins chère du tableau, avec le moins de tours.
+
+Nous écrivions aussi que le prompt cadré traitait la moitié performance 2 fois sur 3. À dix répétitions, c'est 2 fois sur 10, et la cellule `pro` obtient le même score. Le résultat encourageant n'était qu'un tirage favorable.
+
+Une conclusion tirée de trois exécutions est une conclusion fragile, y compris quand elle est publiée par les auteurs d'un module qui vous met en garde contre exactement cette erreur.
+:::
+
+Vous venez de pratiquer une évaluation, au sens où l'on compare des comportements sur une même tâche, avec des répétitions et en sachant la mesure bruitée, là où un test répond par oui ou par non à une question fermée. Le module 3.2 formalisera cette pratique avec des fichiers d'évaluation et un LLM-juge, et la colonne étoilée est précisément ce que ce juge devra prendre en charge.
 
 ### Le 2×2
 
@@ -399,15 +413,17 @@ Les leviers de ce module coûtent de l'attention et du temps, alors que le modè
 Comparez les deux cellules extrêmes de la matrice, le `flash` bien outillé qui dispose du raisonnement, d'un prompt cadré et d'un `AGENTS.md`, et le `pro` mal outillé qui reçoit un prompt vague et rien d'autre. Regardez le coût, puis les quatre critères, puis les diffs.
 :::
 
-Sur nos mesures, le petit modèle bien outillé l'emporte sur les trois plans à la fois :
+Sur dix répétitions de chaque côté :
 
 | | `flash (soigné)` | `pro (négligé)` |
 | --- | --- | --- |
-| coût médian | 0,0063 $ | 0,0489 $ |
-| périmètre respecté | 3/3 | 2/3 |
-| moitié performance traitée | 2/3 | 0/3 |
+| coût médian | 0,0044 $ | 0,0538 $ |
+| périmètre respecté | **10/10** | 5/10 |
+| moitié performance traitée | 1/10 | 2/10 |
 
-Le `pro` coûte **7,8 fois plus cher** pour un travail dont aucune exécution ne traite la partie qui demandait de lire le ticket jusqu'au bout. C'est la thèse d'Addy Osmani, *« a decent model with a great harness beats a great model with a bad harness »*, vérifiée sur une tâche réelle avec trois répétitions par cellule.
+Le petit modèle bien outillé coûte **douze fois moins cher** et ne déborde jamais du ticket, là où le gros modèle négligé déborde une fois sur deux. C'est la thèse d'Addy Osmani, *« a decent model with a great harness beats a great model with a bad harness »*, vérifiée sur une tâche réelle.
+
+La dernière ligne empêche toutefois de crier victoire trop vite : ni l'un ni l'autre ne traite la moitié difficile du ticket, et les deux scores sont trop bas et trop proches pour être distingués. Soigner le contexte a rendu l'agent discipliné et bon marché, sans le rendre rigoureux.
 
 Cette comparaison peut néanmoins échouer ailleurs, et son échec chez vous serait un résultat à noter plutôt qu'un incident à masquer, puisqu'un modèle nettement plus capable peut absorber un contexte négligé et qu'il est utile de savoir à partir de quel écart de capacité cela devient vrai. La question mérite d'être reposée à chaque nouvelle génération de modèles, et le banc est là pour la reposer.
 
@@ -417,23 +433,23 @@ Cinq principes survivent à Pi, à `opencode-go` et à la version des paquets qu
 
 **Ce qui est stable devant, ce qui varie derrière.** Le cache ne fonctionne que sur un préfixe inchangé et coûte cinquante fois moins cher que l'entrée, si bien que toute donnée volatile placée tôt dans le contexte, qu'il s'agisse d'un horodatage, d'un état git ou d'une date, invalide tout ce qui suit.
 
-**Dire quand s'arrêter fait la moitié d'un bon prompt.** Nos exécutions ont plus souvent échoué par débordement que par incompétence, et le prompt cadré est le seul levier isolé de la matrice à ramener le périmètre à 3/3, pour un coût identique et la plus faible dispersion du tableau. Trois phrases dans la demande valent mieux qu'un modèle dix fois plus cher.
+**Dire quand s'arrêter fait la moitié d'un bon prompt.** Nos exécutions ont plus souvent échoué par débordement que par incompétence, et les vingt exécutions qui reçoivent un périmètre et un critère d'arrêt explicites n'ont pas débordé une seule fois, contre sept sur dix pour la demande vague. Trois phrases dans la demande valent mieux qu'un modèle douze fois plus cher.
 
-**Le fichier de règles est une check-list, pas un guide de style.** Il entre dans le contexte à chaque tour, ce qui le rend puissant et coûteux, d'où l'intérêt de le tenir court, de sourcer chaque règle par un échec observé et de le refactorer plutôt que de l'allonger. Nos mesures ajoutent une nuance à laquelle nous ne nous attendions pas : à contenu égal, une consigne écrite dans le prompt du tour a mieux tenu qu'une consigne rangée dans `AGENTS.md`, ce qui invite à réserver le fichier aux règles permanentes et à répéter dans la demande ce qui vaut pour la tâche du jour.
+**Le fichier de règles est une check-list, pas un guide de style.** Il entre dans le contexte à chaque tour, ce qui le rend puissant et coûteux, d'où l'intérêt de le tenir court, de sourcer chaque règle par un échec observé et de le refactorer plutôt que de l'allonger. Nos mesures lui donnent raison sur toute la ligne, puisque la cellule `+AGENTS.md` est à la fois la moins chère de la matrice, la plus directe avec 7,5 tours médians, et l'une des plus disciplinées avec 9/10 sur le périmètre, le tout pour quatre lignes de texte.
 
 **Un réglage exposé n'est pas un réglage compris.** Entre le drapeau que vous tapez et la requête qui part se trouvent du code et des tables de correspondance, comme le montre `--thinking medium`, qui n'existe pas sur la moitié des modèles sans que rien ne vous en avertisse.
 
-**Un agent est bruité, et sans répétitions vous ne mesurez rien.** Nous avons observé un facteur 4 entre deux exécutions identiques, et la cellule de base de la matrice affiche encore une étendue de ×2,60 sur trois exécutions, ce qui rend ininterprétable tout écart inférieur à cet ordre de grandeur. Nous avons nous-mêmes publié un facteur 3,5 sur le prompt système avant de le voir disparaître au troisième run. Trois répétitions et trois nombres, minimum, médiane et maximum, constituent le minimum honnête.
+**Un agent est bruité, et sans répétitions vous ne mesurez rien.** La cellule de base affiche une étendue de ×3,50 sur dix exécutions, ce qui rend ininterprétable tout écart de coût inférieur à cet ordre de grandeur. Nous avons publié trois conclusions fausses dans les versions successives de ce module, chacune tirée d'un échantillon trop petit et chacune démentie en augmentant le nombre de répétitions. Trois répétitions constituent le minimum pour voir la dispersion ; il en faut nettement plus pour départager deux leviers proches, et les colonnes de notation, qui comptent des succès, sont les plus gourmandes.
 
 ### Le cas `rtk`, et le passage à l'acte 2
 
-`pi-rtk-optimizer` est l'extension recommandée pour maîtriser le contexte sur Pi, puisqu'elle réécrit les commandes `bash` vers un outil dédié et compacte les sorties d'outils avant qu'elles n'entrent dans le contexte. Sur NÉON, nous n'avons pas pu montrer qu'elle fait gagner quoi que ce soit.
+`pi-rtk-optimizer` est l'extension recommandée pour maîtriser le contexte sur Pi, puisqu'elle réécrit les commandes `bash` vers un outil dédié et compacte les sorties d'outils avant qu'elles n'entrent dans le contexte. Sur NÉON, elle ne fait économiser aucun argent.
 
 La raison est arithmétique : `rtk` mord sur les sorties d'outils, or les sorties de `bash` ne représentent que 6 à 22 % du total sur ce dépôt, le reste venant des lectures de fichiers. Un dépôt de 617 lignes ne produit ni build bavard, ni suite de tests de dix minutes, ni `git log` de trois cents commits, donc il n'y a presque rien à compacter.
 
-Le seul écart qui ressort ne porte pas sur le coût médian, qui est légèrement supérieur à celui de la base, mais sur la dispersion, qui passe de ×2,60 sans l'extension à ×1,82 avec. L'hypothèse d'un agent rendu plus prévisible plutôt que moins cher mériterait d'être creusée, mais trois répétitions ne permettent pas de la soutenir, d'autant que la cellule du prompt cadré fait mieux sur ce critère sans rien installer du tout.
+Le seul écart qui ressort ne porte pas sur le coût médian, identique à celui de la base à un centième de centime près, mais sur la dispersion, qui tombe de ×3,50 sans l'extension à ×1,46 avec, soit la plus faible de toute la matrice. Sur dix répétitions, l'hypothèse d'un agent rendu plus prévisible plutôt que moins cher devient défendable, ce qui est une propriété désirable et une raison d'installer `rtk` que sa page de présentation ne met pas en avant.
 
-Il faut en retenir qu'une brique de harnais ne vaut que ce que votre charge de travail lui donne à mâcher, et que le calcul s'inversera probablement sur un dépôt doté d'un build verbeux et d'une intégration continue bavarde. Vous saurez le refaire, puisque vous avez le banc.
+Il faut en retenir deux choses. D'abord qu'une brique de harnais ne vaut que ce que votre charge de travail lui donne à mâcher, et que le calcul s'inversera probablement sur un dépôt doté d'un build verbeux et d'une intégration continue bavarde, ce que vous saurez vérifier puisque vous avez le banc. Ensuite qu'une extension peut apporter autre chose que ce qu'elle annonce, et que vous ne le découvrirez qu'en mesurant plusieurs dimensions à la fois : nous cherchions une économie de tokens et nous avons trouvé une réduction de la variance.
 
 Ce cas marque aussi un changement de nature dans les leviers. Tout ce que nous avons manipulé jusqu'ici relève de l'usage, qu'il s'agisse de choisir un modèle, de régler un curseur, d'écrire un prompt ou de tenir un fichier de règles, alors que `rtk` est le premier levier constitué de code ajouté au harnais. C'est la bascule de tout l'acte 2 : nous avons épuisé ce qu'on gagne en s'y prenant mieux, et nous allons désormais modifier la machine.
 

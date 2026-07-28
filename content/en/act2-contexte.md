@@ -226,9 +226,11 @@ The task is completed successfully in both cases, with green tests, the refactor
 :::
 
 ::: warning What three repetitions did to this table
-The 3.5x cost factor **did not survive** the repetitions. Across three executions on each side, the median for the amputated group is $0.0043 compared to $0.0041 for the base, which is indistinguishable. The only remaining difference is in the number of turns, which increases from 10 to 13.
+The 3.5x cost factor **did not survive** the repetitions. Over ten runs on each side, the median for the amputated cell is $0.0051 versus $0.0042 for the baseline, a difference far lower than the variance of either cell.
 
-We are leaving this table on the page rather than removing it, because the error is instructive and is exactly what the next section warns you about. We made this mistake while preparing this module, and three repetitions were enough to correct it.
+What remains, however, is evident elsewhere and is not insignificant: the median number of turns increases from 10.5 to 13.5, scope adherence drops from 7/10 to 4/10, and the variance becomes the worst in the entire matrix. Deprived of its conventions, the agent retains its capabilities but loses its discipline.
+
+We are leaving the single-run table on the page instead of removing it, because the error it contains is exactly what the next section warns you about, and the mistake we made while preparing this module.
 :::
 
 The system prompt therefore adds no capability, as tools are declared to the model via their JSON schema rather than prose, and its influence on the cost is smaller than our first measurement suggested. What it provides is visible in the conduct of the work, with an agent that fumbles more when deprived of its conventions. This is also why a harness is not just a well-crafted system prompt: Pi's fits in 550 tokens, and the rest of the work happens elsewhere.
@@ -313,17 +315,19 @@ The last two lines form the 2x2 on which the conclusion of the module depends.
 
 The framed prompt differs from the vague prompt by three additions rather than its length: the **scope**, which forbids touching tests or handling another issue; the **two halves of the work**, which explicitly ask to remove the rendering collision and stop scanning all bricks; and the **stop criterion**, which states that the work is finished when the tests pass and the exports have kept their name. This last addition is the most profitable of the three, since most of our failures come from overruns rather than errors.
 
-#### Three repetitions, and why
+#### How many repetitions, and why
 
-Each cell is executed three times, for a reason we discovered the hard way. Here are three strictly identical executions: same model, same effort, same prompt, same repository:
+Each cell is executed several times, for a reason we discovered the hard way. Here are three strictly identical executions: same model, same effort, same prompt, same repository:
 
 |      | run a    | run b    | run c    | median   | range     |
 | ---- | -------- | -------- | -------- | -------- | --------- |
 | cost | $0.0104  | $0.0052  | $0.0050  | $0.0052  | **×2.08** |
 
-By expanding to four executions, the range rises to **×4.2**, the turns vary from 7 to 23, the `bash` calls from 2 to 13, and the diff from 34 to 167 inserted lines.
+Over ten executions of this same configuration, the range reaches **x3.50**, turns vary from 7 to 24, and the diff from 34 to 167 inserted lines. An agent is not deterministic, and the gap between two executions of the same configuration is of the same order of magnitude as the effect of most levers, so a single execution per cell measures noise rather than the lever.
 
-An agent is not deterministic, and the gap between two runs of the same configuration is of the same order of magnitude as the effect of most levers, meaning a single run per cell measures noise rather than the lever. The benchmark therefore displays a minimum, a median, and a maximum, and never a single figure, which forces you to look at the dispersion before drawing a conclusion.
+The harness therefore displays a minimum, a median, and a maximum, and never a single figure, which forces you to look at the dispersion before concluding.
+
+The number of repetitions is a parameter because the right choice depends on what you are looking for. **Three are enough to see the dispersion**, which is the goal in the workshop and takes about ten minutes. **Distinguishing between two close levers requires much more**, and the scoring columns are the most demanding since they count successes: a 2/3 versus 3/3 means almost nothing, whereas a 4/10 versus 10/10 is more significant. The reference table published below is calculated with ten repetitions for this reason.
 
 #### The script
 
@@ -365,32 +369,42 @@ In our case, the cause was an open standard input, which `spawn` provides by def
 
 Here is what we obtained in July 2026, on `opencode-go`, with NÉON, excluding context files, skills, and unrequested extensions.
 
-| cell | n | min cost | median | max | range | avg turns | tests | API | scope | perf |
-| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| base | 3 | $0.0036 | $0.0041 | $0.0094 | ×2.60 | 10 | 3/3 | 3/3 | 2/3 | 0/3 |
-| `+thinking` | 3 | $0.0028 | $0.0051 | $0.0052 | ×1.86 | 10 | 3/3 | 3/3 | 2/3 | 0/3 |
-| `+structured prompt` | 3 | $0.0039 | $0.0045 | $0.0048 | ×1.23 | 12 | 3/3 | 3/3 | **3/3** | **2/3** |
-| `+AGENTS.md` | 3 | $0.0030 | $0.0052 | $0.0055 | ×1.80 | 8 | 3/3 | 3/3 | 2/3 | 1/3 |
-| `-system prompt` | 3 | $0.0036 | $0.0043 | $0.0058 | ×1.60 | 13 | 3/3 | 3/3 | 2/3 | 0/3 |
-| `+rtk` | 3 | $0.0034 | $0.0050 | $0.0062 | ×1.82 | 10 | 3/3 | 3/3 | 2/3 | 0/3 |
-| `pro (neglected)` | 3 | $0.0355 | $0.0489 | $0.0498 | ×1.40 | 10 | 3/3 | 3/3 | 2/3 | 0/3 |
-| `flash (careful)` | 3 | $0.0047 | $0.0063 | $0.0067 | ×1.44 | 16 | 3/3 | 3/3 | **3/3** | **2/3** |
+The table below is produced with **ten repetitions per cell**, totaling 80 executions, for $0.93 and approximately thirty-five minutes of real time. The benchmark you will run in class is set to three repetitions, which is enough to see the dispersion but not to distinguish modest gaps.
 
-The first four scoring columns come from the benchmark. The fifth, concerning the "performance" half of the ticket, was filled manually by reviewing the twenty-four diffs, and it counts as solved only when the collision stops iterating through all blocks, i.e., when the code calculates the grid cells hit by the ball. Three runs simply used a table of remaining active blocks, which reduces the workload as the game progresses but leaves the worst-case scenario unchanged; we counted these as unsolved.
+| cell | n | min cost | median | max | spread | median turns | tests | API | scope | perf* |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| base | 10 | $0.0029 | $0.0042 | $0.0101 | ×3.50 | 10.5 | 10/10 | 10/10 | 7/10 | 0/10 |
+| `+thinking` | 10 | $0.0039 | $0.0051 | $0.0097 | ×2.49 | 11 | 10/10 | 10/10 | 6/10 | 0/10 |
+| `+scoped prompt` | 10 | $0.0031 | $0.0046 | $0.0059 | ×1.88 | 10 | 10/10 | 10/10 | **10/10** | 2/10 |
+| `+AGENTS.md` | 10 | $0.0020 | **$0.0036** | $0.0063 | ×3.17 | **7.5** | 10/10 | 10/10 | 9/10 | 0/10 |
+| `-system prompt` | 10 | $0.0035 | $0.0051 | $0.0128 | ×3.71 | 13.5 | 10/10 | 10/10 | **4/10** | 0/10 |
+| `+rtk` | 10 | $0.0040 | $0.0049 | $0.0059 | **×1.46** | 10.5 | 10/10 | 10/10 | 8/10 | 0/10 |
+| `pro (neglected)` | 10 | $0.0428 | $0.0538 | $0.1026 | ×2.40 | 9.5 | 10/10 | 10/10 | 5/10 | 2/10 |
+| `flash (careful)` | 10 | $0.0028 | $0.0044 | $0.0064 | ×2.26 | 10 | 10/10 | 10/10 | **10/10** | 1/10 |
 
 These figures are not intended to be taken at face value or copied in a year. Rerun the benchmark: that is precisely what it is for, and the table you obtain will replace this one.
 
-What these measurements allow us to say, and nothing more:
+What these measurements allow us to say:
 
-- **The prompt is the only isolated lever that changes the result.** The structured prompt is the only single-variable cell to reach 3/3 for scope and 2/3 for performance, while also showing the lowest dispersion in the table. Its cost is indistinguishable from that of the base.
-- **The same content placed in `AGENTS.md` does not have the same effect.** Yet, the rule file used here contains the instruction "one task = one ticket", and it scores 2/3 for scope compared to 3/3 for the equivalent instruction written in the prompt. With only three repetitions, this gap requires confirmation, but it is worth verifying on your own tasks.
-- **Removing the system prompt costs nothing in money, only in turns.** The median is $0.0043 compared to $0.0041 for the base, while the number of turns increases from 10 to 13. Our isolated measurement suggested a cost factor of 3.5: that was noise, and three repetitions were enough to show it.
-- **`rtk` provides no gain here.** The median is slightly higher than that of the base, and the dispersion drops from ×2.60 to ×1.82, which remains too inconclusive to draw a conclusion.
-- **Switching to `pro` increases the cost twelvefold** without improving a single scoring column.
+- **Writing the scope and stop criterion in the request eliminates overruns.** The two cells containing the scoped prompt reach 10/10, meaning twenty executions without a single overrun, compared to 7/10 for the base. This is the most established result in the table, and it only costs three sentences.
+- **Depriving the agent of Pi's system prompt costs discipline.** The scope drops to 4/10, the median number of turns rises to 13.5, and the dispersion becomes the worst in the table at ×3.71. The median cost, however, barely moves.
+- **Paying twelve times more buys nothing.** The neglected `pro` costs $0.0538 compared to $0.0042 for the base, respects the scope less (5/10 vs 7/10), and does not perform better elsewhere.
+- **`rtk` does not change the cost but tightens the dispersion.** Its median is that of the base within a hundredth of a cent, while its spread is the lowest in the table, ×1.46 versus ×3.50. This is the only effect of the extension supported by these measurements, and it is not the one usually attributed to it.
+- **No configuration handles the difficult half of the ticket.** The `perf*` column caps at 2/10, even for the best-equipped cells. Stopping the scan of all blocks required reading the ticket to the end, and none of the levers in this module are sufficient for that.
 
-This last line deserves a second look, because it contradicts the most common intuition: paying twelve times more bought nothing at all for this task.
+This last point is the most important, and it previews the rest of the course. A well-managed context makes the agent disciplined, economical, and predictable, without making it rigorous. Achieving rigor will require an independent reviewer and a verification loop, which is the subject of the modules on delegation and workflows.
 
-You have just performed an evaluation, in the sense of comparing behaviors on the same task, with repetitions and an awareness of noisy measurements, whereas a test answers a closed question with a yes or no. Module 3.2 will formalize this practice with evaluation files and an LLM-judge, and the column we have just filled in by hand is exactly what this judge will need to handle.
+::: warning Three repetitions were not enough, and we paid the price
+We first published this table with three repetitions per cell. Two claims did not survive the move to ten.
+
+We wrote that the "one task = one ticket" instruction held better in the prompt than in `AGENTS.md`, based on a 3/3 versus 2/3 result. At ten repetitions, `AGENTS.md` achieves 9/10: the gap evaporated, and the rules file works well. It is even the cheapest cell in the table, with the fewest turns.
+
+We also wrote that the framed prompt handled the performance half 2 out of 3 times. At ten repetitions, it is 2 out of 10, and the `pro` cell achieves the same score. The encouraging result was just a lucky draw.
+
+A conclusion drawn from three executions is a fragile conclusion, even when published by the authors of a module that warns you against exactly this mistake.
+:::
+
+You have just practiced an evaluation, in the sense of comparing behaviors on the same task, with repetitions and acknowledging the noisy measurement, whereas a test answers yes or no to a closed question. Module 3.2 will formalize this practice with evaluation files and an LLM-judge, and the starred column is precisely what this judge will need to handle.
 
 ### The 2x2
 
@@ -400,15 +414,17 @@ The levers in this module cost attention and time, while the model is bought, wh
 Compare the two extreme cells of the matrix: the well-equipped `flash` that has reasoning, a framed prompt, and an `AGENTS.md`, and the poorly equipped `pro` that receives a vague prompt and nothing else. Look at the cost, then the four criteria, then the diffs.
 :::
 
-Based on our measurements, the small, well-equipped model wins on all three fronts:
+Over ten repetitions on each side:
 
 | | `flash (refined)` | `pro (neglected)` |
 | --- | --- | --- |
-| median cost | $0.0063 | $0.0489 |
-| scope respected | 3/3 | 2/3 |
-| half performance processed | 2/3 | 0/3 |
+| median cost | $0.0044 | $0.0538 |
+| scope respected | **10/10** | 5/10 |
+| performance half handled | 1/10 | 2/10 |
 
-The `pro` costs **7.8 times more** for work where no single execution handles the part that required reading the ticket to the end. This is Addy Osmani's thesis, *"a decent model with a great harness beats a great model with a bad harness"*, verified on a real task with three repetitions per cell.
+The small, well-equipped model costs **twelve times less** and never exceeds the ticket scope, whereas the neglected large model exceeds it once every two times. This is Addy Osmani's thesis, *"a decent model with a great harness beats a great model with a bad harness"*, verified on a real task.
+
+However, the last line prevents claiming victory too quickly: neither handles the difficult half of the ticket, and both scores are too low and too close to be distinguished. Refining the context made the agent disciplined and cheap, without making it rigorous.
 
 This comparison may nevertheless fail elsewhere, and failure in your case would be a result to note rather than an incident to hide, since a significantly more capable model can absorb a neglected context and it is useful to know from which gap in capability this becomes true. The question deserves to be asked again with each new generation of models, and the benchmark is there to ask it.
 
@@ -418,23 +434,23 @@ Five principles survive Pi, `opencode-go`, and the version of the packages you h
 
 **What is stable in front, what varies behind.** The cache only works on an unchanged prefix and costs fifty times less than the input, meaning that any volatile data placed early in the context—whether it be a timestamp, a git state, or a date—invalidates everything that follows.
 
-**Stating when to stop is half of a good prompt.** Our executions failed more often due to overflow than incompetence, and the framed prompt is the only isolated lever in the matrix to bring the scope back to 3/3, for the same cost and the lowest dispersion in the table. Three sentences in the request are worth more than a model ten times more expensive.
+**Specifying when to stop is half the battle of a good prompt.** Our executions failed more often due to overflow than incompetence, and the twenty executions that received an explicit scope and stop criterion did not overflow once, compared to seven out of ten for the vague request. Three sentences in the prompt are worth more than a model twelve times more expensive.
 
-**The rules file is a checklist, not a style guide.** It enters the context every turn, making it powerful and costly; this is why it is important to keep it short, base every rule on an observed failure, and refactor it rather than lengthen it. Our measurements add a nuance we didn't expect: for equal content, an instruction written in the turn's prompt was better followed than one stored in `AGENTS.md`, which suggests reserving the file for permanent rules and repeating in the request what applies to the day's task.
+**The rules file is a checklist, not a style guide.** It enters the context at each turn, which makes it powerful and costly - hence the interest in keeping it short, sourcing each rule from an observed failure, and refactoring it rather than lengthening it. Our measurements back this up entirely, since the `+AGENTS.md` cell is both the cheapest in the matrix, the most direct with 7.5 median turns, and one of the most disciplined with 9/10 on scope, all for four lines of text.
 
 **An exposed setting is not an understood setting.** Between the flag you type and the request that is sent, there is code and mapping tables, as shown by `--thinking medium`, which does not exist on half of the models without any warning being given.
 
-**An agent is noisy, and without repetitions you measure nothing.** We observed a factor of 4 between two identical executions, and the matrix base cell still shows a range of ×2.60 over three executions, making any deviation smaller than this order of magnitude uninterpretable. We ourselves published a factor of 3.5 on the system prompt before seeing it disappear on the third run. Three repetitions and three numbers - minimum, median, and maximum - constitute the honest minimum.
+**An agent is noisy, and without repetitions, you measure nothing.** The base cell shows a spread of x3.50 over ten executions, making any cost difference below this order of magnitude uninterpretable. We published three false conclusions in successive versions of this module, each drawn from too small a sample and each debunked by increasing the number of repetitions. Three repetitions are the minimum to see the dispersion; many more are needed to distinguish between two close levers, and the scoring columns, which count successes, are the most resource-intensive.
 
 ### The `rtk` case, and the transition to Act 2
 
-`pi-rtk-optimizer` is the recommended extension for managing context on Pi, as it rewrites `bash` commands to a dedicated tool and compacts tool outputs before they enter the context. On NÉON, we were unable to show that it provides any gain.
+`pi-rtk-optimizer` is the recommended extension for managing context on Pi, as it rewrites `bash` commands to a dedicated tool and compacts tool outputs before they enter the context. On NÉON, it saves no money.
 
 The reason is arithmetic: `rtk` targets tool outputs, but `bash` outputs only represent 6 to 22% of the total on this repository, with the rest coming from file reads. A repository of 617 lines does not produce verbose builds, ten-minute test suites, or `git logs` of three hundred commits, so there is almost nothing to compact.
 
-The only difference that stands out is not about the median cost, which is slightly higher than the baseline, but about the dispersion, which goes from ×2.60 without the extension to ×1.82 with it. The hypothesis of an agent becoming more predictable rather than cheaper deserves further investigation, but three repetitions are not enough to support it, especially since the structured prompt cell performs better on this criterion without installing anything at all.
+The only difference that emerges is not in the median cost, which is identical to the base within a hundredth of a cent, but in the dispersion, which drops from x3.50 without the extension to x1.46 with it - the lowest in the entire matrix. Over ten repetitions, the hypothesis that an agent becomes more predictable rather than cheaper becomes defensible, which is a desirable property and a reason to install `rtk` that its presentation page does not highlight.
 
-The takeaway is that a harness component is only as valuable as the workload you give it to process, and that the calculation will likely reverse on a repository with a verbose build and chatty continuous integration. You will be able to redo this, as you have the benchmark.
+There are two key takeaways. First, a harness building block is only as good as the workload you give it to process, and the calculation will likely reverse on a repository with a verbose build and chatty continuous integration, which you will be able to verify since you have the benchmark. Second, an extension can provide something other than what it claims, and you will only discover this by measuring several dimensions at once: we were looking for token savings and found a reduction in variance.
 
 This case also marks a change in the nature of the levers. Everything we have manipulated so far relates to usage—whether choosing a model, adjusting a slider, writing a prompt, or maintaining a rules file—whereas `rtk` is the first lever consisting of code added to the harness. This is the pivot for all of Act 2: we have exhausted the gains from simply doing things better, and we will now modify the machine.
 
