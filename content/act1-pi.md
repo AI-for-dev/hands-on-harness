@@ -63,7 +63,7 @@ Le champ `cost` est optionnel et vaut zéro par défaut. Sans lui, la commande `
 
 Les tarifs ci-dessus, exprimés au million de tokens, sont ceux pratiqués sur le marché pour un modèle de gabarit comparable. Ils ne correspondent à aucune facturation réelle : votre usage d'ILaaS ne vous est pas facturé au token. Ils ne sont là que pour obtenir un ordre de grandeur.
 
-Retenez surtout ceci, car c'est déjà une leçon de harnais : le coût qu'affiche un agent de code n'est pas une information qu'il reçoit du fournisseur, c'est une multiplication qu'il effectue à partir d'un champ de configuration que vous avez écrit. Un chiffre affiché n'est pas un chiffre vérifié.
+Retenez surtout ceci, car c'est déjà une leçon de harnais : le coût qu'affiche un agent de code n'est pas une information reçue du fournisseur, c'est une multiplication effectuée à partir d'un champ de configuration que vous avez écrit vous-même.
 :::
 
 Si tout s'est bien passé, vous devrez pouvoir utiliser Pi. Lancez une première session interactive avec `pi` dans votre terminal et vérifier que vous avez un prompt. Quelque chose comme
@@ -142,7 +142,7 @@ Retenez cette règle simple pour la suite : ce qui doit s'appliquer partout va d
 
 ## Les extensions
 
-Pi ne se limite pas à ses quatre outils de base et est complètement extensible. On peut lui ajouter n'importe quelles actions via le mécanisme `pi.on(...)` déjà mentionné qui permet de modifier le comportement dans la boucle agentique. On peut également changer l'interface utilisateur appelé TUI en ajoutant des informations dans les différentes zones. Ces changements de comportements rendent Pi extrêmement intéressant car c'est vous qui êtes l'architecte de votre harnais. Il vous suffit de créer une extension pour vos besoins. Vous pouvez bien évidemment la distribuer ou vous servir d'extensions réalisées par la communauté. Pour en trouver, la galerie officielle sur [pi.dev/packages](https://pi.dev/packages) est la meilleure des ressources.
+Pi ne se limite pas à ses quatre outils de base et est complètement extensible. On peut lui ajouter n'importe quelle action via le mécanisme `pi.on(...)` déjà mentionné, qui permet de modifier le comportement de la boucle agentique. On peut aussi changer l'interface utilisateur, le TUI, en ajoutant des informations dans ses différentes zones. Ces deux mécanismes font de vous l'architecte de votre harnais : il vous suffit d'écrire une extension pour vos besoins, de la distribuer, ou de vous servir de celles écrites par la communauté. Pour en trouver, la galerie officielle sur [pi.dev/packages](https://pi.dev/packages) est la meilleure des ressources.
 
 Une extension se distribue comme un paquet npm ou comme un dépôt git, et s'installe avec `pi install` :
 
@@ -164,7 +164,7 @@ C'est le réflexe à adopter avant de s'engager sur une extension trouvée dans 
 
 ## Les quatre extensions
 
-Nous aurions pu vous faire construire vos propres extensions, mais étant donné le temps imparti et le fait que vous ne connaissez certainement nu l'outil Pi, ni la structure d'un harnais, cela aurait été une perte de temps et de motivation. Nous espérons qu'à la fin de cette formation, vous aurez les idées assez claires pour avoir des idées d'amélioration de votre harnais au travers de nouvelles extensions de Pi.
+Nous aurions pu vous faire construire vos propres extensions, mais étant donné le temps imparti et le fait que vous ne connaissez encore ni l'outil Pi, ni la structure d'un harnais, cela aurait été une perte de temps et de motivation. Nous espérons qu'à la fin de cette formation, vous aurez les idées assez claires pour imaginer vous-même des améliorations de votre harnais sous forme de nouvelles extensions Pi.
 
 Pour construire notre harnais, nous nous appuierons sur quatre extensions :
 

@@ -2,34 +2,34 @@
 
 ::: tip Module objectives
 - Why use Pi
-- Launch Pi and understand the role of the `.pi/` directory
-- Locate the four extensions we will use to embody the bricks grid
-- Honestly frame the reconstruction exercise
+- Launching Pi and understanding the role of the `.pi/` directory
+- Locating the four extensions we will use to embody the brick grid
+- Honestly framing the reconstruction exercise
 :::
 
-We previously saw that a harness is a set of tools on top of LLMs. Each can play an essential role in accomplishing a task autonomously. You have access to a set of pre-built harnesses: Claude Code, Codex, OpenCode, Pi... But in most cases, you master nothing and let yourself be guided, hoping it does what you asked. If something goes wrong, it is not always easy to understand why. Yet, our goal is precisely to understand how a harness works in every detail. We want to be able to easily add or remove an element from it and test the consequences.
+We previously saw that a harness was a set of tools on top of LLM models. Each can play an essential role in completing a task autonomously. You have a set of pre-built harnesses at your disposal: Claude Code, codex, opencode, Pi... But in most cases, you lack control and you are guided, hoping it does what you asked. If something goes wrong, it is not necessarily easy to understand why. Yet, our goal is precisely to understand how a harness works in the smallest detail. We want to be able to easily add or remove an element from it and test the consequences.
 
-In the following sections, we will use [Pi](https://pi.dev), a minimalist, open, and extensible command-line code agent. What interests us specifically is the ability to add extensions to it simply and understand everything happening inside without surprises: end-to-end mastery.
+Moving forward, we will use [Pi](https://pi.dev), an open, extensible, and minimalist command-line coding agent. What will interest us is precisely the possibility of adding extensions to it simply and understanding everything that happens inside without surprises: end-to-end control.
 
 ## What Pi is
 
-Pi is a code agent that runs in your terminal, originally created by Mario Zechner. Its primary goal was precisely to have mastery over its harness. Pi relies on a handful of basic tools — reading a file, writing one, editing it, executing a shell command — and on an agentic loop that chains model calls, tool execution, and result review. This is exactly the loop we described in the previous module, reduced to its simplest expression.
+Pi is a coding agent that runs in your terminal, originally created by Mario Zechner. Its primary goal was precisely to have control over its harness. Pi relies on a handful of basic tools - reading a file, writing one, editing it, executing a shell command - and on an agentic loop that chains model calls, tool execution, and result review. This is exactly the loop we described in the previous module, reduced to its simplest expression.
 
-Around this core, Pi exposes an extension and event system. You can hook into key moments of the loop with `pi.on(...)`, similar to how hooks are attached in Claude Code.
+Around this core, Pi exposes a system of extensions and events. You can hook into key moments of the loop with `pi.on(...)`, the same way you plug in hooks in Claude Code.
 
-Just as Claude Code relies on a `.claude/` directory, Pi relies on a `.pi/` directory. This is where configuration, skills, agents, and permission rules live. You can consider this Pi's equivalent of what you may already know on the Claude Code side.
+Just as Claude Code relies on a `.claude/` directory, Pi relies on a `.pi/` directory. This is where configuration, skills, agents, and permission rules live. You can think of it as the Pi equivalent of what you may already know from Claude Code.
 
-Pi knows itself well and is therefore able to help you extend its functionality. Everything is described in its "system prompt," as you will see shortly.
+Pi knows itself very well and is therefore able to help you extend its functionality. Everything is described in its "system prompt" as you will see in a moment.
 
-## Getting started
+## First steps
 
-To install Pi, simply visit the official site at https://pi.dev and follow the prompts.
+To install Pi, simply go to the official site https://pi.dev and follow the instructions.
 
-Next, you need to install models that you will use throughout your experiments. There are several ways to configure your model provider: https://pi.dev/docs/latest/providers. We encourage you to have a fairly powerful model for high-quality planning and a faster model that will code incrementally based on the tasks established by the planner.
+Next, you need to install the models you will use throughout your experiments. There are several ways to specify your model provider: https://pi.dev/docs/latest/providers. We encourage you to use a model powerful enough for high-quality planning and a faster model to write the code for the tasks established by the planner.
 
-For those following this training in person, we propose using the models provided by [ILaaS](https://www.ilaas.fr/), a shared platform aimed at trustworthy, robust, ethical, and efficient generative AI. This service comes from the French academic world.
+For those attending this training in person, we suggest using the models provided by [ILaaS](https://www.ilaas.fr/), a shared platform aiming for trustworthy, robust, ethical, and sustainable generative AI. This service comes from the French academic community.
 
-You must edit the `~/.pi/agent/models.json` file and populate it as follows:
+You must edit the `~/.pi/agent/models.json` file and fill it in as follows:
 
 ```json
 {
@@ -42,11 +42,13 @@ You must edit the `~/.pi/agent/models.json` file and populate it as follows:
                 {
                     "id": "gemma-4-31b",
                     "contextWindow": 128000,
-                    "reasoning": true
+                    "reasoning": true,
+                    "cost": { "input": 0.14, "output": 0.28, "cacheRead": 0.0028, "cacheWrite": 0 }
                 },
                 {
                     "id": "qwen-3.6-35b-instruct",
-                    "contextWindow": 256000
+                    "contextWindow": 256000,
+                    "cost": { "input": 0.14, "output": 0.28, "cacheRead": 0.0028, "cacheWrite": 0 }
                 }
             ]
         },
@@ -54,26 +56,35 @@ You must edit the `~/.pi/agent/models.json` file and populate it as follows:
 }
 ```
 
-You will need to enter the API key provided to you. The models listed are those available during the training. Feel free to check the ILaaS page for updates (https://www.ilaas.fr/liste-des-modeles-llms/).
+You will need to provide the API key that was given to you. The models listed are those available during the training. Feel free to visit the IlaaS page for updates (https://www.ilaas.fr/liste-des-modeles-llms/).
 
-If everything went well, you should be able to use Pi. Launch your first interactive session with `pi` in your terminal and verify that you have a prompt. Something like
+::: info The cost block is not provider data
+The `cost` field is optional and defaults to zero. Without it, the `/session` command will report a cost of €0.00 for all your sessions, depriving you of a metric we will use frequently later on.
+
+The rates above, expressed per million tokens, are market rates for a model of comparable size. They do not correspond to actual billing: your use of ILaaS is not billed per token. They are only there to provide a ballpark figure.
+
+Keep this in mind especially, as it is already a harness lesson: the cost displayed by a code agent is not information received from the provider, but a calculation based on a configuration field that you wrote yourself.
+:::
+
+If everything went well, you should be able to use Pi. Start your first interactive session with `pi` in your terminal and verify that you have a prompt. Something like
 
 ![](/figures/pi.png)
 
-You can observe the different elements composing Pi (context, skills, extensions) as well as the default model used in the bottom right corner (here `(ilaas) qwen-3.6-35b-instruct`).
+You can see the different elements that make up Pi (context, skills, extensions) as well as the default model used at the bottom right (here `(ilaas) qwen-3.6-35b-instruct`).
 
-You can experiment with it by asking questions, observing the loop, and seeing how it responds to you. Then try the non-interactive mode with `pi -p`, which executes a request and returns control.
+You can play with it by asking questions, observing the loop, and seeing how it responds. Then try the non-interactive mode with `pi -p`, which executes a request and returns control.
 
-## The first useful commands
+## First useful commands
 
 - Tools
+
     As mentioned in the introduction to this section, Pi comes with 4 tools. To get the list, simply type
 
     ```
     /tools
     ```
 
-    You should see at least the tools: read, bash edit, write.
+    You should see at least these tools: read, bash edit, write.
 
     ::: info Exercise
     From the prompt, try to trigger each of these tools through your questions.
@@ -81,14 +92,14 @@ You can experiment with it by asking questions, observing the loop, and seeing h
 
 - Your session tree
 
-    It can be useful to navigate through your session and return to a previous step in your discussion. To do this, use the command
+    It can be useful to navigate your session and go back to one of the steps in your discussion. To do this, use the command
 
     ```
     \tree
     ```
 
     ::: info Exercise
-    Try returning to a point in your discussion thread.
+    Try going back to a point in your discussion thread.
     :::
 
 - Resuming a previous session
@@ -112,52 +123,62 @@ You can experiment with it by asking questions, observing the loop, and seeing h
     ```
 
     ::: info Exercise
-    Export your session in HTML (default format) and open the file. You can finally see what Pi's minimal "system prompt" looks like!
+    Export your session to HTML (default format) and open the file.
     :::
 
 We have covered the main commands we consider useful for now. We will see others during this journey.
 
 ## Understanding the contents of Pi directories
 
-## Installing an extension
+Pi distinguishes between two directories with the same name `.pi/`, and you need to learn how to differentiate them right away to avoid getting lost.
+
+The first one lives in your home directory, `~/.pi/agent/`. This is the global configuration, which applies by default to all your projects: you've already interacted with it by editing `~/.pi/agent/models.json` to declare your model providers. You'll also find `settings.json` for general preferences (default provider and model, theme, proxy...), and `trust.json`, which remembers from one session to the next the projects you have chosen to trust.
+
+The second one lives at the root of your project, `.pi/`, which is the one you version along with the rest of the repository. It contains elements specific to the current project: a `settings.json` that overrides the global one (nested objects are merged, not replaced entirely), and especially the directories that we will fill ourselves throughout the training, starting with `skills/` for the tools we will write.
+
+This distinction is not just for organization. Skills declared in the global directory load without any particular verification: they follow you everywhere. Project skills, however, only load once the project is marked as safe, specifically in the `trust.json` mentioned above. This is a very concrete first glimpse of the security building block we will reconstruct later: a harness that indiscriminately executes code found in any cloned repository would be a flaw in itself.
+
+Keep this simple rule in mind for the future: what should apply everywhere goes in `~/.pi/agent/`, what is specific to the NÉON repository goes in its local `.pi/`, and it is this second directory that we will populate as we go through the following modules.
+
+## Extensions
+
+Pi is not limited to its four basic tools and is completely extensible. You can add any action to it via the previously mentioned `pi.on(...)` mechanism, which allows modifying the behavior of the agentic loop. You can also change the user interface, the TUI, by adding information to its different areas. These two mechanisms make you the architect of your harness: simply write an extension for your needs, distribute it, or use those written by the community. To find some, the official gallery at [pi.dev/packages](https://pi.dev/packages) is the best resource.
+
+An extension is distributed as an npm package or a git repository, and is installed using `pi install`:
+
+```
+pi install npm:@tintinweb/pi-subagents
+pi install git:github.com/user/repo
+```
+
+By default, installation is global: the package is placed in `~/.pi/agent/npm/` (or `~/.pi/agent/git/<host>/<path>` for a git repository), and the extension becomes available in all your Pi sessions, across all your projects. Add `-l` to the command to install it locally instead: the package then lands in `.pi/npm/`, and the extension is only active for this project, once it has been marked as safe, exactly as we saw in the previous paragraph for skills. To remove a package, the corresponding command is `pi remove npm:@foo/bar`.
+
+To try an extension without installing it, whether it's a package or a simple local file, the `-e` (or `--extension`) option loads it for the current session only:
+
+```
+pi -e npm:@tintinweb/pi-subagents
+pi -e ./mon-extension.ts
+```
+
+This is the habit to adopt before committing to an extension found in the community directory. Keep in mind, however, that an extension runs with all of your system permissions: only install and test what you are comfortable running.
 
 ## The four extensions
 
-To embody the bricks grid, we will rely on four extensions, each corresponding to a brick. `pi-rtk-optimizer` will handle context and compaction. `@tintinweb/pi-subagents` will provide delegation. `pi-hermes-memory` will carry memory. `pi-lens` will complete observability and code tooling. Permissions and tools, however, will be rebuilt manually in `.pi/skills/`.
+We could have had you build your own extensions, but given the limited time and the fact that you are not yet familiar with the Pi tool or the structure of a harness, it would have been a waste of time and motivation. We hope that by the end of this training, you will have a clear enough understanding to envision your own improvements to your harness in the form of new Pi extensions.
 
-We introduce them here as an inventory; each extension will be presented in detail when its brick is rebuilt.
+To build our harness, we will rely on four extensions:
 
-## The mapping table
+- `pi-rtk-optimizer` will handle context and compaction,
+- `@tintinweb/pi-subagents` will provide delegation,
+- `pi-hermes-memory` will handle memory,
+- `pi-lens` will complete the observability and code tooling.
 
-The training's guiding thread lies in a three-column table. The first recalls the invariant, i.e., the enduring principle of each brick. The second shows how a real harness implements it, based on what the *leak* teaches us about Claude Code. The third indicates how we rebuild it on Pi. A fourth column remains empty: it is yours, to be filled with your own usage intentions.
+Permissions and tools, on the other hand, will be rebuilt by hand in `.pi/skills/`.
 
-| Invariant           | In Claude Code                 | Rebuilt on Pi                   | Your harness? |
-| ------------------- | -------------------------------- | ------------------------------------ | --------------- |
-| Context and cache   | static / dynamic boundary   | `pi-rtk-optimizer`                   |                 |
-| Tools               | plugins guarded by permission | skills in `.pi/skills/`            |                 |
-| Delegation          | isolated sub-agent, exposed as tool | `@tintinweb/pi-subagents`           |                 |
-| Memory              | read/write + filtering      | `pi-hermes-memory`                   |                 |
-| Safety              | modes and refusal rules     | `.pi/skills/permissions/` pipeline  |                 |
-
-## An honest framing
-
-Two points must be stated clearly before starting.
-
-The first is that our goal is not to equal Claude Code. The reconstruction we are undertaking is minimal, and it will remain so. What we seek is to understand each brick well enough to be able to build one tailored to our needs.
-
-The second is a tension we prefer to address head-on. Claude Code can now write its own harness on the fly, depending on the task. One might then ask what the point is of learning to build it manually. The answer lies in one sentence: you only pilot, audit, and adapt what you understand. Knowing how to build manually remains the condition for keeping control over what the agent does on your behalf.
-
-## In practice
-
-Retrieve the state of the training repository, get Pi to respond via model access, and fill in the fourth column of the table with your own usage: on what type of tasks would you like to make your work more reliable? This column will accompany you until the capstone of Act 4.
-
-::: warning A trap to know
-The `input` event triggers *before* skills expansion. If you prefix your inputs with a `/` command, it may not be recognized when your hook executes. We will return to this when we attach hooks to this event.
+::: info Exercise
+Install one of the four extensions presented below locally (`-l`), and verify that it appears in `.pi/npm/`. Launch Pi; you should see it in the extensions section. You can try removing it with `pi remove`.
 :::
 
-## For further reading
+## Going further
 
 - The [official Pi site](https://pi.dev/) and its [documentation](https://github.com/earendil-works/pi/tree/main/packages/coding-agent/docs).
-- [Awesome Pi Coding Agent](https://awesome-pi.site/extensions/), the community directory of extensions and resources around Pi.
-- The [`@earendil-works/pi-coding-agent`](https://www.npmjs.com/package/@earendil-works/pi-coding-agent) package on npm, for versions and installation.
-- Anthropic, [A harness for every task](https://claude.com/blog/a-harness-for-every-task-dynamic-workflows-in-claude-code), on Claude Code's ability to write its own harness.

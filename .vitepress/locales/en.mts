@@ -13,12 +13,24 @@ export const en: LocaleSpecificConfig<DefaultTheme.Config> = {
     nav: [{ text: 'Contents', link: '/en/' }],
     sidebar: [
       {
-        text: 'Contents',
+        text: 'Introduction',
         items: [
-          { text: 'Introduction', link: '/en/' },
-          { text: '1. What is a harness?', link: '/en/quest-ce-quun-harnais' }
+          { text: 'Overview', link: '/en/' },
+          { text: 'The Method', link: '/en/methode' },
+          { text: 'The Running Theme: NÉON', link: '/en/fil-rouge' }
+        ]
+      },
+      {
+        text: 'Act 1 - Foundations',
+        items: [
+          { text: 'LLMs in 2026', link: '/en/act1-llm' },
+          { text: 'Why a harness, and what is it made of?', link: '/en/act1-harness' },
+          { text: 'The starting harness: Pi', link: '/en/act1-pi' }
         ]
       }
+      // Act 2 starts with `act2-contexte`, which is only listed here once
+      // `npm run i18n:translate` has produced content/en/act2-contexte.md.
+      // A sidebar link to a page that does not exist fails the build.
     ],
     outline: { level: [2, 3], label: 'On this page' },
     docFooter: { prev: 'Previous page', next: 'Next page' },
