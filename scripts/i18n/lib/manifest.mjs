@@ -5,8 +5,12 @@ export function loadManifest(manifestPath) {
   return JSON.parse(readFileSync(manifestPath, 'utf8'))
 }
 
+// Writes nothing when the content is unchanged: a run that translates nothing
+// must not make the manifest look modified.
 export function saveManifest(manifestPath, manifest) {
-  writeFileSync(manifestPath, JSON.stringify(manifest, null, 2) + '\n', 'utf8')
+  const serialized = JSON.stringify(manifest, null, 2) + '\n'
+  if (existsSync(manifestPath) && readFileSync(manifestPath, 'utf8') === serialized) return
+  writeFileSync(manifestPath, serialized, 'utf8')
 }
 
 export function getEntry(manifest, relPath, lang) {

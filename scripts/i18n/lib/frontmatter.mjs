@@ -18,9 +18,9 @@ function isTranslatable(value) {
   return true
 }
 
-// Aplati un objet front-matter en { "chemin.dans.le.yaml": "texte source" },
-// en ignorant les clés listées dans skipKeys (config.frontMatterSkipKeys) et
-// les valeurs qui ressemblent à des URLs/chemins plutôt qu'à du texte.
+// Flattens a front-matter object into { "path.in.the.yaml": "source text" },
+// skipping the keys listed in skipKeys (config.frontMatterSkipKeys) and the
+// values that look like URLs or paths rather than text.
 export function collectTranslatableStrings(node, skipKeys, path = []) {
   const out = {}
 

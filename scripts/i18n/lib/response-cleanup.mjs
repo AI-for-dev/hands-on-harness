@@ -1,12 +1,21 @@
-// Filet de sécurité indépendant du modèle : certains modèles locaux,
-// notamment les plus petits, n'obéissent pas toujours à la consigne
-// "réponds uniquement avec le Markdown traduit" et enrobent leur réponse
-// dans un unique bloc de code, parfois précédé d'une phrase d'introduction
-// ("Voici la traduction :"). On ne désenveloppe que si la fence couvre
-// (quasi) toute la réponse, pour ne jamais toucher un vrai bloc de code
-// qui ferait partie du contenu traduit.
+// Model-agnostic safety net: some local models, the smaller ones especially,
+// do not always obey "answer with the translated Markdown only" and wrap their
+// answer in a single code block, sometimes preceded by an introductory sentence
+// ("Here is the translation:"). We only unwrap when the fence covers (almost)
+// the entire answer, so as never to touch a real code block that is part of the
+// translated content.
+// A code block marker alone on its line must stay that way: the model sometimes
+// aligns that line with the indentation of the neighbouring paragraph, and the
+// block restored in its place then ends up shifted - an indented fence is not
+// the same thing in Markdown. The repair is mechanical, hence preferable to
+// another call: we put the marker back alone on its line. The block's own
+// indentation is part of the protected block and comes back with it.
+function unindentMarkerLines(text) {
+  return text.replaceAll(/^[ \t]+(%%%PROTECTED_\d+%%%)[ \t]*$/gm, '$1')
+}
+
 export function cleanupTranslationResponse(raw) {
-  const text = raw.trim()
+  const text = unindentMarkerLines(raw.trim())
   const lines = text.split('\n')
 
   const openIdx = lines.findIndex((line) => /^```[\w-]*\s*$/.test(line.trim()))

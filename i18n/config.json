@@ -6,6 +6,7 @@
   ],
   "contentDir": "content",
   "promptVersion": 1,
+  "concurrency": 4,
   "frontMatterSkipKeys": [
     "layout", "link", "href", "url", "icon", "image", "src", "name",
     "permalink", "id", "class", "theme", "lang", "order", "next", "prev",
@@ -16,7 +17,7 @@
     "pi": {
       "command": "pi",
       "provider": "ilaas",
-      "model": "qwen-3.6-35b-instruct",
+      "model": "gemma-4-31b",
       "thinking": null
     },
     "ollama": {
