@@ -108,12 +108,12 @@ Nous l'avons choisie parce qu'elle comporte deux moitiés dont on peut n'accompl
 
 Nous retenons quatre critères :
 
-| critère | vérifiable mécaniquement ? |
-| --- | --- |
-| `npm test` passe | oui |
-| aucun export de `game/neon.js` renommé ou supprimé | oui |
-| seul `game/neon.js` est modifié, donc le périmètre du ticket est respecté | oui |
-| la moitié « performance » du ticket a été traitée | **en apparence seulement** |
+| critère                                                                   | vérifiable mécaniquement ? |
+| ------------------------------------------------------------------------- | -------------------------- |
+| `npm test` passe                                                          | oui                        |
+| aucun export de `game/neon.js` renommé ou supprimé                        | oui                        |
+| seul `game/neon.js` est modifié, donc le périmètre du ticket est respecté | oui                        |
+| la moitié « performance » du ticket a été traitée                         | **en apparence seulement** |
 
 Les trois premiers se lisent sans ambiguïté dans un code de retour ou une liste de fichiers. Le quatrième, qui décide pourtant si le ticket est traité, ne se laisse pas réduire aussi facilement, et la façon dont il résiste vaut la peine d'être vue en détail.
 
@@ -225,9 +225,9 @@ La tâche est menée à bien dans les deux cas, avec des tests verts, le refacto
 :::
 
 ::: warning Ce que trois répétitions ont fait de ce tableau
-Le facteur 3,5 sur le coût **n'a pas survécu** aux répétitions. Sur dix exécutions de chaque côté, la médiane de la cellule amputée est de 0,0051 $ contre 0,0042 $ pour la base, un écart bien inférieur à la dispersion de chacune des deux cellules.
+Le facteur 3,5 sur le coût **n'a pas survécu** aux répétitions. Sur dix exécutions de chaque côté, la médiane de la cellule amputée est de 0,0049 $ contre 0,0050 $ pour la base : l'écart a changé de signe et il est de toute façon très inférieur à la dispersion de chacune des deux cellules.
 
-Ce qui subsiste, en revanche, se lit ailleurs et n'est pas mince : le nombre de tours médian passe de 10,5 à 13,5, le respect du périmètre s'effondre de 7/10 à 4/10, et la dispersion devient la pire de toute la matrice. Privé de ses conventions, l'agent garde ses capacités et perd sa tenue.
+Ce qui subsiste se lit sur les tours, et c'est tout : le nombre de tours médian passe de 12 à 13,5, le plus haut de la matrice. Privé de ses conventions, l'agent tâtonne davantage. Nous avons aussi écrit qu'il perdait sa tenue, sur la foi d'un périmètre tombé à 4/10 ; à la relance il est à 6/10, c'est-à-dire au-dessus de la base. Cette affirmation-là est morte avec les autres, et l'encadré du cimetière plus bas en tient la liste.
 
 Nous laissons le tableau à une exécution dans la page plutôt que de le retirer, parce que l'erreur qu'il contient est exactement celle contre laquelle la section suivante vous met en garde, et que nous l'avons commise en préparant ce module.
 :::
@@ -322,7 +322,7 @@ Chaque cellule est exécutée plusieurs fois, pour une raison que nous avons dé
 | ---- | -------- | -------- | -------- | -------- | --------- |
 | coût | 0,0104 $ | 0,0052 $ | 0,0050 $ | 0,0052 $ | **×2,08** |
 
-Sur dix exécutions de cette même configuration, l'étendue atteint **×3,50**, les tours varient de 7 à 24 et le diff de 34 à 167 lignes insérées. Un agent n'est pas déterministe, et l'écart entre deux exécutions d'une même configuration est du même ordre de grandeur que l'effet de la plupart des leviers, si bien qu'une exécution unique par cellule mesure le bruit plutôt que le levier.
+Sur dix exécutions de cette même configuration, l'étendue atteint **×4,22**, les tours varient de 7 à 24 et le diff de 34 à 167 lignes insérées. Un agent n'est pas déterministe, et l'écart entre deux exécutions d'une même configuration est du même ordre de grandeur que l'effet de la plupart des leviers, si bien qu'une exécution unique par cellule mesure le bruit plutôt que le levier.
 
 Le banc affiche donc un minimum, une médiane et un maximum, et jamais un chiffre unique, ce qui vous oblige à regarder la dispersion avant de conclure.
 
@@ -330,21 +330,21 @@ Le nombre de répétitions est un paramètre parce que le bon choix dépend de c
 
 #### Le script
 
-Le voici en entier. Il fonctionne sans dépendance, estime son coût avant de partir, relance une fois toute exécution qui se fige, et concentre sa notation dans une fonction unique placée en bas de fichier, qui est le seul endroit à réécrire pour l'appliquer à un autre dépôt que NÉON.
+Le voici en entier. Il fonctionne sans dépendance, avec Python 3.9 ou plus, estime son coût avant de partir, relance une fois toute exécution qui se fige, et concentre sa notation dans une fonction unique placée en bas de fichier, qui est le seul endroit à réécrire pour l'appliquer à un autre dépôt que NÉON.
 
-<<<@/../scripts/banc/banc.mjs{js}
+<<<@/../scripts/banc/banc.py{py}
 
 ::: info Exercice (en salle, puis en autonomie)
 Commencez par l'estimation, qui ne dépense rien :
 
 ```bash
-node banc.mjs --dry-run
+python banc.py --dry-run
 ```
 
 Puis lancez la matrice et laissez-la tourner pendant que vous discutez des curseurs :
 
 ```bash
-node banc.mjs
+python banc.py
 ```
 
 Comptez deux à quatre minutes par exécution, soit environ un quart d'heure pour les vingt-quatre en parallèle par quatre. Le résultat est écrit dans `banc-resultats.md`.
@@ -352,7 +352,7 @@ Comptez deux à quatre minutes par exécution, soit environ un quart d'heure pou
 Pour ne relancer qu'une cellule, par exemple après avoir modifié votre `AGENTS.md` :
 
 ```bash
-ONLY='+AGENTS.md' REPEATS=3 node banc.mjs
+ONLY='+AGENTS.md' REPEATS=3 python banc.py
 ```
 
 **En autonomie**, reprenez le script et changez la matrice, avec d'autres modèles, d'autres niveaux de raisonnement ou votre propre dépôt. C'est le seul artefact de ce module qui ne périmera pas.
@@ -361,37 +361,62 @@ ONLY='+AGENTS.md' REPEATS=3 node banc.mjs
 ::: warning Ce que le banc doit prévoir
 Une exécution de `pi` peut se figer sans produire un seul octet ni le moindre message d'erreur, ce que nous avons rencontré plusieurs fois pendant la préparation de ce module. Le script prévoit donc un délai maximal par exécution et une seconde tentative, faute de quoi une exécution bloquée empoisonne toute une ligne du tableau.
 
-Dans notre cas, la cause était une entrée standard laissée ouverte, que `spawn` fournit par défaut et sur laquelle `pi -p` attend indéfiniment. Le commentaire correspondant est dans le script, et le même piège vous guettera si vous appelez `pi` depuis vos propres outils.
+Dans notre cas, la cause était une entrée standard laissée ouverte, que `subprocess` fournit par défaut et sur laquelle `pi -p` attend indéfiniment. Le commentaire correspondant est dans le script, et le même piège vous guettera si vous appelez `pi` depuis vos propres outils.
+
+Prévoir le délai ne suffit pourtant pas, et nous l'avons appris en perdant une matrice entière. Le chemin de récupération lui-même doit tenir : `subprocess.TimeoutExpired.stdout` renvoie des octets même quand on a demandé du texte, si bien que notre dépouillement levait une exception, que cette exception remontait à travers le pool de threads, et qu'une seule exécution figée faisait perdre les soixante-dix-neuf autres, déjà payées. Le script attrape donc maintenant toute exception par exécution : **une cellule manquante vaut mieux qu'un tableau perdu**.
+
+C'est la règle générale des bancs de mesure coûteux. Le code qui gère l'échec est exécuté rarement, donc il est testé rarement, donc c'est lui qui casse — et il casse au pire moment, quand vous avez déjà dépensé.
 :::
 
 #### Nos mesures
 
 Voici ce que nous avons obtenu en juillet 2026, sur `opencode-go`, avec NÉON, en excluant les fichiers de contexte, les skills et les extensions non demandées.
 
-Le tableau ci-dessous est produit avec **dix répétitions par cellule**, soit 80 exécutions, pour 0,93 $ et environ trente-cinq minutes de temps réel. Le banc que vous lancerez en salle est réglé sur trois répétitions, ce qui suffit à voir la dispersion mais pas à départager les écarts modestes.
+Le tableau ci-dessous est produit avec **dix répétitions par cellule**, soit 80 exécutions, pour 0,92 $ et environ trente-cinq minutes de temps réel. Le banc que vous lancerez en salle est réglé sur trois répétitions, ce qui suffit à voir la dispersion mais pas à départager les écarts modestes.
 
-| cellule | n | coût min | médiane | max | étendue | tours méd. | tests | API | périmètre | perf* |
-| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| base | 10 | 0,0029 $ | 0,0042 $ | 0,0101 $ | ×3,50 | 10,5 | 10/10 | 10/10 | 7/10 | 0/10 |
-| `+thinking` | 10 | 0,0039 $ | 0,0051 $ | 0,0097 $ | ×2,49 | 11 | 10/10 | 10/10 | 6/10 | 0/10 |
-| `+prompt cadré` | 10 | 0,0031 $ | 0,0046 $ | 0,0059 $ | ×1,88 | 10 | 10/10 | 10/10 | **10/10** | 2/10 |
-| `+AGENTS.md` | 10 | 0,0020 $ | **0,0036 $** | 0,0063 $ | ×3,17 | **7,5** | 10/10 | 10/10 | 9/10 | 0/10 |
-| `-prompt sys.` | 10 | 0,0035 $ | 0,0051 $ | 0,0128 $ | ×3,71 | 13,5 | 10/10 | 10/10 | **4/10** | 0/10 |
-| `+rtk` | 10 | 0,0040 $ | 0,0049 $ | 0,0059 $ | **×1,46** | 10,5 | 10/10 | 10/10 | 8/10 | 0/10 |
-| `pro (négligé)` | 10 | 0,0428 $ | 0,0538 $ | 0,1026 $ | ×2,40 | 9,5 | 10/10 | 10/10 | 5/10 | 2/10 |
-| `flash (soigné)` | 10 | 0,0028 $ | 0,0044 $ | 0,0064 $ | ×2,26 | 10 | 10/10 | 10/10 | **10/10** | 1/10 |
+| cellule          | n   | coût min | médiane      | max      | étendue   | tours méd. | tests | API   | périmètre | perf* |
+| ---------------- | --- | -------- | ------------ | -------- | --------- | ---------- | ----- | ----- | --------- | ----- |
+| base             | 10  | 0,0036 $ | 0,0050 $     | 0,0152 $ | ×4,22     | 12         | 10/10 | 10/10 | 5/10      | 0/10  |
+| `+thinking`      | 10  | 0,0028 $ | 0,0049 $     | 0,0101 $ | ×3,61     | 10,5       | 10/10 | 10/10 | 5/10      | 0/10  |
+| `+prompt cadré`  | 10  | 0,0027 $ | 0,0051 $     | 0,0085 $ | ×3,15     | 12,5       | 10/10 | 10/10 | **10/10** | 4/10  |
+| `+AGENTS.md`     | 10  | 0,0037 $ | 0,0046 $     | 0,0067 $ | **×1,81** | 10         | 10/10 | 10/10 | 8/10      | 0/10  |
+| `-prompt sys.`   | 10  | 0,0037 $ | 0,0049 $     | 0,0132 $ | ×3,57     | **13,5**   | 10/10 | 10/10 | 6/10      | 1/10  |
+| `+rtk`           | 10  | 0,0033 $ | **0,0044 $** | 0,0078 $ | ×2,36     | 11         | 10/10 | 10/10 | 7/10      | 0/10  |
+| `pro (négligé)`  | 9   | 0,0451 $ | 0,0556 $     | 0,0887 $ | ×1,97     | 11         | 9/9   | 9/9   | 4/9       | 0/9   |
+| `flash (soigné)` | 10  | 0,0023 $ | 0,0046 $     | 0,0067 $ | ×2,91     | 10         | 10/10 | 10/10 | **10/10** | 6/10  |
+
+La cellule `pro` compte neuf exécutions et non dix : la dixième s'est figée, et l'encadré sur ce que le banc doit prévoir raconte ce qu'il nous a coûté de l'apprendre.
 
 Ces chiffres n'ont pas vocation à être crus sur parole ni recopiés dans un an. Relancez le banc : c'est précisément ce à quoi il sert, et le tableau que vous obtiendrez remplacera celui-ci.
 
 Ce que ces mesures autorisent à dire :
 
-- **Écrire le périmètre et le critère d'arrêt dans la demande supprime les débordements.** Les deux cellules qui contiennent le prompt cadré atteignent 10/10, soit vingt exécutions sans un seul débordement, contre 7/10 pour la base. C'est le résultat le mieux établi du tableau, et il coûte trois phrases.
-- **Priver l'agent du prompt système de Pi coûte de la discipline.** Le périmètre tombe à 4/10, le nombre de tours médian monte à 13,5, et la dispersion devient la pire du tableau à ×3,71. Le coût médian, lui, ne bouge presque pas.
-- **Payer douze fois plus cher n'achète rien.** Le `pro` négligé coûte 0,0538 $ contre 0,0042 $ pour la base, respecte moins bien le périmètre (5/10 contre 7/10) et ne fait pas mieux ailleurs.
-- **`rtk` ne change pas le coût mais resserre la dispersion.** Sa médiane est celle de la base à un centième de centime près, alors que son étendue est la plus faible du tableau, ×1,46 contre ×3,50. C'est le seul effet de l'extension que ces mesures soutiennent, et ce n'est pas celui qu'on lui prête d'habitude.
-- **Aucune configuration ne traite la moitié difficile du ticket.** La colonne `perf*` plafonne à 2/10, y compris pour les cellules les mieux outillées. Arrêter de scanner toutes les briques demandait de lire le ticket jusqu'au bout, et aucun des leviers de ce module n'y suffit.
+- **Écrire le périmètre et le critère d'arrêt dans la demande supprime les débordements.** Les deux cellules qui contiennent le prompt cadré atteignent 10/10, soit vingt exécutions sans un seul débordement, contre 5/10 pour la base. C'est le résultat le mieux établi du tableau, et il coûte trois phrases. Nous avons poussé `flash (soigné)` à vingt répétitions : le périmètre y tient **20/20**.
+- **Payer onze fois plus cher n'achète rien.** Le `pro` négligé coûte 0,0556 $ contre 0,0050 $ pour la base, respecte moins bien le périmètre (4/9 contre 5/10) et ne fait pas mieux ailleurs.
+- **Le raisonnement n'apporte rien de mesurable ici.** `+thinking` a la médiane de la base à un dixième de centime près et le même score de périmètre. Le seul écart est une dispersion un peu moindre, ce qui est trop faible pour être interprété.
+- **Priver l'agent du prompt système de Pi lui coûte des tours, pas son périmètre.** Le nombre de tours médian monte à 13,5, le plus haut du tableau, alors que le périmètre reste à 6/10, c'est-à-dire mieux que la base. L'agent tâtonne davantage sans pour autant déborder plus.
+- **`rtk` n'a aucun effet mesurable.** Sa médiane est la plus basse du tableau, mais d'un dixième de centime, et son étendue n'a rien de remarquable. Une version précédente de ce module lui attribuait la dispersion la plus faible de la matrice, à ×1,46 ; à la relance, elle est à ×2,36 et c'est `+AGENTS.md` qui détient le minimum.
 
-Ce dernier point est le plus important, et il annonce la suite de la formation. Le contexte bien tenu rend l'agent discipliné, économe et prévisible, sans le rendre rigoureux. Obtenir la rigueur demandera un relecteur indépendant et une boucle de vérification, ce qui est le sujet des modules sur la délégation et les workflows.
+Cette dernière ligne mérite qu'on s'y arrête, parce qu'elle dit quelque chose sur la statistique elle-même. L'étendue est un rapport entre le maximum et le minimum de dix exécutions, donc elle est déterminée par les deux valeurs les plus extrêmes de l'échantillon et ignore les huit autres. C'est la grandeur la moins stable de tout le tableau, et nous avions bâti une conclusion dessus. Un écart d'étendue entre deux cellules ne veut presque rien dire ; un écart de médiane sur un échantillon suffisant, oui.
+
+::: warning Une hypothèse que nous n'avons pas réussi à établir
+Les chiffres ci-dessus ont été mesurés après l'arrivée de `game/bloom.js` dans NÉON, la passe de halo qui donne au jeu son aspect néon et qui consomme, à elle seule, près d'un quart du budget d'une frame. Une version antérieure de ce module, mesurée avant, concluait qu'**aucune** configuration ne traitait la moitié « performance » du ticket, la colonne `perf*` plafonnant à 2/10.
+
+Nous avons soupçonné le halo : un fichier entièrement consacré à un calcul par frame mettrait l'agent en tête que la performance existe, avant même qu'il n'ouvre le ticket. L'hypothèse est séduisante, donc nous avons cherché à la casser en remesurant la même cellule sur le dépôt d'origine, le même jour et avec le même modèle.
+
+| dépôt de `flash (soigné)` | moitié performance traitée |
+| ------------------------- | -------------------------- |
+| sans le halo              | 4/20                       |
+| avec le halo              | 10/20                      |
+
+Un écart de 20 % à 50 %, sur vingt exécutions de chaque côté, donne un test exact de Fisher à p ≈ 0,10. **Ce n'est pas concluant.** L'hypothèse survit, elle n'est pas démontrée, et il faudrait plusieurs dizaines d'exécutions de plus pour la départager.
+
+Nous laissons ce résultat non tranché plutôt que de le présenter comme acquis, parce que c'est l'état réel de nos connaissances et parce que la tentation était forte : nous tenions une explication élégante d'un chiffre surprenant, et c'est exactement la situation où on cesse de vérifier.
+
+Ce qui reste, en revanche, mérite d'être retenu comme question : **le contenu du dépôt est peut-être un levier de harnais**, au même titre que le prompt ou le fichier de règles. Vous ne le choisissez pas toujours. Le banc est là pour le savoir sur le vôtre.
+:::
+
+Reste que la moitié difficile du ticket n'est traitée qu'une fois sur deux dans la meilleure cellule, et jamais dans cinq des huit. Le contexte bien tenu rend l'agent discipliné, économe et prévisible, sans le rendre rigoureux. Obtenir la rigueur demandera un relecteur indépendant et une boucle de vérification, ce qui est le sujet des modules sur la délégation et les workflows.
 
 ::: warning Trois répétitions ne suffisaient pas, et nous en avons fait les frais
 Nous avons d'abord publié ce tableau avec trois répétitions par cellule. Deux affirmations n'ont pas survécu au passage à dix.
@@ -400,7 +425,11 @@ Nous écrivions que la consigne « une tâche = un ticket » tenait mieux dans l
 
 Nous écrivions aussi que le prompt cadré traitait la moitié performance 2 fois sur 3. À dix répétitions, c'est 2 fois sur 10, et la cellule `pro` obtient le même score. Le résultat encourageant n'était qu'un tirage favorable.
 
-Une conclusion tirée de trois exécutions est une conclusion fragile, y compris quand elle est publiée par les auteurs d'un module qui vous met en garde contre exactement cette erreur.
+**Et dix ne suffisaient pas non plus.** À la relance suivante, quatre affirmations de plus sont tombées. `+AGENTS.md` n'est plus « la cellule la moins chère de la matrice, la plus directe avec 7,5 tours médians » : elle est à 0,0046 $ et 10 tours. `rtk` n'a plus « la plus faible étendue du tableau, ×1,46 » : elle est à ×2,36. Priver l'agent du prompt système ne fait plus tomber son périmètre « à 4/10 » : il est à 6/10, au-dessus de la base. Et « aucune configuration ne traite la moitié difficile du ticket » est devenu une fois sur deux pour la mieux outillée.
+
+Ce qui a survécu à chacune des trois publications tient en deux lignes : **le prompt cadré supprime les débordements**, et **le gros modèle négligé coûte douze fois plus cher sans rien acheter**. Ce sont les deux seuls résultats sur lesquels nous vous invitons à vous appuyer, et ce n'est pas un hasard s'ils sont aussi les deux plus gros écarts du tableau.
+
+La règle est donc plus dure que « répétez trois fois » : **un effet qui ne dépasse pas la dispersion de sa propre cellule n'est pas un effet**, c'est une coïncidence qu'on a eu le temps de mettre en forme. Nous avons publié six conclusions fausses dans un module dont le sujet est de vous mettre en garde contre exactement cette erreur.
 :::
 
 Vous venez de pratiquer une évaluation, au sens où l'on compare des comportements sur une même tâche, avec des répétitions et en sachant la mesure bruitée, là où un test répond par oui ou par non à une question fermée. Le module 3.2 formalisera cette pratique avec des fichiers d'évaluation et un LLM-juge, et la colonne étoilée est précisément ce que ce juge devra prendre en charge.
@@ -413,17 +442,17 @@ Les leviers de ce module coûtent de l'attention et du temps, alors que le modè
 Comparez les deux cellules extrêmes de la matrice, le `flash` bien outillé qui dispose du raisonnement, d'un prompt cadré et d'un `AGENTS.md`, et le `pro` mal outillé qui reçoit un prompt vague et rien d'autre. Regardez le coût, puis les quatre critères, puis les diffs.
 :::
 
-Sur dix répétitions de chaque côté :
+Voici les deux cellules face à face, le `flash` soigné sur vingt répétitions et le `pro` négligé sur neuf :
 
-| | `flash (soigné)` | `pro (négligé)` |
-| --- | --- | --- |
-| coût médian | 0,0044 $ | 0,0538 $ |
-| périmètre respecté | **10/10** | 5/10 |
-| moitié performance traitée | 1/10 | 2/10 |
+|                            | `flash (soigné)` | `pro (négligé)` |
+| -------------------------- | ---------------- | --------------- |
+| coût médian                | 0,0046 $         | 0,0556 $        |
+| périmètre respecté         | **20/20**        | 4/9             |
+| moitié performance traitée | **10/20**        | 0/9             |
 
-Le petit modèle bien outillé coûte **douze fois moins cher** et ne déborde jamais du ticket, là où le gros modèle négligé déborde une fois sur deux. C'est la thèse d'Addy Osmani, *« a decent model with a great harness beats a great model with a bad harness »*, vérifiée sur une tâche réelle.
+Le petit modèle bien outillé coûte **douze fois moins cher**, ne déborde jamais du ticket sur vingt exécutions, là où le gros modèle négligé déborde une fois sur deux, et il est le seul des deux à traiter la moitié difficile. C'est la thèse d'Addy Osmani, *« a decent model with a great harness beats a great model with a bad harness »*, vérifiée sur une tâche réelle et sur les trois critères à la fois.
 
-La dernière ligne empêche toutefois de crier victoire trop vite : ni l'un ni l'autre ne traite la moitié difficile du ticket, et les deux scores sont trop bas et trop proches pour être distingués. Soigner le contexte a rendu l'agent discipliné et bon marché, sans le rendre rigoureux.
+Ne lisez pas pour autant la dernière ligne comme une victoire franche. Une fois sur deux, c'est aussi une fois sur deux où le ticket repart à moitié fait, et il n'existe dans ce module aucun levier qui fasse mieux. C'est un plancher de fiabilité, pas un résultat : soigner le contexte a rendu l'agent discipliné et bon marché, sans le rendre fiable.
 
 Cette comparaison peut néanmoins échouer ailleurs, et son échec chez vous serait un résultat à noter plutôt qu'un incident à masquer, puisqu'un modèle nettement plus capable peut absorber un contexte négligé et qu'il est utile de savoir à partir de quel écart de capacité cela devient vrai. La question mérite d'être reposée à chaque nouvelle génération de modèles, et le banc est là pour la reposer.
 
@@ -433,13 +462,13 @@ Cinq principes survivent à Pi, à `opencode-go` et à la version des paquets qu
 
 **Ce qui est stable devant, ce qui varie derrière.** Le cache ne fonctionne que sur un préfixe inchangé et coûte cinquante fois moins cher que l'entrée, si bien que toute donnée volatile placée tôt dans le contexte, qu'il s'agisse d'un horodatage, d'un état git ou d'une date, invalide tout ce qui suit.
 
-**Dire quand s'arrêter fait la moitié d'un bon prompt.** Nos exécutions ont plus souvent échoué par débordement que par incompétence, et les vingt exécutions qui reçoivent un périmètre et un critère d'arrêt explicites n'ont pas débordé une seule fois, contre sept sur dix pour la demande vague. Trois phrases dans la demande valent mieux qu'un modèle douze fois plus cher.
+**Dire quand s'arrêter fait la moitié d'un bon prompt.** Nos exécutions ont plus souvent échoué par débordement que par incompétence, et les trente exécutions qui reçoivent un périmètre et un critère d'arrêt explicites n'ont pas débordé une seule fois, contre cinq sur dix pour la demande vague. Trois phrases dans la demande valent mieux qu'un modèle douze fois plus cher.
 
-**Le fichier de règles est une check-list, pas un guide de style.** Il entre dans le contexte à chaque tour, ce qui le rend puissant et coûteux, d'où l'intérêt de le tenir court, de sourcer chaque règle par un échec observé et de le refactorer plutôt que de l'allonger. Nos mesures lui donnent raison sur toute la ligne, puisque la cellule `+AGENTS.md` est à la fois la moins chère de la matrice, la plus directe avec 7,5 tours médians, et l'une des plus disciplinées avec 9/10 sur le périmètre, le tout pour quatre lignes de texte.
+**Le fichier de règles est une check-list, pas un guide de style.** Il entre dans le contexte à chaque tour, ce qui le rend puissant et coûteux, d'où l'intérêt de le tenir court, de sourcer chaque règle par un échec observé et de le refactorer plutôt que de l'allonger. Nos mesures le placent honorablement sans en faire un champion : la cellule `+AGENTS.md` gagne trois points de périmètre sur la base, 8/10 contre 5/10, pour quatre lignes de texte et un coût qui ne bouge pas. C'est un bon rapport, et c'est tout ce que nous pouvons en dire — les deux fois où nous lui avons attribué davantage, la relance nous a démentis.
 
 **Un réglage exposé n'est pas un réglage compris.** Entre le drapeau que vous tapez et la requête qui part se trouvent du code et des tables de correspondance, comme le montre `--thinking medium`, qui n'existe pas sur la moitié des modèles sans que rien ne vous en avertisse.
 
-**Un agent est bruité, et sans répétitions vous ne mesurez rien.** La cellule de base affiche une étendue de ×3,50 sur dix exécutions, ce qui rend ininterprétable tout écart de coût inférieur à cet ordre de grandeur. Nous avons publié trois conclusions fausses dans les versions successives de ce module, chacune tirée d'un échantillon trop petit et chacune démentie en augmentant le nombre de répétitions. Trois répétitions constituent le minimum pour voir la dispersion ; il en faut nettement plus pour départager deux leviers proches, et les colonnes de notation, qui comptent des succès, sont les plus gourmandes.
+**Un agent est bruité, et sans répétitions vous ne mesurez rien.** La cellule de base affiche une étendue de ×4,22 sur dix exécutions, ce qui rend ininterprétable tout écart de coût inférieur à cet ordre de grandeur. Nous avons publié six conclusions fausses dans les versions successives de ce module, chacune tirée d'un échantillon trop petit et chacune démentie en augmentant les répétitions ou en relançant. Trois répétitions constituent le minimum pour voir la dispersion ; il en faut nettement plus pour départager deux leviers proches, et les colonnes de notation, qui comptent des succès, sont les plus gourmandes. Défiez-vous en particulier de l'étendue, qui ne dépend que des deux exécutions les plus extrêmes de l'échantillon et ignore toutes les autres : c'est sur elle que nous nous sommes trompés le plus souvent.
 
 ### Le cas `rtk`, et le passage à l'acte 2
 
@@ -447,9 +476,11 @@ Cinq principes survivent à Pi, à `opencode-go` et à la version des paquets qu
 
 La raison est arithmétique : `rtk` mord sur les sorties d'outils, or les sorties de `bash` ne représentent que 6 à 22 % du total sur ce dépôt, le reste venant des lectures de fichiers. Un dépôt de 617 lignes ne produit ni build bavard, ni suite de tests de dix minutes, ni `git log` de trois cents commits, donc il n'y a presque rien à compacter.
 
-Le seul écart qui ressort ne porte pas sur le coût médian, identique à celui de la base à un centième de centime près, mais sur la dispersion, qui tombe de ×3,50 sans l'extension à ×1,46 avec, soit la plus faible de toute la matrice. Sur dix répétitions, l'hypothèse d'un agent rendu plus prévisible plutôt que moins cher devient défendable, ce qui est une propriété désirable et une raison d'installer `rtk` que sa page de présentation ne met pas en avant.
+Elle ne fait rien gagner ailleurs non plus. Sa médiane est la plus basse du tableau, mais d'un dixième de centime, ce qui ne se distingue pas de zéro à cette dispersion, et ses scores de notation sont ceux du reste de la matrice.
 
-Il faut en retenir deux choses. D'abord qu'une brique de harnais ne vaut que ce que votre charge de travail lui donne à mâcher, et que le calcul s'inversera probablement sur un dépôt doté d'un build verbeux et d'une intégration continue bavarde, ce que vous saurez vérifier puisque vous avez le banc. Ensuite qu'une extension peut apporter autre chose que ce qu'elle annonce, et que vous ne le découvrirez qu'en mesurant plusieurs dimensions à la fois : nous cherchions une économie de tokens et nous avons trouvé une réduction de la variance.
+Nous avons cru un moment le contraire. Une version précédente de ce module lui attribuait la dispersion la plus faible de la matrice, ×1,46 contre ×3,50 pour la base, et en tirait une conclusion élégante : l'extension ne rendrait pas l'agent moins cher mais plus prévisible, ce qui serait une propriété désirable dont sa page de présentation ne parle pas. À la relance, `rtk` est à ×2,36 et le minimum du tableau appartient à `+AGENTS.md`. La conclusion élégante était un artefact de la statistique la plus fragile du tableau.
+
+Il faut en retenir trois choses. D'abord qu'une brique de harnais ne vaut que ce que votre charge de travail lui donne à mâcher, et que le calcul s'inversera probablement sur un dépôt doté d'un build verbeux et d'une intégration continue bavarde, ce que vous saurez vérifier puisque vous avez le banc. Ensuite qu'une extension installée sans mesure est une extension dont vous ignorez l'effet, y compris quand elle est recommandée par des gens compétents. Enfin, et c'est le plus inconfortable, qu'un résultat qui vous plaît demande plus de vérification qu'un résultat qui vous déplaît : celui-ci nous plaisait, nous l'avons publié, il était faux.
 
 Ce cas marque aussi un changement de nature dans les leviers. Tout ce que nous avons manipulé jusqu'ici relève de l'usage, qu'il s'agisse de choisir un modèle, de régler un curseur, d'écrire un prompt ou de tenir un fichier de règles, alors que `rtk` est le premier levier constitué de code ajouté au harnais. C'est la bascule de tout l'acte 2 : nous avons épuisé ce qu'on gagne en s'y prenant mieux, et nous allons désormais modifier la machine.
 
