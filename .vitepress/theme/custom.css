@@ -44,6 +44,18 @@
   padding-top: 1.5rem;
 }
 
+/* Les blocs `md` du site ne contiennent pas du code mais de la prose : prompts,
+   AGENTS.md, SKILL.md. Une seule ligne source y fait souvent un paragraphe
+   entier, et le défilement horizontal la rend illisible. On les fait donc
+   revenir à la ligne au lieu de déborder. Les autres langages gardent le
+   défilement, qui est le bon comportement pour du code. */
+.vp-doc div[class*='language-md'] pre code {
+  display: block;
+  width: auto;
+  white-space: pre-wrap;
+  overflow-wrap: break-word;
+}
+
 /* Numérotation visuelle des chapitres dans la sidebar */
 .VPSidebarItem.level-0 > .item .text {
   font-family: var(--vp-font-family-base);
