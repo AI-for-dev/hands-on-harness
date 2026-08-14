@@ -1,0 +1,35 @@
+{
+  "metrics": {
+    "delivered": true,
+    "in_scope": false,
+    "touched": [
+      ".scratch/probe.js",
+      ".scratch/probe_corner.js",
+      ".scratch/probe_side.js",
+      ".scratch/probe_tunnel.js",
+      ".scratch/to_fix.md",
+      "game/neon.js",
+      "game/neon.test.js"
+    ],
+    "tests_ajoutes": true,
+    "suite_lancee": true,
+    "skill_invoque": true,
+    "rebond_briques": true,
+    "rebond_angles": true,
+    "rebond_sortie": false,
+    "rebond_voisines": false,
+    "rebond_traversee": false
+  },
+  "reasons": {
+    "in_scope": "a aussi touché .scratch/probe.js, .scratch/probe_corner.js, .scratch/probe_side.js, .scratch/probe_tunnel.js, .scratch/to_fix.md",
+    "tests_ajoutes": "3 cas de plus qu'à l'étalon (9 contre 6)",
+    "suite_lancee": "node --test .scratch/test_collisions.js ; node --test game/probe.test.js ; node --test game/probe_d1.test.js ; npm test",
+    "skill_invoque": "/Users/loic.gouarin/Formations/2026/AI4Dev/hands-on-harness/scripts/trysquare-campaign/briques/skills/playtest/SKILL.md ; playtest développée dans le prompt",
+    "rebond_sortie": "flanc gauche: la balle ressort par la gauche : le bord droit de la balle devait revenir à x <= 100 : 103 ; flanc droit: la balle ressort par la droite : le bord gauche de la balle devait revenir à x >= 172 : 169 ; face haute: la balle ressort par le haut : le bord bas de la balle devait revenir à y <= 100 : 103 ; face basse: la balle ressort par le bas : le bord haut de la balle devait revenir à y >= 120 : 117",
+    "rebond_voisines": "couture horizontale: un seul rebond sur deux briques côte à côte : vy devait s'inverser une seule fois : -60 ; couture verticale: un seul rebond sur deux briques superposées : vx devait s'inverser une seule fois : 60",
+    "rebond_traversee": "balle rapide: la brique n_est pas franchie sans être touchée : la brique a survécu à une balle qui l_a traversée de part en part"
+  },
+  "unjudged": {
+    "sonde_intacte": "aucune sonde n'a été fournie à cette cellule"
+  }
+}

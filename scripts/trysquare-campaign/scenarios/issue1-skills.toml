@@ -1,0 +1,88 @@
+# Les deux compétences playtest face à face, sur l'issue #1.
+#
+# `+agents+skill` réplique à l'identique la cellule de `issue1-contexte.toml`
+# (mêmes briques, même prompt, y compris l'extension websearch que la compétence
+# originale demande). `+agents+skill_court` ne diffère que par la compétence
+# raccourcie et l'absence de l'extension, que la version courte ne demande plus.
+#
+# Ce scénario existe pour ne pas toucher à `issue1-contexte.toml`, dont les
+# matrices archivées se comparent entre elles.
+
+[scenario]
+name = "issue1-skills"
+title = "playtest contre playtest-court, sur le rebond de l'issue #1"
+hypothesis = "../hypotheses/issue1-skills.md"
+
+[task]
+repo = "neon"
+etalon = "etalon-v1"
+prompt = "../briques/issue1-simple-prompt-with-skill.md"
+
+[agent]
+provider = "opencode-go"
+model = "deepseek-v4-flash"
+# provider = "ilaas"
+# model = "gemma-4-31b"
+# Comme les cellules à compétence de `issue1-contexte` : déclaré, jamais hérité.
+thinking = "high"
+
+[protocol]
+repetitions = 20
+concurrency = 5
+timeout = 1800
+attempts = 3
+
+# --- Cellules ---------------------------------------------------------------
+
+[variants."+agents+skill"]
+prompt = "../briques/issue1-simple-prompt-with-skill.md"
+context = "../briques/AGENTS.md"
+harness = ["skills-playtest", "extension"]
+
+[variants."+agents+skill_court"]
+prompt = "../briques/issue1-simple-prompt-with-skill-court.md"
+context = "../briques/AGENTS.md"
+harness = ["skills-playtest-court"]
+
+# --- Briques de harnais -----------------------------------------------------
+
+[harness.skills-playtest]
+kind = "skills"
+paths = ["../briques/skills/playtest"]
+
+[harness.skills-playtest-court]
+kind = "skills"
+paths = ["../briques/skills/playtest-court"]
+
+[harness.extension]
+repo = "websearch"
+tag = "master"
+load = "extensions"
+
+# --- Validation ---------------------------------------------------------------
+
+[[validation]]
+mode = "script"
+command = "../validateurs/issue1.py"
+metrics = [
+  "delivered",
+  "suite_lancee",
+  "skill_invoque",
+  "sonde_intacte",
+  "in_scope",
+  "touched",
+  "tests_ajoutes",
+  "rebond_briques",
+  "rebond_angles",
+  "rebond_sortie",
+  "rebond_voisines",
+  "rebond_traversee",
+]
+
+# --- Verdict ------------------------------------------------------------------
+
+[verdict]
+criterion = "rebond_briques"
+# L'écart utile est celui entre les deux compétences.
+reference = "+agents+skill"
+validity = ["delivered"]

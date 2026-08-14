@@ -1,0 +1,29 @@
+{
+  "metrics": {
+    "delivered": true,
+    "in_scope": true,
+    "touched": [
+      "game/neon.js"
+    ],
+    "tests_ajoutes": false,
+    "suite_lancee": true,
+    "skill_invoque": true,
+    "sonde_intacte": true,
+    "rebond_briques": true,
+    "rebond_angles": true,
+    "rebond_sortie": true,
+    "rebond_voisines": true,
+    "rebond_traversee": true
+  },
+  "reasons": {
+    "tests_ajoutes": "6 cas, comme à l'étalon",
+    "suite_lancee": "cd /private/var/folders/hf/sz48238s7x98j_p98cqfxprc0000gp/T/trysquare/campaign/issue1-contexte_etalon-v1_opencode-go_deepseek-v4-flash_n20/02533f8a/repo && npm test 2>&1 | grep -E \"^(✔|✖|ℹ )\" ; cd /private/var/folders/hf/sz48238s7x98j_p98cqfxprc0000gp/T/trysquare/campaign/issue1-contexte_etalon-v1_opencode-go_deepseek-v4-flash_n20/02533f8a/repo && npm test 2>&1 | grep -E \"^(✔|✖|ℹ|# )\" | head -50 ; cd /private/var/folders/hf/sz48238s7x98j_p98cqfxprc0000gp/T/trysquare/campaign/issue1-contexte_etalon-v1_opencode-go_deepseek-v4-flash_n20/02533f8a/repo && npm test 2>&1 | tail -40 ; cd /private/var/folders/hf/sz48238s7x98j_p98cqfxprc0000gp/T/trysquare/campaign/issue1-contexte_etalon-v1_opencode-go_deepseek-v4-flash_n20/02533f8a/repo && npm test > /tmp/neon-fail.txt 2>&1; grep -E \"✖|AssertionError|tests |pass |fail \" /tmp/neon-fail.txt | head -40; echo ---; node -e \" const {ballSpeed, BALL_R, BRICK_H, BRICK_W, BRICK_GAP, BRICK_TOP, WIDTH, makeBricks} = await import('./game/neon.js'); // triggers const lvl6 = ballSpeed(6); console.log('ballSpeed(6) =', lvl6, 'maxStep =', lvl6*0.05, 'crossDistance =', BRICK_H + 2*BALL_R); console.log('threshold level for vertical tunneling: l such that 260+(l-1)*90 > 680 ->', Math.ceil((680-260)/90)+1); console.log('horizontal: need', BRICK_W + 2*BALL_R, 'px -> speed', (BRICK_W+2*BALL_R)/0.05, 'unreachable? max speed', ballSpeed(20)); const b = makeBricks(1); console.log('rows y:', [...new Set(b.map(x=>x.y))].join(','), 'cols x:', [...new Set(b.map(x=>x.x))].join(',')); console.log('gap', BRICK_GAP, 'vs ball diameter', 2*BALL_R, '-> seam double-overlap', BRICK_GAP < 2*BALL_R); \" ; cd /private/var/folders/hf/sz48238s7x98j_p98cqfxprc0000gp/T/trysquare/campaign/issue1-contexte_etalon-v1_opencode-go_deepseek-v4-flash_n20/02533f8a/repo && rm -rf .scratch && git status --short && echo --- && git diff --stat && npm test 2>&1 | grep -E \"^ℹ (tests|pass|fail)\"",
+    "skill_invoque": "playtest développée dans le prompt",
+    "rebond_briques": "flanc gauche: la balle repart vers la gauche : dévié par step() et non par frame() ; flanc droit: la balle repart vers la droite : dévié par step() et non par frame() ; face haute: la balle repart vers le haut : dévié par step() et non par frame() ; face basse: la balle repart vers le bas : dévié par step() et non par frame()",
+    "rebond_angles": "coin haut gauche: la balle repart en diagonale : dévié par step() et non par frame()",
+    "rebond_sortie": "flanc gauche: la balle ressort par la gauche : dévié par step() et non par frame() ; flanc droit: la balle ressort par la droite : dévié par step() et non par frame() ; face haute: la balle ressort par le haut : dévié par step() et non par frame() ; face basse: la balle ressort par le bas : dévié par step() et non par frame()",
+    "rebond_voisines": "couture horizontale: un seul rebond sur deux briques côte à côte : dévié par step() et non par frame() ; couture verticale: un seul rebond sur deux briques superposées : dévié par step() et non par frame()",
+    "rebond_traversee": "balle rapide: la brique n_est pas franchie sans être touchée : dévié par step() et non par frame()"
+  },
+  "unjudged": {}
+}

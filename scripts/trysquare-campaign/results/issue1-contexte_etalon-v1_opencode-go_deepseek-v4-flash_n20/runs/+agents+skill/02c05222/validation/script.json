@@ -1,0 +1,31 @@
+{
+  "metrics": {
+    "delivered": true,
+    "in_scope": true,
+    "touched": [
+      "game/neon.js",
+      "game/neon.test.js"
+    ],
+    "tests_ajoutes": true,
+    "suite_lancee": true,
+    "skill_invoque": true,
+    "rebond_briques": true,
+    "rebond_angles": true,
+    "rebond_sortie": true,
+    "rebond_voisines": true,
+    "rebond_traversee": true
+  },
+  "reasons": {
+    "tests_ajoutes": "10 cas de plus qu'à l'étalon (16 contre 6)",
+    "suite_lancee": "cd /private/var/folders/hf/sz48238s7x98j_p98cqfxprc0000gp/T/trysquare/campaign/issue1-contexte_etalon-v1_opencode-go_deepseek-v4-flash_n20/02c05222/repo && node --test .scratch/probe.test.js 2>&1 | grep -E \"^(✔|✖|ℹ (tests|pass|fail))\" ; echo \"=== details ===\"; node --test .scratch/probe.test.js 2>&1 | grep -E \"not ok|AssertionError|message:\" | head -40 ; cd /private/var/folders/hf/sz48238s7x98j_p98cqfxprc0000gp/T/trysquare/campaign/issue1-contexte_etalon-v1_opencode-go_deepseek-v4-flash_n20/02c05222/repo && node --test .scratch/probe.test.js 2>&1 | grep -E \"^ℹ (tests|pass|fail)\"; echo \"=== diff stat ===\"; git diff --stat; echo \"=== status ===\"; git status --short ; cd /private/var/folders/hf/sz48238s7x98j_p98cqfxprc0000gp/T/trysquare/campaign/issue1-contexte_etalon-v1_opencode-go_deepseek-v4-flash_n20/02c05222/repo && node --test .scratch/probe.test.js 2>&1 | sed -n '/^ℹ fail/,+2p; /D1: ball/,/^$/p' | head -30; echo \"=====\"; node --test .scratch/probe.test.js 2>&1 | grep -A6 \"D6: fast ball\" | head -12 ; cd /private/var/folders/hf/sz48238s7x98j_p98cqfxprc0000gp/T/trysquare/campaign/issue1-contexte_etalon-v1_opencode-go_deepseek-v4-flash_n20/02c05222/repo && node --test game/neon.test.js 2>&1 | grep -B2 -A12 \"corner hit flips\" | head -30 ; cd /private/var/folders/hf/sz48238s7x98j_p98cqfxprc0000gp/T/trysquare/campaign/issue1-contexte_etalon-v1_opencode-go_deepseek-v4-flash_n20/02c05222/repo && node --test game/neon.test.js 2>&1 | grep -E \"^(✔|✖|ℹ (tests|pass|fail))\" ; cd /private/var/folders/hf/sz48238s7x98j_p98cqfxprc0000gp/T/trysquare/campaign/issue1-contexte_etalon-v1_opencode-go_deepseek-v4-flash_n20/02c05222/repo && npm test 2>&1 | grep -E \"^(✔|✖|ℹ (tests|pass|fail))\" ; cd /private/var/folders/hf/sz48238s7x98j_p98cqfxprc0000gp/T/trysquare/campaign/issue1-contexte_etalon-v1_opencode-go_deepseek-v4-flash_n20/02c05222/repo && npm test 2>&1 | grep -E \"^ℹ (tests|pass|fail)\" && node -e \" import('./game/neon.js').then(({step, createState, makeBricks, ballSpeed}) => { const sim = (level0, dt, maxFrames) => { const state = createState(level0); let frames = 0, worst = 0; while (frames < maxFrames) { frames++; const lost = step(state, dt); if (lost) { state.lives--; if (state.lives <= 0) break; state.ball = createState(state.level).ball; } if (state.bricks.every(b => !b.alive)) { state.level++; state.bricks = makeBricks(state.level); state.ball = createState(state.level).ball; } state.paddle.x = Math.max(0, Math.min(640 - 96, state.ball.x - 48)); const s = Math.hypot(state.ball.vx, state.ball.vy); const oob = state.ball.x < state.ball.r - 1e-9 || state.ball.x > 640 - state.ball.r + 1e-9 || !Number.isFinite(state.ball.x) || s === 0; worst = Math.max(worst, s); if (oob) { console.log(' OUT OF BOUNDS at frame', frames, JSON.stringify(state.ball)); return; } } console.log(' level', state.level, '| frames', frames, '| lives', state.lives, '| score', state.score, '| max speed', worst.toFixed(1), '| alive', state.bricks.filter(b=>b.alive).length); }; console.log('lvl 1 @60fps:'); sim(1, 1/60, 60000); console.log('lvl 10 @60fps:'); sim(10, 1/60, 60000); console.log('lvl 10 @30fps:'); sim(10, 1/30, 60000); console.log('lvl 10 @20fps:'); sim(10, 1/20, 60000); }); \" ; cd /private/var/folders/hf/sz48238s7x98j_p98cqfxprc0000gp/T/trysquare/campaign/issue1-contexte_etalon-v1_opencode-go_deepseek-v4-flash_n20/02c05222/repo && npm test 2>&1 | tail -20 ; cd /private/var/folders/hf/sz48238s7x98j_p98cqfxprc0000gp/T/trysquare/campaign/issue1-contexte_etalon-v1_opencode-go_deepseek-v4-flash_n20/02c05222/repo && rm -rf .scratch && npm test 2>&1 | tail -10 && echo \"=== git status ===\" && git status --short && echo \"=== diff stat ===\" && git diff --stat ; cd /private/var/folders/hf/sz48238s7x98j_p98cqfxprc0000gp/T/trysquare/campaign/issue1-contexte_etalon-v1_opencode-go_deepseek-v4-flash_n20/02c05222/repo && tail -8 game/neon.test.js && echo \"---\" && node --test game/neon.test.js 2>&1 | grep -cE \"^✔\"",
+    "skill_invoque": "playtest développée dans le prompt",
+    "rebond_briques": "flanc gauche: la balle repart vers la gauche : dévié par step() et non par frame() ; flanc droit: la balle repart vers la droite : dévié par step() et non par frame() ; face haute: la balle repart vers le haut : dévié par step() et non par frame() ; face basse: la balle repart vers le bas : dévié par step() et non par frame()",
+    "rebond_angles": "coin haut gauche: la balle repart en diagonale : dévié par step() et non par frame()",
+    "rebond_sortie": "flanc gauche: la balle ressort par la gauche : dévié par step() et non par frame() ; flanc droit: la balle ressort par la droite : dévié par step() et non par frame() ; face haute: la balle ressort par le haut : dévié par step() et non par frame() ; face basse: la balle ressort par le bas : dévié par step() et non par frame()",
+    "rebond_voisines": "couture horizontale: un seul rebond sur deux briques côte à côte : dévié par step() et non par frame() ; couture verticale: un seul rebond sur deux briques superposées : dévié par step() et non par frame()",
+    "rebond_traversee": "balle rapide: la brique n_est pas franchie sans être touchée : dévié par step() et non par frame()"
+  },
+  "unjudged": {
+    "sonde_intacte": "aucune sonde n'a été fournie à cette cellule"
+  }
+}

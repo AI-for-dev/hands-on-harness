@@ -1,0 +1,193 @@
+diff --git a/game/neon.js b/game/neon.js
+index 6b4a133..45c443b 100644
+--- a/game/neon.js
++++ b/game/neon.js
+@@ -223,11 +223,22 @@ export function frame(ctx, state) {
+       brick.alive = false;
+       state.combo += 1;
+       state.score += scoreForBrick(brick, state.combo);
+-      // BUG (#1): the ball is NOT deflected here. Only the walls and the paddle
+-      // bounce (in step()); bricks were never given a bounce. So the ball plows
+-      // straight through a column head-on AND straight through the side of a
+-      // row. Fix = a real per-face bounce (flip vy on a top/bottom hit, vx on a
+-      // side hit) plus pushing the ball back out of the brick.
++
++      const overlapL = (state.ball.x + state.ball.r) - brick.x;
++      const overlapR = (brick.x + brick.w) - (state.ball.x - state.ball.r);
++      const overlapT = (state.ball.y + state.ball.r) - brick.y;
++      const overlapB = (brick.y + brick.h) - (state.ball.y - state.ball.r);
++
++      const minOverlap = Math.min(overlapL, overlapR, overlapT, overlapB);
++
++      if (minOverlap === overlapT || minOverlap === overlapB) {
++        state.ball.vy = minOverlap === overlapT ? Math.abs(state.ball.vy) * UP : Math.abs(state.ball.vy) * DOWN;
++        state.ball.y = minOverlap === overlapT ? brick.y - state.ball.r : brick.y + brick.h + state.ball.r;
++      }
++      if (minOverlap === overlapL || minOverlap === overlapR) {
++        state.ball.vx = minOverlap === overlapL ? Math.abs(state.ball.vx) * LEFT : Math.abs(state.ball.vx) * RIGHT;
++        state.ball.x = minOverlap === overlapL ? brick.x - state.ball.r : brick.x + brick.w + state.ball.r;
++      }
+     }
+
+     ctx.fillStyle = brickColor(brick.row);
+diff --git a/game/neon.test.js b/game/neon.test.js
+index 250d6a9..3866a28 100644
+--- a/game/neon.test.js
++++ b/game/neon.test.js
+@@ -18,6 +18,8 @@ import {
+   BRICK_ROWS,
+   BRICK_COLS,
+   WIDTH,
++  frame,
++  BALL_R,
+ } from './neon.js';
+
+ test('collides: clear overlap detected', () => {
+@@ -65,5 +67,145 @@ function belowField() {
+   return 500;
+ }
+
+-// TODO (#5): test comboMultiplier / scoreForBrick.
+-// TODO      : test level progression and loadBest/saveBest persistence.
++
++test('frame: ball bounces off the top of a brick', () => {
++  const state = createState(1);
++  state.bricks.forEach(b => b.alive = false); // Only one brick alive
++  const brick = state.bricks[0];
++  brick.alive = true;
++
++  state.ball = {
++    x: brick.x + brick.w / 2,
++    y: brick.y - BALL_R + 1,
++    r: BALL_R,
++    vx: 0,
++    vy: 100,
++  };
++
++  const mockCtx = {
++    fillRect: () => {},
++    beginPath: () => {},
++    arc: () => {},
++    fill: () => {},
++    fillText: () => {},
++  };
++
++  frame(mockCtx, state);
++
++  assert.ok(state.ball.vy < 0, 'vy should be reversed (upward)');
++  assert.ok(state.ball.y + state.ball.r <= brick.y, 'ball should be pushed out of the brick');
++});
++
++test('frame: ball bounces off the bottom of a brick', () => {
++  const state = createState(1);
++  state.bricks.forEach(b => b.alive = false); // Only one brick alive
++  const brick = state.bricks[0];
++  brick.alive = true;
++
++  state.ball = {
++    x: brick.x + brick.w / 2,
++    y: brick.y + brick.h + BALL_R - 1,
++    r: BALL_R,
++    vx: 0,
++    vy: -100,
++  };
++
++  const mockCtx = {
++    fillRect: () => {},
++    beginPath: () => {},
++    arc: () => {},
++    fill: () => {},
++    fillText: () => {},
++  };
++
++  frame(mockCtx, state);
++
++  assert.ok(state.ball.vy > 0, 'vy should be reversed (downward)');
++  assert.ok(state.ball.y - state.ball.r >= brick.y + brick.h, 'ball should be pushed out of the brick');
++});
++
++test('frame: ball bounces off the left of a brick', () => {
++  const state = createState(1);
++  state.bricks.forEach(b => b.alive = false); // Only one brick alive
++  const brick = state.bricks[0];
++  brick.alive = true;
++
++  state.ball = {
++    x: brick.x - BALL_R + 1,
++    y: brick.y + brick.h / 2,
++    r: BALL_R,
++    vx: 100,
++    vy: 0,
++  };
++
++  const mockCtx = {
++    fillRect: () => {},
++    beginPath: () => {},
++    arc: () => {},
++    fill: () => {},
++    fillText: () => {},
++  };
++
++  frame(mockCtx, state);
++
++  assert.ok(state.ball.vx < 0, 'vx should be reversed (leftward)');
++  assert.ok(state.ball.x + state.ball.r <= brick.x, 'ball should be pushed out of the brick');
++});
++
++test('frame: ball bounces off the right of a brick', () => {
++  const state = createState(1);
++  state.bricks.forEach(b => b.alive = false); // Only one brick alive
++  const brick = state.bricks[0];
++  brick.alive = true;
++
++  state.ball = {
++    x: brick.x + brick.w + BALL_R - 1,
++    y: brick.y + brick.h / 2,
++    r: BALL_R,
++    vx: -100,
++    vy: 0,
++  };
++
++  const mockCtx = {
++    fillRect: () => {},
++    beginPath: () => {},
++    arc: () => {},
++    fill: () => {},
++    fillText: () => {},
++  };
++
++  frame(mockCtx, state);
++
++  assert.ok(state.ball.vx > 0, 'vx should be reversed (rightward)');
++  assert.ok(state.ball.x - state.ball.r >= brick.x + brick.w, 'ball should be pushed out of the brick');
++});
++
++test('frame: ball bounces off a top-left corner', () => {
++  const state = createState(1);
++  state.bricks.forEach(b => b.alive = false);
++  const brick = state.bricks[0];
++  brick.alive = true;
++
++  state.ball = {
++    x: brick.x - BALL_R + 1,
++    y: brick.y - BALL_R + 1,
++    r: BALL_R,
++    vx: 100,
++    vy: 100,
++  };
++
++  const mockCtx = {
++    fillRect: () => {},
++    beginPath: () => {},
++    arc: () => {},
++    fill: () => {},
++    fillText: () => {},
++  };
++
++  frame(mockCtx, state);
++
++  assert.ok(state.ball.vx < 0, 'vx should be reversed');
++  assert.ok(state.ball.vy < 0, 'vy should be reversed');
++  assert.ok(state.ball.x + state.ball.r <= brick.x, 'ball should be pushed left');
++  assert.ok(state.ball.y + state.ball.r <= brick.y, 'ball should be pushed up');
++});

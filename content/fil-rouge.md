@@ -1,8 +1,10 @@
 # Le fil rouge : NÉON
 
-Tout au long de la formation, nous travaillons sur un même dépôt, que nous appelons **NÉON**. Il s'agit d'un petit casse-briques jouable, écrit en HTML et JavaScript sur un `<canvas>`, sans aucune dépendance. Vous l'ouvrez dans votre navigateur et il fonctionne. C'est un vrai logiciel, avec ses qualités et surtout ses défauts.
+Tout au long de la formation, nous travaillons sur un même dépôt, que nous appelons **NÉON**. Il s'agit d'un petit casse-briques jouable, écrit en HTML et JavaScript sur un `<canvas>`, sans aucune dépendance. Vous l'ouvrez dans votre navigateur et il fonctionne. C'est un vrai logiciel, avec ses qualités et ses défauts.
 
 Car NÉON est volontairement imparfait. Il comporte des bugs, des choix techniques à corriger, une liste de tickets en attente, un fichier piégé et un historique git bien réel. Ce n'est pas un accident : c'est la matière première de la formation.
+
+Vous le trouverez à l'adresse suivante: https://github.com/AI-for-dev/neon
 
 ## Maintenir plutôt que construire
 
@@ -36,14 +38,14 @@ La séparation entre la logique pure et le rendu est partiellement respectée. L
 
 Le fichier `ISSUES.md` contient le backlog que nous exploitons module après module.
 
-| #   | Type          | Titre                                                                    | Module |
-| --- | ------------- | ------------------------------------------------------------------------ | ------ |
-| 1   | bug           | La balle traverse une brique à grande vitesse                            | 2.4    |
-| 2   | performance   | La collision scanne toutes les briques à chaque frame, code mêlé au rendu | 2.1    |
-| 3   | fonctionnalité| Mode nuit                                                                | 4.0    |
-| 4   | fonctionnalité| Import CSV d'un tableau de scores, compatible avec la sauvegarde locale   | 4.0    |
-| 5   | dette         | La logique de score et de combo n'est pas testée                         | 3.1    |
-| 6   | dette         | Couleurs en dur au lieu de la palette                                    | 2.5    |
+| #   | Type           | Titre                                                                     | Module |
+| --- | -------------- | ------------------------------------------------------------------------- | ------ |
+| 1   | bug            | La balle traverse une brique à grande vitesse                             | 2.4    |
+| 2   | performance    | La collision scanne toutes les briques à chaque frame, code mêlé au rendu | 2.1    |
+| 3   | fonctionnalité | Mode nuit                                                                 | 4.0    |
+| 4   | fonctionnalité | Import CSV d'un tableau de scores, compatible avec la sauvegarde locale   | 4.0    |
+| 5   | dette          | La logique de score et de combo n'est pas testée                          | 3.1    |
+| 6   | dette          | Couleurs en dur au lieu de la palette                                     | 2.5    |
 
 ## Le fichier piégé
 

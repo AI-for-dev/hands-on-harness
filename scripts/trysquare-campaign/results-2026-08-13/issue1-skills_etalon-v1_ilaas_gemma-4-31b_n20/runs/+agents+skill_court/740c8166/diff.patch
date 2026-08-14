@@ -1,0 +1,119 @@
+diff --git a/game/neon.js b/game/neon.js
+index 6b4a133..b362c3d 100644
+--- a/game/neon.js
++++ b/game/neon.js
+@@ -223,11 +223,19 @@ export function frame(ctx, state) {
+       brick.alive = false;
+       state.combo += 1;
+       state.score += scoreForBrick(brick, state.combo);
+-      // BUG (#1): the ball is NOT deflected here. Only the walls and the paddle
+-      // bounce (in step()); bricks were never given a bounce. So the ball plows
+-      // straight through a column head-on AND straight through the side of a
+-      // row. Fix = a real per-face bounce (flip vy on a top/bottom hit, vx on a
+-      // side hit) plus pushing the ball back out of the brick.
++
++      const overlapX = Math.min(state.ball.x + state.ball.r - brick.x, brick.x + brick.w - (state.ball.x - state.ball.r));
++      const overlapY = Math.min(state.ball.y + state.ball.r - brick.y, brick.y + brick.h - (state.ball.y - state.ball.r));
++
++      if (overlapX < overlapY) {
++        if (state.ball.vx < 0) state.ball.x = brick.x + brick.w + state.ball.r;
++        else state.ball.x = brick.x - state.ball.r;
++        state.ball.vx *= -1;
++      } else {
++        if (state.ball.vy < 0) state.ball.y = brick.y + brick.h + state.ball.r;
++        else state.ball.y = brick.y - state.ball.r;
++        state.ball.vy *= -1;
++      }
+     }
+
+     ctx.fillStyle = brickColor(brick.row);
+diff --git a/game/neon.test.js b/game/neon.test.js
+index 250d6a9..ba4b299 100644
+--- a/game/neon.test.js
++++ b/game/neon.test.js
+@@ -15,9 +15,14 @@ import {
+   step,
+   makeBricks,
+   createState,
++  frame,
++  UP,
++  DOWN,
+   BRICK_ROWS,
+   BRICK_COLS,
+   WIDTH,
++  BRICK_H,
++  BALL_R,
+ } from './neon.js';
+
+ test('collides: clear overlap detected', () => {
+@@ -59,11 +64,68 @@ test('makeBricks: full, all-alive grid at start', () => {
+   assert.ok(bricks.every((b) => b.x >= 0 && b.x + b.w <= WIDTH));
+ });
+
++test('frame: ball hitting brick bottom => bounce UP to DOWN', () => {
++  const state = createState(1);
++  state.bricks = []; // Clear all bricks
++  const brick = { x: 4, y: 48, w: 72, h: 20, alive: true, row: 0, points: 10 };
++  state.bricks.push(brick);
++  // Position ball just below the brick, moving UP
++  state.ball = {
++    x: brick.x + brick.w / 2,
++    y: brick.y + brick.h + BALL_R - 1,
++    r: BALL_R,
++    vx: 0,
++    vy: 100 * UP
++  };
++
++  const ctx = {
++    fillRect: () => {},
++    fillText: () => {},
++    beginPath: () => {},
++    arc: () => {},
++    fill: () => {},
++  };
++
++  frame(ctx, state);
++
++  assert.equal(brick.alive, false, 'brick should be destroyed');
++  assert.equal(state.ball.vy, 100 * DOWN, 'velocity should flip to DOWN');
++});
++
+ // Small local helper: place the ball below the field without importing the
+ // height (coverage intentionally light).
+ function belowField() {
+   return 500;
+ }
+
+-// TODO (#5): test comboMultiplier / scoreForBrick.
+-// TODO      : test level progression and loadBest/saveBest persistence.
++test('frame: ball hitting two bricks at a seam => bounce once', () => {
++  const state = createState(1);
++  state.bricks = []; // Clear all bricks
++  // Two bricks side-by-side
++  const b1 = { x: 0, y: 0, w: 10, h: 10, alive: true, row: 0, points: 10 };
++  const b2 = { x: 10, y: 0, w: 10, h: 10, alive: true, row: 0, points: 10 };
++  state.bricks.push(b1, b2);
++
++  // Ball is moving RIGHT and hits the seam (vertical edge)
++  state.ball = {
++    x: 10 - BALL_R + 0.1, // just slightly inside b2
++    y: 5,
++    r: BALL_R,
++    vx: 100,
++    vy: 0
++  };
++
++  const ctx = {
++    fillRect: () => {},
++    fillText: () => {},
++    beginPath: () => {},
++    arc: () => {},
++    fill: () => {},
++  };
++
++  frame(ctx, state);
++
++  assert.equal(state.ball.vx, -100, 'velocity should be inverted once');
++  assert.equal(b1.alive, false);
++  assert.equal(b2.alive, false);
++});

@@ -1,0 +1,29 @@
+{
+  "metrics": {
+    "delivered": true,
+    "in_scope": true,
+    "touched": [
+      "game/neon.js"
+    ],
+    "tests_ajoutes": false,
+    "suite_lancee": true,
+    "skill_invoque": true,
+    "sonde_intacte": true,
+    "rebond_briques": true,
+    "rebond_angles": true,
+    "rebond_sortie": true,
+    "rebond_voisines": true,
+    "rebond_traversee": true
+  },
+  "reasons": {
+    "tests_ajoutes": "6 cas, comme à l'étalon",
+    "suite_lancee": "node --test .scratch/test_collision.js ; node --test .scratch/test_collisions.js ; node --test .scratch/test_face.js ; node --test .scratch/test_sticky.js ; node --test .scratch/test_tunnel.js ; node --test game/bricks.test.js ; npm test",
+    "skill_invoque": "playtest développée dans le prompt",
+    "rebond_briques": "flanc gauche: la balle repart vers la gauche : dévié par step() et non par frame() ; flanc droit: la balle repart vers la droite : dévié par step() et non par frame() ; face haute: la balle repart vers le haut : dévié par step() et non par frame() ; face basse: la balle repart vers le bas : dévié par step() et non par frame()",
+    "rebond_angles": "coin haut gauche: la balle repart en diagonale : dévié par step() et non par frame()",
+    "rebond_sortie": "flanc gauche: la balle ressort par la gauche : dévié par step() et non par frame() ; flanc droit: la balle ressort par la droite : dévié par step() et non par frame() ; face haute: la balle ressort par le haut : dévié par step() et non par frame() ; face basse: la balle ressort par le bas : dévié par step() et non par frame()",
+    "rebond_voisines": "couture horizontale: un seul rebond sur deux briques côte à côte : dévié par step() et non par frame() ; couture verticale: un seul rebond sur deux briques superposées : dévié par step() et non par frame()",
+    "rebond_traversee": "balle rapide: la brique n_est pas franchie sans être touchée : dévié par step() et non par frame()"
+  },
+  "unjudged": {}
+}

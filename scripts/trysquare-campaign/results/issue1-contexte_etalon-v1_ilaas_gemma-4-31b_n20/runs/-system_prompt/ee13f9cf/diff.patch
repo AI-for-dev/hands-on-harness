@@ -1,0 +1,44 @@
+diff --git a/game/neon.js b/game/neon.js
+index 6b4a133..6a6f801 100644
+--- a/game/neon.js
++++ b/game/neon.js
+@@ -223,11 +223,34 @@ export function frame(ctx, state) {
+       brick.alive = false;
+       state.combo += 1;
+       state.score += scoreForBrick(brick, state.combo);
+-      // BUG (#1): the ball is NOT deflected here. Only the walls and the paddle
+-      // bounce (in step()); bricks were never given a bounce. So the ball plows
+-      // straight through a column head-on AND straight through the side of a
+-      // row. Fix = a real per-face bounce (flip vy on a top/bottom hit, vx on a
+-      // side hit) plus pushing the ball back out of the brick.
++
++      // Rebound logic: determine which side was hit
++      const ballCenter = state.ball;
++      const brickLeft = brick.x;
++      const brickRight = brick.x + brick.w;
++      const brickTop = brick.y;
++      const brickBottom = brick.y + brick.h;
++
++      // Find the closest point on the brick to the ball's center
++      const closestX = Math.max(brickLeft, Math.min(ballCenter.x, brickRight));
++      const closestY = Math.max(brickTop, Math.min(ballCenter.y, brickBottom));
++
++      // Calculate distance from center to closest point
++      const dx = ballCenter.x - closestX;
++      const dy = ballCenter.y - closestY;
++
++      // Determine the dominant axis of collision to flip velocity
++      if (Math.abs(dx) > Math.abs(dy)) {
++        // Hit side (left or right)
++        state.ball.vx *= -1;
++        // Push ball out to prevent sticking
++        state.ball.x = dx > 0 ? brickRight + ballCenter.r : brickLeft - ballCenter.r;
++      } else {
++        // Hit top or bottom
++        state.ball.vy *= -1;
++        // Push ball out to prevent sticking
++        state.ball.y = dy > 0 ? brickBottom + ballCenter.r : brickTop - ballCenter.r;
++      }
+     }
+
+     ctx.fillStyle = brickColor(brick.row);

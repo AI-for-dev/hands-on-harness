@@ -1,0 +1,274 @@
+diff --git a/game/neon.js b/game/neon.js
+index 6b4a133..8738c50 100644
+--- a/game/neon.js
++++ b/game/neon.js
+@@ -1,9 +1,5 @@
+ // neon.js — NÉON, a minimalist brick breaker (zero dependencies).
+ //
+-// This file INTENTIONALLY mixes game logic and rendering in a few places
+-// (see ISSUES.md #2): brick collision detection currently lives inside the
+-// draw loop `frame()`. This is deliberate debt, ripe for a refactor.
+-//
+ // The module runs nothing on import: only `boot()` touches the DOM. Pure
+ // logic can therefore be imported from the tests (`node --test`) without a
+ // browser.
+@@ -103,8 +99,9 @@ export function createState(level = 1) {
+
+ // True if the ball (circle approximated by its box) overlaps the brick.
+ // Simple AABB test: it only says WHETHER the ball and the brick overlap, not
+-// WHICH face was hit. The missing bounce in frame() is what lets the ball plow
+-// straight through bricks (see #1).
++// WHICH face was hit. Kept as a public query primitive; the bounce itself is
++// resolved in step() (resolveBricks), which sweeps the movement segment and
++// picks the face by penetration depth.
+ export function collides(ball, brick) {
+   return (
+     ball.x + ball.r > brick.x &&
+@@ -156,18 +153,26 @@ export function saveBest(storage, score) {
+   return best;
+ }
+
+-// --- Physics (movement + wall/paddle bounces) ------------------------------
++// --- Physics (movement + wall/paddle/brick bounces) -------------------------
+
+ // Advances the ball by a time step `dt` (in seconds) and handles bounces off
+-// the walls and the paddle. Does NOT handle bricks: that responsibility still
+-// lives in the render loop `frame()` (debt #2).
+-// Returns `true` if the ball is lost (exits through the bottom).
++// the walls, the paddle and the bricks (resolveBricks). Returns `true` if the
++// ball is lost (exits through the bottom).
+ export function step(state, dt) {
+   const { ball, paddle } = state;
+
++  // Remember the position before this step: the brick and paddle collision
++  // tests below sweep the segment (previous -> new), not just the new sample.
++  ball.px = ball.x;
++  ball.py = ball.y;
++
+   ball.x += ball.vx * dt;
+   ball.y += ball.vy * dt;
+
++  // Bricks: the bounce that frame() used to owe us (debt #2) is now pure
++  // logic here, one step per physics pass.
++  resolveBricks(state);
++
+   // Side walls
+   if (ball.x - ball.r < 0) {
+     ball.x = ball.r;
+@@ -183,14 +188,15 @@ export function step(state, dt) {
+     ball.vy = Math.abs(ball.vy);
+   }
+
+-  // Paddle
+-  if (
+-    ball.vy > 0 &&
+-    ball.y + ball.r >= paddle.y &&
+-    ball.y + ball.r <= paddle.y + paddle.h &&
+-    ball.x >= paddle.x &&
+-    ball.x <= paddle.x + paddle.w
+-  ) {
++  // Paddle. The positional test samples a single point (ball.y + ball.r must
++  // land inside the 12 px band), so a fast ball can cross the whole band in
++  // one capped frame and be lost through the paddle: the swept test catches
++  // the crossing of the top face between the previous and the new position.
++  const bottom = ball.y + ball.r;
++  const xOnPaddle = ball.x >= paddle.x && ball.x <= paddle.x + paddle.w;
++  const inBand = bottom >= paddle.y && bottom <= paddle.y + paddle.h;
++  const crossedTop = ball.vy > 0 && ball.py + ball.r < paddle.y && bottom >= paddle.y;
++  if (ball.vy > 0 && xOnPaddle && (inBand || crossedTop)) {
+     ball.y = paddle.y - ball.r;
+     ball.vy = -Math.abs(ball.vy);
+     // The rebound angle depends on where the paddle was hit.
+@@ -206,30 +212,136 @@ export function step(state, dt) {
+   return false;
+ }
+
+-// --- Rendering (DOM): brick collision logic STILL mixed in here ------------
++// --- Brick collision (resolution) ------------------------------------------
++
++// Face and axis of a positional overlap: the axis of smallest penetration
++// (minimum translation vector) is the one hit; a tie means a corner, where
++// both axes are hit. Returns null when there is no overlap.
++function faceByDepth(ball, brick) {
++  const dx = Math.min(ball.x + ball.r - brick.x, brick.x + brick.w - (ball.x - ball.r));
++  const dy = Math.min(ball.y + ball.r - brick.y, brick.y + brick.h - (ball.y - ball.r));
++  if (dx <= 0 || dy <= 0) return null;
++  if (dx < dy) return { axis: 'x', face: ball.x < brick.x + brick.w / 2 ? 'left' : 'right' };
++  if (dy < dx) return { axis: 'y', face: ball.y < brick.y + brick.h / 2 ? 'top' : 'bottom' };
++  return { axis: 'corner', face: 'corner' };
++}
++
++// Swept AABB test (slab method): does the segment (px,py) -> (x,y) intersect
++// the brick grown by the ball radius? A positional overlap (the segment starts
++// inside the box) resolves by penetration depth; a crossing during the step
++// resolves by the face entered last. Returns null when the segment misses the
++// box entirely (including when the whole hit would happen after this step).
++function sweptHit(ball, brick) {
++  const { px, py } = ball;
++  const dx = ball.x - px;
++  const dy = ball.y - py;
++
++  const x0 = brick.x - ball.r;
++  const x1 = brick.x + brick.w + ball.r;
++  const y0 = brick.y - ball.r;
++  const y1 = brick.y + brick.h + ball.r;
++
++  let txIn, txOut;
++  if (dx === 0) {
++    if (px < x0 || px > x1) return null;
++    txIn = -Infinity;
++    txOut = Infinity;
++  } else {
++    txIn = Math.min((x0 - px) / dx, (x1 - px) / dx);
++    txOut = Math.max((x0 - px) / dx, (x1 - px) / dx);
++  }
++
++  let tyIn, tyOut;
++  if (dy === 0) {
++    if (py < y0 || py > y1) return null;
++    tyIn = -Infinity;
++    tyOut = Infinity;
++  } else {
++    tyIn = Math.min((y0 - py) / dy, (y1 - py) / dy);
++    tyOut = Math.max((y0 - py) / dy, (y1 - py) / dy);
++  }
++
++  const tClose = Math.max(txIn, tyIn);
++  const tFar = Math.min(txOut, tyOut);
++  if (tClose > tFar || tFar < 0 || tClose > 1) return null;
++
++  if (tClose <= 0) {
++    // The ball already overlapped the brick at the start of the step.
++    return faceByDepth(ball, brick);
++  }
+
+-// Main render loop. For each live brick we test collision AND draw in the same
+-// pass: this is where logic and rendering are entangled.
++  // Crossed during the step: the face entered last is the face hit.
++  if (txIn > tyIn) return { axis: 'x', face: dx > 0 ? 'left' : 'right' };
++  if (tyIn > txIn) return { axis: 'y', face: dy > 0 ? 'top' : 'bottom' };
++  return { axis: 'corner', face: 'corner' };
++}
++
++// Kills every brick the ball touches in this pass, pushes the ball back out
++// of the rectangle and deflects it once per axis. One pass may overlap several
++// bricks (the grid seams: BRICK_GAP is 8 px, smaller than the 14 px ball
++// diameter), so the deflection must never be applied twice on the same axis.
++function resolveBricks(state) {
++  const { ball, bricks } = state;
++  // One pass = at most one deflection per axis: two overlapping bricks on a
++  // seam would otherwise invert the same velocity twice and cancel out.
++  let flippedX = false;
++  let flippedY = false;
++  for (const brick of bricks) {
++    if (!brick.alive) continue;
++    const hit = sweptHit(ball, brick);
++    if (!hit) continue;
++    brick.alive = false;
++    state.combo += 1;
++    state.score += scoreForBrick(brick, state.combo);
++    if (hit.axis === 'x' && !flippedX) {
++      ball.vx = -ball.vx;
++      flippedX = true;
++    } else if (hit.axis === 'y' && !flippedY) {
++      ball.vy = -ball.vy;
++      flippedY = true;
++    } else if (hit.axis === 'corner') {
++      if (!flippedX) {
++        ball.vx = -ball.vx;
++        flippedX = true;
++      }
++      if (!flippedY) {
++        ball.vy = -ball.vy;
++        flippedY = true;
++      }
++    }
++    // Push the ball back out of the brick, against the face it hit: an
++    // inversion without repositioning leaves the ball overlapping the brick,
++    // which re-triggers the bounce on the next pass (sticky ball).
++    pushOut(ball, brick, hit.face);
++  }
++}
++
++// Positions the ball so it just touches the face it hit, outside the brick.
++function pushOut(ball, brick, face) {
++  if (face === 'left') ball.x = brick.x - ball.r;
++  else if (face === 'right') ball.x = brick.x + brick.w + ball.r;
++  else if (face === 'top') ball.y = brick.y - ball.r;
++  else if (face === 'bottom') ball.y = brick.y + brick.h + ball.r;
++  else {
++    // Corner: clear both axes, each toward its nearest face.
++    ball.x = ball.x < brick.x + brick.w / 2 ? brick.x - ball.r : brick.x + brick.w + ball.r;
++    ball.y = ball.y < brick.y + brick.h / 2 ? brick.y - ball.r : brick.y + brick.h + ball.r;
++  }
++}
++
++// --- Rendering (DOM): pure drawing, no logic ---------------------------------
++
++// Main render loop. Collision, bounce and score for the bricks now live in
++// step() (resolveBricks); this function only draws the current state.
++// Dead bricks are skipped so the field visually clears as the level shrinks.
+ export function frame(ctx, state) {
+   // Background
+   ctx.fillStyle = palette.background;
+   ctx.fillRect(0, 0, WIDTH, HEIGHT);
+
+-  // Bricks: collision + bounce + score + drawing, all in one place.
++  // Bricks: rendering only.
+   for (const brick of state.bricks) {
+     if (!brick.alive) continue;
+-
+-    if (collides(state.ball, brick)) {
+-      brick.alive = false;
+-      state.combo += 1;
+-      state.score += scoreForBrick(brick, state.combo);
+-      // BUG (#1): the ball is NOT deflected here. Only the walls and the paddle
+-      // bounce (in step()); bricks were never given a bounce. So the ball plows
+-      // straight through a column head-on AND straight through the side of a
+-      // row. Fix = a real per-face bounce (flip vy on a top/bottom hit, vx on a
+-      // side hit) plus pushing the ball back out of the brick.
+-    }
+-
+     ctx.fillStyle = brickColor(brick.row);
+     ctx.fillRect(brick.x, brick.y, brick.w, brick.h);
+   }
+diff --git a/game/neon.test.js b/game/neon.test.js
+index 250d6a9..b17546e 100644
+--- a/game/neon.test.js
++++ b/game/neon.test.js
+@@ -15,9 +15,12 @@ import {
+   step,
+   makeBricks,
+   createState,
++  ballSpeed,
+   BRICK_ROWS,
+   BRICK_COLS,
+   WIDTH,
++  PADDLE_Y,
++  BALL_R,
+ } from './neon.js';
+
+ test('collides: clear overlap detected', () => {
+@@ -52,6 +55,22 @@ test('step: ball exiting through the bottom => lost', () => {
+   assert.equal(lost, true);
+ });
+
++test('step: fast descending ball cannot tunnel through the paddle band', () => {
++  // The paddle test samples ball.y + r inside the 12 px band. On a capped
++  // frame (dt = 0.05) the ball jumps 17.5 px at level 2, skipping the band
++  // entirely: 446 -> 463.5 never lands in [448, 460]. A swept check on the
++  // top face must still bounce it.
++  const state = createState(2);
++  state.ball = { x: WIDTH / 2, y: PADDLE_Y - BALL_R - 2, r: BALL_R, vx: 0, vy: ballSpeed(2) };
++  const lost = step(state, 0.05);
++  assert.equal(lost, false, 'the ball must not be lost through the paddle');
++  assert.ok(state.ball.vy < 0, 'the ball should bounce off the paddle top, not pass through');
++  assert.ok(
++    state.ball.y + state.ball.r <= PADDLE_Y + 1e-9,
++    'the ball should be pushed back above the paddle',
++  );
++});
++
+ test('makeBricks: full, all-alive grid at start', () => {
+   const bricks = makeBricks(1);
+   assert.equal(bricks.length, BRICK_ROWS * BRICK_COLS);

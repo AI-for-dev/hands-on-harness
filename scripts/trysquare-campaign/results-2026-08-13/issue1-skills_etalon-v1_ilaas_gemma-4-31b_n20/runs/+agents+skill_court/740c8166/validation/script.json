@@ -1,0 +1,28 @@
+{
+  "metrics": {
+    "delivered": true,
+    "in_scope": true,
+    "touched": [
+      "game/neon.js",
+      "game/neon.test.js"
+    ],
+    "tests_ajoutes": true,
+    "suite_lancee": true,
+    "skill_invoque": true,
+    "rebond_briques": true,
+    "rebond_angles": false,
+    "rebond_sortie": true,
+    "rebond_voisines": true,
+    "rebond_traversee": false
+  },
+  "reasons": {
+    "tests_ajoutes": "2 cas de plus qu'à l'étalon (8 contre 6)",
+    "suite_lancee": "npm test",
+    "skill_invoque": "playtest-court développée dans le prompt",
+    "rebond_angles": "coin haut gauche: la balle repart en diagonale : vx devait devenir négatif : 300",
+    "rebond_traversee": "balle rapide: la brique n_est pas franchie sans être touchée : la brique a survécu à une balle qui l_a traversée de part en part"
+  },
+  "unjudged": {
+    "sonde_intacte": "aucune sonde n'a été fournie à cette cellule"
+  }
+}

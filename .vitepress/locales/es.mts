@@ -27,11 +27,14 @@ export const es: LocaleSpecificConfig<DefaultTheme.Config> = {
           { text: '¿Por qué un harness y de qué está hecho?', link: '/es/act1-harness' },
           { text: 'El harness de partida: Pi', link: '/es/act1-pi' }
         ]
+      },
+      {
+        text: 'Acto 2 - Reconstrucción',
+        items: [
+          { text: '2.1 El contexto y la ventana', link: '/es/act2-contexte' },
+          { text: '2.2 Las habilidades', link: '/es/act2-skill' }
+        ]
       }
-      // El acto 2 empieza por `act2-contexte`, que solo se añade aquí cuando
-      // `npm run i18n:translate` haya generado content/es/act2-contexte.md.
-      // Un enlace de la barra lateral hacia una página inexistente rompe la
-      // compilación.
     ],
     outline: { level: [2, 3], label: 'En esta página' },
     docFooter: { prev: 'Página anterior', next: 'Página siguiente' },

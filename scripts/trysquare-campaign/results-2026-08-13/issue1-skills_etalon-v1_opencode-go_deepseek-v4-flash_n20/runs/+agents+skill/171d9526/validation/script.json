@@ -1,0 +1,29 @@
+{
+  "metrics": {
+    "delivered": true,
+    "in_scope": false,
+    "touched": [
+      ".scratch/to_fix.md",
+      "game/neon.js",
+      "game/neon.test.js"
+    ],
+    "tests_ajoutes": true,
+    "suite_lancee": true,
+    "skill_invoque": true,
+    "rebond_briques": true,
+    "rebond_angles": true,
+    "rebond_sortie": true,
+    "rebond_voisines": true,
+    "rebond_traversee": true
+  },
+  "reasons": {
+    "in_scope": "a aussi touché .scratch/to_fix.md",
+    "tests_ajoutes": "10 cas de plus qu'à l'étalon (16 contre 6)",
+    "suite_lancee": "cd .scratch && node --test defects.test.js 2>&1 | grep -A5 \"✖ D6\\|✖ D7\" | head -20 ; cd .scratch && node --test defects.test.js 2>&1 | grep -A6 \"✖ D[1-7]\" | head -80 ; cd .scratch && node --test defects.test.js 2>&1 | tail -40 ; cd .scratch && python3 - <<'EOF' import re src = open('defects.test.js').read() # dynamic import the module so missing exports don't kill the whole file src = src.replace(\"\"\"import { collides, step, resolveBricks, makeBricks, createState, ballSpeed, BALL_R, BRICK_H, PADDLE_Y, PADDLE_H, WIDTH, } from '../game/neon.js';\"\"\", \"\"\"import { test } from 'node:test'; import assert from 'node:assert/strict';\"\"\") # remove the duplicate import line src = src.replace(\"\"\"import { test } from 'node:test'; import assert from 'node:assert/strict'; \"\"\", \"\") # add a module handle at the top src = \"import { test } from 'node:test';\\nimport assert from 'node:assert/strict';\\n\\nconst mod = await import('../game/neon.js');\\nconst { collides, step, makeBricks, createState, ballSpeed, BALL_R, PADDLE_Y, PADDLE_H, WIDTH } = mod;\\nconst resolveBricks = mod.resolveBricks;\\n\" + src open('defects.test.js','w').write(src) EOF node --test defects.test.js 2>&1 | grep -E \"^(✔|✖|ℹ (tests|pass|fail))\" | head -30 ; npm test 2>&1 | grep -A12 \"✖ makeBricks\" ; npm test 2>&1 | grep -A8 \"✖ D1\" | tail -10 ; npm test 2>&1 | grep -E \"^(✔|✖|ℹ (tests|pass|fail))\" ; npm test 2>&1 | grep -E \"^(✔|✖|ℹ (tests|pass|fail))\" && echo \"---\" && node -e \"import('./game/neon.js').then(m => console.log('module loads OK, exports:', Object.keys(m).join(', ')))\" ; npm test 2>&1 | grep -cE \"^✔\" && git status --short && echo \"---\" && git diff --stat ; rm .scratch/probe.mjs .scratch/defects.test.js && ls -la .scratch/ && npm test 2>&1 | tail -12",
+    "skill_invoque": "playtest développée dans le prompt",
+    "rebond_traversee": "balle rapide: la brique n_est pas franchie sans être touchée : dévié par frame() après le déplacement de step()"
+  },
+  "unjudged": {
+    "sonde_intacte": "aucune sonde n'a été fournie à cette cellule"
+  }
+}

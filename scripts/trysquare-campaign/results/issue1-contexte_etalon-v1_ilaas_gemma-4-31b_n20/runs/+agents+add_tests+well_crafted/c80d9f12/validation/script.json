@@ -1,0 +1,26 @@
+{
+  "metrics": {
+    "delivered": true,
+    "in_scope": true,
+    "touched": [
+      "game/neon.js",
+      "game/neon.test.js"
+    ],
+    "tests_ajoutes": true,
+    "suite_lancee": true,
+    "skill_invoque": false,
+    "sonde_intacte": true,
+    "rebond_briques": true,
+    "rebond_angles": true,
+    "rebond_sortie": true,
+    "rebond_voisines": true,
+    "rebond_traversee": true
+  },
+  "reasons": {
+    "tests_ajoutes": "7 cas de plus qu'à l'étalon (13 contre 6)",
+    "suite_lancee": "npm test",
+    "skill_invoque": "aucune compétence développée dans le prompt, et aucun SKILL.md lu sur 48 appels d'outil",
+    "rebond_traversee": "balle rapide: la brique n_est pas franchie sans être touchée : dévié par frame() après le déplacement de step()"
+  },
+  "unjudged": {}
+}

@@ -1,0 +1,33 @@
+{
+  "metrics": {
+    "delivered": true,
+    "in_scope": false,
+    "touched": [
+      ".scratch/to_fix.md",
+      "game/neon.js",
+      "game/neon.test.js"
+    ],
+    "tests_ajoutes": true,
+    "suite_lancee": true,
+    "skill_invoque": true,
+    "rebond_briques": false,
+    "rebond_angles": true,
+    "rebond_sortie": false,
+    "rebond_voisines": true,
+    "rebond_traversee": true
+  },
+  "reasons": {
+    "in_scope": "a aussi touché .scratch/to_fix.md",
+    "tests_ajoutes": "10 cas de plus qu'à l'étalon (16 contre 6)",
+    "suite_lancee": "cd /private/var/folders/hf/sz48238s7x98j_p98cqfxprc0000gp/T/trysquare/campaign/issue1-skills_etalon-v1_opencode-go_deepseek-v4-flash_n20/c0814165/repo && for f in .scratch/naive-neon.js .scratch/naive2-neon.js; do sed -i '' \"s|from './theme.js'|from '../game/theme.js'|; s|from './bloom.js'|from '../game/bloom.js'|\" $f; done && echo \"== naive (a): flip vy, no reposition ==\" && node --test .scratch/probe-naive.test.js 2>&1 | grep -E \"^[✔✖]|^ℹ (tests|pass|fail)\" && echo \"== naive (b): min-pen flip + push-out ==\" && node --test .scratch/probe-naive2.test.js 2>&1 | grep -E \"^[✔✖]|^ℹ (tests|pass|fail)\" ; cd /private/var/folders/hf/sz48238s7x98j_p98cqfxprc0000gp/T/trysquare/campaign/issue1-skills_etalon-v1_opencode-go_deepseek-v4-flash_n20/c0814165/repo && node --test .scratch/probe-naive.test.js 2>&1 | head -30 ; cd /private/var/folders/hf/sz48238s7x98j_p98cqfxprc0000gp/T/trysquare/campaign/issue1-skills_etalon-v1_opencode-go_deepseek-v4-flash_n20/c0814165/repo && node --test .scratch/probe-naive.test.js > .scratch/probe-naive-red.txt 2>&1; node --test .scratch/probe-naive2.test.js > .scratch/probe-naive2-red.txt 2>&1; wc -l .scratch/probe-red-output.txt .scratch/probe-naive-red.txt .scratch/probe-naive2-red.txt ; cd /private/var/folders/hf/sz48238s7x98j_p98cqfxprc0000gp/T/trysquare/campaign/issue1-skills_etalon-v1_opencode-go_deepseek-v4-flash_n20/c0814165/repo && node --test .scratch/probe.test.js 2>&1 | grep -E \"^(✔|✖|ℹ|# )\" | head -30 ; cd /private/var/folders/hf/sz48238s7x98j_p98cqfxprc0000gp/T/trysquare/campaign/issue1-skills_etalon-v1_opencode-go_deepseek-v4-flash_n20/c0814165/repo && node --test .scratch/probe.test.js 2>&1 | tail -60 ; cd /private/var/folders/hf/sz48238s7x98j_p98cqfxprc0000gp/T/trysquare/campaign/issue1-skills_etalon-v1_opencode-go_deepseek-v4-flash_n20/c0814165/repo && node --test .scratch/probe.test.js > .scratch/probe-red-output.txt 2>&1; grep -E \"AssertionError\" -A 2 .scratch/probe-red-output.txt | head -50 ; cd /private/var/folders/hf/sz48238s7x98j_p98cqfxprc0000gp/T/trysquare/campaign/issue1-skills_etalon-v1_opencode-go_deepseek-v4-flash_n20/c0814165/repo && npm test 2>&1 | grep -E \"^[✔✖]|^ℹ (tests|pass|fail)\" ; cd /private/var/folders/hf/sz48238s7x98j_p98cqfxprc0000gp/T/trysquare/campaign/issue1-skills_etalon-v1_opencode-go_deepseek-v4-flash_n20/c0814165/repo && npm test 2>&1 | grep -E \"^✖|AssertionError|^ℹ (tests|pass|fail)\" | head -10 ; cd /private/var/folders/hf/sz48238s7x98j_p98cqfxprc0000gp/T/trysquare/campaign/issue1-skills_etalon-v1_opencode-go_deepseek-v4-flash_n20/c0814165/repo && npm test 2>&1 | grep -E \"^✖|AssertionError|^ℹ (tests|pass|fail)\" | head -6 ; cd /private/var/folders/hf/sz48238s7x98j_p98cqfxprc0000gp/T/trysquare/campaign/issue1-skills_etalon-v1_opencode-go_deepseek-v4-flash_n20/c0814165/repo && npm test 2>&1 | grep -E \"^✖|AssertionError|^ℹ (tests|pass|fail)\" | head -8 ; cd /private/var/folders/hf/sz48238s7x98j_p98cqfxprc0000gp/T/trysquare/campaign/issue1-skills_etalon-v1_opencode-go_deepseek-v4-flash_n20/c0814165/repo && npm test 2>&1 | grep -E \"^✖|^ℹ (tests|pass|fail)\" | head -5 ; cd /private/var/folders/hf/sz48238s7x98j_p98cqfxprc0000gp/T/trysquare/campaign/issue1-skills_etalon-v1_opencode-go_deepseek-v4-flash_n20/c0814165/repo && rm -f .scratch/probe.test.js .scratch/probe-naive.test.js .scratch/probe-naive2.test.js .scratch/naive-neon.js .scratch/naive2-neon.js .scratch/probe-red-output.txt .scratch/probe-naive-red.txt .scratch/probe-naive2-red.txt .scratch/smoke.mjs && ls -la .scratch/ && echo \"---\" && npm test 2>&1 | grep -E \"^ℹ (tests|pass|fail)\" && echo \"---\" && git status --short ; cd /private/var/folders/hf/sz48238s7x98j_p98cqfxprc0000gp/T/trysquare/campaign/issue1-skills_etalon-v1_opencode-go_deepseek-v4-flash_n20/c0814165/repo && sed \"s|from '../game/neon.js'|from './naive-neon.js'|\" .scratch/probe.test.js > .scratch/probe-naive.test.js && sed \"s|from '../game/neon.js'|from './naive2-neon.js'|\" .scratch/probe.test.js > .scratch/probe-naive2.test.js && echo \"== naive (a): flip vy, no reposition ==\" && node --test .scratch/probe-naive.test.js 2>&1 | grep -E \"^ℹ (tests|pass|fail)\" && echo \"== naive (b): min-pen flip + push-out ==\" && node --test .scratch/probe-naive2.test.js 2>&1 | grep -E \"^ℹ (tests|pass|fail)\"",
+    "skill_invoque": "playtest développée dans le prompt",
+    "rebond_briques": "flanc gauche: la balle repart vers la gauche : vx devait devenir négatif : 300 ; face haute: la balle repart vers le haut : vy devait devenir négatif : 300",
+    "rebond_angles": "coin haut gauche: la balle repart en diagonale : dévié par step() et non par frame()",
+    "rebond_sortie": "flanc gauche: la balle ressort par la gauche : le bord droit de la balle devait revenir à x <= 100 : 186 ; face haute: la balle ressort par le haut : le bord bas de la balle devait revenir à y <= 100 : 134",
+    "rebond_voisines": "couture horizontale: un seul rebond sur deux briques côte à côte : dévié par step() et non par frame() ; couture verticale: un seul rebond sur deux briques superposées : dévié par step() et non par frame()",
+    "rebond_traversee": "balle rapide: la brique n_est pas franchie sans être touchée : dévié par step() et non par frame()"
+  },
+  "unjudged": {
+    "sonde_intacte": "aucune sonde n'a été fournie à cette cellule"
+  }
+}

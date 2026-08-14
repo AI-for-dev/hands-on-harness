@@ -1,0 +1,449 @@
+diff --git a/.scratch/d1_test.js b/.scratch/d1_test.js
+new file mode 100644
+index 0000000..2f479db
+--- /dev/null
++++ b/.scratch/d1_test.js
+@@ -0,0 +1,33 @@
++import assert from 'node:assert';
++import { test } from 'node:test';
++import { createState, frame, collides } from '../game/neon.js';
++
++// Mock Canvas 2D context
++const mockCtx = {
++  fillRect: () => {},
++  beginPath: () => {},
++  arc: () => {},
++  fill: () => {},
++  fillText: () => {},
++};
++
++test('D1: Bricks should deflect the ball', () => {
++  const state = createState(1);
++  // Position ball so it's colliding with the first brick
++  const brick = state.bricks[0];
++  state.ball.x = brick.x + brick.w / 2;
++  state.ball.y = brick.y + brick.h / 2;
++  state.ball.vx = -100; // Moving left
++  state.ball.vy = 0;
++
++  assert.strictEqual(collides(state.ball, brick), true, 'Ball should collide with brick');
++
++  // Execute one frame
++  frame(mockCtx, state);
++
++  // The brick should be dead
++  assert.strictEqual(brick.alive, false, 'Brick should be destroyed');
++
++  // The ball should have bounced (vx should be positive)
++  assert.ok(state.ball.vx > 0, `Ball should bounce back (vx > 0), but got ${state.ball.vx}`);
++});
+diff --git a/.scratch/d3_test.js b/.scratch/d3_test.js
+new file mode 100644
+index 0000000..5e042d7
+--- /dev/null
++++ b/.scratch/d3_test.js
+@@ -0,0 +1,31 @@
++import assert from 'node:assert';
++import { test } from 'node:test';
++import { createState, collides } from '../game/neon.js';
++
++test('D3: Ball should not double-invert velocity when overlapping two bricks', () => {
++  const state = createState(1);
++  const brick1 = state.bricks[0];
++  const brick2 = state.bricks[1];
++
++  // Position ball so it overlaps both bricks horizontally.
++  // Brick 0: x=offsetX, w=72. Brick 1: x=offsetX+80, w=72.
++  // Ball r=7. If ball.x = offsetX + 72 + 4 = offsetX + 76.
++  // Ball left = 76 - 7 = 69. (Overlaps Brick 0: 69 < 72+offsetX)
++  // Ball right = 76 + 7 = 83. (Overlaps Brick 1: 83 > 80+offsetX)
++
++  state.ball.x = (state.bricks[0].x + state.bricks[0].w) + 4;
++  state.ball.y = state.bricks[0].y + state.bricks[0].h / 2;
++  state.ball.vx = -100;
++
++  // Simulate what a naïve loop would do:
++  let vx = state.ball.vx;
++  for (const brick of state.bricks) {
++    if (collides(state.ball, brick)) {
++      vx = -vx;
++    }
++  }
++
++  assert.ok(vx > 0, `Ball should have ended up moving RIGHT, but got ${vx}`);
++  // Wait, if it flipped twice, it would be -100 -> 100 -> -100.
++  // So vx would be -100.
++});
+diff --git a/.scratch/d5_test.js b/.scratch/d5_test.js
+new file mode 100644
+index 0000000..f09fc4e
+--- /dev/null
++++ b/.scratch/d5_test.js
+@@ -0,0 +1,43 @@
++import assert from 'node:assert';
++import { test } from 'node:test';
++import { createState, frame, collides } from '../game/neon.js';
++
++const mockCtx = {
++  fillRect: () => {},
++  beginPath: () => {},
++  arc: () => {},
++  fill: () => {},
++  fillText: () => {},
++};
++
++test('D5: Ball should not tunnel through bricks at high speed', () => {
++  const state = createState(10); // Level 10: speed = 1070
++  const brick = state.bricks[0];
++
++  // Position ball just above the brick, but moving fast enough to jump over it in one frame
++  // brick.y = 48, brick.h = 20.
++  // ball.r = 7.
++  // Ball is at y = 48 - 7 - 1 = 40.
++  // vy = 1070.
++  // In one step (dt=0.05), ball moves 53.5 px.
++  // New y = 40 + 53.5 = 93.5.
++  // Brick bottom = 48 + 20 = 68.
++  // Ball was at 40 (above) and is now at 93.5 (below).
++  // It completely jumped over the brick.
++
++  state.ball.x = brick.x + brick.w / 2;
++  state.ball.y = brick.y - state.ball.r - 1;
++  state.ball.vy = 1070; // speed at level 10
++  state.ball.vx = 0;
++
++  // Use a manual step since frame() just calls collides()
++  // In the actual game, step() is called before frame().
++  // We simulate one frame's movement and then the collision check.
++  const dt = 0.05;
++  state.ball.y += state.ball.vy * dt;
++
++  // Now check if it collided. With discrete detection, it won't.
++  const hit = collides(state.ball, brick);
++
++  assert.strictEqual(hit, true, `Ball should have collided with brick despite high speed, but collides() returned ${hit}`);
++});
+diff --git a/.scratch/to_fix.md b/.scratch/to_fix.md
+new file mode 100644
+index 0000000..04ff8e0
+--- /dev/null
++++ b/.scratch/to_fix.md
+@@ -0,0 +1,133 @@
++# Symptôme : La balle traverse les briques au lieu de rebondir.
++
++## D1 — Absence de rebond sur les briques
++
++- **Famille** : Transitions
++- **Symptôme joueur** : la balle traverse les briques sans ralentir ni changer de direction.
++- **Cause** : `game/neon.js:177` — la fonction `frame()` détecte la collision et détruit la brique, mais n'inverse pas la vitesse de la balle.
++- **Invariant violé** : Tout contact avec une brique doit entraîner un changement de trajectoire.
++- **Déclencheur** : Toute collision balle-brique.
++- **Attendu** : la balle doit rebondir selon la face touchée.
++- **Référence** : N/A — Logique fondamentale du casse-brique.
++- **Cas test** :
++  ```js
++  test('D1: Bricks should deflect the ball', () => {
++    const state = createState(1);
++    const brick = state.bricks[0];
++    state.ball.x = brick.x + brick.w / 2;
++    state.ball.y = brick.y + brick.h / 2;
++    state.ball.vx = -100;
++    state.ball.vy = 0;
++    frame(mockCtx, state);
++    assert.ok(state.ball.vx > 0);
++  });
++  ```
++- **Rouge aujourd'hui** : `AssertionError [ERR_ASSERTION]: Ball should bounce back (vx > 0), but got -100`
++- **Discrimine** : une correction qui détruirait la brique sans changer la vitesse.
++- **Vert quand** : la vitesse de la balle est inversée après collision.
++
++## D2 — Collision "collante" (Sticky)
++
++- **Famille** : Collant
++- **Symptôme joueur** : la balle vibre ou reste bloquée dans une brique.
++- **Cause** : inversion de la vitesse sans repositionnement de la balle hors de l'obstacle.
++- **Invariant violé** : Après résolution, la balle doit être hors du rectangle.
++- **Déclencheur** : Collision avec `dt` faible ou pénétration profonde.
++- **Attendu** : la balle est repositionnée à la surface de la brique.
++- **Référence** : https://learnopengl.com/In-Practice/2D-Collision-resolution
++- **Cas test** :
++  ```js
++  test('D2: Ball should not stick to bricks', () => {
++    const state = createState(1);
++    const brick = state.bricks[0];
++    state.ball.x = brick.x + brick.w / 2;
++    state.ball.y = brick.y - state.ball.r + 1; // shallow penetration
++    state.ball.vy = 100;
++    frame(mockCtx, state);
++    // check if ball is still colliding in the next theoretical frame
++    assert.strictEqual(collides(state.ball, brick), false);
++  });
++  ```
++- **Rouge aujourd'hui** : (Sera révélé par D1)
++- **Discrimine** : une correction qui inverse `vy` mais ne repositionne pas `y`.
++- **Vert quand** : la balle ne chevauche plus la brique après le rebond.
++- **Révélé par** : D1
++
++## D3 — Double inversion (Seam ghost)
++
++- **Famille** : Double inversion
++- **Symptôme joueur** : la balle traverse une rangée de briques en frappant la jonction.
++- **Cause** : boucle sur toutes les briques avec inversion systématique de la vitesse.
++- **Invariant violé** : Un rebond par passe et par axe.
++- **Déclencheur** : Balle chevauchant deux briques simultanément (diamètre 14 > gap 8).
++- **Attendu** : un seul rebond même si plusieurs briques sont touchées.
++- **Référence** : https://gamedev.net/swept-aabb-collision-detection-and-response-r3084
++- **Cas test** :
++  ```js
++  test('D3: Ball should not double-invert', () => {
++    const state = createState(1);
++    state.ball.x = (state.bricks[0].x + state.bricks[0].w) + 4; // overlaps brick 0 and 1
++    state.ball.vx = -100;
++    frame(mockCtx, state);
++    assert.ok(state.ball.vx > 0);
++  });
++  ```
++- **Rouge aujourd'hui** : `AssertionError [ERR_ASSERTION]: Ball should have ended up moving RIGHT, but got -100`
++- **Discrimine** : une correction qui boucle sur les briques sans limiter à un seul rebond.
++- **Vert quand** : la balle rebondit une seule fois même en cas de chevauchement multiple.
++- **Révélé par** : D1
++
++## D4 — Résolution des coins (Corner)
++
++- **Famille** : Face vs coin
++- **Symptôme joueur** : rebond imprévisible ou atravesée lors d'un impact sur un coin.
++- **Cause** : manque de détection de l'axe d'impact dominant.
++- **Invariant violé** : Si les deux pénétrations sont égales, les deux vitesses sont inversées.
++- **Déclencheur** : impact précis sur un coin de brique.
++- **Attendu** : inversion de `vx` ET `vy` si le coin est touché.
++- **Référence** : https://learnopengl.com/In-Practice/2D-Collision-resolution
++- **Cas test** :
++  ```js
++  test('D4: Corner hit should flip both axes', () => {
++    const state = createState(1);
++    const brick = state.bricks[0];
++    state.ball.x = brick.x - state.ball.r + 1;
++    state.ball.y = brick.y - state.ball.r + 1;
++    state.ball.vx = 100;
++    state.ball.vy = 100;
++    frame(mockCtx, state);
++    assert.ok(state.ball.vx < 0 && state.ball.vy < 0);
++  });
++  ```
++- **Rouge aujourd'hui** : (Sera révélé par D1)
++- **Discrimine** : une correction qui ne choisit qu'un seul axe d'inversion.
++- **Vert quand** : la balle rebondit diagonalement après un impact de coin.
++- **Révélé par** : D1
++
++## D5 — Traversée (Tunneling)
++
++- **Famille** : Traversée
++- **Symptôme joueur** : la balle passe à travers les briques à haut niveau.
++- **Cause** : détection discrète (pas de balayage).
++- **Invariant violé** : Aucun obstacle franchi sans rebond, quel que soit le pas.
++- **Déclencheur** : Level 10, `ballSpeed(10) * 0.05 > 34`.
++- **Attendu** : la balle rebondit même si le pas franchit la brique.
++- **Référence** : https://github.com/KleeSup/KleeSwept
++- **Cas test** :
++  ```js
++  test('D5: High speed ball should not tunnel', () => {
++    const state = createState(10);
++    const brick = state.bricks[0];
++    state.ball.x = brick.x + brick.w / 2;
++    state.ball.y = brick.y - state.ball.r - 1;
++    state.ball.vy = 1070;
++    // simulating a frame movement...
++    state.ball.y += state.ball.vy * 0.05;
++    frame(mockCtx, state);
++    assert.ok(state.ball.vy < 0);
++  });
++  ```
++- **Rouge aujourd'hui** : `AssertionError [ERR_ASSERTION]: Ball should have collided with brick despite high speed, but collides() returned false`
++- **Discrimine** : une correction qui se contente d'un test de recouvrement instantané.
++- **Vert quand** : la balle est interceptée même si elle \"saute\" la brique.
++- **Révélé par** : D1
+diff --git a/game/neon.js b/game/neon.js
+index 6b4a133..fad249e 100644
+--- a/game/neon.js
++++ b/game/neon.js
+@@ -94,7 +94,7 @@ export function createState(level = 1) {
+     best: 0,
+     running: false,
+     paddle: { x: (WIDTH - PADDLE_W) / 2, y: PADDLE_Y, w: PADDLE_W, h: PADDLE_H },
+-    ball: { x: WIDTH / 2, y: PADDLE_Y - BALL_R - 2, r: BALL_R, vx: speed * 0.5, vy: -speed },
++    ball: { x: WIDTH / 2, y: PADDLE_Y - BALL_R - 2, r: BALL_R, vx: speed * 0.5, vy: -speed, prevX: WIDTH / 2, prevY: PADDLE_Y - BALL_R - 2 },
+     bricks: makeBricks(level),
+   };
+ }
+@@ -114,6 +114,25 @@ export function collides(ball, brick) {
+   );
+ }
+
++export function sweptCollides(ball, brick) {
++  const prevX = ball.prevX;
++  const prevY = ball.prevY;
++  const currX = ball.x;
++  const currY = ball.y;
++
++  const minX = Math.min(prevX - ball.r, currX - ball.r);
++  const maxX = Math.max(prevX + ball.r, currX + ball.r);
++  const minY = Math.min(prevY - ball.r, currY - ball.r);
++  const maxY = Math.max(prevY + ball.r, currY + ball.r);
++
++  return (
++    maxX > brick.x &&
++    minX < brick.x + brick.w &&
++    maxY > brick.y &&
++    minY < brick.y + brick.h
++  );
++}
++
+ // --- Score & combo (NOT covered by tests — debt #5) ------------------------
+
+ // Combo multiplier. UNBOUNDED today: a long combo makes the score blow up
+@@ -165,6 +184,9 @@ export function saveBest(storage, score) {
+ export function step(state, dt) {
+   const { ball, paddle } = state;
+
++  ball.prevX = ball.x;
++  ball.prevY = ball.y;
++
+   ball.x += ball.vx * dt;
+   ball.y += ball.vy * dt;
+
+@@ -219,15 +241,43 @@ export function frame(ctx, state) {
+   for (const brick of state.bricks) {
+     if (!brick.alive) continue;
+
+-    if (collides(state.ball, brick)) {
++    if (collides(state.ball, brick) || sweptCollides(state.ball, brick)) {
+       brick.alive = false;
+       state.combo += 1;
+       state.score += scoreForBrick(brick, state.combo);
+-      // BUG (#1): the ball is NOT deflected here. Only the walls and the paddle
+-      // bounce (in step()); bricks were never given a bounce. So the ball plows
+-      // straight through a column head-on AND straight through the side of a
+-      // row. Fix = a real per-face bounce (flip vy on a top/bottom hit, vx on a
+-      // side hit) plus pushing the ball back out of the brick.
++
++      const dx1 = (state.ball.x + state.ball.r) - brick.x;
++      const dx2 = (brick.x + brick.w) - (state.ball.x - state.ball.r);
++      const dy1 = (state.ball.y + state.ball.r) - brick.y;
++      const dy2 = (brick.y + brick.h) - (state.ball.y - state.ball.r);
++      const minOverlap = Math.min(dx1, dx2, dy1, dy2);
++
++      let hitFace = '';
++      if (state.ball.prevY + state.ball.r <= brick.y) hitFace = 'top';
++      else if (state.ball.prevY - state.ball.r >= brick.y + brick.h) hitFace = 'bottom';
++      else if (state.ball.prevX + state.ball.r <= brick.x) hitFace = 'left';
++      else if (state.ball.prevX - state.ball.r >= brick.x + brick.w) hitFace = 'right';
++      else {
++        if (minOverlap === dx1) hitFace = 'left';
++        else if (minOverlap === dx2) hitFace = 'right';
++        else if (minOverlap === dy1) hitFace = 'top';
++        else hitFace = 'bottom';
++      }
++
++      if (hitFace === 'left') {
++        state.ball.vx = -Math.abs(state.ball.vx);
++        state.ball.x = brick.x - state.ball.r;
++      } else if (hitFace === 'right') {
++        state.ball.vx = Math.abs(state.ball.vx);
++        state.ball.x = brick.x + brick.w + state.ball.r;
++      } else if (hitFace === 'top') {
++        state.ball.vy = -Math.abs(state.ball.vy);
++        state.ball.y = brick.y - state.ball.r;
++      } else if (hitFace === 'bottom') {
++        state.ball.vy = Math.abs(state.ball.vy);
++        state.ball.y = brick.y + brick.h + state.ball.r;
++      }
++      break;
+     }
+
+     ctx.fillStyle = brickColor(brick.row);
+@@ -288,6 +338,7 @@ export function boot(doc = document) {
+     last = now;
+
+     if (state.running) {
++      state.dt = dt;
+       const lost = step(state, dt);
+       if (lost) {
+         state.lives -= 1;
+diff --git a/game/neon.test.js b/game/neon.test.js
+index 250d6a9..ca94598 100644
+--- a/game/neon.test.js
++++ b/game/neon.test.js
+@@ -10,6 +10,15 @@
+ import { test } from 'node:test';
+ import assert from 'node:assert/strict';
+
++// Mock Canvas 2D context
++const mockCtx = {
++  fillRect: () => {},
++  beginPath: () => {},
++  arc: () => {},
++  fill: () => {},
++  fillText: () => {},
++};
++
+ import {
+   collides,
+   step,
+@@ -18,6 +27,7 @@ import {
+   BRICK_ROWS,
+   BRICK_COLS,
+   WIDTH,
++  frame,
+ } from './neon.js';
+
+ test('collides: clear overlap detected', () => {
+@@ -65,5 +75,47 @@ function belowField() {
+   return 500;
+ }
+
+-// TODO (#5): test comboMultiplier / scoreForBrick.
+-// TODO      : test level progression and loadBest/saveBest persistence.
++test('D2: Ball should not stick to bricks', () => {
++  const state = createState(1);
++  const brick = state.bricks[0];
++  // Position ball so it's slightly penetrating the top face
++  state.ball.x = brick.x + brick.w / 2;
++  state.ball.y = brick.y - state.ball.r + 1;
++  state.ball.vy = 100;
++
++  frame(mockCtx, state);
++
++  // After one frame, the ball should no longer be colliding with the brick
++  assert.strictEqual(collides(state.ball, brick), false, 'Ball should be repositioned outside the brick');
++});
++
++test('D1: Bricks should deflect the ball', () => {
++  const state = createState(1);
++  const brick = state.bricks[0];
++  // Position ball so it's hitting the right face of the brick
++  state.ball.x = brick.x + brick.w + state.ball.r - 1;
++  state.ball.y = brick.y + brick.h / 2;
++  state.ball.vx = -100;
++  state.ball.vy = 0;
++  state.ball.prevX = state.ball.x + 10; // coming from the right
++  state.ball.prevY = state.ball.y;
++
++  frame(mockCtx, state);
++
++  assert.ok(state.ball.vx > 0, `Ball should bounce back (vx > 0), but got ${state.ball.vx}`);
++});
++
++test('D4: Corner hit should flip both axes', () => {
++  const state = createState(1);
++  const brick = state.bricks[0];
++  // Position ball to hit the top-left corner
++  state.ball.x = brick.x - state.ball.r + 1;
++  state.ball.y = brick.y - state.ball.r + 1;
++  state.ball.vx = 100;
++  state.ball.vy = 100;
++  state.ball.prevX = state.ball.x - 10; // coming from left
++  state.ball.prevY = state.ball.y - 10; // coming from top
++
++  frame(mockCtx, state);
++  assert.ok(state.ball.vx < 0 && state.ball.vy < 0, `Ball should bounce diagonally from corner, got vx:${state.ball.vx} vy:${state.ball.vy}`);
++});

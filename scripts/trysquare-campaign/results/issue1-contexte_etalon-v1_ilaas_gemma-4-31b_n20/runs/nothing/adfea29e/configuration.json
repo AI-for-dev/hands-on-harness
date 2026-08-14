@@ -1,0 +1,13 @@
+{
+  "cell": "nothing",
+  "repo": "https://github.com/AI-for-dev/neon.git",
+  "etalon": "etalon-v1",
+  "etalon_commit": "d62ccd1f3255c8286ff6b5856860f7635f4d324e",
+  "provider": "ilaas",
+  "model": "gemma-4-31b",
+  "model_id": "gemma-4-31b",
+  "thinking": "off",
+  "injected": [],
+  "given": [],
+  "agents": {}
+}

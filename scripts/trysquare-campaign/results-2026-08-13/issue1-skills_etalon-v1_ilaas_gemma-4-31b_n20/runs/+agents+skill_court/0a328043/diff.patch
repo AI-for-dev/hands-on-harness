@@ -1,0 +1,43 @@
+diff --git a/game/neon.test.js b/game/neon.test.js
+index 250d6a9..f5c37dd 100644
+--- a/game/neon.test.js
++++ b/game/neon.test.js
+@@ -18,6 +18,7 @@ import {
+   BRICK_ROWS,
+   BRICK_COLS,
+   WIDTH,
++  frame,
+ } from './neon.js';
+
+ test('collides: clear overlap detected', () => {
+@@ -65,5 +66,28 @@ function belowField() {
+   return 500;
+ }
+
+-// TODO (#5): test comboMultiplier / scoreForBrick.
+-// TODO      : test level progression and loadBest/saveBest persistence.
++
++test('frame: ball bounces off top face of brick', () => {
++  const state = createState(1);
++  const brick = state.bricks[0];
++  state.ball = {
++    x: brick.x + brick.w / 2,
++    y: brick.y - 1,
++    r: 7,
++    vx: 0,
++    vy: 100
++  };
++
++  const mockCtx = {
++    fillStyle: '',
++    fillRect: () => {},
++    beginPath: () => {},
++    arc: () => {},
++    fill: () => {},
++    fillText: () => {}
++  };
++
++  frame(mockCtx, state);
++
++  assert.equal(state.ball.vy, -100, 'vy should be inverted after hitting top face');
++});

@@ -1,0 +1,363 @@
+diff --git a/.scratch/probe.js b/.scratch/probe.js
+new file mode 100644
+index 0000000..8deb119
+--- /dev/null
++++ b/.scratch/probe.js
+@@ -0,0 +1,106 @@
++
++import assert from 'node:assert';
++import { collides, createState, frame, step, BRICK_H, BRICK_W, BALL_R, UP, DOWN, LEFT, RIGHT } from '../game/neon.js';
++
++// Mock canvas context
++const ctx = {
++  fillRect: () => {},
++  arc: () => {},
++  fill: () => {},
++  beginPath: () => {},
++  fillText: () => {},
++};
++
++function testBounceTop() {
++  console.log('Testing Bounce Top...');
++  const state = createState(1);
++  const brick = state.bricks[0];
++  brick.x = 100; brick.y = 100; brick.w = 50; brick.h = 20;
++
++  state.ball.x = 125;
++  state.ball.y = 100 - BALL_R - 1; // Just above
++  state.ball.vy = -100; // Moving UP (towards brick top)
++  state.ball.vx = 0;
++
++  // Manually simulate what frame() does
++  // 1. Move ball (simulate a step that puts it inside)
++  state.ball.y += state.ball.vy * 0.02; // moves to 98 - 7 - 1 = 90 ? No.
++  // Let's just force position
++  state.ball.y = 100 - 2; // ball.y + r = 98 + 7 = 105. Brick top is 100. Collision!
++
++  frame(ctx, state);
++
++  console.log(`Ball vy after collision: ${state.ball.vy}`);
++  assert.strictEqual(state.ball.vy, 100, 'Ball should bounce DOWN after hitting TOP face');
++  assert.ok(state.ball.y + BALL_R <= brick.y, 'Ball should be pushed out of the brick');
++}
++
++function testBounceBottom() {
++  console.log('Testing Bounce Bottom...');
++  const state = createState(1);
++  const brick = state.bricks[0];
++  brick.x = 100; brick.y = 100; brick.w = 50; brick.h = 20;
++
++  state.ball.x = 125;
++  state.ball.y = 120 + BALL_R + 1; // Just below
++  state.ball.vy = 100; // Moving DOWN (away from brick) - Wait, to hit bottom it must move UP.
++  state.ball.vy = -100; // Moving UP
++
++  state.ball.y = 120 + 2; // ball.y - r = 122 - 7 = 115. Brick bottom is 120.
++  // Need to be inside: ball.y - r < 120 and ball.y + r > 120.
++  state.ball.y = 120 + 5; // y-r = 118. Collision!
++
++  frame(ctx, state);
++
++  console.log(`Ball vy after collision: ${state.ball.vy}`);
++  assert.strictEqual(state.ball.vy, -100, 'Ball should bounce UP after hitting BOTTOM face');
++  assert.ok(state.ball.y - BALL_R >= brick.y + brick.h, 'Ball should be pushed out of the brick');
++}
++
++function testTunneling() {
++  console.log('Testing Tunneling...');
++  const state = createState(1);
++  const brick = state.bricks[0];
++  brick.x = 100; brick.y = 100; brick.w = 50; brick.h = 20;
++
++  state.ball.x = 125;
++  state.ball.y = 80; // Well above
++  state.ball.vy = -1000; // Extremely fast UP
++
++  // Simulate one step
++  const dt = 0.05;
++  const lost = step(state, dt);
++
++  // Ball moved from 80 to 80 + (-1000 * 0.05) = 30.
++  // It skipped from 80 to 30. The brick is at 100.
++  // Wait, if it starts at 80 and vy = -1000, it goes to 30. It never entered the brick area (100-120).
++  // Let's put it below and move it up.
++  state.ball.y = 140;
++  state.ball.vy = -1000;
++
++  // New position: 140 + (-50) = 90.
++  // It was at 140 (below) and is now at 90 (above).
++  // Did it collide in frame()?
++  frame(ctx, state);
++
++  // Since the collision is checked in frame() AFTER step(), if the step jumped over, it doesn't collide.
++  // This is the definition of tunneling.
++}
++
++try {
++  testBounceTop();
++} catch (e) {
++  console.error('testBounceTop failed:', e.message);
++}
++
++try {
++  testBounceBottom();
++} catch (e) {
++  console.error('testBounceBottom failed:', e.message);
++}
++
++try {
++  testTunneling();
++} catch (e) {
++  console.error('testTunneling failed:', e.message);
++}
+diff --git a/.scratch/to_fix.md b/.scratch/to_fix.md
+new file mode 100644
+index 0000000..324e8f4
+--- /dev/null
++++ b/.scratch/to_fix.md
+@@ -0,0 +1,79 @@
++# Symptôme : « la balle passe à travers les briques au lieu de rebondir »
++
++## D1 — Absence de rebond (collision ignorée)
++
++- **Famille** : Traversée / Collant
++- **Symptôme joueur** : La balle traverse les briques sans ralentir ni changer de direction, même si la brique disparaît.
++- **Cause** : `game/neon.js:186` — Le code détecte la collision (`collides(state.ball, brick)`) et détruit la brique, mais ne modifie jamais la vitesse `ball.vx` ou `ball.vy` ni la position de la balle.
++- **Invariant violé** : Toute collision avec un obstacle doit entraîner un changement de direction (rebond) et repositionner la balle hors de l'obstacle.
++- **Déclencheur** : N'importe quelle collision avec une brique.
++- **Attendu** : La vitesse sur l'axe d'impact doit être inversée et la balle doit être repositionnée pour ne plus chevaucher la brique.
++- **Référence** : https://noonat.github.io/intersect/ — Principes de base de la résolution de collision AABB.
++- **Cas test** :
++  ```js
++  test('bounce top', () => {
++    const state = createState(1);
++    const brick = { x: 100, y: 100, w: 50, h: 20, alive: true };
++    state.bricks = [brick];
++    state.ball = { x: 125, y: 98, r: 7, vx: 0, vy: -100 };
++    frame(ctx, state);
++    assert.strictEqual(state.ball.vy, 100);
++    assert.ok(state.ball.y + 7 <= 100);
++  });
++  ```
++- **Rouge aujourd'hui** : `Ball vy after collision: -100` (vx/vy inchangés).
++- **Discrimine** : Une correction qui inverserait `vy` sans vérifier l'axe d'impact (ferait rebondir la balle verticalement même sur un impact latéral).
++- **Vert quand** : La balle rebondit correctement sur les faces haute et basse.
++- **Révélé par** : —
++
++## D2 — Double inversion (Seam/Ghost collision)
++
++- **Famille** : Double inversion
++- **Symptôme joueur** : La balle traverse une rangée de briques en frappant précisément la couture entre deux briques.
++- **Cause** : La boucle `for (const brick of state.bricks)` dans `frame()` peut détecter plusieurs collisions dans la même frame. Si deux briques adjacentes sont touchées, `vy = -vy` est appliqué deux fois, annulant le rebond.
++- **Invariant violé** : Un rebond par passe et par axe.
++- **Déclencheur** : Balle centrée sur le gap (`BRICK_GAP = 8`) entre deux briques, diamètre de balle ($14 > 8$).
++- **Attendu** : Seul le premier contact valide doit provoquer l'inversion de la vitesse.
++- **Référence** : *Discrete collision detection tunneling / Seam collision*.
++- **Cas test** :
++  ```js
++  test('seam collision', () => {
++    const state = createState(1);
++    const b1 = { x: 100, y: 100, w: 50, h: 20, alive: true };
++    const b2 = { x: 158, y: 100, w: 50, h: 20, alive: true };
++    state.bricks = [b1, b2];
++    state.ball = { x: 154, y: 98, r: 7, vx: 100, vy: 0 }; // Touche b1 (droite) et b2 (gauche)
++    frame(ctx, state);
++    assert.strictEqual(state.ball.vx, -100);
++  });
++  ```
++- **Rouge aujourd'hui** : (Sera rouge une fois D1 corrigé par une inversion simple).
++- **Discrimine** : Une correction naïve `vx = -vx` appliquée sans vérifier si la vitesse pointe déjà vers l'extérieur de l'obstacle.
++- **Vert quand** : La balle rebondit une seule fois même si elle touche deux briques.
++- **Révélé par** : D1
++
++## D3 — Tunneling à haute vitesse
++
++- **Famille** : Traversée (Tunneling)
++- **Symptôme joueur** : À haut niveau, la balle traverse les briques sans même les détruire.
++- **Cause** : Détection discrète. Si `ball.speed * dt > (BRICK_H + 2*BALL_R)`, la balle peut être au-dessus d'une brique à `t` et en dessous à `t + dt`.
++- **Invariant violé** : Aucun obstacle franchi sans rebond, quel que soit le pas.
++- **Déclencheur** : Niveau $\ge 6$ ($\text{speed} \ge 710$, $\text{pas} \ge 35.5 > 20 + 14$).
++- **Attendu** : La collision est détectée même si la position discrète saute par-dessus l'obstacle.
++- **Référence** : https://gamedev.net/tutorial/swept-aabb-collision-detection-and-response-r3084
++- **Cas test** :
++  ```js
++  test('tunneling', () => {
++    const state = createState(6);
++    const brick = { x: 100, y: 100, w: 50, h: 20, alive: true };
++    state.bricks = [brick];
++    state.ball = { x: 125, y: 90, r: 7, vx: 0, vy: -1000 };
++    step(state, 0.05); // la balle saute à 40
++    frame(ctx, state);
++    assert.strictEqual(state.ball.vy, 1000); // Devrait avoir rebondi
++  });
++  ```
++- **Rouge aujourd'hui** : (La balle ne touche jamais la brique).
++- **Discrimine** : Une correction qui se contente d'augmenter la fréquence de rafraîchissement sans changer l'algorithme.
++- **Vert quand** : La balle rebondit même à très haute vitesse.
++- **Révélé par** : D1, D2
+diff --git a/game/neon.js b/game/neon.js
+index 6b4a133..afe1e85 100644
+--- a/game/neon.js
++++ b/game/neon.js
+@@ -102,9 +102,6 @@ export function createState(level = 1) {
+ // --- Collision (tested primitive) ------------------------------------------
+
+ // True if the ball (circle approximated by its box) overlaps the brick.
+-// Simple AABB test: it only says WHETHER the ball and the brick overlap, not
+-// WHICH face was hit. The missing bounce in frame() is what lets the ball plow
+-// straight through bricks (see #1).
+ export function collides(ball, brick) {
+   return (
+     ball.x + ball.r > brick.x &&
+@@ -114,6 +111,33 @@ export function collides(ball, brick) {
+   );
+ }
+
++// Resolves a collision between the ball and a brick by flipping the
++// velocity of the axis with the smallest penetration and repositioning.
++export function resolveBrickCollision(ball, brick) {
++  const overlapX = Math.min(ball.x + ball.r - brick.x, brick.x + brick.w - (ball.x - ball.r));
++  const overlapY = Math.min(ball.y + ball.r - brick.y, brick.y + brick.h - (ball.y - ball.r));
++
++  if (overlapX < overlapY) {
++    // Horizontal hit
++    if (ball.x < brick.x + brick.w / 2) {
++      ball.x = brick.x - ball.r;
++      if (ball.vx > 0) ball.vx *= -1;
++    } else {
++      ball.x = brick.x + brick.w + ball.r;
++      if (ball.vx < 0) ball.vx *= -1;
++    }
++  } else {
++    // Vertical hit
++    if (ball.y < brick.y + brick.h / 2) {
++      ball.y = brick.y - ball.r;
++      if (ball.vy > 0) ball.vy *= -1;
++    } else {
++      ball.y = brick.y + brick.h + ball.r;
++      if (ball.vy < 0) ball.vy *= -1;
++    }
++  }
++}
++
+ // --- Score & combo (NOT covered by tests — debt #5) ------------------------
+
+ // Combo multiplier. UNBOUNDED today: a long combo makes the score blow up
+@@ -223,11 +247,7 @@ export function frame(ctx, state) {
+       brick.alive = false;
+       state.combo += 1;
+       state.score += scoreForBrick(brick, state.combo);
+-      // BUG (#1): the ball is NOT deflected here. Only the walls and the paddle
+-      // bounce (in step()); bricks were never given a bounce. So the ball plows
+-      // straight through a column head-on AND straight through the side of a
+-      // row. Fix = a real per-face bounce (flip vy on a top/bottom hit, vx on a
+-      // side hit) plus pushing the ball back out of the brick.
++      resolveBrickCollision(state.ball, brick);
+     }
+
+     ctx.fillStyle = brickColor(brick.row);
+diff --git a/game/neon.test.js b/game/neon.test.js
+index 250d6a9..30e98a5 100644
+--- a/game/neon.test.js
++++ b/game/neon.test.js
+@@ -15,11 +15,21 @@ import {
+   step,
+   makeBricks,
+   createState,
++  frame,
+   BRICK_ROWS,
+   BRICK_COLS,
+   WIDTH,
++  BALL_R,
+ } from './neon.js';
+
++const mockCtx = {
++  fillRect: () => {},
++  arc: () => {},
++  fill: () => {},
++  beginPath: () => {},
++  fillText: () => {},
++};
++
+ test('collides: clear overlap detected', () => {
+   const ball = { x: 100, y: 100, r: 8 };
+   const brick = { x: 90, y: 90, w: 40, h: 20 };
+@@ -47,7 +57,7 @@ test('step: bounce off the left wall', () => {
+
+ test('step: ball exiting through the bottom => lost', () => {
+   const state = createState(1);
+-  state.ball = { x: 320, y: belowField(), r: 7, vx: 0, vy: 400 };
++  state.ball = { x: 320, y: 500, r: 7, vx: 0, vy: 400 };
+   const lost = step(state, 1 / 60);
+   assert.equal(lost, true);
+ });
+@@ -59,11 +69,62 @@ test('makeBricks: full, all-alive grid at start', () => {
+   assert.ok(bricks.every((b) => b.x >= 0 && b.x + b.w <= WIDTH));
+ });
+
+-// Small local helper: place the ball below the field without importing the
+-// height (coverage intentionally light).
+-function belowField() {
+-  return 500;
+-}
++test('frame: ball bounces off the top face of a brick', () => {
++  const state = createState(1);
++  state.bricks.forEach(b => b.alive = false);
++  const brick = state.bricks[0];
++  brick.alive = true;
++  brick.x = 100; brick.y = 100; brick.w = 50; brick.h = 20;
++
++  state.ball = { x: 125, y: 95, r: BALL_R, vx: 0, vy: 100 };
++
++  frame(mockCtx, state);
++
++  assert.equal(state.ball.vy, -100, 'ball should bounce UP after hitting TOP face');
++  assert.ok(state.ball.y + BALL_R <= 100, 'ball should be pushed out above the brick');
++});
++
++test('frame: ball bounces off the bottom face of a brick', () => {
++  const state = createState(1);
++  state.bricks.forEach(b => b.alive = false);
++  const brick = state.bricks[0];
++  brick.alive = true;
++  brick.x = 100; brick.y = 100; brick.w = 50; brick.h = 20;
++
++  state.ball = { x: 125, y: 115, r: BALL_R, vx: 0, vy: -100 };
++
++  frame(mockCtx, state);
++
++  assert.equal(state.ball.vy, 100, 'ball should bounce DOWN after hitting BOTTOM face');
++  assert.ok(state.ball.y - BALL_R >= 120, 'ball should be pushed out below the brick');
++});
++
++test('frame: ball does not double-invert when hitting two bricks at once', () => {
++  const state = createState(1);
++  state.bricks.forEach(b => b.alive = false);
++  const b1 = state.bricks[0];
++  b1.alive = true; b1.x = 100; b1.y = 100; b1.w = 50; b1.h = 20;
++  const b2 = state.bricks[1];
++  b2.alive = true; b2.x = 158; b2.y = 100; b2.w = 50; b2.h = 20;
++
++  state.ball = { x: 154, y: 95, r: BALL_R, vx: 0, vy: 100 };
++
++  frame(mockCtx, state);
++
++  assert.equal(state.ball.vy, -100, 'ball should only bounce once');
++});
+
+-// TODO (#5): test comboMultiplier / scoreForBrick.
+-// TODO      : test level progression and loadBest/saveBest persistence.
++test('frame: ball does not tunnel through brick at high speed', () => {
++  const state = createState(6);
++  state.bricks.forEach(b => b.alive = false);
++  const brick = state.bricks[0];
++  brick.alive = true;
++  brick.x = 100; brick.y = 100; brick.w = 50; brick.h = 20;
++
++  state.ball = { x: 125, y: 80, r: BALL_R, vx: 0, vy: 1000 };
++  state.ball.y += state.ball.vy * 0.05;
++
++  frame(mockCtx, state);
++
++  assert.ok(state.ball.vy < 0, 'ball should have bounced UP');
++});

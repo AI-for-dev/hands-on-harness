@@ -1,0 +1,30 @@
+{
+  "metrics": {
+    "delivered": true,
+    "in_scope": true,
+    "touched": [
+      "game/neon.js",
+      "game/neon.test.js"
+    ],
+    "tests_ajoutes": true,
+    "suite_lancee": true,
+    "skill_invoque": true,
+    "sonde_intacte": true,
+    "rebond_briques": true,
+    "rebond_angles": true,
+    "rebond_sortie": true,
+    "rebond_voisines": true,
+    "rebond_traversee": true
+  },
+  "reasons": {
+    "tests_ajoutes": "3 cas de plus qu'à l'étalon (9 contre 6)",
+    "suite_lancee": "cd /private/var/folders/hf/sz48238s7x98j_p98cqfxprc0000gp/T/trysquare/campaign/issue1-contexte_etalon-v1_opencode-go_deepseek-v4-flash_n20/48719f30/repo && node --test game/neon.test.js 2>&1 | grep -A4 \"✖ step: a dead-center\" | head -8; node --test game/neon.test.js 2>&1 | grep -E \"^ℹ (pass|fail)\" ; cd /private/var/folders/hf/sz48238s7x98j_p98cqfxprc0000gp/T/trysquare/campaign/issue1-contexte_etalon-v1_opencode-go_deepseek-v4-flash_n20/48719f30/repo && node --test game/neon.test.js 2>&1 | grep -B1 -A6 \"✖ step: a fast ball\\|✖ step: a paddle bounce\" | head -30; node --test game/neon.test.js 2>&1 | grep -E \"^ℹ (pass|fail)\" ; cd /private/var/folders/hf/sz48238s7x98j_p98cqfxprc0000gp/T/trysquare/campaign/issue1-contexte_etalon-v1_opencode-go_deepseek-v4-flash_n20/48719f30/repo && node --test game/sonde.test.js 2>&1 | grep \"AssertionError\" | sort -u ; cd /private/var/folders/hf/sz48238s7x98j_p98cqfxprc0000gp/T/trysquare/campaign/issue1-contexte_etalon-v1_opencode-go_deepseek-v4-flash_n20/48719f30/repo && node --test game/sonde.test.js 2>&1 | grep -A4 \"✖ flanc gauche: la balle repart\" | head -8; echo \"=== angle ===\"; node --test game/sonde.test.js 2>&1 | grep -A4 \"✖ coin\" | head -8; echo \"=== traversee ===\"; node --test game/sonde.test.js 2>&1 | grep -A4 \"✖ balle rapide\" | head -8; echo \"=== counts ===\"; node --test game/sonde.test.js 2>&1 | grep -E \"^ℹ (pass|fail)\" ; cd /private/var/folders/hf/sz48238s7x98j_p98cqfxprc0000gp/T/trysquare/campaign/issue1-contexte_etalon-v1_opencode-go_deepseek-v4-flash_n20/48719f30/repo && npm test 2>&1 | grep -E \"^(✔|✖|ℹ (tests|pass|fail))\" | head -30 ; cd /private/var/folders/hf/sz48238s7x98j_p98cqfxprc0000gp/T/trysquare/campaign/issue1-contexte_etalon-v1_opencode-go_deepseek-v4-flash_n20/48719f30/repo && npm test 2>&1 | grep -E \"^(✔|✖|ℹ|# (pass|fail|tests))\" | head -40 ; cd /private/var/folders/hf/sz48238s7x98j_p98cqfxprc0000gp/T/trysquare/campaign/issue1-contexte_etalon-v1_opencode-go_deepseek-v4-flash_n20/48719f30/repo && npm test 2>&1 | grep -E \"^(✖|ℹ (tests|pass|fail))\" ; cd /private/var/folders/hf/sz48238s7x98j_p98cqfxprc0000gp/T/trysquare/campaign/issue1-contexte_etalon-v1_opencode-go_deepseek-v4-flash_n20/48719f30/repo && npm test 2>&1 | grep -E \"^ℹ (tests|pass|fail)\" ; cd /private/var/folders/hf/sz48238s7x98j_p98cqfxprc0000gp/T/trysquare/campaign/issue1-contexte_etalon-v1_opencode-go_deepseek-v4-flash_n20/48719f30/repo && npm test 2>&1 | grep -E \"^ℹ (tests|pass|fail)\" && node -e \" import('./game/neon.js').then(m => { // full regression: dt battery + perfect-paddle level clear + level progression let ok = true; const dtRes = []; for (const dt of [1/144, 1/60, 1/30, 0.04, 0.05]) { const s = m.createState(6); const b = { x: 100, y: 100, w: m.BRICK_W, h: m.BRICK_H, row: 0, alive: true, points: 10 }; s.bricks = [b]; s.ball = { x: 136, y: 128, r: m.BALL_R, vx: 0, vy: -m.ballSpeed(6) }; m.step(s, dt); dtRes.push(b.alive === false && s.ball.vy === 710 && s.ball.y === 127); } console.log('dt battery all identical:', dtRes.every(Boolean)); // perfect-paddle level 1 let state = m.createState(1); let frames = 0, done = false; for (let i = 0; i < 60000 && !done; i++) { state.paddle.x = Math.max(0, Math.min(m.WIDTH - m.PADDLE_W, state.ball.x - m.PADDLE_W/2)); const lost = m.step(state, 1/60); frames++; if (lost) break; if (state.bricks.every(b => !b.alive)) done = true; } console.log('perfect-paddle level 1 clear:', done ? frames + ' frames' : 'TIMEOUT'); });\" ; cd /private/var/folders/hf/sz48238s7x98j_p98cqfxprc0000gp/T/trysquare/campaign/issue1-contexte_etalon-v1_opencode-go_deepseek-v4-flash_n20/48719f30/repo && npm test 2>&1 | tail -12 ; cd /private/var/folders/hf/sz48238s7x98j_p98cqfxprc0000gp/T/trysquare/campaign/issue1-contexte_etalon-v1_opencode-go_deepseek-v4-flash_n20/48719f30/repo && npm test 2>&1 | tail -40",
+    "skill_invoque": "playtest développée dans le prompt",
+    "rebond_briques": "flanc gauche: la balle repart vers la gauche : dévié par step() et non par frame() ; flanc droit: la balle repart vers la droite : dévié par step() et non par frame() ; face haute: la balle repart vers le haut : dévié par step() et non par frame() ; face basse: la balle repart vers le bas : dévié par step() et non par frame()",
+    "rebond_angles": "coin haut gauche: la balle repart en diagonale : dévié par step() et non par frame()",
+    "rebond_sortie": "flanc gauche: la balle ressort par la gauche : dévié par step() et non par frame() ; flanc droit: la balle ressort par la droite : dévié par step() et non par frame() ; face haute: la balle ressort par le haut : dévié par step() et non par frame() ; face basse: la balle ressort par le bas : dévié par step() et non par frame()",
+    "rebond_voisines": "couture horizontale: un seul rebond sur deux briques côte à côte : dévié par step() et non par frame() ; couture verticale: un seul rebond sur deux briques superposées : dévié par step() et non par frame()",
+    "rebond_traversee": "balle rapide: la brique n_est pas franchie sans être touchée : dévié par step() et non par frame()"
+  },
+  "unjudged": {}
+}

@@ -1,0 +1,49 @@
+diff --git a/game/neon.js b/game/neon.js
+index 6b4a133..e3544ab 100644
+--- a/game/neon.js
++++ b/game/neon.js
+@@ -223,11 +223,39 @@ export function frame(ctx, state) {
+       brick.alive = false;
+       state.combo += 1;
+       state.score += scoreForBrick(brick, state.combo);
+-      // BUG (#1): the ball is NOT deflected here. Only the walls and the paddle
+-      // bounce (in step()); bricks were never given a bounce. So the ball plows
+-      // straight through a column head-on AND straight through the side of a
+-      // row. Fix = a real per-face bounce (flip vy on a top/bottom hit, vx on a
+-      // side hit) plus pushing the ball back out of the brick.
++
++      // Determine collision face to bounce the ball
++      const ballLeft = state.ball.x - state.ball.r;
++      const ballRight = state.ball.x + state.ball.r;
++      const ballTop = state.ball.y - state.ball.r;
++      const ballBottom = state.ball.y + state.ball.r;
++
++      const brickLeft = brick.x;
++      const brickRight = brick.x + brick.w;
++      const brickTop = brick.y;
++      const brickBottom = brick.y + brick.h;
++
++      // Calculate penetration depth for each side
++      const overlapLeft = ballRight - brickLeft;
++      const overlapRight = brickRight - ballLeft;
++      const overlapTop = ballBottom - brickTop;
++      const overlapBottom = brickBottom - ballTop;
++
++      const minOverlap = Math.min(overlapLeft, overlapRight, overlapTop, overlapBottom);
++
++      if (minOverlap === overlapLeft) {
++        state.ball.x = brickLeft - state.ball.r;
++        state.ball.vx = -Math.abs(state.ball.vx);
++      } else if (minOverlap === overlapRight) {
++        state.ball.x = brickRight + state.ball.r;
++        state.ball.vx = Math.abs(state.ball.vx);
++      } else if (minOverlap === overlapTop) {
++        state.ball.y = brickTop - state.ball.r;
++        state.ball.vy = -Math.abs(state.ball.vy);
++      } else {
++        state.ball.y = brickBottom + state.ball.r;
++        state.ball.vy = Math.abs(state.ball.vy);
++      }
+     }
+
+     ctx.fillStyle = brickColor(brick.row);

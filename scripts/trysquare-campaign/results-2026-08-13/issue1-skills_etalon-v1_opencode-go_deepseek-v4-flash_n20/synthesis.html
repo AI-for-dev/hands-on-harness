@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>playtest contre playtest-court, sur le rebond de l&#x27;issue #1</title>
+<style>
+body { max-width: 60rem; margin: 2rem auto; padding: 0 1rem;
+       font: 16px/1.55 system-ui, sans-serif; color: #1a1a1a; background: #ffffff; }
+h1, h2, h3, h4 { line-height: 1.25; margin: 2.2rem 0 0.7rem; }
+h1 { font-size: 2.1rem; margin-top: 0; }
+h2 { font-size: 1.7rem; }
+h3 { font-size: 1.45rem; }
+h4 { font-size: 1.15rem; }
+a { color: #0b57d0; }
+table { border-collapse: collapse; margin: 1rem 0; }
+th, td { border: 1px solid #b5b5b5; padding: 0.35rem 0.7rem; text-align: left; }
+th { background: #efefef; }
+code { font-family: ui-monospace, monospace; background: #efefef;
+       padding: 0.05rem 0.3rem; border-radius: 3px; }
+.warning { border-left: 4px solid #b45309; padding-left: 0.8rem; }
+@media (prefers-color-scheme: dark) {
+  body { color: #e8e8e8; background: #121212; }
+  a { color: #9ec1ff; }
+  th { background: #232323; }
+  th, td { border-color: #4a4a4a; }
+  code { background: #232323; }
+}
+</style>
+</head>
+<body>
+<h1>playtest contre playtest-court, sur le rebond de l'issue #1</h1>
+<ul><li>etalon <code>etalon-v1</code>, provider <code>opencode-go</code>, model <code>deepseek-v4-flash</code>, thinking <code>high</code></li><li>20 repetitions, concurrency 5, timeout 1800s</li></ul>
+<h3>Scores, cell by test</h3>
+<table><thead><tr><th>cell</th><th>delivered</th><th>suite_lancee</th><th>skill_invoque</th><th>in_scope</th><th>tests_ajoutes</th><th>rebond_briques</th><th>rebond_angles</th><th>rebond_sortie</th><th>rebond_voisines</th><th>rebond_traversee</th></tr></thead><tbody><tr><td>+agents+skill</td><td>20/20</td><td>20/20</td><td>20/20</td><td>15/20</td><td>20/20</td><td>14/20</td><td>17/20</td><td>14/20</td><td>16/20</td><td>17/20</td></tr><tr><td>+agents+skill_court</td><td>20/20</td><td>20/20</td><td>20/20</td><td>20/20</td><td>20/20</td><td>14/20</td><td>15/20</td><td>15/20</td><td>13/20</td><td>16/20</td></tr></tbody></table>
+<p><code>x/n</code>: the test was true in <code>x</code> of the <code>n</code> runs that could judge it. A run that produced no measurement is in no denominator here. Declared but not scored here, having no <code>x/n</code> to show: <code>sonde_intacte</code>, <code>touched</code> - a number or a diagnostic, readable per run in <code>measures.json</code>.</p>
+<h3>Cost, median and 95% interval by resampling</h3>
+<p>10000 draws, seed 20260729: the interval is reproducible.</p>
+<table><thead><tr><th>cell</th><th>n</th><th>in</th><th>out</th><th>duration (s)</th></tr></thead><tbody><tr><td>+agents+skill</td><td>20</td><td>34 764 [29 012, 42 017]</td><td>120 298 [107 460, 127 888]</td><td>1 054 [1 002, 1 260]</td></tr><tr><td>+agents+skill_court</td><td>20</td><td>12 861 [10 857, 15 892]</td><td>81 256 [70 456, 95 985]</td><td>692 [636, 1 034]</td></tr></tbody></table>
+<p>Over the runs the verdict rests on: valid, and passing <code>[verdict].validity</code>. A level carries no verdict - two intervals that do not overlap are not a result, and the gap that would be one is in the table below.</p>
+<h3>Gap to <code>+agents+skill</code>, 95% interval by resampling</h3>
+<p>10000 draws, seed 20260729: the verdict is reproducible.</p>
+<table><thead><tr><th>cell</th><th>in</th><th>out</th><th>turns</th><th>duration</th><th>rebond_briques</th></tr></thead><tbody><tr><td>+agents+skill_court</td><td>-21 902 *</td><td>-39 043 *</td><td>-27 *</td><td>-362 *</td><td>+0 pts o</td></tr></tbody></table>
+<p><code>*</code> established, the interval excludes zero - <code>o</code> inconclusive.</p>
+<p><strong>No sentence may rest on an <code>o</code>.</strong> The table shows them anyway: hiding a measurement would be another dishonesty, and the dispersion is precisely what this is for.</p>
+<h4>What is publishable</h4>
+<ul><li><code>+agents+skill_court</code>: <strong>in -21 902</strong>, interval [-29 979, -15 681]</li><li><code>+agents+skill_court</code>: <strong>out -39 043</strong>, interval [-52 684, -20 794]</li><li><code>+agents+skill_court</code>: <strong>turns -27</strong>, interval [-47, -16]</li><li><code>+agents+skill_court</code>: <strong>duration -362</strong>, interval [-573, -1]</li></ul>
+<p class="warning"><strong>The cost columns (in, out, turns, duration) must not be read here.</strong> 23 retries across the matrix, in +agents+skill, +agents+skill_court. A retry replays the turn with the whole accumulated context, so these columns reflect our own load on the provider rather than the configuration - including any of them marked established.</p>
+</body>
+</html>

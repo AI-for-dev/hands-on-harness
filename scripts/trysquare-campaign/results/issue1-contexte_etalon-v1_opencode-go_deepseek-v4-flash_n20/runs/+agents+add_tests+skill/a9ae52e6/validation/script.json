@@ -1,0 +1,31 @@
+{
+  "metrics": {
+    "delivered": true,
+    "in_scope": false,
+    "touched": [
+      ".scratch/to_fix.md",
+      "game/neon.js"
+    ],
+    "tests_ajoutes": false,
+    "suite_lancee": true,
+    "skill_invoque": true,
+    "sonde_intacte": true,
+    "rebond_briques": true,
+    "rebond_angles": true,
+    "rebond_sortie": true,
+    "rebond_voisines": true,
+    "rebond_traversee": true
+  },
+  "reasons": {
+    "in_scope": "a aussi touché .scratch/to_fix.md",
+    "tests_ajoutes": "6 cas, comme à l'étalon",
+    "suite_lancee": "node --test game/probe.test.js 2>&1 | grep -A 12 \"✖ D6 paddle: la balle rapide\\|✖ D7 paddle\" | head -40 ; node --test game/probe.test.js 2>&1 | grep -E \"✔|✖|fail|pass\" ; node --test game/sonde.test.js 2>&1 | grep -B2 -A 20 \"traversee\" | head -50 ; npm test 2>&1 | grep -E \"✔|✖|ℹ (tests|pass|fail)\" | head -40 ; npm test 2>&1 | grep -E \"✖|ℹ (tests|pass|fail)\" ; npm test 2>&1 | head -30; echo \"===\"; git log --oneline | head -5; git status --short ; npm test 2>&1 | tail -12; echo \"===\"; git status --short; echo \"===\"; ls .scratch/ ; rm game/probe.test.js && npm test 2>&1 | grep -E \"✖|ℹ (tests|pass|fail)\" && echo \"===\" && git status --short",
+    "skill_invoque": "playtest développée dans le prompt",
+    "rebond_briques": "flanc gauche: la balle repart vers la gauche : dévié par step() et non par frame() ; flanc droit: la balle repart vers la droite : dévié par step() et non par frame() ; face haute: la balle repart vers le haut : dévié par step() et non par frame() ; face basse: la balle repart vers le bas : dévié par step() et non par frame()",
+    "rebond_angles": "coin haut gauche: la balle repart en diagonale : dévié par step() et non par frame()",
+    "rebond_sortie": "flanc gauche: la balle ressort par la gauche : dévié par step() et non par frame() ; flanc droit: la balle ressort par la droite : dévié par step() et non par frame() ; face haute: la balle ressort par le haut : dévié par step() et non par frame() ; face basse: la balle ressort par le bas : dévié par step() et non par frame()",
+    "rebond_voisines": "couture horizontale: un seul rebond sur deux briques côte à côte : dévié par step() et non par frame() ; couture verticale: un seul rebond sur deux briques superposées : dévié par step() et non par frame()",
+    "rebond_traversee": "balle rapide: la brique n_est pas franchie sans être touchée : dévié par step() et non par frame()"
+  },
+  "unjudged": {}
+}

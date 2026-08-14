@@ -1,0 +1,36 @@
+{
+  "metrics": {
+    "delivered": true,
+    "in_scope": false,
+    "touched": [
+      ".scratch/repro.test.js",
+      ".scratch/repro_seams.test.js",
+      ".scratch/repro_side.test.js",
+      ".scratch/repro_sticky.test.js",
+      ".scratch/to_fix.md",
+      "game/neon.js",
+      "game/neon.test.js"
+    ],
+    "tests_ajoutes": true,
+    "suite_lancee": true,
+    "skill_invoque": true,
+    "sonde_intacte": true,
+    "rebond_briques": true,
+    "rebond_angles": false,
+    "rebond_sortie": true,
+    "rebond_voisines": true,
+    "rebond_traversee": true
+  },
+  "reasons": {
+    "in_scope": "a aussi touché .scratch/repro.test.js, .scratch/repro_seams.test.js, .scratch/repro_side.test.js, .scratch/repro_sticky.test.js, .scratch/to_fix.md",
+    "tests_ajoutes": "5 cas de plus qu'à l'étalon (11 contre 6)",
+    "suite_lancee": "node --test .scratch/corner.test.js ; node --test .scratch/repro.test.js ; node --test .scratch/repro.test.js && node --test .scratch/corner.test.js ; node --test .scratch/repro_seams.test.js ; node --test .scratch/repro_side.test.js ; node --test .scratch/repro_sticky.test.js ; node --test .scratch/tunnel.test.js ; node --test game/neon.test.js ; npm test",
+    "skill_invoque": "playtest développée dans le prompt",
+    "rebond_briques": "flanc gauche: la balle repart vers la gauche : dévié par step() et non par frame() ; flanc droit: la balle repart vers la droite : dévié par step() et non par frame() ; face haute: la balle repart vers le haut : dévié par step() et non par frame() ; face basse: la balle repart vers le bas : dévié par step() et non par frame()",
+    "rebond_angles": "coin haut gauche: la balle repart en diagonale : vy devait devenir négatif : 300 ; dévié par step() et non par frame()",
+    "rebond_sortie": "flanc gauche: la balle ressort par la gauche : dévié par step() et non par frame() ; flanc droit: la balle ressort par la droite : dévié par step() et non par frame() ; face haute: la balle ressort par le haut : dévié par step() et non par frame() ; face basse: la balle ressort par le bas : dévié par step() et non par frame()",
+    "rebond_voisines": "couture horizontale: un seul rebond sur deux briques côte à côte : dévié par step() et non par frame() ; couture verticale: un seul rebond sur deux briques superposées : dévié par step() et non par frame()",
+    "rebond_traversee": "balle rapide: la brique n_est pas franchie sans être touchée : dévié par step() et non par frame()"
+  },
+  "unjudged": {}
+}

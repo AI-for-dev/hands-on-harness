@@ -1,8 +1,10 @@
 # The Running Theme: NÉON
 
-Throughout the training, we will work on the same repository, which we call **NÉON**. It is a small playable breakout game, written in HTML and JavaScript on a `<canvas>`, with no dependencies. You open it in your browser and it works. It is real software, with its strengths and, above all, its flaws.
+Throughout the course, we work on a single repository, which we call **NÉON**. It is a small playable Breakout game, written in HTML and JavaScript on a `<canvas>`, with no dependencies. You open it in your browser and it works. It is real software, with its strengths and weaknesses.
 
 Because NÉON is intentionally imperfect. It contains bugs, technical choices to be corrected, a list of pending tickets, a booby-trapped file, and a very real git history. This is not by accident: it is the raw material for the training.
+
+You can find it at the following address: https://github.com/AI-for-dev/neon
 
 ## Maintaining Rather Than Building
 
@@ -36,14 +38,14 @@ The separation between pure logic and rendering is partially respected. Where it
 
 The `ISSUES.md` file contains the backlog that we work through module by module.
 
-| #   | Type          | Title                                                                    | Module |
-| --- | ------------- | ------------------------------------------------------------------------ | ------ |
-| 1   | bug           | The ball passes through a brick at high speed                            | 2.4    |
-| 2   | performance   | Collision scanning checks all bricks every frame, code mixed with rendering | 2.1    |
-| 3   | feature       | Night mode                                                                | 4.0    |
-| 4   | feature       | CSV import of a scoreboard, compatible with local save                   | 4.0    |
-| 5   | debt          | Score and combo logic is not tested                                      | 3.1    |
-| 6   | debt          | Hardcoded colors instead of the palette                                    | 2.5    |
+| #   | Type           | Title                                                                     | Module |
+| --- | -------------- | ------------------------------------------------------------------------- | ------ |
+| 1   | bug            | The ball passes through a brick at high speed                             | 2.4    |
+| 2   | performance    | Collision scans all bricks every frame, code mixed with rendering         | 2.1    |
+| 3   | feature        | Night mode                                                                 | 4.0    |
+| 4   | feature        | CSV import of a scoreboard, compatible with local save                    | 4.0    |
+| 5   | debt           | Score and combo logic is not tested                                       | 3.1    |
+| 6   | debt           | Hard-coded colors instead of the palette                                   | 2.5    |
 
 ## The booby-trapped file
 

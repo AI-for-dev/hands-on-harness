@@ -1,0 +1,31 @@
+{
+  "metrics": {
+    "delivered": true,
+    "in_scope": false,
+    "touched": [
+      ".scratch/to_fix.md",
+      "game/neon.js"
+    ],
+    "tests_ajoutes": false,
+    "suite_lancee": true,
+    "skill_invoque": true,
+    "sonde_intacte": true,
+    "rebond_briques": true,
+    "rebond_angles": true,
+    "rebond_sortie": true,
+    "rebond_voisines": true,
+    "rebond_traversee": true
+  },
+  "reasons": {
+    "in_scope": "a aussi touché .scratch/to_fix.md",
+    "tests_ajoutes": "6 cas, comme à l'étalon",
+    "suite_lancee": "cd /private/var/folders/hf/sz48238s7x98j_p98cqfxprc0000gp/T/trysquare/campaign/issue1-contexte_etalon-v1_opencode-go_deepseek-v4-flash_n20/3d3765d2/repo && grep -n \"export\" game/neon.js && echo \"---\" && npm test 2>&1 | grep -A 4 \"failing tests\" | head -10 && npm test 2>&1 | grep -B 1 -A 3 \"✖\" | grep -E \"test at|AssertionError|devait\" | head -40 ; cd /private/var/folders/hf/sz48238s7x98j_p98cqfxprc0000gp/T/trysquare/campaign/issue1-contexte_etalon-v1_opencode-go_deepseek-v4-flash_n20/3d3765d2/repo && npm test 2>&1 | grep -E \"ℹ (tests|pass|fail)\" && node --input-type=module -e \" import { createState, step, makeBricks, createState as cs } from './game/neon.js'; for (const [label, lvl, dt, n] of [['niv1@60fps', 1, 1/60, 6000], ['niv3@50ms', 3, 0.05, 4000], ['niv6@50ms', 6, 0.05, 4000], ['niv9@50ms', 9, 0.05, 4000]]) { let s = createState(lvl), overlapFrames = 0, stuck = false; for (let i = 0; i < n; i++) { const lost = step(s, dt); if (lost) { s = createState(lvl); continue; } if (!Number.isFinite(s.ball.x + s.ball.y)) { console.log(label, 'NaN frame', i); process.exit(1); } let overlapping = false; for (const b of s.bricks) { if (b.alive && s.ball.x + s.ball.r > b.x && s.ball.x - s.ball.r < b.x + b.w && s.ball.y + s.ball.r > b.y && s.ball.y - s.ball.r < b.y + b.h) { overlapping = true; // doit être résolu à la frame suivante (recouvrement d'une frame max) const s2 = structuredClone(s); step(s2, dt); const still = s2.bricks.some(bb => bb.alive && s2.ball.x + s2.ball.r > bb.x && s2.ball.x - s2.ball.r < bb.x + bb.w && s2.ball.y + s2.ball.r > bb.y && s2.ball.y - s2.ball.r < bb.y + bb.h); if (still) { console.log(label, 'BLOQUÉ frame', i); process.exit(1); } } } if (overlapping) overlapFrames++; if (s.bricks.every(b => !b.alive)) { s.level++; s.bricks = makeBricks(s.level); s.ball = cs(s.level).ball; } } console.log(label + ' : ' + n + ' frames OK' + (overlapFrames ? ', ' + overlapFrames + ' recouvrements résolus à la frame suivante' : ', zéro recouvrement résiduel')); } \" ; cd /private/var/folders/hf/sz48238s7x98j_p98cqfxprc0000gp/T/trysquare/campaign/issue1-contexte_etalon-v1_opencode-go_deepseek-v4-flash_n20/3d3765d2/repo && npm test 2>&1 | grep -E \"ℹ (tests|pass|fail)\" && node --input-type=module -e \" import { createState, step, makeBricks, createState as cs } from './game/neon.js'; let maxChain = 0, maxFrame = 0; for (let attempt = 0; attempt < 3; attempt++) { let s = createState(9); for (let i = 0; i < 20000; i++) { const lost = step(s, 0.05); if (lost) { s = createState(9); continue; } // longueur de la chaîne de recouvrements résiduels let chain = 0; let cur = structuredClone(s); while (true) { const ov = cur.bricks.some(b => b.alive && cur.ball.x + cur.ball.r > b.x && cur.ball.x - cur.ball.r < b.x + b.w && cur.ball.y + cur.ball.r > b.y && cur.ball.y - cur.ball.r < b.y + b.h); if (!ov) break; chain++; if (chain > 10) { console.log('CHAÎNE INFINIE frame', i); process.exit(1); } step(cur, 0.05); if (cur.ball.y - cur.ball.r > 480) { cur = createState(9); } if (cur.bricks.every(b => !b.alive)) { cur.level++; cur.bricks = makeBricks(cur.level); cur.ball = cs(cur.level).ball; } } if (chain > maxChain) { maxChain = chain; maxFrame = i; } if (s.bricks.every(b => !b.alive)) { s.level++; s.bricks = makeBricks(s.level); s.ball = cs(s.level).ball; } } } console.log('niv9@50ms : 3×20000 frames, chaîne résiduelle max =', maxChain, 'frames (frame', maxFrame + ') — jamais de blocage'); \" ; cd /private/var/folders/hf/sz48238s7x98j_p98cqfxprc0000gp/T/trysquare/campaign/issue1-contexte_etalon-v1_opencode-go_deepseek-v4-flash_n20/3d3765d2/repo && npm test 2>&1 | grep -E \"✔|✖|ℹ (tests|pass|fail)\" ; cd /private/var/folders/hf/sz48238s7x98j_p98cqfxprc0000gp/T/trysquare/campaign/issue1-contexte_etalon-v1_opencode-go_deepseek-v4-flash_n20/3d3765d2/repo && npm test 2>&1 | grep -E \"✔|✖|ℹ (tests|pass|fail)\" | head -30 ; cd /private/var/folders/hf/sz48238s7x98j_p98cqfxprc0000gp/T/trysquare/campaign/issue1-contexte_etalon-v1_opencode-go_deepseek-v4-flash_n20/3d3765d2/repo && npm test 2>&1 | head -60 ; cd /private/var/folders/hf/sz48238s7x98j_p98cqfxprc0000gp/T/trysquare/campaign/issue1-contexte_etalon-v1_opencode-go_deepseek-v4-flash_n20/3d3765d2/repo && npm test 2>&1 | tail -12 && echo \"---\" && ls .scratch/ && git status --short",
+    "skill_invoque": "/Users/loic.gouarin/Formations/2026/AI4Dev/hands-on-harness/scripts/trysquare-campaign/briques/skills/playtest/SKILL.md ; playtest développée dans le prompt",
+    "rebond_briques": "flanc gauche: la balle repart vers la gauche : dévié par step() et non par frame() ; flanc droit: la balle repart vers la droite : dévié par step() et non par frame() ; face haute: la balle repart vers le haut : dévié par step() et non par frame() ; face basse: la balle repart vers le bas : dévié par step() et non par frame()",
+    "rebond_angles": "coin haut gauche: la balle repart en diagonale : dévié par step() et non par frame()",
+    "rebond_sortie": "flanc gauche: la balle ressort par la gauche : dévié par step() et non par frame() ; flanc droit: la balle ressort par la droite : dévié par step() et non par frame() ; face haute: la balle ressort par le haut : dévié par step() et non par frame() ; face basse: la balle ressort par le bas : dévié par step() et non par frame()",
+    "rebond_voisines": "couture horizontale: un seul rebond sur deux briques côte à côte : dévié par step() et non par frame() ; couture verticale: un seul rebond sur deux briques superposées : dévié par step() et non par frame()",
+    "rebond_traversee": "balle rapide: la brique n_est pas franchie sans être touchée : dévié par step() et non par frame()"
+  },
+  "unjudged": {}
+}

@@ -1,0 +1,48 @@
+diff --git a/game/neon.js b/game/neon.js
+index 6b4a133..6d40789 100644
+--- a/game/neon.js
++++ b/game/neon.js
+@@ -223,11 +223,38 @@ export function frame(ctx, state) {
+       brick.alive = false;
+       state.combo += 1;
+       state.score += scoreForBrick(brick, state.combo);
+-      // BUG (#1): the ball is NOT deflected here. Only the walls and the paddle
+-      // bounce (in step()); bricks were never given a bounce. So the ball plows
+-      // straight through a column head-on AND straight through the side of a
+-      // row. Fix = a real per-face bounce (flip vy on a top/bottom hit, vx on a
+-      // side hit) plus pushing the ball back out of the brick.
++      // Bounce the ball off the face it hit. We determine which face by
++      // comparing how far the ball overlaps each pair of opposite faces: the
++      // shallowest penetration is the face the ball actually broke through.
++      const ball = state.ball;
++      const { x, y, w, h } = brick;
++      const overlapLeft = ball.x + ball.r - x;
++      const overlapRight = x + w - (ball.x - ball.r);
++      const overlapTop = ball.y + ball.r - y;
++      const overlapBottom = y + h - (ball.y - ball.r);
++
++      const minX = Math.min(overlapLeft, overlapRight);
++      const minY = Math.min(overlapTop, overlapBottom);
++
++      if (minX < minY) {
++        // Side hit: flip the horizontal velocity and push the ball out.
++        if (overlapLeft < overlapRight) {
++          ball.x = x - ball.r; // hit the left face, move ball left of the brick
++          ball.vx = -Math.abs(ball.vx);
++        } else {
++          ball.x = x + w + ball.r; // hit the right face, move ball right
++          ball.vx = Math.abs(ball.vx);
++        }
++      } else {
++        // Top/bottom hit: flip the vertical velocity and push the ball out.
++        if (overlapTop < overlapBottom) {
++          ball.y = y - ball.r; // hit the top face, move ball above the brick
++          ball.vy = -Math.abs(ball.vy);
++        } else {
++          ball.y = y + h + ball.r; // hit the bottom face, move ball below
++          ball.vy = Math.abs(ball.vy);
++        }
++      }
+     }
+
+     ctx.fillStyle = brickColor(brick.row);

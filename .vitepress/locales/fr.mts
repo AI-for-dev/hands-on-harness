@@ -31,10 +31,16 @@ export const fr: LocaleSpecificConfig<DefaultTheme.Config> = {
           { text: 'Le harnais de départ : Pi', link: '/act1-pi' }
         ]
       },
+      {
+        text: 'Acte 2 — Reconstruction',
+        items: [
+          { text: '2.1 Le contexte et la fenêtre', link: '/act2-contexte' },
+          { text: '2.2 Les compétences', link: '/act2-skill' }
+        ]
+      },
       // {
-      //   text: 'Acte 2 — Reconstruction',
+      //   text: 'Acte 2 — Reconstruction (suite)',
       //   items: [
-      //     { text: '2.1 Le contexte : cache et compaction', link: '/act2-contexte' },
       //     { text: '2.2 Les outils', link: '/act2-outils' },
       //     { text: '2.3 La délégation', link: '/act2-delegation' },
       //     { text: '2.4 Les workflows', link: '/act2-workflows' },

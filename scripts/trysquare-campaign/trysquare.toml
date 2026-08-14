@@ -1,0 +1,46 @@
+# Chemins machine de l'établi, et rien d'autre.
+#
+# Ce fichier remplace entièrement les variables d'environnement. Une variable
+# d'environnement est un héritage invisible : le lecteur d'un scénario ne la voit
+# pas, l'archive ne l'enregistre pas, et la valeur qui a réellement tourné est
+# celle que le shell contenait par hasard. Le banc précédent en avait dix, et
+# l'une d'elles décidait en silence le niveau de raisonnement de toutes les
+# mesures publiées.
+#
+# RÈGLE DURE, vérifiée au chargement : ce fichier ne peut fournir que des
+# **chemins machine et des valeurs de repli**. Écrire `provider`, `model`,
+# `thinking`, `etalon` ou `repetitions` dans [defaults] lève une erreur. Ces clés
+# décident de ce qui est mesuré, donc elles sont obligatoires dans le scénario -
+# sinon le même fichier mesurerait autre chose sur une autre machine.
+
+# Dépôts mesurables, par nom logique. Un scénario écrit `repo = "neon"`.
+# Les chemins relatifs le sont par rapport à ce fichier, pas au répertoire
+# courant.
+#
+# NÉON est supposé cloné à côté de ce dépôt, ce qui est la disposition de la
+# formation. Si le vôtre est ailleurs, ne modifiez pas ce fichier : copiez-le et
+# passez `--config` (ou `CONFIG=... ./mesurer.sh`).
+[repos]
+neon = "https://github.com/AI-for-dev/neon.git"
+
+[harness]
+websearch = "https://github.com/sebaxzero/pi-safe-search"
+
+[defaults]
+# Les clones vivent dans le répertoire temporaire du système, que macOS purge au
+# redémarrage. C'est voulu : l'archive durable ne garde que des sources, et
+# `replay` reconstitue un arbre depuis un tag et un diff quand il en faut un.
+workdir = "$TMPDIR/trysquare/campaign"
+
+# Valeurs de repli utilisées seulement quand un scénario se taît. « Un plan porte
+# sa charge » reste la règle : elles conditionnent le nombre de reprises et donc
+# toutes les colonnes de coût, si bien qu'elles sont écrites dans `state.json` et
+# affichées dans l'en-tête de la synthèse quelle que soit leur origine.
+concurrency = 5
+timeout = 900
+attempts = 3
+
+# Constantes de méthode plutôt que variables d'expérience : les changer change la
+# façon de tirer une conclusion, pas ce qui est mesuré.
+draws = 10000
+seed = 20260729

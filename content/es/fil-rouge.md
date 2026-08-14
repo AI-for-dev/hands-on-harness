@@ -1,8 +1,10 @@
 # El hilo conductor: NÉON
 
-A lo largo de la formación, trabajaremos en un mismo repositorio, que llamaremos **NÉON**. Se trata de un pequeño juego de romper ladrillos jugable, escrito en HTML y JavaScript sobre un `<canvas>`, sin ninguna dependencia. Lo abres en tu navegador y funciona. Es un software real, con sus virtudes y, sobre todo, sus defectos.
+A lo largo de la formación, trabajamos en un mismo repositorio, que llamamos **NÉON**. Se trata de un pequeño juego de romper bloques jugable, escrito en HTML y JavaScript sobre un `<canvas>`, sin ninguna dependencia. Lo abres en tu navegador y funciona. Es un software real, con sus virtudes y sus defectos.
 
 Porque NÉON es imperfecto a propósito. Contiene bugs, decisiones técnicas que corregir, una lista de tickets pendientes, un archivo trampa y un historial de git muy real. No es un accidente: es la materia prima de la formación.
+
+Lo encontrarás en la siguiente dirección: https://github.com/AI-for-dev/neon
 
 ## Mantener en lugar de construir
 
@@ -36,14 +38,14 @@ La separación entre la lógica pura y el renderizado se respeta parcialmente. D
 
 El archivo `ISSUES.md` contiene el backlog que aprovechamos módulo a módulo.
 
-| #   | Tipo          | Título                                                                    | Módulo |
-| --- | ------------- | ------------------------------------------------------------------------ | ------ |
-| 1   | bug           | La bola atraviesa un ladrillo a gran velocidad                            | 2.4    |
-| 2   | performance   | La colisión escanea todos los ladrillos en cada frame, código mezclado con el renderizado | 2.1    |
-| 3   | funcionalidad| Modo noche                                                                | 4.0    |
-| 4   | funcionalidad| Importación CSV de una tabla de puntuaciones, compatible con el guardado local   | 4.0    |
-| 5   | deuda         | La lógica de puntuación y de combo no está testeada                         | 3.1    |
-| 6   | deuda         | Colores hardcoded en lugar de la paleta                                    | 2.5    |
+| #   | Tipo           | Título                                                                     | Módulo |
+| --- | -------------- | ------------------------------------------------------------------------- | ------ |
+| 1   | bug            | La pelota atraviesa un ladrillo a alta velocidad                          | 2.4    |
+| 2   | rendimiento    | La colisión escanea todos los ladrillos en cada frame, código mezclado con el renderizado | 2.1    |
+| 3   | funcionalidad   | Modo noche                                                                 | 4.0    |
+| 4   | funcionalidad   | Importación CSV de una tabla de puntuaciones, compatible con el guardado local   | 4.0    |
+| 5   | deuda          | La lógica de puntuación y de combo no está probada                          | 3.1    |
+| 6   | deuda          | Colores fijos en lugar de la paleta                                     | 2.5    |
 
 ## El archivo trampa
 

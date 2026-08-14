@@ -1,0 +1,31 @@
+{
+  "metrics": {
+    "delivered": true,
+    "in_scope": true,
+    "touched": [
+      "game/neon.js",
+      "game/neon.test.js"
+    ],
+    "tests_ajoutes": true,
+    "suite_lancee": true,
+    "skill_invoque": true,
+    "rebond_briques": true,
+    "rebond_angles": true,
+    "rebond_sortie": true,
+    "rebond_voisines": true,
+    "rebond_traversee": true
+  },
+  "reasons": {
+    "tests_ajoutes": "8 cas de plus qu'à l'étalon (14 contre 6)",
+    "suite_lancee": "node --input-type=module -e \" import { createState, frame, step } from './game/neon.js'; const calls = []; const ctx = new Proxy({}, { get: (t, p) => (...a) => { calls.push([p, ...a]); }, set: () => true }); const s = createState(1); frame(ctx, s); // fresh render s.ball = { x: 40, y: 40, r: 7, vx: 0, vy: 260 }; step(s, 1 / 60); // break a brick frame(ctx, s); // render after a kill console.log('frame() OK —', calls.length, 'draw calls; brick dead:', s.bricks[0].alive === false); \" && rm -rf .scratch && npm test 2>&1 | tail -8 ; node --test .scratch/probe.test.js 2>&1 | grep -A2 \"AssertionError\" | grep -v \"^--$\" | grep -v \"at \" | head -40 ; node --test .scratch/probe.test.js 2>&1 | grep -E \"^(✔|✖|ℹ (tests|pass|fail))\" ; node --test .scratch/probe.test.js 2>&1 | tail -40 ; npm test 2>&1 | grep -E \"^(✔|✖|ℹ (tests|pass|fail))\" ; npm test 2>&1 | grep -E \"^(✔|✖|ℹ (tests|pass|fail))\" | head -20 ; npm test 2>&1 | grep -E \"^(✔|✖|ℹ (tests|pass|fail))\" | tail -8 ; npm test 2>&1 | tail -12 ; npm test 2>&1 | tail -15",
+    "skill_invoque": "playtest développée dans le prompt",
+    "rebond_briques": "flanc gauche: la balle repart vers la gauche : dévié par step() et non par frame() ; flanc droit: la balle repart vers la droite : dévié par step() et non par frame() ; face haute: la balle repart vers le haut : dévié par step() et non par frame() ; face basse: la balle repart vers le bas : dévié par step() et non par frame()",
+    "rebond_angles": "coin haut gauche: la balle repart en diagonale : dévié par step() et non par frame()",
+    "rebond_sortie": "flanc gauche: la balle ressort par la gauche : dévié par step() et non par frame() ; flanc droit: la balle ressort par la droite : dévié par step() et non par frame() ; face haute: la balle ressort par le haut : dévié par step() et non par frame() ; face basse: la balle ressort par le bas : dévié par step() et non par frame()",
+    "rebond_voisines": "couture horizontale: un seul rebond sur deux briques côte à côte : dévié par step() et non par frame() ; couture verticale: un seul rebond sur deux briques superposées : dévié par step() et non par frame()",
+    "rebond_traversee": "balle rapide: la brique n_est pas franchie sans être touchée : dévié par step() et non par frame()"
+  },
+  "unjudged": {
+    "sonde_intacte": "aucune sonde n'a été fournie à cette cellule"
+  }
+}

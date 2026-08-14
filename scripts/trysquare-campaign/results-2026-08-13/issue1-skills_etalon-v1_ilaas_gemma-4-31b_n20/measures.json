@@ -1,0 +1,1741 @@
+[
+  {
+    "id": "33341014",
+    "cell": "+agents+skill",
+    "repetition": 0,
+    "usage": {
+      "input": 1504574,
+      "output": 27424,
+      "cacheRead": 0,
+      "cost": 0.0,
+      "turns": 64,
+      "retries": 19
+    },
+    "duration": 1294,
+    "metrics": {
+      "delivered": true,
+      "in_scope": true,
+      "touched": [
+        "game/neon.js",
+        "game/neon.test.js"
+      ],
+      "tests_ajoutes": true,
+      "suite_lancee": true,
+      "skill_invoque": true,
+      "rebond_briques": true,
+      "rebond_angles": true,
+      "rebond_sortie": true,
+      "rebond_voisines": true,
+      "rebond_traversee": false
+    },
+    "reasons": {
+      "tests_ajoutes": "4 cas de plus qu'à l'étalon (10 contre 6)",
+      "suite_lancee": "node --test .scratch/collision.test.js ; npm test",
+      "skill_invoque": "playtest développée dans le prompt",
+      "rebond_briques": "flanc gauche: la balle repart vers la gauche : dévié par step() et non par frame() ; flanc droit: la balle repart vers la droite : dévié par step() et non par frame() ; face haute: la balle repart vers le haut : dévié par step() et non par frame() ; face basse: la balle repart vers le bas : dévié par step() et non par frame()",
+      "rebond_angles": "coin haut gauche: la balle repart en diagonale : dévié par step() et non par frame()",
+      "rebond_sortie": "flanc gauche: la balle ressort par la gauche : dévié par step() et non par frame() ; flanc droit: la balle ressort par la droite : dévié par step() et non par frame() ; face haute: la balle ressort par le haut : dévié par step() et non par frame() ; face basse: la balle ressort par le bas : dévié par step() et non par frame()",
+      "rebond_voisines": "couture horizontale: un seul rebond sur deux briques côte à côte : dévié par step() et non par frame() ; couture verticale: un seul rebond sur deux briques superposées : dévié par step() et non par frame()",
+      "rebond_traversee": "balle rapide: la brique n_est pas franchie sans être touchée : la balle devait être renvoyée vers le bas : -710",
+      "sonde_intacte": "aucune sonde n'a été fournie à cette cellule"
+    },
+    "state": "valid",
+    "detail": "",
+    "attempts": 1
+  },
+  {
+    "id": "b5bd3bad",
+    "cell": "+agents+skill_court",
+    "repetition": 0,
+    "usage": {
+      "input": 567220,
+      "output": 20632,
+      "cacheRead": 0,
+      "cost": 0.0,
+      "turns": 32,
+      "retries": 10
+    },
+    "duration": 485,
+    "metrics": {
+      "delivered": true,
+      "in_scope": true,
+      "touched": [
+        "game/neon.js",
+        "game/neon.test.js"
+      ],
+      "tests_ajoutes": true,
+      "suite_lancee": true,
+      "skill_invoque": true,
+      "rebond_briques": true,
+      "rebond_angles": true,
+      "rebond_sortie": true,
+      "rebond_voisines": true,
+      "rebond_traversee": false
+    },
+    "reasons": {
+      "tests_ajoutes": "5 cas de plus qu'à l'étalon (11 contre 6)",
+      "suite_lancee": "npm test",
+      "skill_invoque": "playtest-court développée dans le prompt",
+      "rebond_traversee": "balle rapide: la brique n_est pas franchie sans être touchée : la brique a survécu à une balle qui l_a traversée de part en part",
+      "sonde_intacte": "aucune sonde n'a été fournie à cette cellule"
+    },
+    "state": "valid",
+    "detail": "",
+    "attempts": 1
+  },
+  {
+    "id": "35974849",
+    "cell": "+agents+skill",
+    "repetition": 1,
+    "usage": {
+      "input": 1091852,
+      "output": 21016,
+      "cacheRead": 0,
+      "cost": 0.0,
+      "turns": 55,
+      "retries": 15
+    },
+    "duration": 468,
+    "metrics": {
+      "delivered": true,
+      "in_scope": false,
+      "touched": [
+        ".scratch/probe.test.js",
+        ".scratch/probe_direct.test.js",
+        ".scratch/probe_seam.test.js",
+        ".scratch/probe_tunnel.test.js",
+        ".scratch/to_fix.md",
+        "game/neon.js",
+        "game/neon.test.js"
+      ],
+      "tests_ajoutes": true,
+      "suite_lancee": true,
+      "skill_invoque": true,
+      "rebond_briques": true,
+      "rebond_angles": false,
+      "rebond_sortie": true,
+      "rebond_voisines": true,
+      "rebond_traversee": true
+    },
+    "reasons": {
+      "in_scope": "a aussi touché .scratch/probe.test.js, .scratch/probe_direct.test.js, .scratch/probe_seam.test.js, .scratch/probe_tunnel.test.js, .scratch/to_fix.md",
+      "tests_ajoutes": "4 cas de plus qu'à l'étalon (10 contre 6)",
+      "suite_lancee": "node --test .scratch/probe.test.js ; node --test .scratch/probe_direct.test.js ; node --test .scratch/probe_seam.test.js ; node --test .scratch/probe_tunnel.test.js ; npm test",
+      "skill_invoque": "playtest développée dans le prompt",
+      "rebond_briques": "flanc gauche: la balle repart vers la gauche : dévié par step() et non par frame() ; flanc droit: la balle repart vers la droite : dévié par step() et non par frame() ; face haute: la balle repart vers le haut : dévié par step() et non par frame() ; face basse: la balle repart vers le bas : dévié par step() et non par frame()",
+      "rebond_angles": "coin haut gauche: la balle repart en diagonale : vx devait devenir négatif : 300 ; dévié par step() et non par frame()",
+      "rebond_sortie": "flanc gauche: la balle ressort par la gauche : dévié par step() et non par frame() ; flanc droit: la balle ressort par la droite : dévié par step() et non par frame() ; face haute: la balle ressort par le haut : dévié par step() et non par frame() ; face basse: la balle ressort par le bas : dévié par step() et non par frame()",
+      "rebond_voisines": "couture horizontale: un seul rebond sur deux briques côte à côte : dévié par step() et non par frame() ; couture verticale: un seul rebond sur deux briques superposées : dévié par step() et non par frame()",
+      "rebond_traversee": "balle rapide: la brique n_est pas franchie sans être touchée : dévié par step() et non par frame()",
+      "sonde_intacte": "aucune sonde n'a été fournie à cette cellule"
+    },
+    "state": "valid",
+    "detail": "",
+    "attempts": 1
+  },
+  {
+    "id": "404176bd",
+    "cell": "+agents+skill_court",
+    "repetition": 1,
+    "usage": {
+      "input": 778361,
+      "output": 20629,
+      "cacheRead": 0,
+      "cost": 0.0,
+      "turns": 48,
+      "retries": 16
+    },
+    "duration": 644,
+    "metrics": {
+      "delivered": true,
+      "in_scope": true,
+      "touched": [
+        "game/neon.js",
+        "game/neon.test.js"
+      ],
+      "tests_ajoutes": true,
+      "suite_lancee": true,
+      "skill_invoque": true,
+      "rebond_briques": true,
+      "rebond_angles": true,
+      "rebond_sortie": true,
+      "rebond_voisines": true,
+      "rebond_traversee": true
+    },
+    "reasons": {
+      "tests_ajoutes": "6 cas de plus qu'à l'étalon (12 contre 6)",
+      "suite_lancee": "npm test",
+      "skill_invoque": "playtest-court développée dans le prompt",
+      "rebond_briques": "flanc gauche: la balle repart vers la gauche : dévié par step() et non par frame() ; flanc droit: la balle repart vers la droite : dévié par step() et non par frame() ; face haute: la balle repart vers le haut : dévié par step() et non par frame() ; face basse: la balle repart vers le bas : dévié par step() et non par frame()",
+      "rebond_angles": "coin haut gauche: la balle repart en diagonale : dévié par step() et non par frame()",
+      "rebond_sortie": "flanc gauche: la balle ressort par la gauche : dévié par step() et non par frame() ; flanc droit: la balle ressort par la droite : dévié par step() et non par frame() ; face haute: la balle ressort par le haut : dévié par step() et non par frame() ; face basse: la balle ressort par le bas : dévié par step() et non par frame()",
+      "rebond_voisines": "couture horizontale: un seul rebond sur deux briques côte à côte : dévié par step() et non par frame() ; couture verticale: un seul rebond sur deux briques superposées : dévié par step() et non par frame()",
+      "rebond_traversee": "balle rapide: la brique n_est pas franchie sans être touchée : dévié par step() et non par frame()",
+      "sonde_intacte": "aucune sonde n'a été fournie à cette cellule"
+    },
+    "state": "valid",
+    "detail": "",
+    "attempts": 1
+  },
+  {
+    "id": "dd77d484",
+    "cell": "+agents+skill",
+    "repetition": 2,
+    "usage": {
+      "input": 218478,
+      "output": 9778,
+      "cacheRead": 0,
+      "cost": 0.0,
+      "turns": 19,
+      "retries": 5
+    },
+    "duration": 221,
+    "metrics": {
+      "delivered": true,
+      "in_scope": false,
+      "touched": [
+        ".scratch/test_collisions.js",
+        "game/neon.test.js",
+        "to_fix.md"
+      ],
+      "tests_ajoutes": true,
+      "suite_lancee": true,
+      "skill_invoque": true,
+      "rebond_briques": false,
+      "rebond_angles": false,
+      "rebond_sortie": false,
+      "rebond_voisines": false,
+      "rebond_traversee": false
+    },
+    "reasons": {
+      "in_scope": "a aussi touché .scratch/test_collisions.js, to_fix.md",
+      "tests_ajoutes": "1 cas de plus qu'à l'étalon (7 contre 6)",
+      "suite_lancee": "node --test .scratch/test_collisions.js ; npm test",
+      "skill_invoque": "playtest développée dans le prompt",
+      "rebond_briques": "flanc gauche: la balle repart vers la gauche : vx devait devenir négatif : 300 ; flanc droit: la balle repart vers la droite : vx devait devenir positif : -300 ; face haute: la balle repart vers le haut : vy devait devenir négatif : 300 ; face basse: la balle repart vers le bas : vy devait devenir positif : -300",
+      "rebond_angles": "coin haut gauche: la balle repart en diagonale : vx devait devenir négatif : 300",
+      "rebond_sortie": "flanc gauche: la balle ressort par la gauche : le bord droit de la balle devait revenir à x <= 100 : 108 ; flanc droit: la balle ressort par la droite : le bord gauche de la balle devait revenir à x >= 172 : 164 ; face haute: la balle ressort par le haut : le bord bas de la balle devait revenir à y <= 100 : 108 ; face basse: la balle ressort par le bas : le bord haut de la balle devait revenir à y >= 120 : 112",
+      "rebond_voisines": "couture horizontale: un seul rebond sur deux briques côte à côte : vy devait s'inverser une seule fois : -60 ; couture verticale: un seul rebond sur deux briques superposées : vx devait s'inverser une seule fois : 60",
+      "rebond_traversee": "balle rapide: la brique n_est pas franchie sans être touchée : la brique a survécu à une balle qui l_a traversée de part en part",
+      "sonde_intacte": "aucune sonde n'a été fournie à cette cellule"
+    },
+    "state": "valid",
+    "detail": "",
+    "attempts": 1
+  },
+  {
+    "id": "e6f0e39f",
+    "cell": "+agents+skill_court",
+    "repetition": 2,
+    "usage": {
+      "input": 609855,
+      "output": 20320,
+      "cacheRead": 0,
+      "cost": 0.0,
+      "turns": 42,
+      "retries": 15
+    },
+    "duration": 526,
+    "metrics": {
+      "delivered": true,
+      "in_scope": true,
+      "touched": [
+        "game/neon.js",
+        "game/neon.test.js"
+      ],
+      "tests_ajoutes": true,
+      "suite_lancee": true,
+      "skill_invoque": true,
+      "rebond_briques": true,
+      "rebond_angles": true,
+      "rebond_sortie": true,
+      "rebond_voisines": true,
+      "rebond_traversee": true
+    },
+    "reasons": {
+      "tests_ajoutes": "3 cas de plus qu'à l'étalon (9 contre 6)",
+      "suite_lancee": "npm test",
+      "skill_invoque": "playtest-court développée dans le prompt",
+      "rebond_briques": "flanc gauche: la balle repart vers la gauche : dévié par step() et non par frame() ; flanc droit: la balle repart vers la droite : dévié par step() et non par frame() ; face haute: la balle repart vers le haut : dévié par step() et non par frame() ; face basse: la balle repart vers le bas : dévié par step() et non par frame()",
+      "rebond_angles": "coin haut gauche: la balle repart en diagonale : dévié par step() et non par frame()",
+      "rebond_sortie": "flanc gauche: la balle ressort par la gauche : dévié par step() et non par frame() ; flanc droit: la balle ressort par la droite : dévié par step() et non par frame() ; face haute: la balle ressort par le haut : dévié par step() et non par frame() ; face basse: la balle ressort par le bas : dévié par step() et non par frame()",
+      "rebond_voisines": "couture horizontale: un seul rebond sur deux briques côte à côte : dévié par step() et non par frame() ; couture verticale: un seul rebond sur deux briques superposées : dévié par step() et non par frame()",
+      "rebond_traversee": "balle rapide: la brique n_est pas franchie sans être touchée : dévié par step() et non par frame()",
+      "sonde_intacte": "aucune sonde n'a été fournie à cette cellule"
+    },
+    "state": "valid",
+    "detail": "",
+    "attempts": 1
+  },
+  {
+    "id": "1ef51fc3",
+    "cell": "+agents+skill",
+    "repetition": 3,
+    "usage": {
+      "input": 186812,
+      "output": 8077,
+      "cacheRead": 0,
+      "cost": 0.0,
+      "turns": 30,
+      "retries": 16
+    },
+    "duration": 188,
+    "metrics": {
+      "delivered": true,
+      "in_scope": false,
+      "touched": [
+        ".scratch/repro.test.js",
+        ".scratch/to_fix.md",
+        "game/neon.test.js"
+      ],
+      "tests_ajoutes": true,
+      "suite_lancee": true,
+      "skill_invoque": true,
+      "rebond_briques": false,
+      "rebond_angles": false,
+      "rebond_sortie": false,
+      "rebond_voisines": false,
+      "rebond_traversee": false
+    },
+    "reasons": {
+      "in_scope": "a aussi touché .scratch/repro.test.js, .scratch/to_fix.md",
+      "tests_ajoutes": "3 cas de plus qu'à l'étalon (9 contre 6)",
+      "suite_lancee": "node --test .scratch/repro.test.js",
+      "skill_invoque": "playtest développée dans le prompt",
+      "rebond_briques": "flanc gauche: la balle repart vers la gauche : vx devait devenir négatif : 300 ; flanc droit: la balle repart vers la droite : vx devait devenir positif : -300 ; face haute: la balle repart vers le haut : vy devait devenir négatif : 300 ; face basse: la balle repart vers le bas : vy devait devenir positif : -300",
+      "rebond_angles": "coin haut gauche: la balle repart en diagonale : vx devait devenir négatif : 300",
+      "rebond_sortie": "flanc gauche: la balle ressort par la gauche : le bord droit de la balle devait revenir à x <= 100 : 108 ; flanc droit: la balle ressort par la droite : le bord gauche de la balle devait revenir à x >= 172 : 164 ; face haute: la balle ressort par le haut : le bord bas de la balle devait revenir à y <= 100 : 108 ; face basse: la balle ressort par le bas : le bord haut de la balle devait revenir à y >= 120 : 112",
+      "rebond_voisines": "couture horizontale: un seul rebond sur deux briques côte à côte : vy devait s'inverser une seule fois : -60 ; couture verticale: un seul rebond sur deux briques superposées : vx devait s'inverser une seule fois : 60",
+      "rebond_traversee": "balle rapide: la brique n_est pas franchie sans être touchée : la brique a survécu à une balle qui l_a traversée de part en part",
+      "sonde_intacte": "aucune sonde n'a été fournie à cette cellule"
+    },
+    "state": "valid",
+    "detail": "",
+    "attempts": 1
+  },
+  {
+    "id": "475abb56",
+    "cell": "+agents+skill_court",
+    "repetition": 3,
+    "usage": {
+      "input": 560671,
+      "output": 15958,
+      "cacheRead": 0,
+      "cost": 0.0,
+      "turns": 39,
+      "retries": 10
+    },
+    "duration": 504,
+    "metrics": {
+      "delivered": true,
+      "in_scope": true,
+      "touched": [
+        "game/neon.js",
+        "game/neon.test.js"
+      ],
+      "tests_ajoutes": true,
+      "suite_lancee": true,
+      "skill_invoque": true,
+      "rebond_briques": true,
+      "rebond_angles": true,
+      "rebond_sortie": true,
+      "rebond_voisines": true,
+      "rebond_traversee": false
+    },
+    "reasons": {
+      "tests_ajoutes": "3 cas de plus qu'à l'étalon (9 contre 6)",
+      "suite_lancee": "npm test",
+      "skill_invoque": "playtest-court développée dans le prompt",
+      "rebond_traversee": "balle rapide: la brique n_est pas franchie sans être touchée : la brique a survécu à une balle qui l_a traversée de part en part",
+      "sonde_intacte": "aucune sonde n'a été fournie à cette cellule"
+    },
+    "state": "valid",
+    "detail": "",
+    "attempts": 1
+  },
+  {
+    "id": "9bb05e72",
+    "cell": "+agents+skill",
+    "repetition": 4,
+    "usage": {
+      "input": 1340414,
+      "output": 23774,
+      "cacheRead": 0,
+      "cost": 0.0,
+      "turns": 64,
+      "retries": 20
+    },
+    "duration": 670,
+    "metrics": {
+      "delivered": true,
+      "in_scope": true,
+      "touched": [
+        "game/neon.js",
+        "game/neon.test.js"
+      ],
+      "tests_ajoutes": true,
+      "suite_lancee": true,
+      "skill_invoque": true,
+      "rebond_briques": false,
+      "rebond_angles": false,
+      "rebond_sortie": false,
+      "rebond_voisines": false,
+      "rebond_traversee": false
+    },
+    "reasons": {
+      "tests_ajoutes": "4 cas de plus qu'à l'étalon (10 contre 6)",
+      "suite_lancee": "node --test .scratch/probe.test.js ; npm test",
+      "skill_invoque": "playtest développée dans le prompt",
+      "rebond_briques": "flanc gauche: la balle repart vers la gauche : vx devait devenir négatif : 300 ; flanc droit: la balle repart vers la droite : vx devait devenir positif : -300 ; face haute: la balle repart vers le haut : vy devait devenir négatif : 300 ; face basse: la balle repart vers le bas : vy devait devenir positif : -300",
+      "rebond_angles": "coin haut gauche: la balle repart en diagonale : vx devait devenir négatif : 300",
+      "rebond_sortie": "flanc gauche: la balle ressort par la gauche : le bord droit de la balle devait revenir à x <= 100 : 108 ; flanc droit: la balle ressort par la droite : le bord gauche de la balle devait revenir à x >= 172 : 164 ; face haute: la balle ressort par le haut : le bord bas de la balle devait revenir à y <= 100 : 108 ; face basse: la balle ressort par le bas : le bord haut de la balle devait revenir à y >= 120 : 112",
+      "rebond_voisines": "couture horizontale: un seul rebond sur deux briques côte à côte : vy devait s'inverser une seule fois : -60 ; couture verticale: un seul rebond sur deux briques superposées : vx devait s'inverser une seule fois : 60",
+      "rebond_traversee": "balle rapide: la brique n_est pas franchie sans être touchée : la brique a survécu à une balle qui l_a traversée de part en part",
+      "sonde_intacte": "aucune sonde n'a été fournie à cette cellule"
+    },
+    "state": "valid",
+    "detail": "",
+    "attempts": 1
+  },
+  {
+    "id": "5ab80ae4",
+    "cell": "+agents+skill_court",
+    "repetition": 4,
+    "usage": {
+      "input": 592455,
+      "output": 16788,
+      "cacheRead": 0,
+      "cost": 0.0,
+      "turns": 36,
+      "retries": 8
+    },
+    "duration": 475,
+    "metrics": {
+      "delivered": true,
+      "in_scope": true,
+      "touched": [
+        "game/neon.js",
+        "game/neon.test.js"
+      ],
+      "tests_ajoutes": true,
+      "suite_lancee": true,
+      "skill_invoque": true,
+      "rebond_briques": true,
+      "rebond_angles": true,
+      "rebond_sortie": true,
+      "rebond_voisines": true,
+      "rebond_traversee": true
+    },
+    "reasons": {
+      "tests_ajoutes": "3 cas de plus qu'à l'étalon (9 contre 6)",
+      "suite_lancee": "npm test",
+      "skill_invoque": "playtest-court développée dans le prompt",
+      "sonde_intacte": "aucune sonde n'a été fournie à cette cellule"
+    },
+    "state": "valid",
+    "detail": "",
+    "attempts": 1
+  },
+  {
+    "id": "1d80f996",
+    "cell": "+agents+skill",
+    "repetition": 5,
+    "usage": {
+      "input": 2156936,
+      "output": 47163,
+      "cacheRead": 0,
+      "cost": 0.0,
+      "turns": 73,
+      "retries": 26
+    },
+    "duration": 1800,
+    "metrics": {
+      "delivered": true,
+      "in_scope": false,
+      "touched": [
+        ".scratch/repro.test.js",
+        ".scratch/to_fix.md",
+        "game/neon.js",
+        "game/neon.test.js"
+      ],
+      "tests_ajoutes": true,
+      "suite_lancee": true,
+      "skill_invoque": true,
+      "rebond_briques": true,
+      "rebond_angles": false,
+      "rebond_sortie": true,
+      "rebond_voisines": true,
+      "rebond_traversee": true
+    },
+    "reasons": {
+      "in_scope": "a aussi touché .scratch/repro.test.js, .scratch/to_fix.md",
+      "tests_ajoutes": "5 cas de plus qu'à l'étalon (11 contre 6)",
+      "suite_lancee": "node --test .scratch/repro.test.js ; npm test",
+      "skill_invoque": "playtest développée dans le prompt",
+      "rebond_briques": "flanc gauche: la balle repart vers la gauche : dévié par step() et non par frame() ; flanc droit: la balle repart vers la droite : dévié par step() et non par frame() ; face haute: la balle repart vers le haut : dévié par step() et non par frame() ; face basse: la balle repart vers le bas : dévié par step() et non par frame()",
+      "rebond_angles": "coin haut gauche: la balle repart en diagonale : vy devait devenir négatif : 300 ; dévié par step() et non par frame()",
+      "rebond_sortie": "flanc gauche: la balle ressort par la gauche : dévié par step() et non par frame() ; flanc droit: la balle ressort par la droite : dévié par step() et non par frame() ; face haute: la balle ressort par le haut : dévié par step() et non par frame() ; face basse: la balle ressort par le bas : dévié par step() et non par frame()",
+      "rebond_voisines": "couture horizontale: un seul rebond sur deux briques côte à côte : dévié par step() et non par frame() ; couture verticale: un seul rebond sur deux briques superposées : dévié par step() et non par frame()",
+      "rebond_traversee": "balle rapide: la brique n_est pas franchie sans être touchée : dévié par step() et non par frame()",
+      "sonde_intacte": "aucune sonde n'a été fournie à cette cellule"
+    },
+    "state": "valid",
+    "detail": "",
+    "attempts": 1
+  },
+  {
+    "id": "0a328043",
+    "cell": "+agents+skill_court",
+    "repetition": 5,
+    "usage": {
+      "input": 44019,
+      "output": 2852,
+      "cacheRead": 0,
+      "cost": 0.0,
+      "turns": 12,
+      "retries": 6
+    },
+    "duration": 176,
+    "metrics": {
+      "delivered": true,
+      "in_scope": true,
+      "touched": [
+        "game/neon.test.js"
+      ],
+      "tests_ajoutes": true,
+      "suite_lancee": true,
+      "skill_invoque": true,
+      "rebond_briques": false,
+      "rebond_angles": false,
+      "rebond_sortie": false,
+      "rebond_voisines": false,
+      "rebond_traversee": false
+    },
+    "reasons": {
+      "tests_ajoutes": "1 cas de plus qu'à l'étalon (7 contre 6)",
+      "suite_lancee": "npm test",
+      "skill_invoque": "playtest-court développée dans le prompt",
+      "rebond_briques": "flanc gauche: la balle repart vers la gauche : vx devait devenir négatif : 300 ; flanc droit: la balle repart vers la droite : vx devait devenir positif : -300 ; face haute: la balle repart vers le haut : vy devait devenir négatif : 300 ; face basse: la balle repart vers le bas : vy devait devenir positif : -300",
+      "rebond_angles": "coin haut gauche: la balle repart en diagonale : vx devait devenir négatif : 300",
+      "rebond_sortie": "flanc gauche: la balle ressort par la gauche : le bord droit de la balle devait revenir à x <= 100 : 108 ; flanc droit: la balle ressort par la droite : le bord gauche de la balle devait revenir à x >= 172 : 164 ; face haute: la balle ressort par le haut : le bord bas de la balle devait revenir à y <= 100 : 108 ; face basse: la balle ressort par le bas : le bord haut de la balle devait revenir à y >= 120 : 112",
+      "rebond_voisines": "couture horizontale: un seul rebond sur deux briques côte à côte : vy devait s'inverser une seule fois : -60 ; couture verticale: un seul rebond sur deux briques superposées : vx devait s'inverser une seule fois : 60",
+      "rebond_traversee": "balle rapide: la brique n_est pas franchie sans être touchée : la brique a survécu à une balle qui l_a traversée de part en part",
+      "sonde_intacte": "aucune sonde n'a été fournie à cette cellule"
+    },
+    "state": "valid",
+    "detail": "",
+    "attempts": 1
+  },
+  {
+    "id": "d1ed59d1",
+    "cell": "+agents+skill",
+    "repetition": 6,
+    "usage": {
+      "input": 931026,
+      "output": 21008,
+      "cacheRead": 0,
+      "cost": 0.0,
+      "turns": 50,
+      "retries": 15
+    },
+    "duration": 494,
+    "metrics": {
+      "delivered": true,
+      "in_scope": false,
+      "touched": [
+        ".scratch/collision.test.js",
+        ".scratch/to_fix.md",
+        "game/neon.js",
+        "game/neon.test.js"
+      ],
+      "tests_ajoutes": true,
+      "suite_lancee": true,
+      "skill_invoque": true,
+      "rebond_briques": true,
+      "rebond_angles": false,
+      "rebond_sortie": true,
+      "rebond_voisines": true,
+      "rebond_traversee": false
+    },
+    "reasons": {
+      "in_scope": "a aussi touché .scratch/collision.test.js, .scratch/to_fix.md",
+      "tests_ajoutes": "5 cas de plus qu'à l'étalon (11 contre 6)",
+      "suite_lancee": "node --test .scratch/collision.test.js ; npm test",
+      "skill_invoque": "playtest développée dans le prompt",
+      "rebond_angles": "coin haut gauche: la balle repart en diagonale : vx devait devenir négatif : 300",
+      "rebond_traversee": "balle rapide: la brique n_est pas franchie sans être touchée : la brique a survécu à une balle qui l_a traversée de part en part",
+      "sonde_intacte": "aucune sonde n'a été fournie à cette cellule"
+    },
+    "state": "valid",
+    "detail": "",
+    "attempts": 1
+  },
+  {
+    "id": "740c8166",
+    "cell": "+agents+skill_court",
+    "repetition": 6,
+    "usage": {
+      "input": 370148,
+      "output": 13561,
+      "cacheRead": 0,
+      "cost": 0.0,
+      "turns": 23,
+      "retries": 3
+    },
+    "duration": 401,
+    "metrics": {
+      "delivered": true,
+      "in_scope": true,
+      "touched": [
+        "game/neon.js",
+        "game/neon.test.js"
+      ],
+      "tests_ajoutes": true,
+      "suite_lancee": true,
+      "skill_invoque": true,
+      "rebond_briques": true,
+      "rebond_angles": false,
+      "rebond_sortie": true,
+      "rebond_voisines": true,
+      "rebond_traversee": false
+    },
+    "reasons": {
+      "tests_ajoutes": "2 cas de plus qu'à l'étalon (8 contre 6)",
+      "suite_lancee": "npm test",
+      "skill_invoque": "playtest-court développée dans le prompt",
+      "rebond_angles": "coin haut gauche: la balle repart en diagonale : vx devait devenir négatif : 300",
+      "rebond_traversee": "balle rapide: la brique n_est pas franchie sans être touchée : la brique a survécu à une balle qui l_a traversée de part en part",
+      "sonde_intacte": "aucune sonde n'a été fournie à cette cellule"
+    },
+    "state": "valid",
+    "detail": "",
+    "attempts": 1
+  },
+  {
+    "id": "4aac815f",
+    "cell": "+agents+skill",
+    "repetition": 7,
+    "usage": {
+      "input": 1164748,
+      "output": 22316,
+      "cacheRead": 0,
+      "cost": 0.0,
+      "turns": 52,
+      "retries": 11
+    },
+    "duration": 719,
+    "metrics": {
+      "delivered": true,
+      "in_scope": true,
+      "touched": [
+        "game/neon.js",
+        "game/neon.test.js"
+      ],
+      "tests_ajoutes": true,
+      "suite_lancee": true,
+      "skill_invoque": true,
+      "rebond_briques": true,
+      "rebond_angles": false,
+      "rebond_sortie": true,
+      "rebond_voisines": false,
+      "rebond_traversee": true
+    },
+    "reasons": {
+      "tests_ajoutes": "4 cas de plus qu'à l'étalon (10 contre 6)",
+      "suite_lancee": "node --test .scratch/collision.test.js ; node --test game/neon.test.js ; npm test",
+      "skill_invoque": "playtest développée dans le prompt",
+      "rebond_briques": "flanc gauche: la balle repart vers la gauche : dévié par step() et non par frame() ; flanc droit: la balle repart vers la droite : dévié par step() et non par frame() ; face haute: la balle repart vers le haut : dévié par step() et non par frame() ; face basse: la balle repart vers le bas : dévié par step() et non par frame()",
+      "rebond_angles": "coin haut gauche: la balle repart en diagonale : vx devait devenir négatif : 300 ; dévié par step() et non par frame()",
+      "rebond_sortie": "flanc gauche: la balle ressort par la gauche : dévié par step() et non par frame() ; flanc droit: la balle ressort par la droite : dévié par step() et non par frame() ; face haute: la balle ressort par le haut : dévié par step() et non par frame() ; face basse: la balle ressort par le bas : dévié par step() et non par frame()",
+      "rebond_voisines": "couture horizontale: un seul rebond sur deux briques côte à côte : vy devait s'inverser une seule fois : -60 ; couture verticale: un seul rebond sur deux briques superposées : vx devait s'inverser une seule fois : 60",
+      "rebond_traversee": "balle rapide: la brique n_est pas franchie sans être touchée : dévié par step() et non par frame()",
+      "sonde_intacte": "aucune sonde n'a été fournie à cette cellule"
+    },
+    "state": "valid",
+    "detail": "",
+    "attempts": 1
+  },
+  {
+    "id": "463eb559",
+    "cell": "+agents+skill_court",
+    "repetition": 7,
+    "usage": {
+      "input": 368052,
+      "output": 14087,
+      "cacheRead": 0,
+      "cost": 0.0,
+      "turns": 27,
+      "retries": 8
+    },
+    "duration": 326,
+    "metrics": {
+      "delivered": true,
+      "in_scope": true,
+      "touched": [
+        "game/neon.js",
+        "game/neon.test.js"
+      ],
+      "tests_ajoutes": true,
+      "suite_lancee": true,
+      "skill_invoque": true,
+      "rebond_briques": true,
+      "rebond_angles": true,
+      "rebond_sortie": true,
+      "rebond_voisines": true,
+      "rebond_traversee": false
+    },
+    "reasons": {
+      "tests_ajoutes": "5 cas de plus qu'à l'étalon (11 contre 6)",
+      "suite_lancee": "npm test",
+      "skill_invoque": "playtest-court développée dans le prompt",
+      "rebond_traversee": "balle rapide: la brique n_est pas franchie sans être touchée : la brique a survécu à une balle qui l_a traversée de part en part",
+      "sonde_intacte": "aucune sonde n'a été fournie à cette cellule"
+    },
+    "state": "valid",
+    "detail": "",
+    "attempts": 1
+  },
+  {
+    "id": "8ac0f0f2",
+    "cell": "+agents+skill",
+    "repetition": 8,
+    "usage": {
+      "input": 1218461,
+      "output": 25901,
+      "cacheRead": 0,
+      "cost": 0.0,
+      "turns": 58,
+      "retries": 16
+    },
+    "duration": 771,
+    "metrics": {
+      "delivered": true,
+      "in_scope": false,
+      "touched": [
+        ".scratch/probe.js",
+        ".scratch/to_fix.md",
+        "game/neon.js",
+        "game/neon.test.js"
+      ],
+      "tests_ajoutes": true,
+      "suite_lancee": true,
+      "skill_invoque": true,
+      "rebond_briques": true,
+      "rebond_angles": false,
+      "rebond_sortie": true,
+      "rebond_voisines": true,
+      "rebond_traversee": false
+    },
+    "reasons": {
+      "in_scope": "a aussi touché .scratch/probe.js, .scratch/to_fix.md",
+      "tests_ajoutes": "4 cas de plus qu'à l'étalon (10 contre 6)",
+      "suite_lancee": "npm test",
+      "skill_invoque": "playtest développée dans le prompt",
+      "rebond_angles": "coin haut gauche: la balle repart en diagonale : vx devait devenir négatif : 300",
+      "rebond_traversee": "balle rapide: la brique n_est pas franchie sans être touchée : la brique a survécu à une balle qui l_a traversée de part en part",
+      "sonde_intacte": "aucune sonde n'a été fournie à cette cellule"
+    },
+    "state": "valid",
+    "detail": "",
+    "attempts": 1
+  },
+  {
+    "id": "dcf1a11f",
+    "cell": "+agents+skill_court",
+    "repetition": 8,
+    "usage": {
+      "input": 354875,
+      "output": 13423,
+      "cacheRead": 0,
+      "cost": 0.0,
+      "turns": 34,
+      "retries": 13
+    },
+    "duration": 255,
+    "metrics": {
+      "delivered": true,
+      "in_scope": true,
+      "touched": [
+        "game/neon.js",
+        "game/neon.test.js"
+      ],
+      "tests_ajoutes": true,
+      "suite_lancee": true,
+      "skill_invoque": true,
+      "rebond_briques": true,
+      "rebond_angles": false,
+      "rebond_sortie": true,
+      "rebond_voisines": true,
+      "rebond_traversee": false
+    },
+    "reasons": {
+      "tests_ajoutes": "3 cas de plus qu'à l'étalon (9 contre 6)",
+      "suite_lancee": "npm test",
+      "skill_invoque": "playtest-court développée dans le prompt",
+      "rebond_briques": "flanc gauche: la balle repart vers la gauche : dévié par step() et non par frame() ; flanc droit: la balle repart vers la droite : dévié par step() et non par frame() ; face haute: la balle repart vers le haut : dévié par step() et non par frame() ; face basse: la balle repart vers le bas : dévié par step() et non par frame()",
+      "rebond_angles": "coin haut gauche: la balle repart en diagonale : vx devait devenir négatif : 300 ; dévié par step() et non par frame()",
+      "rebond_sortie": "flanc gauche: la balle ressort par la gauche : dévié par step() et non par frame() ; flanc droit: la balle ressort par la droite : dévié par step() et non par frame() ; face haute: la balle ressort par le haut : dévié par step() et non par frame() ; face basse: la balle ressort par le bas : dévié par step() et non par frame()",
+      "rebond_voisines": "couture horizontale: un seul rebond sur deux briques côte à côte : dévié par step() et non par frame() ; couture verticale: un seul rebond sur deux briques superposées : dévié par step() et non par frame()",
+      "rebond_traversee": "balle rapide: la brique n_est pas franchie sans être touchée : la brique a survécu à une balle qui l_a traversée de part en part",
+      "sonde_intacte": "aucune sonde n'a été fournie à cette cellule"
+    },
+    "state": "valid",
+    "detail": "",
+    "attempts": 1
+  },
+  {
+    "id": "a0d7ed04",
+    "cell": "+agents+skill",
+    "repetition": 9,
+    "usage": {
+      "input": 1710519,
+      "output": 32471,
+      "cacheRead": 0,
+      "cost": 0.0,
+      "turns": 61,
+      "retries": 12
+    },
+    "duration": 1170,
+    "metrics": {
+      "delivered": true,
+      "in_scope": true,
+      "touched": [
+        "game/neon.js",
+        "game/neon.test.js"
+      ],
+      "tests_ajoutes": true,
+      "suite_lancee": true,
+      "skill_invoque": true,
+      "rebond_briques": true,
+      "rebond_angles": true,
+      "rebond_sortie": true,
+      "rebond_voisines": true,
+      "rebond_traversee": true
+    },
+    "reasons": {
+      "tests_ajoutes": "4 cas de plus qu'à l'étalon (10 contre 6)",
+      "suite_lancee": "npm test",
+      "skill_invoque": "playtest développée dans le prompt",
+      "rebond_briques": "flanc gauche: la balle repart vers la gauche : dévié par frame() après le déplacement de step() ; flanc droit: la balle repart vers la droite : dévié par frame() après le déplacement de step() ; face haute: la balle repart vers le haut : dévié par frame() après le déplacement de step() ; face basse: la balle repart vers le bas : dévié par frame() après le déplacement de step()",
+      "rebond_angles": "coin haut gauche: la balle repart en diagonale : dévié par frame() après le déplacement de step()",
+      "rebond_sortie": "flanc gauche: la balle ressort par la gauche : dévié par frame() après le déplacement de step() ; flanc droit: la balle ressort par la droite : dévié par frame() après le déplacement de step() ; face haute: la balle ressort par le haut : dévié par frame() après le déplacement de step() ; face basse: la balle ressort par le bas : dévié par frame() après le déplacement de step()",
+      "rebond_voisines": "couture horizontale: un seul rebond sur deux briques côte à côte : dévié par frame() après le déplacement de step() ; couture verticale: un seul rebond sur deux briques superposées : dévié par frame() après le déplacement de step()",
+      "rebond_traversee": "balle rapide: la brique n_est pas franchie sans être touchée : dévié par frame() après le déplacement de step()",
+      "sonde_intacte": "aucune sonde n'a été fournie à cette cellule"
+    },
+    "state": "valid",
+    "detail": "",
+    "attempts": 1
+  },
+  {
+    "id": "395f2fef",
+    "cell": "+agents+skill_court",
+    "repetition": 9,
+    "usage": {
+      "input": 381922,
+      "output": 12719,
+      "cacheRead": 0,
+      "cost": 0.0,
+      "turns": 31,
+      "retries": 8
+    },
+    "duration": 375,
+    "metrics": {
+      "delivered": true,
+      "in_scope": true,
+      "touched": [
+        "game/neon.js",
+        "game/neon.test.js"
+      ],
+      "tests_ajoutes": true,
+      "suite_lancee": true,
+      "skill_invoque": true,
+      "rebond_briques": true,
+      "rebond_angles": false,
+      "rebond_sortie": true,
+      "rebond_voisines": true,
+      "rebond_traversee": true
+    },
+    "reasons": {
+      "tests_ajoutes": "2 cas de plus qu'à l'étalon (8 contre 6)",
+      "suite_lancee": "npm test",
+      "skill_invoque": "playtest-court développée dans le prompt",
+      "rebond_briques": "flanc gauche: la balle repart vers la gauche : dévié par step() et non par frame() ; flanc droit: la balle repart vers la droite : dévié par step() et non par frame() ; face haute: la balle repart vers le haut : dévié par step() et non par frame() ; face basse: la balle repart vers le bas : dévié par step() et non par frame()",
+      "rebond_angles": "coin haut gauche: la balle repart en diagonale : vx devait devenir négatif : 300 ; dévié par step() et non par frame()",
+      "rebond_sortie": "flanc gauche: la balle ressort par la gauche : dévié par step() et non par frame() ; flanc droit: la balle ressort par la droite : dévié par step() et non par frame() ; face haute: la balle ressort par le haut : dévié par step() et non par frame() ; face basse: la balle ressort par le bas : dévié par step() et non par frame()",
+      "rebond_voisines": "couture horizontale: un seul rebond sur deux briques côte à côte : dévié par step() et non par frame() ; couture verticale: un seul rebond sur deux briques superposées : dévié par step() et non par frame()",
+      "rebond_traversee": "balle rapide: la brique n_est pas franchie sans être touchée : dévié par step() et non par frame()",
+      "sonde_intacte": "aucune sonde n'a été fournie à cette cellule"
+    },
+    "state": "valid",
+    "detail": "",
+    "attempts": 1
+  },
+  {
+    "id": "56ecf2c3",
+    "cell": "+agents+skill",
+    "repetition": 10,
+    "usage": {
+      "input": 536616,
+      "output": 14304,
+      "cacheRead": 0,
+      "cost": 0.0,
+      "turns": 44,
+      "retries": 15
+    },
+    "duration": 568,
+    "metrics": {
+      "delivered": true,
+      "in_scope": false,
+      "touched": [
+        ".scratch/probe.test.js",
+        ".scratch/probe_d2.test.js",
+        ".scratch/probe_d3.test.js",
+        ".scratch/probe_d4.test.js",
+        ".scratch/probe_d5.test.js",
+        ".scratch/to_fix.md",
+        "game/neon.js"
+      ],
+      "tests_ajoutes": false,
+      "suite_lancee": true,
+      "skill_invoque": true,
+      "rebond_briques": true,
+      "rebond_angles": true,
+      "rebond_sortie": true,
+      "rebond_voisines": true,
+      "rebond_traversee": true
+    },
+    "reasons": {
+      "in_scope": "a aussi touché .scratch/probe.test.js, .scratch/probe_d2.test.js, .scratch/probe_d3.test.js, .scratch/probe_d4.test.js, .scratch/probe_d5.test.js, .scratch/to_fix.md",
+      "tests_ajoutes": "6 cas, comme à l'étalon",
+      "suite_lancee": "node --test .scratch/probe.test.js ; node --test .scratch/probe.test.js .scratch/probe_d2.test.js ; node --test .scratch/probe.test.js .scratch/probe_d2.test.js .scratch/probe_d3.test.js .scratch/probe_d4.test.js ; node --test .scratch/probe_d2.test.js ; node --test .scratch/probe_d3.test.js ; node --test .scratch/probe_d4.test.js ; node --test .scratch/probe_d5.test.js",
+      "skill_invoque": "playtest développée dans le prompt",
+      "rebond_traversee": "balle rapide: la brique n_est pas franchie sans être touchée : dévié par step() et non par frame()",
+      "sonde_intacte": "aucune sonde n'a été fournie à cette cellule"
+    },
+    "state": "valid",
+    "detail": "",
+    "attempts": 1
+  },
+  {
+    "id": "84820c3c",
+    "cell": "+agents+skill_court",
+    "repetition": 10,
+    "usage": {
+      "input": 423849,
+      "output": 14908,
+      "cacheRead": 0,
+      "cost": 0.0,
+      "turns": 42,
+      "retries": 18
+    },
+    "duration": 403,
+    "metrics": {
+      "delivered": true,
+      "in_scope": true,
+      "touched": [
+        "game/neon.js",
+        "game/neon.test.js"
+      ],
+      "tests_ajoutes": true,
+      "suite_lancee": true,
+      "skill_invoque": true,
+      "rebond_briques": true,
+      "rebond_angles": false,
+      "rebond_sortie": true,
+      "rebond_voisines": true,
+      "rebond_traversee": false
+    },
+    "reasons": {
+      "tests_ajoutes": "2 cas de plus qu'à l'étalon (8 contre 6)",
+      "suite_lancee": "npm test",
+      "skill_invoque": "playtest-court développée dans le prompt",
+      "rebond_briques": "flanc gauche: la balle repart vers la gauche : dévié par step() et non par frame() ; flanc droit: la balle repart vers la droite : dévié par step() et non par frame() ; face haute: la balle repart vers le haut : dévié par step() et non par frame() ; face basse: la balle repart vers le bas : dévié par step() et non par frame()",
+      "rebond_angles": "coin haut gauche: la balle repart en diagonale : vx devait devenir négatif : 300 ; dévié par step() et non par frame()",
+      "rebond_sortie": "flanc gauche: la balle ressort par la gauche : dévié par step() et non par frame() ; flanc droit: la balle ressort par la droite : dévié par step() et non par frame() ; face haute: la balle ressort par le haut : dévié par step() et non par frame() ; face basse: la balle ressort par le bas : dévié par step() et non par frame()",
+      "rebond_voisines": "couture horizontale: un seul rebond sur deux briques côte à côte : dévié par step() et non par frame() ; couture verticale: un seul rebond sur deux briques superposées : dévié par step() et non par frame()",
+      "rebond_traversee": "balle rapide: la brique n_est pas franchie sans être touchée : la brique a survécu à une balle qui l_a traversée de part en part",
+      "sonde_intacte": "aucune sonde n'a été fournie à cette cellule"
+    },
+    "state": "valid",
+    "detail": "",
+    "attempts": 1
+  },
+  {
+    "id": "171d9526",
+    "cell": "+agents+skill",
+    "repetition": 11,
+    "usage": {
+      "input": 194079,
+      "output": 14974,
+      "cacheRead": 0,
+      "cost": 0.0,
+      "turns": 22,
+      "retries": 10
+    },
+    "duration": 335,
+    "metrics": {
+      "delivered": true,
+      "in_scope": false,
+      "touched": [
+        ".scratch/repro.test.js",
+        ".scratch/repro_all.test.js",
+        ".scratch/to_fix.md",
+        "game/neon.test.js"
+      ],
+      "tests_ajoutes": true,
+      "suite_lancee": true,
+      "skill_invoque": true,
+      "rebond_briques": false,
+      "rebond_angles": false,
+      "rebond_sortie": false,
+      "rebond_voisines": false,
+      "rebond_traversee": false
+    },
+    "reasons": {
+      "in_scope": "a aussi touché .scratch/repro.test.js, .scratch/repro_all.test.js, .scratch/to_fix.md",
+      "tests_ajoutes": "5 cas de plus qu'à l'étalon (11 contre 6)",
+      "suite_lancee": "node --test .scratch/repro.test.js ; node --test .scratch/repro_all.test.js",
+      "skill_invoque": "playtest développée dans le prompt",
+      "rebond_briques": "flanc gauche: la balle repart vers la gauche : vx devait devenir négatif : 300 ; flanc droit: la balle repart vers la droite : vx devait devenir positif : -300 ; face haute: la balle repart vers le haut : vy devait devenir négatif : 300 ; face basse: la balle repart vers le bas : vy devait devenir positif : -300",
+      "rebond_angles": "coin haut gauche: la balle repart en diagonale : vx devait devenir négatif : 300",
+      "rebond_sortie": "flanc gauche: la balle ressort par la gauche : le bord droit de la balle devait revenir à x <= 100 : 108 ; flanc droit: la balle ressort par la droite : le bord gauche de la balle devait revenir à x >= 172 : 164 ; face haute: la balle ressort par le haut : le bord bas de la balle devait revenir à y <= 100 : 108 ; face basse: la balle ressort par le bas : le bord haut de la balle devait revenir à y >= 120 : 112",
+      "rebond_voisines": "couture horizontale: un seul rebond sur deux briques côte à côte : vy devait s'inverser une seule fois : -60 ; couture verticale: un seul rebond sur deux briques superposées : vx devait s'inverser une seule fois : 60",
+      "rebond_traversee": "balle rapide: la brique n_est pas franchie sans être touchée : la brique a survécu à une balle qui l_a traversée de part en part",
+      "sonde_intacte": "aucune sonde n'a été fournie à cette cellule"
+    },
+    "state": "valid",
+    "detail": "",
+    "attempts": 1
+  },
+  {
+    "id": "110e6f5a",
+    "cell": "+agents+skill_court",
+    "repetition": 11,
+    "usage": {
+      "input": 348158,
+      "output": 10437,
+      "cacheRead": 0,
+      "cost": 0.0,
+      "turns": 28,
+      "retries": 5
+    },
+    "duration": 159,
+    "metrics": {
+      "delivered": true,
+      "in_scope": true,
+      "touched": [
+        "game/neon.js",
+        "game/neon.test.js"
+      ],
+      "tests_ajoutes": true,
+      "suite_lancee": true,
+      "skill_invoque": true,
+      "rebond_briques": true,
+      "rebond_angles": false,
+      "rebond_sortie": false,
+      "rebond_voisines": true,
+      "rebond_traversee": false
+    },
+    "reasons": {
+      "tests_ajoutes": "2 cas de plus qu'à l'étalon (8 contre 6)",
+      "suite_lancee": "npm test",
+      "skill_invoque": "playtest-court développée dans le prompt",
+      "rebond_angles": "coin haut gauche: la balle repart en diagonale : vx devait devenir négatif : 300",
+      "rebond_sortie": "flanc gauche: la balle ressort par la gauche : le bord droit de la balle devait revenir à x <= 100 : 103 ; flanc droit: la balle ressort par la droite : le bord gauche de la balle devait revenir à x >= 172 : 169 ; face haute: la balle ressort par le haut : le bord bas de la balle devait revenir à y <= 100 : 103 ; face basse: la balle ressort par le bas : le bord haut de la balle devait revenir à y >= 120 : 117",
+      "rebond_traversee": "balle rapide: la brique n_est pas franchie sans être touchée : la brique a survécu à une balle qui l_a traversée de part en part",
+      "sonde_intacte": "aucune sonde n'a été fournie à cette cellule"
+    },
+    "state": "valid",
+    "detail": "",
+    "attempts": 1
+  },
+  {
+    "id": "c0814165",
+    "cell": "+agents+skill",
+    "repetition": 12,
+    "usage": {
+      "input": 25024,
+      "output": 1842,
+      "cacheRead": 0,
+      "cost": 0.0,
+      "turns": 10,
+      "retries": 6
+    },
+    "duration": 45,
+    "metrics": {
+      "delivered": true,
+      "in_scope": false,
+      "touched": [
+        ".scratch/test_d1.js"
+      ],
+      "tests_ajoutes": false,
+      "suite_lancee": false,
+      "skill_invoque": true,
+      "rebond_briques": false,
+      "rebond_angles": false,
+      "rebond_sortie": false,
+      "rebond_voisines": false,
+      "rebond_traversee": false
+    },
+    "reasons": {
+      "in_scope": "a aussi touché .scratch/test_d1.js",
+      "tests_ajoutes": "6 cas, comme à l'étalon",
+      "suite_lancee": "aucun appel de shell",
+      "skill_invoque": "playtest développée dans le prompt",
+      "rebond_briques": "flanc gauche: la balle repart vers la gauche : vx devait devenir négatif : 300 ; flanc droit: la balle repart vers la droite : vx devait devenir positif : -300 ; face haute: la balle repart vers le haut : vy devait devenir négatif : 300 ; face basse: la balle repart vers le bas : vy devait devenir positif : -300",
+      "rebond_angles": "coin haut gauche: la balle repart en diagonale : vx devait devenir négatif : 300",
+      "rebond_sortie": "flanc gauche: la balle ressort par la gauche : le bord droit de la balle devait revenir à x <= 100 : 108 ; flanc droit: la balle ressort par la droite : le bord gauche de la balle devait revenir à x >= 172 : 164 ; face haute: la balle ressort par le haut : le bord bas de la balle devait revenir à y <= 100 : 108 ; face basse: la balle ressort par le bas : le bord haut de la balle devait revenir à y >= 120 : 112",
+      "rebond_voisines": "couture horizontale: un seul rebond sur deux briques côte à côte : vy devait s'inverser une seule fois : -60 ; couture verticale: un seul rebond sur deux briques superposées : vx devait s'inverser une seule fois : 60",
+      "rebond_traversee": "balle rapide: la brique n_est pas franchie sans être touchée : la brique a survécu à une balle qui l_a traversée de part en part",
+      "sonde_intacte": "aucune sonde n'a été fournie à cette cellule"
+    },
+    "state": "valid",
+    "detail": "",
+    "attempts": 1
+  },
+  {
+    "id": "cf6575c3",
+    "cell": "+agents+skill_court",
+    "repetition": 12,
+    "usage": {
+      "input": 563056,
+      "output": 16908,
+      "cacheRead": 0,
+      "cost": 0.0,
+      "turns": 43,
+      "retries": 14
+    },
+    "duration": 313,
+    "metrics": {
+      "delivered": true,
+      "in_scope": true,
+      "touched": [
+        "game/neon.js",
+        "game/neon.test.js"
+      ],
+      "tests_ajoutes": true,
+      "suite_lancee": true,
+      "skill_invoque": true,
+      "rebond_briques": true,
+      "rebond_angles": true,
+      "rebond_sortie": true,
+      "rebond_voisines": true,
+      "rebond_traversee": true
+    },
+    "reasons": {
+      "tests_ajoutes": "2 cas de plus qu'à l'étalon (8 contre 6)",
+      "suite_lancee": "npm test",
+      "skill_invoque": "playtest-court développée dans le prompt",
+      "rebond_briques": "flanc gauche: la balle repart vers la gauche : dévié par step() et non par frame() ; flanc droit: la balle repart vers la droite : dévié par step() et non par frame() ; face haute: la balle repart vers le haut : dévié par step() et non par frame() ; face basse: la balle repart vers le bas : dévié par step() et non par frame()",
+      "rebond_angles": "coin haut gauche: la balle repart en diagonale : dévié par step() et non par frame()",
+      "rebond_sortie": "flanc gauche: la balle ressort par la gauche : dévié par step() et non par frame() ; flanc droit: la balle ressort par la droite : dévié par step() et non par frame() ; face haute: la balle ressort par le haut : dévié par step() et non par frame() ; face basse: la balle ressort par le bas : dévié par step() et non par frame()",
+      "rebond_voisines": "couture horizontale: un seul rebond sur deux briques côte à côte : dévié par step() et non par frame() ; couture verticale: un seul rebond sur deux briques superposées : dévié par step() et non par frame()",
+      "rebond_traversee": "balle rapide: la brique n_est pas franchie sans être touchée : dévié par step() et non par frame()",
+      "sonde_intacte": "aucune sonde n'a été fournie à cette cellule"
+    },
+    "state": "valid",
+    "detail": "",
+    "attempts": 1
+  },
+  {
+    "id": "f4ee20ad",
+    "cell": "+agents+skill",
+    "repetition": 13,
+    "usage": {
+      "input": 969426,
+      "output": 21735,
+      "cacheRead": 0,
+      "cost": 0.0,
+      "turns": 43,
+      "retries": 10
+    },
+    "duration": 499,
+    "metrics": {
+      "delivered": true,
+      "in_scope": true,
+      "touched": [
+        "game/neon.js",
+        "game/neon.test.js"
+      ],
+      "tests_ajoutes": true,
+      "suite_lancee": true,
+      "skill_invoque": true,
+      "rebond_briques": true,
+      "rebond_angles": false,
+      "rebond_sortie": true,
+      "rebond_voisines": true,
+      "rebond_traversee": true
+    },
+    "reasons": {
+      "tests_ajoutes": "3 cas de plus qu'à l'étalon (9 contre 6)",
+      "suite_lancee": "node --test .scratch/playtest_failures.test.js ; npm test",
+      "skill_invoque": "playtest développée dans le prompt",
+      "rebond_briques": "flanc gauche: la balle repart vers la gauche : dévié par step() et non par frame() ; flanc droit: la balle repart vers la droite : dévié par step() et non par frame() ; face haute: la balle repart vers le haut : dévié par step() et non par frame() ; face basse: la balle repart vers le bas : dévié par step() et non par frame()",
+      "rebond_angles": "coin haut gauche: la balle repart en diagonale : vx devait devenir négatif : 300 ; dévié par step() et non par frame()",
+      "rebond_sortie": "flanc gauche: la balle ressort par la gauche : dévié par step() et non par frame() ; flanc droit: la balle ressort par la droite : dévié par step() et non par frame() ; face haute: la balle ressort par le haut : dévié par step() et non par frame() ; face basse: la balle ressort par le bas : dévié par step() et non par frame()",
+      "rebond_voisines": "couture horizontale: un seul rebond sur deux briques côte à côte : dévié par step() et non par frame() ; couture verticale: un seul rebond sur deux briques superposées : dévié par step() et non par frame()",
+      "rebond_traversee": "balle rapide: la brique n_est pas franchie sans être touchée : dévié par step() et non par frame()",
+      "sonde_intacte": "aucune sonde n'a été fournie à cette cellule"
+    },
+    "state": "valid",
+    "detail": "",
+    "attempts": 1
+  },
+  {
+    "id": "55393f8e",
+    "cell": "+agents+skill_court",
+    "repetition": 13,
+    "usage": {
+      "input": 420379,
+      "output": 13422,
+      "cacheRead": 0,
+      "cost": 0.0,
+      "turns": 36,
+      "retries": 13
+    },
+    "duration": 269,
+    "metrics": {
+      "delivered": true,
+      "in_scope": true,
+      "touched": [
+        "game/neon.js",
+        "game/neon.test.js"
+      ],
+      "tests_ajoutes": true,
+      "suite_lancee": true,
+      "skill_invoque": true,
+      "rebond_briques": true,
+      "rebond_angles": false,
+      "rebond_sortie": true,
+      "rebond_voisines": true,
+      "rebond_traversee": false
+    },
+    "reasons": {
+      "tests_ajoutes": "5 cas de plus qu'à l'étalon (11 contre 6)",
+      "suite_lancee": "npm test",
+      "skill_invoque": "playtest-court développée dans le prompt",
+      "rebond_angles": "coin haut gauche: la balle repart en diagonale : vx devait devenir négatif : 300",
+      "rebond_traversee": "balle rapide: la brique n_est pas franchie sans être touchée : la brique a survécu à une balle qui l_a traversée de part en part",
+      "sonde_intacte": "aucune sonde n'a été fournie à cette cellule"
+    },
+    "state": "valid",
+    "detail": "",
+    "attempts": 1
+  },
+  {
+    "id": "bc084b07",
+    "cell": "+agents+skill",
+    "repetition": 14,
+    "usage": {
+      "input": 766313,
+      "output": 20184,
+      "cacheRead": 0,
+      "cost": 0.0,
+      "turns": 35,
+      "retries": 7
+    },
+    "duration": 403,
+    "metrics": {
+      "delivered": true,
+      "in_scope": true,
+      "touched": [
+        "game/neon.js"
+      ],
+      "tests_ajoutes": false,
+      "suite_lancee": true,
+      "skill_invoque": true,
+      "rebond_briques": true,
+      "rebond_angles": false,
+      "rebond_sortie": true,
+      "rebond_voisines": true,
+      "rebond_traversee": false
+    },
+    "reasons": {
+      "tests_ajoutes": "6 cas, comme à l'étalon",
+      "suite_lancee": "node --test .scratch/playtest.test.js ; npm test",
+      "skill_invoque": "playtest développée dans le prompt",
+      "rebond_briques": "flanc gauche: la balle repart vers la gauche : dévié par step() et non par frame() ; flanc droit: la balle repart vers la droite : dévié par step() et non par frame() ; face haute: la balle repart vers le haut : dévié par step() et non par frame() ; face basse: la balle repart vers le bas : dévié par step() et non par frame()",
+      "rebond_angles": "coin haut gauche: la balle repart en diagonale : vy devait devenir négatif : 300 ; dévié par step() et non par frame()",
+      "rebond_sortie": "flanc gauche: la balle ressort par la gauche : dévié par step() et non par frame() ; flanc droit: la balle ressort par la droite : dévié par step() et non par frame() ; face haute: la balle ressort par le haut : dévié par step() et non par frame() ; face basse: la balle ressort par le bas : dévié par step() et non par frame()",
+      "rebond_voisines": "couture horizontale: un seul rebond sur deux briques côte à côte : dévié par step() et non par frame() ; couture verticale: un seul rebond sur deux briques superposées : dévié par step() et non par frame()",
+      "rebond_traversee": "balle rapide: la brique n_est pas franchie sans être touchée : la balle devait être renvoyée vers le bas : -710",
+      "sonde_intacte": "aucune sonde n'a été fournie à cette cellule"
+    },
+    "state": "valid",
+    "detail": "",
+    "attempts": 1
+  },
+  {
+    "id": "baa58c8f",
+    "cell": "+agents+skill_court",
+    "repetition": 14,
+    "usage": {
+      "input": 547126,
+      "output": 12098,
+      "cacheRead": 0,
+      "cost": 0.0,
+      "turns": 39,
+      "retries": 10
+    },
+    "duration": 244,
+    "metrics": {
+      "delivered": true,
+      "in_scope": true,
+      "touched": [
+        "game/neon.js",
+        "game/neon.test.js"
+      ],
+      "tests_ajoutes": true,
+      "suite_lancee": true,
+      "skill_invoque": true,
+      "rebond_briques": true,
+      "rebond_angles": false,
+      "rebond_sortie": true,
+      "rebond_voisines": true,
+      "rebond_traversee": false
+    },
+    "reasons": {
+      "tests_ajoutes": "3 cas de plus qu'à l'étalon (9 contre 6)",
+      "suite_lancee": "npm test",
+      "skill_invoque": "playtest-court développée dans le prompt",
+      "rebond_angles": "coin haut gauche: la balle repart en diagonale : vx devait devenir négatif : 300",
+      "rebond_traversee": "balle rapide: la brique n_est pas franchie sans être touchée : la brique a survécu à une balle qui l_a traversée de part en part",
+      "sonde_intacte": "aucune sonde n'a été fournie à cette cellule"
+    },
+    "state": "valid",
+    "detail": "",
+    "attempts": 1
+  },
+  {
+    "id": "1e7d1e64",
+    "cell": "+agents+skill",
+    "repetition": 15,
+    "usage": {
+      "input": 567252,
+      "output": 15716,
+      "cacheRead": 0,
+      "cost": 0.0,
+      "turns": 40,
+      "retries": 14
+    },
+    "duration": 369,
+    "metrics": {
+      "delivered": true,
+      "in_scope": true,
+      "touched": [
+        "game/neon.js"
+      ],
+      "tests_ajoutes": false,
+      "suite_lancee": true,
+      "skill_invoque": true,
+      "rebond_briques": true,
+      "rebond_angles": true,
+      "rebond_sortie": true,
+      "rebond_voisines": true,
+      "rebond_traversee": false
+    },
+    "reasons": {
+      "tests_ajoutes": "6 cas, comme à l'étalon",
+      "suite_lancee": "node --test .scratch/repro.test.js ; node --test game/collision.test.js ; npm test",
+      "skill_invoque": "playtest développée dans le prompt",
+      "rebond_traversee": "balle rapide: la brique n_est pas franchie sans être touchée : la brique a survécu à une balle qui l_a traversée de part en part",
+      "sonde_intacte": "aucune sonde n'a été fournie à cette cellule"
+    },
+    "state": "valid",
+    "detail": "",
+    "attempts": 1
+  },
+  {
+    "id": "33958b8d",
+    "cell": "+agents+skill_court",
+    "repetition": 15,
+    "usage": {
+      "input": 34651,
+      "output": 3531,
+      "cacheRead": 0,
+      "cost": 0.0,
+      "turns": 10,
+      "retries": 5
+    },
+    "duration": 73,
+    "metrics": {
+      "delivered": true,
+      "in_scope": true,
+      "touched": [
+        "game/neon.test.js"
+      ],
+      "tests_ajoutes": true,
+      "suite_lancee": false,
+      "skill_invoque": true,
+      "rebond_briques": false,
+      "rebond_angles": false,
+      "rebond_sortie": false,
+      "rebond_voisines": false,
+      "rebond_traversee": false
+    },
+    "reasons": {
+      "tests_ajoutes": "1 cas de plus qu'à l'étalon (7 contre 6)",
+      "suite_lancee": "aucun appel de shell",
+      "skill_invoque": "playtest-court développée dans le prompt",
+      "rebond_briques": "flanc gauche: la balle repart vers la gauche : vx devait devenir négatif : 300 ; flanc droit: la balle repart vers la droite : vx devait devenir positif : -300 ; face haute: la balle repart vers le haut : vy devait devenir négatif : 300 ; face basse: la balle repart vers le bas : vy devait devenir positif : -300",
+      "rebond_angles": "coin haut gauche: la balle repart en diagonale : vx devait devenir négatif : 300",
+      "rebond_sortie": "flanc gauche: la balle ressort par la gauche : le bord droit de la balle devait revenir à x <= 100 : 108 ; flanc droit: la balle ressort par la droite : le bord gauche de la balle devait revenir à x >= 172 : 164 ; face haute: la balle ressort par le haut : le bord bas de la balle devait revenir à y <= 100 : 108 ; face basse: la balle ressort par le bas : le bord haut de la balle devait revenir à y >= 120 : 112",
+      "rebond_voisines": "couture horizontale: un seul rebond sur deux briques côte à côte : vy devait s'inverser une seule fois : -60 ; couture verticale: un seul rebond sur deux briques superposées : vx devait s'inverser une seule fois : 60",
+      "rebond_traversee": "balle rapide: la brique n_est pas franchie sans être touchée : la brique a survécu à une balle qui l_a traversée de part en part",
+      "sonde_intacte": "aucune sonde n'a été fournie à cette cellule"
+    },
+    "state": "valid",
+    "detail": "",
+    "attempts": 1
+  },
+  {
+    "id": "a5910d99",
+    "cell": "+agents+skill",
+    "repetition": 16,
+    "usage": {
+      "input": 728957,
+      "output": 20914,
+      "cacheRead": 0,
+      "cost": 0.0,
+      "turns": 40,
+      "retries": 14
+    },
+    "duration": 461,
+    "metrics": {
+      "delivered": true,
+      "in_scope": true,
+      "touched": [
+        "game/neon.js"
+      ],
+      "tests_ajoutes": false,
+      "suite_lancee": true,
+      "skill_invoque": true,
+      "rebond_briques": true,
+      "rebond_angles": false,
+      "rebond_sortie": false,
+      "rebond_voisines": true,
+      "rebond_traversee": false
+    },
+    "reasons": {
+      "tests_ajoutes": "6 cas, comme à l'étalon",
+      "suite_lancee": "node --test .scratch/repro.test.js ; node --test .scratch/repro_all.test.js ; npm test",
+      "skill_invoque": "playtest développée dans le prompt",
+      "rebond_angles": "coin haut gauche: la balle repart en diagonale : vx devait devenir négatif : 300",
+      "rebond_sortie": "face haute: la balle ressort par le haut : le bord bas de la balle devait revenir à y <= 100 : 106 ; face basse: la balle ressort par le bas : le bord haut de la balle devait revenir à y >= 120 : 114",
+      "rebond_traversee": "balle rapide: la brique n_est pas franchie sans être touchée : la brique a survécu à une balle qui l_a traversée de part en part",
+      "sonde_intacte": "aucune sonde n'a été fournie à cette cellule"
+    },
+    "state": "valid",
+    "detail": "",
+    "attempts": 1
+  },
+  {
+    "id": "8c491092",
+    "cell": "+agents+skill_court",
+    "repetition": 16,
+    "usage": {
+      "input": 339477,
+      "output": 17360,
+      "cacheRead": 0,
+      "cost": 0.0,
+      "turns": 20,
+      "retries": 4
+    },
+    "duration": 254,
+    "metrics": {
+      "delivered": true,
+      "in_scope": true,
+      "touched": [
+        "game/neon.js",
+        "game/neon.test.js"
+      ],
+      "tests_ajoutes": true,
+      "suite_lancee": true,
+      "skill_invoque": true,
+      "rebond_briques": true,
+      "rebond_angles": false,
+      "rebond_sortie": true,
+      "rebond_voisines": true,
+      "rebond_traversee": false
+    },
+    "reasons": {
+      "tests_ajoutes": "2 cas de plus qu'à l'étalon (8 contre 6)",
+      "suite_lancee": "npm test",
+      "skill_invoque": "playtest-court développée dans le prompt",
+      "rebond_briques": "flanc gauche: la balle repart vers la gauche : dévié par step() et non par frame() ; flanc droit: la balle repart vers la droite : dévié par step() et non par frame() ; face haute: la balle repart vers le haut : dévié par step() et non par frame() ; face basse: la balle repart vers le bas : dévié par step() et non par frame()",
+      "rebond_angles": "coin haut gauche: la balle repart en diagonale : vy devait devenir négatif : 300 ; dévié par step() et non par frame()",
+      "rebond_sortie": "flanc gauche: la balle ressort par la gauche : dévié par step() et non par frame() ; flanc droit: la balle ressort par la droite : dévié par step() et non par frame() ; face haute: la balle ressort par le haut : dévié par step() et non par frame() ; face basse: la balle ressort par le bas : dévié par step() et non par frame()",
+      "rebond_voisines": "couture horizontale: un seul rebond sur deux briques côte à côte : dévié par step() et non par frame() ; couture verticale: un seul rebond sur deux briques superposées : dévié par step() et non par frame()",
+      "rebond_traversee": "balle rapide: la brique n_est pas franchie sans être touchée : la brique a survécu à une balle qui l_a traversée de part en part",
+      "sonde_intacte": "aucune sonde n'a été fournie à cette cellule"
+    },
+    "state": "valid",
+    "detail": "",
+    "attempts": 1
+  },
+  {
+    "id": "a63a8e0e",
+    "cell": "+agents+skill",
+    "repetition": 17,
+    "usage": {
+      "input": 1560896,
+      "output": 26361,
+      "cacheRead": 0,
+      "cost": 0.0,
+      "turns": 72,
+      "retries": 24
+    },
+    "duration": 915,
+    "metrics": {
+      "delivered": true,
+      "in_scope": true,
+      "touched": [
+        "game/neon.js",
+        "game/neon.test.js"
+      ],
+      "tests_ajoutes": true,
+      "suite_lancee": true,
+      "skill_invoque": true,
+      "rebond_briques": true,
+      "rebond_angles": false,
+      "rebond_sortie": true,
+      "rebond_voisines": true,
+      "rebond_traversee": true
+    },
+    "reasons": {
+      "tests_ajoutes": "3 cas de plus qu'à l'étalon (9 contre 6)",
+      "suite_lancee": "npm test",
+      "skill_invoque": "playtest développée dans le prompt",
+      "rebond_briques": "flanc gauche: la balle repart vers la gauche : dévié par step() et non par frame() ; flanc droit: la balle repart vers la droite : dévié par step() et non par frame() ; face haute: la balle repart vers le haut : dévié par step() et non par frame() ; face basse: la balle repart vers le bas : dévié par step() et non par frame()",
+      "rebond_angles": "coin haut gauche: la balle repart en diagonale : vx devait devenir négatif : 300 ; dévié par step() et non par frame()",
+      "rebond_sortie": "flanc gauche: la balle ressort par la gauche : dévié par step() et non par frame() ; flanc droit: la balle ressort par la droite : dévié par step() et non par frame() ; face haute: la balle ressort par le haut : dévié par step() et non par frame() ; face basse: la balle ressort par le bas : dévié par step() et non par frame()",
+      "rebond_voisines": "couture horizontale: un seul rebond sur deux briques côte à côte : dévié par step() et non par frame() ; couture verticale: un seul rebond sur deux briques superposées : dévié par step() et non par frame()",
+      "rebond_traversee": "balle rapide: la brique n_est pas franchie sans être touchée : dévié par step() et non par frame()",
+      "sonde_intacte": "aucune sonde n'a été fournie à cette cellule"
+    },
+    "state": "valid",
+    "detail": "",
+    "attempts": 1
+  },
+  {
+    "id": "da799858",
+    "cell": "+agents+skill_court",
+    "repetition": 17,
+    "usage": {
+      "input": 1777395,
+      "output": 26403,
+      "cacheRead": 0,
+      "cost": 0.0,
+      "turns": 81,
+      "retries": 32
+    },
+    "duration": 703,
+    "metrics": {
+      "delivered": true,
+      "in_scope": true,
+      "touched": [
+        "game/neon.js",
+        "game/neon.test.js"
+      ],
+      "tests_ajoutes": true,
+      "suite_lancee": true,
+      "skill_invoque": true,
+      "rebond_briques": true,
+      "rebond_angles": true,
+      "rebond_sortie": true,
+      "rebond_voisines": true,
+      "rebond_traversee": true
+    },
+    "reasons": {
+      "tests_ajoutes": "3 cas de plus qu'à l'étalon (9 contre 6)",
+      "suite_lancee": "npm test",
+      "skill_invoque": "playtest-court développée dans le prompt",
+      "rebond_briques": "flanc gauche: la balle repart vers la gauche : dévié par step() et non par frame() ; flanc droit: la balle repart vers la droite : dévié par step() et non par frame() ; face haute: la balle repart vers le haut : dévié par step() et non par frame() ; face basse: la balle repart vers le bas : dévié par step() et non par frame()",
+      "rebond_angles": "coin haut gauche: la balle repart en diagonale : dévié par step() et non par frame()",
+      "rebond_sortie": "flanc gauche: la balle ressort par la gauche : dévié par step() et non par frame() ; flanc droit: la balle ressort par la droite : dévié par step() et non par frame() ; face haute: la balle ressort par le haut : dévié par step() et non par frame() ; face basse: la balle ressort par le bas : dévié par step() et non par frame()",
+      "rebond_voisines": "couture horizontale: un seul rebond sur deux briques côte à côte : dévié par step() et non par frame() ; couture verticale: un seul rebond sur deux briques superposées : dévié par step() et non par frame()",
+      "rebond_traversee": "balle rapide: la brique n_est pas franchie sans être touchée : dévié par step() et non par frame()",
+      "sonde_intacte": "aucune sonde n'a été fournie à cette cellule"
+    },
+    "state": "valid",
+    "detail": "",
+    "attempts": 1
+  },
+  {
+    "id": "686b2876",
+    "cell": "+agents+skill",
+    "repetition": 18,
+    "usage": {
+      "input": 1560067,
+      "output": 38366,
+      "cacheRead": 0,
+      "cost": 0.0,
+      "turns": 57,
+      "retries": 16
+    },
+    "duration": 1001,
+    "metrics": {
+      "delivered": true,
+      "in_scope": false,
+      "touched": [
+        ".scratch/collision.test.js",
+        ".scratch/test_collision.js",
+        ".scratch/to_fix.md",
+        ".scratch/tunneling.test.js",
+        "game/neon.js"
+      ],
+      "tests_ajoutes": false,
+      "suite_lancee": true,
+      "skill_invoque": true,
+      "rebond_briques": true,
+      "rebond_angles": false,
+      "rebond_sortie": false,
+      "rebond_voisines": true,
+      "rebond_traversee": true
+    },
+    "reasons": {
+      "in_scope": "a aussi touché .scratch/collision.test.js, .scratch/test_collision.js, .scratch/to_fix.md, .scratch/tunneling.test.js",
+      "tests_ajoutes": "6 cas, comme à l'étalon",
+      "suite_lancee": "node --test .scratch/collision.test.js ; node --test .scratch/collision.test.js .scratch/tunneling.test.js ; node --test .scratch/tunneling.test.js",
+      "skill_invoque": "playtest développée dans le prompt",
+      "rebond_angles": "coin haut gauche: la balle repart en diagonale : vx devait devenir négatif : 300",
+      "rebond_sortie": "flanc gauche: la balle ressort par la gauche : le bord droit de la balle devait revenir à x <= 100 : 186 ; flanc droit: la balle ressort par la droite : le bord gauche de la balle devait revenir à x >= 172 : 86 ; face haute: la balle ressort par le haut : le bord bas de la balle devait revenir à y <= 100 : 134 ; face basse: la balle ressort par le bas : le bord haut de la balle devait revenir à y >= 120 : 86",
+      "rebond_traversee": "balle rapide: la brique n_est pas franchie sans être touchée : dévié par frame() après le déplacement de step()",
+      "sonde_intacte": "aucune sonde n'a été fournie à cette cellule"
+    },
+    "state": "valid",
+    "detail": "",
+    "attempts": 1
+  },
+  {
+    "id": "ec7cb524",
+    "cell": "+agents+skill_court",
+    "repetition": 18,
+    "usage": {
+      "input": 659011,
+      "output": 20850,
+      "cacheRead": 0,
+      "cost": 0.0,
+      "turns": 37,
+      "retries": 10
+    },
+    "duration": 421,
+    "metrics": {
+      "delivered": true,
+      "in_scope": true,
+      "touched": [
+        "game/neon.js",
+        "game/neon.test.js"
+      ],
+      "tests_ajoutes": true,
+      "suite_lancee": true,
+      "skill_invoque": true,
+      "rebond_briques": false,
+      "rebond_angles": false,
+      "rebond_sortie": false,
+      "rebond_voisines": false,
+      "rebond_traversee": false
+    },
+    "reasons": {
+      "tests_ajoutes": "2 cas de plus qu'à l'étalon (8 contre 6)",
+      "suite_lancee": "npm test",
+      "skill_invoque": "playtest-court développée dans le prompt",
+      "rebond_briques": "flanc gauche: la balle repart vers la gauche : vx devait devenir négatif : 300 ; flanc droit: la balle repart vers la droite : vx devait devenir positif : -300 ; face haute: la balle repart vers le haut : vy devait devenir négatif : 300 ; face basse: la balle repart vers le bas : vy devait devenir positif : -300",
+      "rebond_angles": "coin haut gauche: la balle repart en diagonale : vx devait devenir négatif : 300",
+      "rebond_sortie": "flanc gauche: la balle ressort par la gauche : le bord droit de la balle devait revenir à x <= 100 : 105 ; flanc droit: la balle ressort par la droite : le bord gauche de la balle devait revenir à x >= 172 : 167 ; face haute: la balle ressort par le haut : le bord bas de la balle devait revenir à y <= 100 : 105 ; face basse: la balle ressort par le bas : le bord haut de la balle devait revenir à y >= 120 : 115",
+      "rebond_voisines": "couture horizontale: un seul rebond sur deux briques côte à côte : vy devait s'inverser une seule fois : -60 ; couture verticale: un seul rebond sur deux briques superposées : vx devait s'inverser une seule fois : 60",
+      "rebond_traversee": "balle rapide: la brique n_est pas franchie sans être touchée : la brique a survécu à une balle qui l_a traversée de part en part",
+      "sonde_intacte": "aucune sonde n'a été fournie à cette cellule"
+    },
+    "state": "valid",
+    "detail": "",
+    "attempts": 1
+  },
+  {
+    "id": "8f6e23f3",
+    "cell": "+agents+skill",
+    "repetition": 19,
+    "usage": {
+      "input": 13047,
+      "output": 294,
+      "cacheRead": 0,
+      "cost": 0.0,
+      "turns": 7,
+      "retries": 4
+    },
+    "duration": 35,
+    "metrics": {
+      "delivered": false,
+      "in_scope": false,
+      "touched": [],
+      "tests_ajoutes": false,
+      "suite_lancee": false,
+      "skill_invoque": true,
+      "rebond_briques": false,
+      "rebond_angles": false,
+      "rebond_sortie": false,
+      "rebond_voisines": false,
+      "rebond_traversee": false
+    },
+    "reasons": {
+      "delivered": "aucun fichier modifié : l'agent n'a pas travaillé",
+      "tests_ajoutes": "6 cas, comme à l'étalon",
+      "suite_lancee": "aucun lancement parmi : find . -maxdepth 2",
+      "skill_invoque": "playtest développée dans le prompt",
+      "rebond_briques": "flanc gauche: la balle repart vers la gauche : vx devait devenir négatif : 300 ; flanc droit: la balle repart vers la droite : vx devait devenir positif : -300 ; face haute: la balle repart vers le haut : vy devait devenir négatif : 300 ; face basse: la balle repart vers le bas : vy devait devenir positif : -300",
+      "rebond_angles": "coin haut gauche: la balle repart en diagonale : vx devait devenir négatif : 300",
+      "rebond_sortie": "flanc gauche: la balle ressort par la gauche : le bord droit de la balle devait revenir à x <= 100 : 108 ; flanc droit: la balle ressort par la droite : le bord gauche de la balle devait revenir à x >= 172 : 164 ; face haute: la balle ressort par le haut : le bord bas de la balle devait revenir à y <= 100 : 108 ; face basse: la balle ressort par le bas : le bord haut de la balle devait revenir à y >= 120 : 112",
+      "rebond_voisines": "couture horizontale: un seul rebond sur deux briques côte à côte : vy devait s'inverser une seule fois : -60 ; couture verticale: un seul rebond sur deux briques superposées : vx devait s'inverser une seule fois : 60",
+      "rebond_traversee": "balle rapide: la brique n_est pas franchie sans être touchée : la brique a survécu à une balle qui l_a traversée de part en part",
+      "sonde_intacte": "aucune sonde n'a été fournie à cette cellule"
+    },
+    "state": "valid",
+    "detail": "",
+    "attempts": 1
+  },
+  {
+    "id": "5507836c",
+    "cell": "+agents+skill_court",
+    "repetition": 19,
+    "usage": {
+      "input": 434366,
+      "output": 13816,
+      "cacheRead": 0,
+      "cost": 0.0,
+      "turns": 29,
+      "retries": 7
+    },
+    "duration": 297,
+    "metrics": {
+      "delivered": true,
+      "in_scope": true,
+      "touched": [
+        "game/neon.js",
+        "game/neon.test.js"
+      ],
+      "tests_ajoutes": true,
+      "suite_lancee": true,
+      "skill_invoque": true,
+      "rebond_briques": true,
+      "rebond_angles": false,
+      "rebond_sortie": true,
+      "rebond_voisines": true,
+      "rebond_traversee": false
+    },
+    "reasons": {
+      "tests_ajoutes": "1 cas de plus qu'à l'étalon (7 contre 6)",
+      "suite_lancee": "npm test",
+      "skill_invoque": "playtest-court développée dans le prompt",
+      "rebond_briques": "flanc gauche: la balle repart vers la gauche : dévié par step() et non par frame() ; flanc droit: la balle repart vers la droite : dévié par step() et non par frame() ; face haute: la balle repart vers le haut : dévié par step() et non par frame() ; face basse: la balle repart vers le bas : dévié par step() et non par frame()",
+      "rebond_angles": "coin haut gauche: la balle repart en diagonale : vy devait devenir négatif : 300 ; dévié par step() et non par frame()",
+      "rebond_sortie": "flanc gauche: la balle ressort par la gauche : dévié par step() et non par frame() ; flanc droit: la balle ressort par la droite : dévié par step() et non par frame() ; face haute: la balle ressort par le haut : dévié par step() et non par frame() ; face basse: la balle ressort par le bas : dévié par step() et non par frame()",
+      "rebond_voisines": "couture horizontale: un seul rebond sur deux briques côte à côte : dévié par step() et non par frame() ; couture verticale: un seul rebond sur deux briques superposées : dévié par step() et non par frame()",
+      "rebond_traversee": "balle rapide: la brique n_est pas franchie sans être touchée : la brique a survécu à une balle qui l_a traversée de part en part",
+      "sonde_intacte": "aucune sonde n'a été fournie à cette cellule"
+    },
+    "state": "valid",
+    "detail": "",
+    "attempts": 1
+  }
+]

@@ -1,0 +1,196 @@
+diff --git a/game/neon.js b/game/neon.js
+index 6b4a133..8f7f938 100644
+--- a/game/neon.js
++++ b/game/neon.js
+@@ -94,7 +94,7 @@ export function createState(level = 1) {
+     best: 0,
+     running: false,
+     paddle: { x: (WIDTH - PADDLE_W) / 2, y: PADDLE_Y, w: PADDLE_W, h: PADDLE_H },
+-    ball: { x: WIDTH / 2, y: PADDLE_Y - BALL_R - 2, r: BALL_R, vx: speed * 0.5, vy: -speed },
++    ball: { x: WIDTH / 2, y: PADDLE_Y - BALL_R - 2, r: BALL_R, vx: speed * 0.5, vy: -speed, prevX: WIDTH / 2, prevY: PADDLE_Y - BALL_R - 2 },
+     bricks: makeBricks(level),
+   };
+ }
+@@ -114,6 +114,22 @@ export function collides(ball, brick) {
+   );
+ }
+
++export function sweptCollides(ball, brick) {
++  if (collides(ball, brick)) return true;
++
++  const left = brick.x - ball.r;
++  const right = brick.x + brick.w + ball.r;
++  const top = brick.y - ball.r;
++  const bottom = brick.y + brick.h + ball.r;
++
++  const minX = Math.min(ball.prevX, ball.x);
++  const maxX = Math.max(ball.prevX, ball.x);
++  const minY = Math.min(ball.prevY, ball.y);
++  const maxY = Math.max(ball.prevY, ball.y);
++
++  return !(maxX < left || minX > right || maxY < top || minY > bottom);
++}
++
+ // --- Score & combo (NOT covered by tests — debt #5) ------------------------
+
+ // Combo multiplier. UNBOUNDED today: a long combo makes the score blow up
+@@ -165,6 +181,9 @@ export function saveBest(storage, score) {
+ export function step(state, dt) {
+   const { ball, paddle } = state;
+
++  ball.prevX = ball.x;
++  ball.prevY = ball.y;
++
+   ball.x += ball.vx * dt;
+   ball.y += ball.vy * dt;
+
+@@ -215,19 +234,51 @@ export function frame(ctx, state) {
+   ctx.fillStyle = palette.background;
+   ctx.fillRect(0, 0, WIDTH, HEIGHT);
+
++  let bouncedX = false;
++  let bouncedY = false;
++
+   // Bricks: collision + bounce + score + drawing, all in one place.
+   for (const brick of state.bricks) {
+     if (!brick.alive) continue;
+
+-    if (collides(state.ball, brick)) {
++    if (sweptCollides(state.ball, brick)) {
+       brick.alive = false;
+       state.combo += 1;
+       state.score += scoreForBrick(brick, state.combo);
+-      // BUG (#1): the ball is NOT deflected here. Only the walls and the paddle
+-      // bounce (in step()); bricks were never given a bounce. So the ball plows
+-      // straight through a column head-on AND straight through the side of a
+-      // row. Fix = a real per-face bounce (flip vy on a top/bottom hit, vx on a
+-      // side hit) plus pushing the ball back out of the brick.
++
++      const overlapX = Math.min(state.ball.x + state.ball.r - brick.x,
++                                 brick.x + brick.w - (state.ball.x - state.ball.r));
++      const overlapY = Math.min(state.ball.y + state.ball.r - brick.y,
++                                 brick.y + brick.h - (state.ball.y - state.ball.r));
++
++      if (overlapX < overlapY) {
++        const dir = state.ball.x < brick.x + brick.w / 2 ? -1 : 1;
++        state.ball.x += dir * overlapX;
++        if (!bouncedX) {
++          state.ball.vx *= -1;
++          bouncedX = true;
++        }
++      } else if (overlapY < overlapX) {
++        const dir = state.ball.y < brick.y + brick.h / 2 ? -1 : 1;
++        state.ball.y += dir * overlapY;
++        if (!bouncedY) {
++          state.ball.vy *= -1;
++          bouncedY = true;
++        }
++      } else {
++        const dirX = state.ball.x < brick.x + brick.w / 2 ? -1 : 1;
++        const dirY = state.ball.y < brick.y + brick.h / 2 ? -1 : 1;
++        state.ball.x += dirX * overlapX;
++        state.ball.y += dirY * overlapY;
++        if (!bouncedX) {
++          state.ball.vx *= -1;
++          bouncedX = true;
++        }
++        if (!bouncedY) {
++          state.ball.vy *= -1;
++          bouncedY = true;
++        }
++      }
+     }
+
+     ctx.fillStyle = brickColor(brick.row);
+diff --git a/game/neon.test.js b/game/neon.test.js
+index 250d6a9..1c16f15 100644
+--- a/game/neon.test.js
++++ b/game/neon.test.js
+@@ -18,6 +18,7 @@ import {
+   BRICK_ROWS,
+   BRICK_COLS,
+   WIDTH,
++  frame,
+ } from './neon.js';
+
+ test('collides: clear overlap detected', () => {
+@@ -65,5 +66,77 @@ function belowField() {
+   return 500;
+ }
+
+-// TODO (#5): test comboMultiplier / scoreForBrick.
+-// TODO      : test level progression and loadBest/saveBest persistence.
++// Mock canvas context to test frame() logic
++const mockCtx = {
++  fillStyle: '',
++  fillRect: () => {},
++  beginPath: () => {},
++  arc: () => {},
++  fill: () => {},
++  font: '',
++  fillText: () => {},
++};
++
++test('frame: brick collision should flip velocity', () => {
++  const state = createState(1);
++  const brick = state.bricks[0];
++  // Ball coming from top, hitting the top face
++  state.ball = {
++    x: brick.x + brick.w / 2,
++    y: brick.y - 2, // overlap by 5 (y+r = 5, brick.y = 48? no)
++    r: 7,
++    vx: 0,
++    vy: 100, // moving DOWN (per convention)
++  };
++  // Need to make sure it's colliding
++  // brick.y is BRICK_TOP (48). ball.y is 46. ball.y + ball.r = 53. 53 > 48. OK.
++  // ball.y - ball.r = 39. 39 < 48 + 20. OK.
++
++  frame(mockCtx, state);
++
++  assert.ok(state.ball.vy < 0, 'ball should bounce UP after hitting the top of a brick');
++});
++
++test('frame: double inversion (seam) should not cancel out', () => {
++  const state = createState(1);
++  const bricks = state.bricks;
++  // Find two adjacent bricks in the same row
++  const brick0 = bricks[0];
++  const brick1 = bricks[1];
++
++  // Position ball to overlap both
++  // brick0.x + brick0.w = offsetX + 72
++  // brick1.x = offsetX + 80
++  // Center at offsetX + 76, r=7 => [69, 83]
++  state.ball = {
++    x: brick0.x + brick0.w + (brick1.x - (brick0.x + brick0.w)) / 2,
++    y: brick0.y + brick0.h / 2,
++    r: 7,
++    vx: 100, // moving RIGHT
++    vy: 0,
++  };
++
++  frame(mockCtx, state);
++
++  assert.ok(state.ball.vx < 0, 'ball should bounce LEFT after hitting a seam, not continue RIGHT');
++});
++
++test('frame: ball should not tunnel through brick at high speed', () => {
++  const state = createState(10); // High level = high speed
++  const brick = state.bricks[0];
++
++  // Ball is above the brick, and the next step will put it below
++  state.ball = {
++    x: brick.x + brick.w / 2,
++    prevY: brick.y - 10,
++    y: brick.y + brick.h + 10, // completely passed it
++    r: 7,
++    vx: 0,
++    vy: 1000,
++  };
++
++  frame(mockCtx, state);
++
++  assert.ok(!brick.alive, 'brick should be destroyed even if the ball tunneled through it');
++  assert.ok(state.ball.vy < 0, 'ball should have bounced back up');
++});

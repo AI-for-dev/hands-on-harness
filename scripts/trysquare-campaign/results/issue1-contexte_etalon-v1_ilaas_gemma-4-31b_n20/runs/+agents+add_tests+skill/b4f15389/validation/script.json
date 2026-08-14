@@ -1,0 +1,34 @@
+{
+  "metrics": {
+    "delivered": true,
+    "in_scope": false,
+    "touched": [
+      ".scratch/collision_advanced.test.js",
+      ".scratch/repro.test.js",
+      ".scratch/to_fix.md",
+      "game/neon.js",
+      "game/neon.test.js"
+    ],
+    "tests_ajoutes": true,
+    "suite_lancee": true,
+    "skill_invoque": true,
+    "sonde_intacte": true,
+    "rebond_briques": false,
+    "rebond_angles": false,
+    "rebond_sortie": false,
+    "rebond_voisines": false,
+    "rebond_traversee": false
+  },
+  "reasons": {
+    "in_scope": "a aussi touché .scratch/collision_advanced.test.js, .scratch/repro.test.js, .scratch/to_fix.md",
+    "tests_ajoutes": "6 cas de plus qu'à l'étalon (12 contre 6)",
+    "suite_lancee": "node --test .scratch/collision_advanced.test.js ; node --test .scratch/repro.test.js ; npm test",
+    "skill_invoque": "playtest développée dans le prompt",
+    "rebond_briques": "flanc gauche: la balle repart vers la gauche : exception : Cannot access 'nx' before initialization ; flanc droit: la balle repart vers la droite : exception : Cannot access 'nx' before initialization ; face haute: la balle repart vers le haut : exception : Cannot access 'nx' before initialization ; face basse: la balle repart vers le bas : exception : Cannot access 'nx' before initialization",
+    "rebond_angles": "coin haut gauche: la balle repart en diagonale : exception : Cannot access 'nx' before initialization",
+    "rebond_sortie": "flanc gauche: la balle ressort par la gauche : exception : Cannot access 'nx' before initialization ; flanc droit: la balle ressort par la droite : exception : Cannot access 'nx' before initialization ; face haute: la balle ressort par le haut : exception : Cannot access 'nx' before initialization ; face basse: la balle ressort par le bas : exception : Cannot access 'nx' before initialization",
+    "rebond_voisines": "couture horizontale: un seul rebond sur deux briques côte à côte : exception : Cannot access 'nx' before initialization ; couture verticale: un seul rebond sur deux briques superposées : exception : Cannot access 'nx' before initialization",
+    "rebond_traversee": "balle rapide: la brique n_est pas franchie sans être touchée : exception : Cannot access 'nx' before initialization"
+  },
+  "unjudged": {}
+}

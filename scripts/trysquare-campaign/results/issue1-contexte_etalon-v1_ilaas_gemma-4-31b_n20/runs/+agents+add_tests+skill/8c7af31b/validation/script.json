@@ -1,0 +1,25 @@
+{
+  "metrics": {
+    "delivered": true,
+    "in_scope": true,
+    "touched": [
+      "game/neon.js"
+    ],
+    "tests_ajoutes": false,
+    "suite_lancee": true,
+    "skill_invoque": true,
+    "sonde_intacte": true,
+    "rebond_briques": true,
+    "rebond_angles": true,
+    "rebond_sortie": true,
+    "rebond_voisines": true,
+    "rebond_traversee": false
+  },
+  "reasons": {
+    "tests_ajoutes": "6 cas, comme à l'étalon",
+    "suite_lancee": "node --test .scratch/*.test.js ; node --test .scratch/d1_no_bounce.test.js ; node --test .scratch/d2_sticky.test.js ; node --test .scratch/d3_wrong_axis.test.js ; node --test .scratch/d4_corner.test.js ; npm test",
+    "skill_invoque": "playtest développée dans le prompt",
+    "rebond_traversee": "balle rapide: la brique n_est pas franchie sans être touchée : la brique a survécu à une balle qui l_a traversée de part en part"
+  },
+  "unjudged": {}
+}

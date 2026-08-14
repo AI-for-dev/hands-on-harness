@@ -1,0 +1,31 @@
+{
+  "metrics": {
+    "delivered": true,
+    "in_scope": true,
+    "touched": [
+      "game/neon.js",
+      "game/neon.test.js"
+    ],
+    "tests_ajoutes": true,
+    "suite_lancee": true,
+    "skill_invoque": false,
+    "rebond_briques": true,
+    "rebond_angles": true,
+    "rebond_sortie": false,
+    "rebond_voisines": true,
+    "rebond_traversee": true
+  },
+  "reasons": {
+    "tests_ajoutes": "5 cas de plus qu'à l'étalon (11 contre 6)",
+    "suite_lancee": "npm test",
+    "skill_invoque": "aucune compétence développée dans le prompt, et aucun SKILL.md lu sur 31 appels d'outil",
+    "rebond_briques": "flanc gauche: la balle repart vers la gauche : dévié par step() et non par frame() ; flanc droit: la balle repart vers la droite : dévié par step() et non par frame() ; face haute: la balle repart vers le haut : dévié par step() et non par frame() ; face basse: la balle repart vers le bas : dévié par step() et non par frame()",
+    "rebond_angles": "coin haut gauche: la balle repart en diagonale : dévié par step() et non par frame()",
+    "rebond_sortie": "flanc gauche: la balle ressort par la gauche : le bord droit de la balle devait revenir à x <= 100 : 102.9 ; dévié par step() et non par frame() ; flanc droit: la balle ressort par la droite : le bord gauche de la balle devait revenir à x >= 172 : 169.1 ; dévié par step() et non par frame() ; face haute: la balle ressort par le haut : le bord bas de la balle devait revenir à y <= 100 : 102.9 ; dévié par step() et non par frame() ; face basse: la balle ressort par le bas : le bord haut de la balle devait revenir à y >= 120 : 117.1 ; dévié par step() et non par frame()",
+    "rebond_voisines": "couture horizontale: un seul rebond sur deux briques côte à côte : dévié par step() et non par frame() ; couture verticale: un seul rebond sur deux briques superposées : dévié par step() et non par frame()",
+    "rebond_traversee": "balle rapide: la brique n_est pas franchie sans être touchée : dévié par step() et non par frame()"
+  },
+  "unjudged": {
+    "sonde_intacte": "aucune sonde n'a été fournie à cette cellule"
+  }
+}

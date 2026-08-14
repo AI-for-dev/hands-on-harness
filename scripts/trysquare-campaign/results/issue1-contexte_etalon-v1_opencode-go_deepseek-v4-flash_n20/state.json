@@ -1,0 +1,1107 @@
+{
+  "scenario": "issue1-contexte",
+  "repo": "neon",
+  "etalon": "etalon-v1",
+  "provider": "opencode-go",
+  "model": "deepseek-v4-flash",
+  "thinking": "off",
+  "repetitions": 20,
+  "concurrency": 5,
+  "timeout": 1800,
+  "layout": "by-cell",
+  "overrides": {},
+  "complete": true,
+  "cells": {
+    "nothing": "5829a7db3efcd6e6",
+    "+thinking": "9bd41f0c76341a90",
+    "+agents": "ce955556ed079ccb",
+    "+well_crafted": "8fc2524b8d8f3dc8",
+    "-system_prompt": "899785ab2e991df6",
+    "+agents+well_crafted": "6e3d354b6bbf2355",
+    "+agents+skill": "3ebec5ddab82d21b",
+    "+agents+add_tests+well_crafted": "ed58a82f6c3d83de",
+    "+agents+add_tests+skill": "8021aeec19551890"
+  },
+  "runs": {
+    "76ef6e2b": {
+      "cell": "nothing",
+      "repetition": 0,
+      "state": "valid",
+      "attempts": 1
+    },
+    "23c967b4": {
+      "cell": "nothing",
+      "repetition": 1,
+      "state": "valid",
+      "attempts": 1
+    },
+    "c00a96c7": {
+      "cell": "nothing",
+      "repetition": 2,
+      "state": "valid",
+      "attempts": 1
+    },
+    "df65ca18": {
+      "cell": "nothing",
+      "repetition": 3,
+      "state": "valid",
+      "attempts": 1
+    },
+    "adfea29e": {
+      "cell": "nothing",
+      "repetition": 4,
+      "state": "valid",
+      "attempts": 2
+    },
+    "25cd248f": {
+      "cell": "nothing",
+      "repetition": 5,
+      "state": "valid",
+      "attempts": 1
+    },
+    "4f628b3c": {
+      "cell": "nothing",
+      "repetition": 6,
+      "state": "valid",
+      "attempts": 1
+    },
+    "57e5e640": {
+      "cell": "nothing",
+      "repetition": 7,
+      "state": "valid",
+      "attempts": 1
+    },
+    "386730e2": {
+      "cell": "nothing",
+      "repetition": 8,
+      "state": "valid",
+      "attempts": 1
+    },
+    "84f8087e": {
+      "cell": "nothing",
+      "repetition": 9,
+      "state": "valid",
+      "attempts": 1
+    },
+    "402c4d77": {
+      "cell": "nothing",
+      "repetition": 10,
+      "state": "valid",
+      "attempts": 1
+    },
+    "10fbf7f0": {
+      "cell": "nothing",
+      "repetition": 11,
+      "state": "valid",
+      "attempts": 1
+    },
+    "80466689": {
+      "cell": "nothing",
+      "repetition": 12,
+      "state": "valid",
+      "attempts": 1
+    },
+    "5e3b89ef": {
+      "cell": "nothing",
+      "repetition": 13,
+      "state": "valid",
+      "attempts": 1
+    },
+    "613684a0": {
+      "cell": "nothing",
+      "repetition": 14,
+      "state": "valid",
+      "attempts": 1
+    },
+    "1eddd3a1": {
+      "cell": "nothing",
+      "repetition": 15,
+      "state": "valid",
+      "attempts": 1
+    },
+    "9b1ced35": {
+      "cell": "nothing",
+      "repetition": 16,
+      "state": "valid",
+      "attempts": 1
+    },
+    "30d08a39": {
+      "cell": "nothing",
+      "repetition": 17,
+      "state": "valid",
+      "attempts": 1
+    },
+    "ea5aaedc": {
+      "cell": "nothing",
+      "repetition": 18,
+      "state": "valid",
+      "attempts": 1
+    },
+    "cefaed7f": {
+      "cell": "nothing",
+      "repetition": 19,
+      "state": "valid",
+      "attempts": 1
+    },
+    "264977c4": {
+      "cell": "+thinking",
+      "repetition": 0,
+      "state": "valid",
+      "attempts": 1
+    },
+    "299f27f3": {
+      "cell": "+thinking",
+      "repetition": 1,
+      "state": "valid",
+      "attempts": 1
+    },
+    "898a208e": {
+      "cell": "+thinking",
+      "repetition": 2,
+      "state": "valid",
+      "attempts": 1
+    },
+    "ae5827be": {
+      "cell": "+thinking",
+      "repetition": 3,
+      "state": "valid",
+      "attempts": 1
+    },
+    "90b113ac": {
+      "cell": "+thinking",
+      "repetition": 4,
+      "state": "valid",
+      "attempts": 1
+    },
+    "86d067f0": {
+      "cell": "+thinking",
+      "repetition": 5,
+      "state": "valid",
+      "attempts": 1
+    },
+    "e82cd0d4": {
+      "cell": "+thinking",
+      "repetition": 6,
+      "state": "valid",
+      "attempts": 1
+    },
+    "89765e10": {
+      "cell": "+thinking",
+      "repetition": 7,
+      "state": "valid",
+      "attempts": 1
+    },
+    "3ab401cb": {
+      "cell": "+thinking",
+      "repetition": 8,
+      "state": "valid",
+      "attempts": 1
+    },
+    "f9555a2e": {
+      "cell": "+thinking",
+      "repetition": 9,
+      "state": "valid",
+      "attempts": 1
+    },
+    "4b6a72e3": {
+      "cell": "+thinking",
+      "repetition": 10,
+      "state": "valid",
+      "attempts": 1
+    },
+    "5e26c08c": {
+      "cell": "+thinking",
+      "repetition": 11,
+      "state": "valid",
+      "attempts": 1
+    },
+    "a1b5c577": {
+      "cell": "+thinking",
+      "repetition": 12,
+      "state": "valid",
+      "attempts": 1
+    },
+    "14a94aec": {
+      "cell": "+thinking",
+      "repetition": 13,
+      "state": "valid",
+      "attempts": 1
+    },
+    "d25f0d00": {
+      "cell": "+thinking",
+      "repetition": 14,
+      "state": "valid",
+      "attempts": 1
+    },
+    "7598441d": {
+      "cell": "+thinking",
+      "repetition": 15,
+      "state": "valid",
+      "attempts": 1
+    },
+    "06e14c47": {
+      "cell": "+thinking",
+      "repetition": 16,
+      "state": "valid",
+      "attempts": 1
+    },
+    "830e661b": {
+      "cell": "+thinking",
+      "repetition": 17,
+      "state": "valid",
+      "attempts": 1
+    },
+    "a8f5e100": {
+      "cell": "+thinking",
+      "repetition": 18,
+      "state": "valid",
+      "attempts": 1
+    },
+    "7fa70ca6": {
+      "cell": "+thinking",
+      "repetition": 19,
+      "state": "valid",
+      "attempts": 1
+    },
+    "68b8a189": {
+      "cell": "+agents",
+      "repetition": 0,
+      "state": "valid",
+      "attempts": 1
+    },
+    "6eb951b7": {
+      "cell": "+agents",
+      "repetition": 1,
+      "state": "valid",
+      "attempts": 1
+    },
+    "2bbc6d8f": {
+      "cell": "+agents",
+      "repetition": 2,
+      "state": "valid",
+      "attempts": 1
+    },
+    "ef8395ec": {
+      "cell": "+agents",
+      "repetition": 3,
+      "state": "valid",
+      "attempts": 1
+    },
+    "511a7cb8": {
+      "cell": "+agents",
+      "repetition": 4,
+      "state": "valid",
+      "attempts": 1
+    },
+    "d103b6ae": {
+      "cell": "+agents",
+      "repetition": 5,
+      "state": "valid",
+      "attempts": 1
+    },
+    "3e45f650": {
+      "cell": "+agents",
+      "repetition": 6,
+      "state": "valid",
+      "attempts": 1
+    },
+    "1cc0cc4a": {
+      "cell": "+agents",
+      "repetition": 7,
+      "state": "valid",
+      "attempts": 1
+    },
+    "e0f7fa94": {
+      "cell": "+agents",
+      "repetition": 8,
+      "state": "valid",
+      "attempts": 1
+    },
+    "e3a72e69": {
+      "cell": "+agents",
+      "repetition": 9,
+      "state": "valid",
+      "attempts": 1
+    },
+    "b9f58bec": {
+      "cell": "+agents",
+      "repetition": 10,
+      "state": "valid",
+      "attempts": 1
+    },
+    "755a5656": {
+      "cell": "+agents",
+      "repetition": 11,
+      "state": "valid",
+      "attempts": 1
+    },
+    "3c0c3fdf": {
+      "cell": "+agents",
+      "repetition": 12,
+      "state": "valid",
+      "attempts": 1
+    },
+    "78430999": {
+      "cell": "+agents",
+      "repetition": 13,
+      "state": "valid",
+      "attempts": 1
+    },
+    "259c894d": {
+      "cell": "+agents",
+      "repetition": 14,
+      "state": "valid",
+      "attempts": 1
+    },
+    "8b12ffec": {
+      "cell": "+agents",
+      "repetition": 15,
+      "state": "valid",
+      "attempts": 2
+    },
+    "9cf85153": {
+      "cell": "+agents",
+      "repetition": 16,
+      "state": "valid",
+      "attempts": 1
+    },
+    "ab959d68": {
+      "cell": "+agents",
+      "repetition": 17,
+      "state": "valid",
+      "attempts": 1
+    },
+    "80bf2459": {
+      "cell": "+agents",
+      "repetition": 18,
+      "state": "valid",
+      "attempts": 1
+    },
+    "9e615648": {
+      "cell": "+agents",
+      "repetition": 19,
+      "state": "valid",
+      "attempts": 1
+    },
+    "4e84f03f": {
+      "cell": "+well_crafted",
+      "repetition": 0,
+      "state": "valid",
+      "attempts": 1
+    },
+    "802400c4": {
+      "cell": "+well_crafted",
+      "repetition": 1,
+      "state": "valid",
+      "attempts": 1
+    },
+    "1616d988": {
+      "cell": "+well_crafted",
+      "repetition": 2,
+      "state": "valid",
+      "attempts": 1
+    },
+    "28758846": {
+      "cell": "+well_crafted",
+      "repetition": 3,
+      "state": "valid",
+      "attempts": 1
+    },
+    "e75e1e4a": {
+      "cell": "+well_crafted",
+      "repetition": 4,
+      "state": "valid",
+      "attempts": 1
+    },
+    "0fbc0e27": {
+      "cell": "+well_crafted",
+      "repetition": 5,
+      "state": "valid",
+      "attempts": 1
+    },
+    "8134bb2f": {
+      "cell": "+well_crafted",
+      "repetition": 6,
+      "state": "valid",
+      "attempts": 1
+    },
+    "84f31bd7": {
+      "cell": "+well_crafted",
+      "repetition": 7,
+      "state": "valid",
+      "attempts": 1
+    },
+    "dcf01b74": {
+      "cell": "+well_crafted",
+      "repetition": 8,
+      "state": "valid",
+      "attempts": 1
+    },
+    "d7e33bc3": {
+      "cell": "+well_crafted",
+      "repetition": 9,
+      "state": "valid",
+      "attempts": 1
+    },
+    "062e0b18": {
+      "cell": "+well_crafted",
+      "repetition": 10,
+      "state": "valid",
+      "attempts": 1
+    },
+    "d84ee2dc": {
+      "cell": "+well_crafted",
+      "repetition": 11,
+      "state": "valid",
+      "attempts": 1
+    },
+    "eddf1eb5": {
+      "cell": "+well_crafted",
+      "repetition": 12,
+      "state": "valid",
+      "attempts": 1
+    },
+    "a66714fc": {
+      "cell": "+well_crafted",
+      "repetition": 13,
+      "state": "valid",
+      "attempts": 1
+    },
+    "d38b50ce": {
+      "cell": "+well_crafted",
+      "repetition": 14,
+      "state": "valid",
+      "attempts": 1
+    },
+    "927f24ae": {
+      "cell": "+well_crafted",
+      "repetition": 15,
+      "state": "valid",
+      "attempts": 1
+    },
+    "14327ed7": {
+      "cell": "+well_crafted",
+      "repetition": 16,
+      "state": "valid",
+      "attempts": 1
+    },
+    "af23b4ff": {
+      "cell": "+well_crafted",
+      "repetition": 17,
+      "state": "valid",
+      "attempts": 1
+    },
+    "2ef8f2ca": {
+      "cell": "+well_crafted",
+      "repetition": 18,
+      "state": "valid",
+      "attempts": 1
+    },
+    "740a890a": {
+      "cell": "+well_crafted",
+      "repetition": 19,
+      "state": "valid",
+      "attempts": 1
+    },
+    "a08f3b9c": {
+      "cell": "-system_prompt",
+      "repetition": 0,
+      "state": "valid",
+      "attempts": 1
+    },
+    "4731cfc1": {
+      "cell": "-system_prompt",
+      "repetition": 1,
+      "state": "valid",
+      "attempts": 1
+    },
+    "044aa357": {
+      "cell": "-system_prompt",
+      "repetition": 2,
+      "state": "valid",
+      "attempts": 1
+    },
+    "2e581e2b": {
+      "cell": "-system_prompt",
+      "repetition": 3,
+      "state": "valid",
+      "attempts": 1
+    },
+    "26cf447f": {
+      "cell": "-system_prompt",
+      "repetition": 4,
+      "state": "valid",
+      "attempts": 1
+    },
+    "0668f014": {
+      "cell": "-system_prompt",
+      "repetition": 5,
+      "state": "valid",
+      "attempts": 1
+    },
+    "77833c7a": {
+      "cell": "-system_prompt",
+      "repetition": 6,
+      "state": "valid",
+      "attempts": 1
+    },
+    "0ecc6534": {
+      "cell": "-system_prompt",
+      "repetition": 7,
+      "state": "valid",
+      "attempts": 1
+    },
+    "3ad25924": {
+      "cell": "-system_prompt",
+      "repetition": 8,
+      "state": "valid",
+      "attempts": 1
+    },
+    "2ebfd169": {
+      "cell": "-system_prompt",
+      "repetition": 9,
+      "state": "valid",
+      "attempts": 1
+    },
+    "ee13f9cf": {
+      "cell": "-system_prompt",
+      "repetition": 10,
+      "state": "valid",
+      "attempts": 1
+    },
+    "a4317d5c": {
+      "cell": "-system_prompt",
+      "repetition": 11,
+      "state": "valid",
+      "attempts": 1
+    },
+    "bd8c1f51": {
+      "cell": "-system_prompt",
+      "repetition": 12,
+      "state": "valid",
+      "attempts": 1
+    },
+    "ce7198c9": {
+      "cell": "-system_prompt",
+      "repetition": 13,
+      "state": "valid",
+      "attempts": 1
+    },
+    "1036d580": {
+      "cell": "-system_prompt",
+      "repetition": 14,
+      "state": "valid",
+      "attempts": 1
+    },
+    "e41aa27d": {
+      "cell": "-system_prompt",
+      "repetition": 15,
+      "state": "valid",
+      "attempts": 1
+    },
+    "e39da734": {
+      "cell": "-system_prompt",
+      "repetition": 16,
+      "state": "valid",
+      "attempts": 1
+    },
+    "f5aa99c7": {
+      "cell": "-system_prompt",
+      "repetition": 17,
+      "state": "valid",
+      "attempts": 1
+    },
+    "410396a1": {
+      "cell": "-system_prompt",
+      "repetition": 18,
+      "state": "valid",
+      "attempts": 1
+    },
+    "72eb247a": {
+      "cell": "-system_prompt",
+      "repetition": 19,
+      "state": "valid",
+      "attempts": 1
+    },
+    "6d392bf7": {
+      "cell": "+agents+well_crafted",
+      "repetition": 0,
+      "state": "valid",
+      "attempts": 1
+    },
+    "72eed6f9": {
+      "cell": "+agents+well_crafted",
+      "repetition": 1,
+      "state": "valid",
+      "attempts": 1
+    },
+    "caab599b": {
+      "cell": "+agents+well_crafted",
+      "repetition": 2,
+      "state": "valid",
+      "attempts": 1
+    },
+    "761438b5": {
+      "cell": "+agents+well_crafted",
+      "repetition": 3,
+      "state": "valid",
+      "attempts": 1
+    },
+    "9c58de45": {
+      "cell": "+agents+well_crafted",
+      "repetition": 4,
+      "state": "valid",
+      "attempts": 1
+    },
+    "a29689f0": {
+      "cell": "+agents+well_crafted",
+      "repetition": 5,
+      "state": "valid",
+      "attempts": 1
+    },
+    "256412f9": {
+      "cell": "+agents+well_crafted",
+      "repetition": 6,
+      "state": "valid",
+      "attempts": 1
+    },
+    "eb890f80": {
+      "cell": "+agents+well_crafted",
+      "repetition": 7,
+      "state": "valid",
+      "attempts": 1
+    },
+    "103ffd3d": {
+      "cell": "+agents+well_crafted",
+      "repetition": 8,
+      "state": "valid",
+      "attempts": 1
+    },
+    "e05f3dc3": {
+      "cell": "+agents+well_crafted",
+      "repetition": 9,
+      "state": "valid",
+      "attempts": 1
+    },
+    "90ed9c27": {
+      "cell": "+agents+well_crafted",
+      "repetition": 10,
+      "state": "valid",
+      "attempts": 1
+    },
+    "ef734761": {
+      "cell": "+agents+well_crafted",
+      "repetition": 11,
+      "state": "valid",
+      "attempts": 1
+    },
+    "7915ff3e": {
+      "cell": "+agents+well_crafted",
+      "repetition": 12,
+      "state": "valid",
+      "attempts": 1
+    },
+    "6fd29594": {
+      "cell": "+agents+well_crafted",
+      "repetition": 13,
+      "state": "valid",
+      "attempts": 1
+    },
+    "275f5dea": {
+      "cell": "+agents+well_crafted",
+      "repetition": 14,
+      "state": "valid",
+      "attempts": 1
+    },
+    "4e1d1552": {
+      "cell": "+agents+well_crafted",
+      "repetition": 15,
+      "state": "valid",
+      "attempts": 1
+    },
+    "857fb355": {
+      "cell": "+agents+well_crafted",
+      "repetition": 16,
+      "state": "valid",
+      "attempts": 1
+    },
+    "e4e0dc49": {
+      "cell": "+agents+well_crafted",
+      "repetition": 17,
+      "state": "valid",
+      "attempts": 1
+    },
+    "fb71f1bb": {
+      "cell": "+agents+well_crafted",
+      "repetition": 18,
+      "state": "valid",
+      "attempts": 1
+    },
+    "0d9b0c0c": {
+      "cell": "+agents+well_crafted",
+      "repetition": 19,
+      "state": "valid",
+      "attempts": 1
+    },
+    "00d10586": {
+      "cell": "+agents+skill",
+      "repetition": 0,
+      "state": "valid",
+      "attempts": 1
+    },
+    "273444a6": {
+      "cell": "+agents+skill",
+      "repetition": 1,
+      "state": "valid",
+      "attempts": 1
+    },
+    "0227fd81": {
+      "cell": "+agents+skill",
+      "repetition": 2,
+      "state": "valid",
+      "attempts": 1
+    },
+    "65af6ddb": {
+      "cell": "+agents+skill",
+      "repetition": 3,
+      "state": "valid",
+      "attempts": 1
+    },
+    "f36fdc37": {
+      "cell": "+agents+skill",
+      "repetition": 4,
+      "state": "valid",
+      "attempts": 1
+    },
+    "b2c7f9aa": {
+      "cell": "+agents+skill",
+      "repetition": 5,
+      "state": "valid",
+      "attempts": 1
+    },
+    "06ddc291": {
+      "cell": "+agents+skill",
+      "repetition": 6,
+      "state": "valid",
+      "attempts": 1
+    },
+    "e36f799b": {
+      "cell": "+agents+skill",
+      "repetition": 7,
+      "state": "valid",
+      "attempts": 1
+    },
+    "5b96bbeb": {
+      "cell": "+agents+skill",
+      "repetition": 8,
+      "state": "valid",
+      "attempts": 1
+    },
+    "177ad965": {
+      "cell": "+agents+skill",
+      "repetition": 9,
+      "state": "valid",
+      "attempts": 1
+    },
+    "34cec9f5": {
+      "cell": "+agents+skill",
+      "repetition": 10,
+      "state": "valid",
+      "attempts": 1
+    },
+    "08e24c76": {
+      "cell": "+agents+skill",
+      "repetition": 11,
+      "state": "valid",
+      "attempts": 1
+    },
+    "f2786c05": {
+      "cell": "+agents+skill",
+      "repetition": 12,
+      "state": "valid",
+      "attempts": 2
+    },
+    "02c05222": {
+      "cell": "+agents+skill",
+      "repetition": 13,
+      "state": "valid",
+      "attempts": 2
+    },
+    "604808e3": {
+      "cell": "+agents+skill",
+      "repetition": 14,
+      "state": "valid",
+      "attempts": 2
+    },
+    "f6e48325": {
+      "cell": "+agents+skill",
+      "repetition": 15,
+      "state": "valid",
+      "attempts": 2
+    },
+    "54689ed2": {
+      "cell": "+agents+skill",
+      "repetition": 16,
+      "state": "valid",
+      "attempts": 1
+    },
+    "dc6adedd": {
+      "cell": "+agents+skill",
+      "repetition": 17,
+      "state": "valid",
+      "attempts": 1
+    },
+    "03ecd08d": {
+      "cell": "+agents+skill",
+      "repetition": 18,
+      "state": "valid",
+      "attempts": 1
+    },
+    "ca323786": {
+      "cell": "+agents+skill",
+      "repetition": 19,
+      "state": "valid",
+      "attempts": 1
+    },
+    "0dbd5d75": {
+      "cell": "+agents+add_tests+well_crafted",
+      "repetition": 0,
+      "state": "valid",
+      "attempts": 1
+    },
+    "546ef679": {
+      "cell": "+agents+add_tests+well_crafted",
+      "repetition": 1,
+      "state": "valid",
+      "attempts": 1
+    },
+    "4d9e1d75": {
+      "cell": "+agents+add_tests+well_crafted",
+      "repetition": 2,
+      "state": "valid",
+      "attempts": 1
+    },
+    "db54876b": {
+      "cell": "+agents+add_tests+well_crafted",
+      "repetition": 3,
+      "state": "valid",
+      "attempts": 1
+    },
+    "f8418d4c": {
+      "cell": "+agents+add_tests+well_crafted",
+      "repetition": 4,
+      "state": "valid",
+      "attempts": 1
+    },
+    "fbcd7fff": {
+      "cell": "+agents+add_tests+well_crafted",
+      "repetition": 5,
+      "state": "valid",
+      "attempts": 1
+    },
+    "c64e9020": {
+      "cell": "+agents+add_tests+well_crafted",
+      "repetition": 6,
+      "state": "valid",
+      "attempts": 1
+    },
+    "024027d6": {
+      "cell": "+agents+add_tests+well_crafted",
+      "repetition": 7,
+      "state": "valid",
+      "attempts": 1
+    },
+    "ae3901db": {
+      "cell": "+agents+add_tests+well_crafted",
+      "repetition": 8,
+      "state": "valid",
+      "attempts": 1
+    },
+    "e607fea5": {
+      "cell": "+agents+add_tests+well_crafted",
+      "repetition": 9,
+      "state": "valid",
+      "attempts": 1
+    },
+    "1a5765da": {
+      "cell": "+agents+add_tests+well_crafted",
+      "repetition": 10,
+      "state": "valid",
+      "attempts": 1
+    },
+    "8f8c5c57": {
+      "cell": "+agents+add_tests+well_crafted",
+      "repetition": 11,
+      "state": "valid",
+      "attempts": 1
+    },
+    "d71bdb0c": {
+      "cell": "+agents+add_tests+well_crafted",
+      "repetition": 12,
+      "state": "valid",
+      "attempts": 1
+    },
+    "0b8c7b36": {
+      "cell": "+agents+add_tests+well_crafted",
+      "repetition": 13,
+      "state": "valid",
+      "attempts": 1
+    },
+    "ab95e64e": {
+      "cell": "+agents+add_tests+well_crafted",
+      "repetition": 14,
+      "state": "valid",
+      "attempts": 1
+    },
+    "ced324d8": {
+      "cell": "+agents+add_tests+well_crafted",
+      "repetition": 15,
+      "state": "valid",
+      "attempts": 1
+    },
+    "3cdb4e7d": {
+      "cell": "+agents+add_tests+well_crafted",
+      "repetition": 16,
+      "state": "valid",
+      "attempts": 2
+    },
+    "8d2e604d": {
+      "cell": "+agents+add_tests+well_crafted",
+      "repetition": 17,
+      "state": "valid",
+      "attempts": 1
+    },
+    "62b4e7eb": {
+      "cell": "+agents+add_tests+well_crafted",
+      "repetition": 18,
+      "state": "valid",
+      "attempts": 1
+    },
+    "c80d9f12": {
+      "cell": "+agents+add_tests+well_crafted",
+      "repetition": 19,
+      "state": "valid",
+      "attempts": 1
+    },
+    "b4f15389": {
+      "cell": "+agents+add_tests+skill",
+      "repetition": 0,
+      "state": "valid",
+      "attempts": 1
+    },
+    "6a1909ca": {
+      "cell": "+agents+add_tests+skill",
+      "repetition": 1,
+      "state": "valid",
+      "attempts": 1
+    },
+    "d035ffc6": {
+      "cell": "+agents+add_tests+skill",
+      "repetition": 2,
+      "state": "valid",
+      "attempts": 1
+    },
+    "907925f6": {
+      "cell": "+agents+add_tests+skill",
+      "repetition": 3,
+      "state": "valid",
+      "attempts": 1
+    },
+    "48719f30": {
+      "cell": "+agents+add_tests+skill",
+      "repetition": 4,
+      "state": "valid",
+      "attempts": 1
+    },
+    "8c7af31b": {
+      "cell": "+agents+add_tests+skill",
+      "repetition": 5,
+      "state": "valid",
+      "attempts": 1
+    },
+    "895144b3": {
+      "cell": "+agents+add_tests+skill",
+      "repetition": 6,
+      "state": "valid",
+      "attempts": 1
+    },
+    "3d3765d2": {
+      "cell": "+agents+add_tests+skill",
+      "repetition": 7,
+      "state": "valid",
+      "attempts": 1
+    },
+    "02533f8a": {
+      "cell": "+agents+add_tests+skill",
+      "repetition": 8,
+      "state": "valid",
+      "attempts": 1
+    },
+    "91f5be06": {
+      "cell": "+agents+add_tests+skill",
+      "repetition": 9,
+      "state": "valid",
+      "attempts": 1
+    },
+    "fd0456ca": {
+      "cell": "+agents+add_tests+skill",
+      "repetition": 10,
+      "state": "valid",
+      "attempts": 1
+    },
+    "9bbb36c8": {
+      "cell": "+agents+add_tests+skill",
+      "repetition": 11,
+      "state": "valid",
+      "attempts": 2
+    },
+    "040b9ce0": {
+      "cell": "+agents+add_tests+skill",
+      "repetition": 12,
+      "state": "valid",
+      "attempts": 1
+    },
+    "29302717": {
+      "cell": "+agents+add_tests+skill",
+      "repetition": 13,
+      "state": "valid",
+      "attempts": 1
+    },
+    "d9b32437": {
+      "cell": "+agents+add_tests+skill",
+      "repetition": 14,
+      "state": "valid",
+      "attempts": 1
+    },
+    "4af7a81d": {
+      "cell": "+agents+add_tests+skill",
+      "repetition": 15,
+      "state": "valid",
+      "attempts": 1
+    },
+    "a9ae52e6": {
+      "cell": "+agents+add_tests+skill",
+      "repetition": 16,
+      "state": "valid",
+      "attempts": 1
+    },
+    "6045c38e": {
+      "cell": "+agents+add_tests+skill",
+      "repetition": 17,
+      "state": "valid",
+      "attempts": 1
+    },
+    "cfa908ae": {
+      "cell": "+agents+add_tests+skill",
+      "repetition": 18,
+      "state": "valid",
+      "attempts": 1
+    },
+    "b8fedb1e": {
+      "cell": "+agents+add_tests+skill",
+      "repetition": 19,
+      "state": "valid",
+      "attempts": 1
+    }
+  }
+}

@@ -27,10 +27,14 @@ export const en: LocaleSpecificConfig<DefaultTheme.Config> = {
           { text: 'Why a harness, and what is it made of?', link: '/en/act1-harness' },
           { text: 'The starting harness: Pi', link: '/en/act1-pi' }
         ]
+      },
+      {
+        text: 'Act 2 - Rebuilding',
+        items: [
+          { text: '2.1 Context and the window', link: '/en/act2-contexte' },
+          { text: '2.2 Skills', link: '/en/act2-skill' }
+        ]
       }
-      // Act 2 starts with `act2-contexte`, which is only listed here once
-      // `npm run i18n:translate` has produced content/en/act2-contexte.md.
-      // A sidebar link to a page that does not exist fails the build.
     ],
     outline: { level: [2, 3], label: 'On this page' },
     docFooter: { prev: 'Previous page', next: 'Next page' },
