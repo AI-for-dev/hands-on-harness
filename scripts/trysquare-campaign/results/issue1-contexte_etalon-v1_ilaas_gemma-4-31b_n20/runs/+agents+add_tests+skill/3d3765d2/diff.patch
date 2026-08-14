@@ -1,0 +1,122 @@
+diff --git a/game/neon.js b/game/neon.js
+index 6b4a133..00bdaaf 100644
+--- a/game/neon.js
++++ b/game/neon.js
+@@ -94,7 +94,7 @@ export function createState(level = 1) {
+     best: 0,
+     running: false,
+     paddle: { x: (WIDTH - PADDLE_W) / 2, y: PADDLE_Y, w: PADDLE_W, h: PADDLE_H },
+-    ball: { x: WIDTH / 2, y: PADDLE_Y - BALL_R - 2, r: BALL_R, vx: speed * 0.5, vy: -speed },
++    ball: { x: WIDTH / 2, y: PADDLE_Y - BALL_R - 2, r: BALL_R, vx: speed * 0.5, vy: -speed, prevX: WIDTH / 2, prevY: PADDLE_Y - BALL_R - 2 },
+     bricks: makeBricks(level),
+   };
+ }
+@@ -114,6 +114,62 @@ export function collides(ball, brick) {
+   );
+ }
+ 
++export function sweptCollides(ball, brick) {
++  if (collides(ball, brick)) return true;
++  if (ball.prevX === undefined || (ball.prevX === ball.x && ball.prevY === ball.y)) return false;
++
++  const minX = Math.min(ball.prevX, ball.x) - ball.r;
++  const maxX = Math.max(ball.prevX, ball.x) + ball.r;
++  const minY = Math.min(ball.prevY, ball.y) - ball.r;
++  const maxY = Math.max(ball.prevY, ball.y) + ball.r;
++
++  if (maxX < brick.x || minX > brick.x + brick.w || maxY < brick.y || minY > brick.y + brick.h) {
++    return false;
++  }
++
++  const prevX_in = ball.prevX + ball.r > brick.x && ball.prevX - ball.r < brick.x + brick.w;
++  const nextX_in = ball.x + ball.r > brick.x && ball.x - ball.r < brick.x + brick.w;
++  if (prevX_in && nextX_in) return true;
++  
++  const prevY_in = ball.prevY + ball.r > brick.y && ball.prevY - ball.r < brick.y + brick.h;
++  const nextY_in = ball.y + ball.r > brick.y && ball.y - ball.r < brick.y + brick.h;
++  if (prevY_in && nextY_in) return true;
++
++  return true; // If we are in the swept box and not purely axial, assume intersection.
++}
++
++export function resolveCollision(state, brick) {
++  const { ball } = state;
++  const overlapX = Math.min(
++    ball.x + ball.r - brick.x,
++    brick.x + brick.w - (ball.x - ball.r)
++  );
++  const overlapY = Math.min(
++    ball.y + ball.r - brick.y,
++    brick.y + brick.h - (ball.y - ball.r)
++  );
++
++  if (Math.abs(overlapX - overlapY) < 0.1) {
++    ball.vx = -ball.vx;
++    ball.vy = -ball.vy;
++    const pushX = ball.x < brick.x + brick.w / 2 ? -overlapX : overlapX;
++    const pushY = ball.y < brick.y + brick.h / 2 ? -overlapY : overlapY;
++    ball.x += pushX;
++    ball.y += pushY;
++    return;
++  }
++
++  if (overlapX < overlapY) {
++    ball.vx = -ball.vx;
++    const pushX = ball.x < brick.x + brick.w / 2 ? -overlapX : overlapX;
++    ball.x += pushX;
++  } else {
++    ball.vy = -ball.vy;
++    const pushY = ball.y < brick.y + brick.h / 2 ? -overlapY : overlapY;
++    ball.y += pushY;
++  }
++}
++
+ // --- Score & combo (NOT covered by tests — debt #5) ------------------------
+ 
+ // Combo multiplier. UNBOUNDED today: a long combo makes the score blow up
+@@ -165,6 +221,9 @@ export function saveBest(storage, score) {
+ export function step(state, dt) {
+   const { ball, paddle } = state;
+ 
++  ball.prevX = ball.x;
++  ball.prevY = ball.y;
++
+   ball.x += ball.vx * dt;
+   ball.y += ball.vy * dt;
+ 
+@@ -219,15 +278,11 @@ export function frame(ctx, state) {
+   for (const brick of state.bricks) {
+     if (!brick.alive) continue;
+ 
+-    if (collides(state.ball, brick)) {
++    if (sweptCollides(state.ball, brick)) {
+       brick.alive = false;
+       state.combo += 1;
+       state.score += scoreForBrick(brick, state.combo);
+-      // BUG (#1): the ball is NOT deflected here. Only the walls and the paddle
+-      // bounce (in step()); bricks were never given a bounce. So the ball plows
+-      // straight through a column head-on AND straight through the side of a
+-      // row. Fix = a real per-face bounce (flip vy on a top/bottom hit, vx on a
+-      // side hit) plus pushing the ball back out of the brick.
++      resolveCollision(state, brick);
+     }
+ 
+     ctx.fillStyle = brickColor(brick.row);
+diff --git a/game/neon.test.js b/game/neon.test.js
+index 250d6a9..2b10d60 100644
+--- a/game/neon.test.js
++++ b/game/neon.test.js
+@@ -18,6 +18,8 @@ import {
+   BRICK_ROWS,
+   BRICK_COLS,
+   WIDTH,
++  BALL_R,
++  frame,
+ } from './neon.js';
+ 
+ test('collides: clear overlap detected', () => {
+@@ -67,3 +69,4 @@ function belowField() {
+ 
+ // TODO (#5): test comboMultiplier / scoreForBrick.
+ // TODO      : test level progression and loadBest/saveBest persistence.
++

@@ -1,0 +1,43 @@
+diff --git a/game/neon.js b/game/neon.js
+index 6b4a133..d0a5346 100644
+--- a/game/neon.js
++++ b/game/neon.js
+@@ -223,11 +223,33 @@ export function frame(ctx, state) {
+       brick.alive = false;
+       state.combo += 1;
+       state.score += scoreForBrick(brick, state.combo);
+-      // BUG (#1): the ball is NOT deflected here. Only the walls and the paddle
+-      // bounce (in step()); bricks were never given a bounce. So the ball plows
+-      // straight through a column head-on AND straight through the side of a
+-      // row. Fix = a real per-face bounce (flip vy on a top/bottom hit, vx on a
+-      // side hit) plus pushing the ball back out of the brick.
++
++      // Bounce: determine which face was hit by checking the ball's center
++      // relative to the brick's boundaries.
++      const ballX = state.ball.x;
++      const ballY = state.ball.y;
++      const bL = brick.x;
++      const bR = brick.x + brick.w;
++      const bT = brick.y;
++      const bB = brick.y + brick.h;
++
++      // Find the distance to the closest edge
++      const distL = Math.abs(ballX - (bL + state.ball.r));
++      const distR = Math.abs(ballX - (bR - state.ball.r));
++      const distT = Math.abs(ballY - (bT + state.ball.r));
++      const distB = Math.abs(ballY - (bB - state.ball.r));
++
++      const minDist = Math.min(distL, distR, distT, distB);
++
++      if (minDist === distT || minDist === distB) {
++        state.ball.vy = -state.ball.vy;
++        // Push ball out to prevent multi-frame sticking
++        state.ball.y = minDist === distT ? bT - state.ball.r : bB + state.ball.r;
++      } else {
++        state.ball.vx = -state.ball.vx;
++        // Push ball out
++        state.ball.x = minDist === distL ? bL - state.ball.r : bR + state.ball.r;
++      }
+     }
+ 
+     ctx.fillStyle = brickColor(brick.row);

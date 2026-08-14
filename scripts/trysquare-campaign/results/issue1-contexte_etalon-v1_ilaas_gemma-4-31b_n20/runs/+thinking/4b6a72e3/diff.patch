@@ -1,0 +1,90 @@
+diff --git a/game/neon.js b/game/neon.js
+index 6b4a133..a90f40f 100644
+--- a/game/neon.js
++++ b/game/neon.js
+@@ -183,6 +183,33 @@ export function step(state, dt) {
+     ball.vy = Math.abs(ball.vy);
+   }
+ 
++  // Bricks
++  for (const brick of state.bricks) {
++    if (!brick.alive) continue;
++    if (collides(ball, brick)) {
++      brick.alive = false;
++      state.combo += 1;
++      state.score += scoreForBrick(brick, state.combo);
++
++      const dx1 = ball.x + ball.r - brick.x;
++      const dx2 = brick.x + brick.w - (ball.x - ball.r);
++      const dy1 = ball.y + ball.r - brick.y;
++      const dy2 = brick.y + brick.h - (ball.y - ball.r);
++
++      const minOverlapX = Math.min(dx1, dx2);
++      const minOverlapY = Math.min(dy1, dy2);
++
++      if (minOverlapX < minOverlapY) {
++        ball.vx = -ball.vx;
++        if (dx1 < dx2) ball.x = brick.x - ball.r; else ball.x = brick.x + brick.w + ball.r;
++      } else {
++        ball.vy = -ball.vy;
++        if (dy1 < dy2) ball.y = brick.y - ball.r; else ball.y = brick.y + brick.h + ball.r;
++      }
++      break;
++    }
++  }
++
+   // Paddle
+   if (
+     ball.vy > 0 &&
+@@ -215,21 +242,10 @@ export function frame(ctx, state) {
+   ctx.fillStyle = palette.background;
+   ctx.fillRect(0, 0, WIDTH, HEIGHT);
+ 
+-  // Bricks: collision + bounce + score + drawing, all in one place.
++  // Bricks: drawing only. Collision handled in step().
+   for (const brick of state.bricks) {
+     if (!brick.alive) continue;
+ 
+-    if (collides(state.ball, brick)) {
+-      brick.alive = false;
+-      state.combo += 1;
+-      state.score += scoreForBrick(brick, state.combo);
+-      // BUG (#1): the ball is NOT deflected here. Only the walls and the paddle
+-      // bounce (in step()); bricks were never given a bounce. So the ball plows
+-      // straight through a column head-on AND straight through the side of a
+-      // row. Fix = a real per-face bounce (flip vy on a top/bottom hit, vx on a
+-      // side hit) plus pushing the ball back out of the brick.
+-    }
+-
+     ctx.fillStyle = brickColor(brick.row);
+     ctx.fillRect(brick.x, brick.y, brick.w, brick.h);
+   }
+diff --git a/game/neon.test.js b/game/neon.test.js
+index 250d6a9..2d04826 100644
+--- a/game/neon.test.js
++++ b/game/neon.test.js
+@@ -38,6 +38,24 @@ test('collides: edge contact (radius) detected', () => {
+   assert.equal(collides(ball, brick), true);
+ });
+ 
++test('step: bounce off brick top', () => {
++  const state = createState(1);
++  state.bricks = [{ x: 100, y: 100, w: 50, h: 20, alive: true }];
++  state.ball = { x: 125, y: 90, r: 7, vx: 0, vy: 300 }; // Moving down
++  step(state, 1 / 60);
++  assert.ok(state.ball.vy < 0, 'vertical velocity should flip to UP');
++  assert.equal(state.bricks[0].alive, false, 'brick should be destroyed');
++});
++
++test('step: bounce off brick side', () => {
++  const state = createState(1);
++  state.bricks = [{ x: 100, y: 100, w: 50, h: 20, alive: true }];
++  state.ball = { x: 90, y: 110, r: 7, vx: 300, vy: 0 }; // Moving right
++  step(state, 1 / 60);
++  assert.ok(state.ball.vx < 0, 'horizontal velocity should flip to LEFT');
++  assert.equal(state.bricks[0].alive, false, 'brick should be destroyed');
++});
++
+ test('step: bounce off the left wall', () => {
+   const state = createState(1);
+   state.ball = { x: 2, y: 200, r: 7, vx: -300, vy: 0 };

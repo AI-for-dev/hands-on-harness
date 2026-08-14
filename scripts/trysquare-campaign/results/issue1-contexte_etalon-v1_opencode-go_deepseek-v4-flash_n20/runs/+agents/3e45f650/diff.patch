@@ -1,0 +1,137 @@
+diff --git a/game/neon.js b/game/neon.js
+index 6b4a133..7608f69 100644
+--- a/game/neon.js
++++ b/game/neon.js
+@@ -223,11 +223,32 @@ export function frame(ctx, state) {
+       brick.alive = false;
+       state.combo += 1;
+       state.score += scoreForBrick(brick, state.combo);
+-      // BUG (#1): the ball is NOT deflected here. Only the walls and the paddle
+-      // bounce (in step()); bricks were never given a bounce. So the ball plows
+-      // straight through a column head-on AND straight through the side of a
+-      // row. Fix = a real per-face bounce (flip vy on a top/bottom hit, vx on a
+-      // side hit) plus pushing the ball back out of the brick.
++
++      // Bounce the ball off the face it hit (fix for #1). The ball is
++      // currently overlapping the brick; we resolve on the axis of smallest
++      // penetration so a mostly-vertical attacker bounces vertically and a
++      // mostly-horizontal one horizontally, and push the ball back out of the
++      // brick so it never tunnels straight through.
++      const overlapX = Math.min(
++        state.ball.x + state.ball.r - brick.x,
++        brick.x + brick.w - (state.ball.x - state.ball.r)
++      );
++      const overlapY = Math.min(
++        state.ball.y + state.ball.r - brick.y,
++        brick.y + brick.h - (state.ball.y - state.ball.r)
++      );
++
++      if (overlapY <= overlapX) {
++        // Ball centre is nearer the top face => bounce up, else down.
++        const fromTop = state.ball.y < brick.y + brick.h / 2;
++        state.ball.y = fromTop ? brick.y - state.ball.r : brick.y + brick.h + state.ball.r;
++        state.ball.vy = Math.abs(state.ball.vy) * (fromTop ? -1 : 1);
++      } else {
++        // Ball centre is nearer the left face => bounce left, else right.
++        const fromLeft = state.ball.x < brick.x + brick.w / 2;
++        state.ball.x = fromLeft ? brick.x - state.ball.r : brick.x + brick.w + state.ball.r;
++        state.ball.vx = Math.abs(state.ball.vx) * (fromLeft ? -1 : 1);
++      }
+     }
+ 
+     ctx.fillStyle = brickColor(brick.row);
+diff --git a/game/neon.test.js b/game/neon.test.js
+index 250d6a9..ceadd32 100644
+--- a/game/neon.test.js
++++ b/game/neon.test.js
+@@ -13,10 +13,15 @@ import assert from 'node:assert/strict';
+ import {
+   collides,
+   step,
++  frame,
+   makeBricks,
+   createState,
+   BRICK_ROWS,
+   BRICK_COLS,
++  BALL_R,
++  PADDLE_W,
++  PADDLE_H,
++  PADDLE_Y,
+   WIDTH,
+ } from './neon.js';
+ 
+@@ -59,6 +64,74 @@ test('makeBricks: full, all-alive grid at start', () => {
+   assert.ok(bricks.every((b) => b.x >= 0 && b.x + b.w <= WIDTH));
+ });
+ 
++test('frame: ball hitting the bottom of a brick head-on bounces down, brick breaks', () => {
++  const state = isolatedState({ x: 200, y: 100, w: 72, h: 20 });
++  const brick = state.bricks[0];
++  // Ball climbs straight up INTO the bottom face: center just inside the brick.
++  state.ball = {
++    x: brick.x + brick.w / 2,
++    y: brick.y + brick.h - 4, // pierces 4px through the bottom face
++    r: BALL_R,
++    vx: 0,
++    vy: -300, // moving up
++  };
++  frame(ctxStub(), state);
++  assert.equal(brick.alive, false, 'brick should be broken');
++  assert.ok(state.ball.vy > 0, 'ball should bounce back down (off the bottom face)');
++  assert.equal(state.ball.vx, 0, 'head-on hit leaves horizontal velocity alone');
++  assert.ok(state.ball.y >= brick.y + brick.h + state.ball.r, 'ball pushed clear of the brick bottom');
++});
++
++test('frame: ball hitting the side of a brick bounces horizontally', () => {
++  const state = isolatedState({ x: 200, y: 100, w: 72, h: 20 });
++  const brick = state.bricks[0];
++  // Ball moving LEFT into the LEFT face from the right.
++  state.ball = {
++    x: brick.x + 2, // just inside the left face (centre near the left edge)
++    y: brick.y + brick.h / 2,
++    r: BALL_R,
++    vx: -300, // moving left
++    vy: 0,
++  };
++  frame(ctxStub(), state);
++  assert.equal(brick.alive, false, 'brick should be broken');
++  assert.ok(state.ball.vx < 0, 'ball should continue left after a left-face hit');
++  assert.equal(state.ball.y, brick.y + brick.h / 2, 'side hit leaves vertical position alone');
++  assert.ok(state.ball.x <= brick.x - state.ball.r, 'ball pushed clear of the brick left side');
++});
++
++// A fresh state with a single, isolated brick so a bounce never cascades into
++// a neighbouring cell (the full grid has no empty cells, which would mask the
++// exact face that was hit).
++function isolatedState(geom) {
++  return {
++    level: 1,
++    lives: 3,
++    score: 0,
++    combo: 0,
++    best: 0,
++    running: false,
++    paddle: { x: 0, y: PADDLE_Y, w: PADDLE_W, h: PADDLE_H },
++    ball: null,
++    bricks: [{ ...geom, row: 0, alive: true, points: 10 }],
++  };
++}
++
++
++// Minimal no-op 2D context so frame() can run headless.
++function ctxStub() {
++  const noop = () => {};
++  return {
++    fillStyle: null,
++    fillRect: noop,
++    fillText: noop,
++    beginPath: noop,
++    arc: noop,
++    fill: noop,
++  };
++}
++
++
+ // Small local helper: place the ball below the field without importing the
+ // height (coverage intentionally light).
+ function belowField() {

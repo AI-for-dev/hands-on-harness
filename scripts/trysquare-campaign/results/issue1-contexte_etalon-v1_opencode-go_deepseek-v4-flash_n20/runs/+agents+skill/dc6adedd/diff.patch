@@ -1,0 +1,840 @@
+diff --git a/.scratch/to_fix.md b/.scratch/to_fix.md
+new file mode 100644
+index 0000000..3fc1a09
+--- /dev/null
++++ b/.scratch/to_fix.md
+@@ -0,0 +1,459 @@
++# to_fix.md — playtest du ticket « la balle traverse les briques »
++
++> **Symptôme rapporté (mot pour mot)** : « La balle traverse les briques au lieu de rebondir. Corrige ça. »
++
++Le symptôme se décompose en sept défauts. D1 est celui que le joueur voit ;
++D2–D7 sont masqués par D1 et ne sortent qu'une fois le premier corrigé. Chaque
++défaut a son cas rouge exécuté sur `game/neon.js` d'aujourd'hui (sonde
++`.scratch/playtest.test.js`, sorties recopiées plus bas).
++
++Géométrie de référence (`game/neon.js`) : `BRICK_H = 20`, `BALL_R = 7`
++(diamètre 14), `BRICK_GAP = 8`, grille 5×8, `BRICK_TOP = 48`, colonnes à
++`x = 4 + col·80`, rangées à `y = 48 + row·28`, paddle `[448, 460]`,
++`PADDLE_W = 96`, `ballSpeed(n) = 260 + (n−1)·90`, `dt` plafonné à 50 ms.
++
++---
++
++## D1 — Les briques ne renvoient jamais la balle
++
++- **Famille** : traversée (détection sans réponse) — la famille *traversée*
++  pure (D5) est traitée à part.
++- **Symptôme joueur** : la balle plonge dans une brique, la casse, et ressort
++  de l'autre côté sans jamais changer de direction — elle traverse toute la
++  grille en ligne droite.
++- **Cause** : `game/neon.js:222-232` — dans `frame()`, la collision avec une
++  brique vivante tue la brique (`brick.alive = false`), incrémente le combo et
++  le score, mais **ne touche ni `ball.vy` ni `ball.vx` ni la position**.
++  Seuls `step()` (murs, paddle) savent rebondir ; les briques n'ont jamais
++  reçu de rebond. Le commentaire `BUG (#1)` à la ligne 226 l'écrit noir sur
++  blanc.
++- **Invariant violé** : *aucun obstacle franchi sans rebond* — une brique
++  touchée doit renvoyer la balle sur la face percutée.
++- **Déclencheur** : dès le niveau 1. Balle à `(40, 187)` (tangente sous la
++  brique rangée 4 col 0 : `[4,76]×[160,180]`, la rangée la plus basse, rien
++  dessous), `vx = 0`, `vy = −260`, `dt = 1/60` : la balle entre de 4,33 px
++  dans la face basse et ne rebondit pas.
++- **Attendu** : face basse percutée (plus petite pénétration) → `vy` passe de
++  `−260` à `+260` (la balle repart vers le bas), la balle est repositionnée
++  sous la brique (`ball.y − r ≥ 180`), la brique est détruite et scorée une
++  seule fois.
++- **Référence** : https://learnopengl.com/In-Practice/2D-Game/Collisions/Collision-resolution
++  — « the ball does not react in any way to the detected collisions; it moves
++  straight through all the bricks » : à chaque collision, détruire la brique,
++  **inverser la vitesse sur l'axe de pénétration** et **repositionner la balle
++  hors du rectangle** (vecteur de pénétration R).
++- **Cas test** :
++  ```js
++  test('D1: ball hitting a brick bounces off its bottom face', () => {
++    const state = createState(1);
++    const brick = state.bricks[32]; // row 4, col 0 (bottom row, nothing below)
++    state.ball = { x: 40, y: 187, r: 7, vx: 0, vy: -ballSpeed(1) };
++    step(state, 1 / 60);
++    assert.equal(brick.alive, false);
++    assert.equal(Math.sign(state.ball.vy), DOWN);
++    assert.ok(state.ball.y - state.ball.r >= brick.y + brick.h);
++  });
++  ```
++  *(La rangée 4 évite un chevauchement parasite : les rangées sont distantes
++  de 28 px, la balle fait 14 px, donc une balle « sous » une rangée interne
++  chevauche déjà la rangée du dessous.)*
++- **Rouge aujourd'hui** :
++  ```
++  ✖ D1: ball hitting a brick bounces off its bottom face
++    AssertionError: Expected values to be strictly equal: 1 !== -1   (sign(vy))
++  ℹ fail 8
++  ```
++- **Discrimine** : la correction naïve « sur collision, `vy = −vy` sans
++  toucher la position » (elle ne repositionne pas → D2 reste rouge) et la
++  correction naïve « toujours inverser `vy` » sur une frappe latérale (→ D3a
++  reste rouge). Le cas exige *à la fois* l'inversion de `vy` sur la face basse
++  et la sortie de la brique.
++- **Vert quand** : `step()` gère les briques : face = axe de plus petite
++  pénétration, inversion de l'axe, poussée hors du rectangle, brique tuée et
++  scorée une seule fois.
++- **Révélé par** : — (c'est le symptôme lui-même).
++
++---
++
++## D2 — Rebond collant : la balle reste dans la brique et vibre
++
++- **Famille** : collant.
++- **Symptôme joueur** : (visible après D1) la balle se met à vibrer sur la
++  face de la brique, la ré-inverse à chaque image, ou reste coincée à
++  l'intérieur en tuant les briques voisines par-dessus.
++- **Cause** : `game/neon.js:222-232` — en l'état il n'y a aucun
++  repositionnement ; la correction naïve `vy = −vy` seule laisse la balle en
++  recouvrement : au tour suivant, `collides()` est encore vrai, la vitesse se
++  ré-inverse, et la balle oscille dans les 5 premiers pixels de la brique
++  (de `penTop = 5` à `penTop = 10` dans l'exemple chiffré) sans jamais
++  sortir.
++- **Invariant violé** : *après résolution, la balle est hors du rectangle* —
++  `ball.y + r ≤ brick.y` sur une frappe de face haute.
++- **Déclencheur** : niveau 1. Balle à `(40, 41)` au-dessus de la brique
++  `[4,76]×[48,68]`, `vy = +260`, `dt = 1/60` : elle entre de 4,33 px par la
++  face haute ; sans repositionnement elle resterait à `ball.y + r = 52,33 >
++  48` à l'image suivante.
++- **Attendu** : après un pas, `sign(vy) = UP` et `ball.y + r ≤ brick.y`
++  (tangence ou sortie stricte), brique détruite.
++- **Référence** : https://learnopengl.com/In-Practice/2D-Game/Collisions/Collision-resolution
++  — deux choses à chaque collision : « we want to reposition the ball so it is
++  no longer inside the other object **and** second, we want to change the
++  direction of the ball's velocity ». L'inversion seule est un demi-fix.
++- **Cas test** :
++  ```js
++  test('D2: after a bounce the ball is pushed out of the brick (no sticking)', () => {
++    const state = createState(1);
++    const brick = state.bricks[0];
++    state.ball = { x: 40, y: 41, r: 7, vx: 0, vy: ballSpeed(1) };
++    step(state, 1 / 60);
++    assert.equal(brick.alive, false);
++    assert.equal(Math.sign(state.ball.vy), UP);
++    assert.ok(state.ball.y + state.ball.r <= brick.y);
++  });
++  ```
++- **Rouge aujourd'hui** :
++  ```
++  ✖ D2: after a bounce the ball is pushed out of the brick (no sticking)
++    AssertionError: Expected values to be strictly equal: 1 !== -1   (sign(vy))
++  ```
++- **Discrimine** : le cas refuse la correction naïve « `vy = −vy` sans
++  repositionner » : après ce fix, `ball.y + r = 52,33 > 48` → l'assertion
++  `≤ brick.y` échoue. Un fix qui repositionne mais n'inverse pas l'axe échoue
++  sur `sign(vy)`.
++- **Vert quand** : la résolution pousse la balle sur la normale de la face
++  percutée (ici `ball.y = brick.y − r`) en même temps qu'elle inverse l'axe.
++- **Révélé par** : D1.
++
++---
++
++## D3 — Face vs coin : le mauvais axe est inversé
++
++- **Famille** : face vs coin.
++- **Symptôme joueur** : (visible après D1) une balle qui frappe le *côté*
++  d'une brique rebondit à la verticale et s'enfonce dans la rangée ; une
++  balle qui arrive exactement sur un coin ne rebondit que sur un axe.
++- **Cause** : `game/neon.js:108-114` — `collides()` ne répond que *si* il y a
++  recouvrement, jamais *quelle face* a été percutée. Toute correction qui
++  inverse systématiquement `vy` (ou qui choisit l'axe sans comparer les deux
++  pénétrations) casse les frappes latérales et les coins. La règle correcte :
++  l'axe touché est celui de la **plus petite pénétration** ; pénétrations
++  égales → coin → **les deux axes sont inversés**.
++- **Invariant violé** : *l'axe rebondi est l'axe de plus petite pénétration ;
++  à pénétrations égales, les deux axes sont inversés*.
++- **Déclencheur** : niveau 1. Frappe latérale : balle à `(156, 58)` à gauche
++  de la brique `[164,236]×[48,68]`, `vx = +260`, `vy = 0`, `dt = 1/60` →
++  pénétration gauche = 3,33 px (les pénétrations haut/bas = 17 px). Coin :
++  balle à `(240,5 ; 44,5)` (diagonale exacte du coin haut-gauche de la brique
++  `[244,316]×[48,68]`), `vx = vy = 200` → pénétrations gauche **et** haute
++  égales à 6,833… px.
++- **Attendu** : frappe latérale → `vx` passe de `+260` à `−260`, `vy` reste
++  `0`. (La position finale n'est pas spécifiée à un pixel près : une frappe
++  latérale sur une colonne intérieure chevauche forcément la colonne voisine
++  — colonnes espacées de 80 px, balle de 14 px — et la poussée de sortie de
++  la voisine laisse la balle contre une brique morte, ce qui n'a aucun effet
++  de jeu.) Coin → `vx` et `vy` sont tous deux inversés.
++- **Référence** : https://learnopengl.com/In-Practice/2D-Game/Collisions/Collision-resolution
++  — « if the ball collides with the right or left side of an AABB, its
++  horizontal velocity is reversed. If the ball collides with the bottom or
++  top side, its vertical velocity is reversed » ; la direction est déduite du
++  vecteur de plus petite distance (pénétration). Le cas du coin (égalité des
++  deux pénétrations) y est un cas dégénéré : les deux vitesses s'inversent.
++- **Cas test** :
++  ```js
++  test('D3a: side hit flips vx only, not vy', () => {
++    const state = createState(1);
++    const brick = state.bricks[2];
++    state.ball = { x: 156, y: 58, r: 7, vx: ballSpeed(1), vy: 0 };
++    step(state, 1 / 60);
++    assert.equal(brick.alive, false);
++    assert.equal(Math.sign(state.ball.vx), LEFT);
++    assert.equal(state.ball.vy, 0);
++  });
++
++  test('D3b: corner hit (equal penetration) reverses BOTH axes', () => {
++    const state = createState(1);
++    const brick = state.bricks[3];
++    state.ball = { x: 240.5, y: 44.5, r: 7, vx: 200, vy: 200 };
++    step(state, 1 / 60);
++    assert.equal(brick.alive, false);
++    assert.equal(Math.sign(state.ball.vx), LEFT);
++    assert.equal(Math.sign(state.ball.vy), UP);
++  });
++  ```
++- **Rouge aujourd'hui** :
++  ```
++  ✖ D3a: side hit flips vx only, not vy   ✖ D3b: corner hit ... reverses BOTH axes
++  ```
++- **Discrimine** : D3a refuse la naïve « toujours inverser `vy` » (elle donne
++  `vy = −260 ≠ 0`) ; D3b refuse la naïve « à égalité, trancher en faveur d'un
++  seul axe » (elle laisse `vx = +200`). L'égalité est testée à 6,833… px
++  exactement : tout choix d'un seul axe échoue.
++- **Vert quand** : l'axe de la plus petite pénétration est inversé ; à
++  `|penX − penY| ≤ ε`, les deux axes sont inversés.
++- **Révélé par** : D1.
++
++---
++
++## D4 — Couture de grille : double inversion et traversée
++
++- **Famille** : double inversion (*seam / ghost collision*).
++- **Symptôme joueur** : (visible après D1) la balle qui arrive pile sur la
++  jointure entre deux briques de la même rangée les casse toutes les deux et
++  **continue tout droit**, comme si rien ne l'avait arrêtée.
++- **Cause** : la grille laisse un espacement de `BRICK_GAP = 8` px entre
++  colonnes ; la balle fait 14 px de diamètre → elle ne peut pas passer dans
++  la couture sans **recouvrir deux briques à la fois** (elle chevauche la fin
++  de la col 2 `[164,236]` et le début de la col 3 `[244,316]` pour
++  `ball.x ∈ ]236, 244[`). Une résolution « une brique = un `vy = −vy` » sans
++  garde par axe inverse `vx` une fois pour chaque brique : deux inversions
++  s'annulent et la balle traverse la couture.
++- **Invariant violé** : *un rebond par passe et par axe* — deux obstacles
++  touchés dans la même passe ne produisent qu'un seul rebond sur l'axe
++  concerné.
++- **Déclencheur** : niveau 1. Balle à `(240, 58)` chevauchant la couture
++  `[236, 244]` (col 2 / col 3), `vx = −100`, `vy = 0`, `dt = 1/60` :
++  pénétration droite (col 2) = 4,67 px, pénétration gauche (col 3) = 1,33 px.
++  Deux briques vivantes recouvrées dans la même passe.
++- **Attendu** : un seul rebond sur l'axe x — `vx` passe de `−100` à `+100`
++  (la balle repart vers la droite, loin de la couture) ; les deux briques
++  sont détruites et scorées une fois chacune.
++- **Référence** : https://briansemrau.github.io/dealing-with-ghost-collisions/
++  — les « ghost collisions » des jeux de tuiles : plusieurs obstacles
++  touchés dans la même passe provoquent des réponses multiples qui
++  s'annulent ; la réponse standard est de borner le nombre de rebonds par
++  passe (un par axe).
++- **Cas test** :
++  ```js
++  test('D4: ball straddling a grid seam bounces ONCE, not twice', () => {
++    const state = createState(1);
++    const b0 = state.bricks[2];
++    const b1 = state.bricks[3];
++    state.ball = { x: 240, y: 58, r: 7, vx: -100, vy: 0 };
++    step(state, 1 / 60);
++    assert.equal(b0.alive, false);
++    assert.equal(b1.alive, false);
++    assert.ok(state.ball.vx > 0, 'one bounce per axis per pass');
++  });
++  ```
++- **Rouge aujourd'hui** :
++  ```
++  ✖ D4: ball straddling a grid seam bounces ONCE, not twice
++    AssertionError: Expected values to be strictly equal: true !== false   (brique vivante)
++  ```
++- **Discrimine** : refuse la naïve « pour chaque brique recouvrée, inverser
++  son axe » : elle inverse `vx` deux fois → `vx = −100` et l'assertion
++  `vx > 0` échoue. Refuse aussi la naïve « ne traiter qu'une brique » :
++  l'assertion `b1.alive === false` échoue.
++- **Vert quand** : un budget d'inversion par axe et par passe borne les
++  rebonds ; chaque brique recouvrée meurt et score, mais l'axe n'est inversé
++  qu'une fois.
++- **Révélé par** : D1.
++
++---
++
++## D5 — Traversée par pas trop long (tunneling), niveau ≥ 6
++
++- **Famille** : traversée (*tunneling*) + dépendance à `dt`.
++- **Symptôme joueur** : (visible après D1) aux niveaux élevés la balle
++  traverse une brique de part en part *sans jamais la toucher*, même après
++  correction du rebond.
++- **Cause** : `game/neon.js:165-167` — `step()` déplace la balle
++  discrètement : `ball.y += ball.vy * dt` puis on teste le recouvrement une
++  seule fois. Le pas maximal est `ballSpeed(6) × 0,05 = 710 × 0,05 = 35,5 px`,
++  soit **plus que la distance à franchir** `BRICK_H + 2·BALL_R = 20 + 14 =
++  34 px` : entre deux échantillons, la balle passe d'un côté de la brique à
++  l'autre sans jamais recouvrir. Même comportement si `dt` atteint le plafond
++  de 50 ms (image lente) : le cas passe à `dt = 1/60` et échoue à
++  `dt = 0,05` — c'est un défaut de dépendance à `dt`, pas un test instable.
++- **Invariant violé** : *aucun obstacle franchi sans rebond, quel que soit le
++  pas* (détection continue, pas d'échantillonnage unique).
++- **Déclencheur** : niveau ≥ 6, `dt` plafonné à 50 ms. Balle à `(40, 75)`
++  (tangente sous la brique rangée 0 col 0), `vx = 0`, `vy = −710`,
++  `dt = 0,05` : déplacement 35,5 px > 34 px → l'échantillon final
++  (`ball.y = 39,5`) est au-dessus de la brique, aucun recouvrement détecté.
++- **Attendu** : la brique est détruite, `vy` passe de `−710` à `+710`
++  (rebond sur la face basse), la balle reste sous la brique
++  (`ball.y − r ≥ brick.y + brick.h`). Le résultat doit être identique quel
++  que soit `dt ≤ 0,05`.
++- **Référence** : https://gamedev.net/.../swept-aabb-collision-detection-and-response-r3084
++  et https://en.wikipedia.org/wiki/Slab_method — la détection discrète casse
++  dès que `vitesse × dt > taille de l'obstacle` (« velocity * delta_t >
++  collider size ») ; les deux résolutions de référence sont le balayage
++  continu (*swept AABB*, méthode des slabs) et le **sous-pas** (*substepping*,
++  https://www.yamii.dev/.../collision-detection/) : découper le déplacement
++  en pas dont la longueur est bornée par la géométrie. Ici le pas de
++  sous-découpage est `BRICK_H / 2 = 10 px` : (a) 10 px < 34 px → aucune
++  brique ne peut être sautée ; (b) 10 px < 17 px → la balle ne franchit
++  jamais la ligne médiane d'une brique entre deux échantillons, donc la face
++  déduite de la plus petite pénétration est toujours la bonne.
++- **Cas test** :
++  ```js
++  test('D5: no tunneling at level 6 (step 35.5px > brick 34px)', () => {
++    const state = createState(6);
++    const brick = state.bricks[0];
++    state.ball = { x: 40, y: 75, r: 7, vx: 0, vy: -ballSpeed(6) };
++    step(state, 0.05);
++    assert.equal(brick.alive, false);
++    assert.equal(Math.sign(state.ball.vy), DOWN);
++    assert.ok(state.ball.y - state.ball.r >= brick.y + brick.h);
++  });
++  ```
++- **Rouge aujourd'hui** :
++  ```
++  ✖ D5: no tunneling at level 6 (step 35.5px > brick 34px)
++    AssertionError: the crossed brick is destroyed — true !== false
++  ```
++- **Discrimine** : refuse la correction naïve « détection discrète avec
++  rebond » (sans balayage ni sous-pas) : à `dt = 0,05` elle ne voit aucun
++  recouvrement à l'échantillon final → `sign(vy)` reste `UP` et la brique
++  reste vivante. Le cas ne vérifie pas « `vy` a changé », il vérifie la
++  destruction et le sens du rebond au niveau où le pas dépasse la distance à
++  franchir.
++- **Vert quand** : le déplacement d'un `step()` est découpé en sous-pas ≤ 10
++  px et la résolution des briques est refaite à chaque sous-pas.
++- **Révélé par** : D1 (masqué tant que la balle ne rebondit pas).
++
++---
++
++## D6 — La balle saute par-dessus le paddle
++
++- **Famille** : paddle (traversée par le haut à grande vitesse).
++- **Symptôme joueur** : (visible après D1) une balle qui tombe vite passe
++  *à travers* le paddle et sort par le bas alors qu'elle était pile au-dessus.
++- **Cause** : `game/neon.js:190-199` — le test paddle exige que le bord bas
++  de la balle soit **dans** la bande `[448, 460]` à l'échantillon :
++  `ball.y + r ≥ paddle.y && ball.y + r ≤ paddle.y + paddle.h`. Au niveau 2
++  le pas vaut `350 × 0,05 = 17,5 px` : d'un échantillon à l'autre le bord bas
++  passe de 447 à 464,5, la bande entière est franchie entre deux échantillons,
++  la condition échoue et la balle tombe vers la ligne de perte. L'invariant
++  « la balle ressort toujours par le haut du paddle » est violé.
++- **Invariant violé** : *la balle ressort toujours par le haut du paddle*
++  (pas de capture, pas de traversée par le haut).
++- **Déclencheur** : niveau ≥ 2 (pas 17,5 px > 12 px de bande à `dt = 0,05`),
++  `dt` plafonné. Balle à `(320, 440)` — bord bas 447, au-dessus du paddle
++  `[272, 368]×[448, 460]` — `vx = 0`, `vy = +350`, `dt = 0,05`.
++- **Attendu** : rebond — `sign(vy) = UP` et `ball.y + r ≤ paddle.y` (la balle
++  ressort par le haut). À l'inverse, une balle déjà sous le paddle
++  (`ball.y + r > 460`) ne doit **pas** rebondir : elle est perdue
++  (`lost = true`, `sign(vy) = DOWN`).
++- **Référence** : https://gamedev.nicedx.com/04-pixel-perfect-collision-and-subpixel-movement-in-l-ve-fixing-the-jitter-bump/
++  — un objet rapide traverse une fine barrière si l'échantillon discret ne
++  tombe pas dedans ; la correction est une détection balayée (segment du
++  bord bas entre la position précédente et la nouvelle vs la bande du paddle)
++  ou un sous-pas.
++- **Cas test** :
++  ```js
++  test('D6a: fast falling ball does not skip the paddle band (level 2)', () => {
++    const state = createState(2);
++    state.ball = { x: 320, y: 440, r: 7, vx: 0, vy: ballSpeed(2) };
++    step(state, 0.05);
++    assert.equal(Math.sign(state.ball.vy), UP);
++    assert.ok(state.ball.y + state.ball.r <= state.paddle.y);
++  });
++
++  test('D6b: ball already below the paddle must NOT bounce', () => {
++    const state = createState(2);
++    state.ball = { x: 320, y: 470, r: 7, vx: 0, vy: ballSpeed(2) };
++    const lost = step(state, 0.05);
++    assert.equal(lost, true);
++    assert.equal(Math.sign(state.ball.vy), DOWN);
++  });
++  ```
++- **Rouge aujourd'hui** :
++  ```
++  ✖ D6a: fast falling ball does not skip the paddle band (level 2)
++    AssertionError: bounced off the paddle — 1 !== -1
++  ✔ D6b: ball already below the paddle must NOT bounce   (passe aujourd'hui ; voir Discrimine)
++  ```
++- **Discrimine** : D6a est rouge aujourd'hui. D6b (vert aujourd'hui) refuse la
++  correction naïve « élargir la bande / supprimer la borne haute
++  `≤ paddle.y + paddle.h` » : une balle à `y = 470` (bord bas 477, sous le
++  paddle) rebondirait à tort (`lost = false`, `sign(vy) = UP`).
++- **Vert quand** : le rebond se déclenche sur le franchissement du bord haut
++  de la bande par le bord bas de la balle au cours de la passe (test balayé),
++  jamais quand la balle commence sous le paddle.
++- **Révélé par** : D1 (masqué tant que la balle meurt sur les briques).
++
++---
++
++## D7 — Le rebond paddle n'est pas à la vitesse du niveau
++
++- **Famille** : vitesse.
++- **Symptôme joueur** : (visible après D1) la balle accélère à chaque
++  échange avec le paddle ; au bout de quelques rebonds elle file si vite que
++  le jeu devient injouable et que les traversées réapparaissent.
++- **Cause** : `game/neon.js:195-198` — le rebond paddle réécrit `vx`
++  (`ball.vx = ballSpeed(level) × 0,6 × hit`) **sans renormaliser**, et garde
++  `vy` tel quel (`−|vy|`). La norme après rebond vaut
++  `hypot(0,6·speed·hit, |vy|) ≥ |vy|` : pour `hit = 0,5` et `speed = 260`,
++  `hypot(78, 260) = 271,45 ≠ 260`. La balle gagne de la vitesse à chaque
++  échange, sans borne.
++- **Invariant violé** : *la vitesse d'un rebond est celle du niveau* —
++  `hypot(vx, vy) = ballSpeed(level)` après un rebond paddle.
++- **Déclencheur** : niveau 1, `hit = (344 − 320)/48 = 0,5` : `vx = 78`,
++  `vy = −260` → norme 271,45 au lieu de 260 (excès de 4,4 %).
++- **Attendu** : après le rebond, `hypot(vx, vy) = 260 ± 0,01`, direction
++  conservée (angle déduit de `hit`, vers le haut).
++- **Référence** : https://learnopengl.com/In-Practice/2D-Game/Collisions/Collision-resolution
++  — la vitesse du rebond paddle est une propriété du niveau, pas un
++  accumulateur ; un rebond qui réécrit un axe doit renormaliser le vecteur
++  pour préserver la norme cible.
++- **Cas test** :
++  ```js
++  test('D7: paddle rebound conserves the level speed', () => {
++    const state = createState(1);
++    state.ball = { x: 344, y: 440, r: 7, vx: 0, vy: ballSpeed(1) };
++    step(state, 1 / 60);
++    const speed = Math.hypot(state.ball.vx, state.ball.vy);
++    assert.ok(Math.abs(speed - ballSpeed(1)) < 0.01);
++  });
++  ```
++- **Rouge aujourd'hui** :
++  ```
++  ✖ D7: paddle rebound conserves the level speed
++    AssertionError: speed 271.44796923167434 must equal 260
++  ```
++- **Discrimine** : refuse la naïve « borner `vx` à ±speed » (la norme reste
++  271,45) et la naïve « renormaliser sur `speed × 0,6` » (mauvaise cible).
++  Le cas exige la norme exacte du niveau à 0,01 près.
++- **Vert quand** : le vecteur issu du rebond paddle est mis à l'échelle pour
++  avoir `hypot = ballSpeed(level)`.
++- **Révélé par** : D1 (masqué tant que la balle meurt sur les briques) ; il
++  nourrit aussi D5 (vitesse non bornée → traversées plus tôt).
++
++---
++
++## Familles écartées (verdicts)
++
++- **Angle mort** : écartée. `hit = 0` au centre exact du paddle donne
++  `vx = 0` et une boucle verticale — comportement classique et jouable : le
++  joueur peut déplacer le paddle pour obtenir un `hit ≠ 0` ; aucune
++  trajectoire n'est bloquante (invariant « toute trajectoire reste jouable »
++  tenu). Le rebond vertical ne dépend pas de la collision brique.
++- **Score / combo** : écartée. Chaque brique meurt une seule fois
++  (`alive = false` immédiat, `game/neon.js:222`), une seule vie est perdue
++  par sortie (`step()` ne renvoie `true` qu'une fois par passe), le combo est
++  remis à zéro au paddle (`game/neon.js:199`). Le multiplicateur non borné de
++  `comboMultiplier` est une dette connue et séparée (commentaire `#5` de
++  `game/neon.js`) sans lien avec la collision.
++- **Transitions** : écartée. Le changement de niveau et la relance après vie
++  perdue sont déjà découplés de la collision (la mort des briques fonctionne
++  aujourd'hui, c'est le rebond qui manque) ; `Object.assign(state,
++  createState(state.level))` et le test `bricks.every(!alive)` ne sont pas
++  affectés par la correction. Une tâche = un ticket (AGENTS.md) : pas de
++  refactor des transitions ici.
++- **Collant paddle / capture** : écartée. Le paddle ne suit que la souris en
++  `x` ; il ne peut pas pousser la balle, et le rebond la repositionne toujours
++  à `paddle.y − r` (elle ressort par le haut). Pas de capture possible.
++
++## Note de correction (résumé)
++
++La correction déplace la logique de collision des briques de `frame()`
++(rendu) vers `step()` (physique pure) — dette #2 documentée dans
++`game/neon.js` : les briques sont résolues pendant le mouvement, en sous-pas
++de `BRICK_H / 2 = 10 px` (anti-tunneling, anti-mauvaise-face), avec budget
++d'inversion par axe et par passe (anti-couture), choix de face par plus
++petite pénétration (anti-face/coin), poussée hors du rectangle (anti-collant),
++test paddle balayé (anti-traversée du paddle) et renormalisation du rebond
++paddle à `ballSpeed(level)` (anti-accélération). Aucune exportation existante
++de `game/neon.js` n'est renommée ni supprimée ; zéro dépendance.
+diff --git a/game/neon.js b/game/neon.js
+index 6b4a133..a967a88 100644
+--- a/game/neon.js
++++ b/game/neon.js
+@@ -1,8 +1,8 @@
+ // neon.js — NÉON, a minimalist brick breaker (zero dependencies).
+ //
+-// This file INTENTIONALLY mixes game logic and rendering in a few places
+-// (see ISSUES.md #2): brick collision detection currently lives inside the
+-// draw loop `frame()`. This is deliberate debt, ripe for a refactor.
++// Brick collision, bounce and scoring live in the pure physics function
++// `step()`; `frame()` only renders. This used to live inside the draw loop
++// (ISSUES.md #2) and was moved out when the missing brick bounce was fixed.
+ //
+ // The module runs nothing on import: only `boot()` touches the DOM. Pure
+ // logic can therefore be imported from the tests (`node --test`) without a
+@@ -103,8 +103,8 @@ export function createState(level = 1) {
+ 
+ // True if the ball (circle approximated by its box) overlaps the brick.
+ // Simple AABB test: it only says WHETHER the ball and the brick overlap, not
+-// WHICH face was hit. The missing bounce in frame() is what lets the ball plow
+-// straight through bricks (see #1).
++// WHICH face was hit. The face is derived during resolution in step() from
++// the penetration depths (smallest wins, ties are corners).
+ export function collides(ball, brick) {
+   return (
+     ball.x + ball.r > brick.x &&
+@@ -114,6 +114,93 @@ export function collides(ball, brick) {
+   );
+ }
+ 
++// --- Brick collision resolution (pure logic, exercised through step()) -----
++
++// Maximum distance the ball may travel between two brick-collision samples.
++// Derived from the grid geometry: a step larger than BRICK_H + 2*BALL_R (34px)
++// could jump a whole brick (tunneling), and a step larger than BRICK_H / 2
++// could cross a brick's midline between two samples and misattribute the hit
++// face to the far side. BRICK_H / 2 = 10 binds.
++const MAX_STEP = BRICK_H / 2;
++
++// Resolves collisions with every live brick the ball currently overlaps.
++// `bounced` carries the per-pass budget (one velocity flip per axis) so that
++// a ball overlapping two bricks on a grid seam bounces once instead of twice
++// (two flips would cancel and the ball would sail through the seam).
++// Each resolved brick is destroyed and scored exactly once.
++function resolveBricks(state, bounced) {
++  const { ball, bricks } = state;
++  const EPS = 1e-6; // corner tie tolerance: equal penetration on both axes
++
++  for (let guard = 0; guard < bricks.length + 1; guard++) {
++    let best = null;
++
++    for (const brick of bricks) {
++      if (!brick.alive || !collides(ball, brick)) continue;
++
++      // Penetration depth per face of the brick's box.
++      const left = ball.x + ball.r - brick.x;
++      const right = brick.x + brick.w - (ball.x - ball.r);
++      const top = ball.y + ball.r - brick.y;
++      const bottom = brick.y + brick.h - (ball.y - ball.r);
++
++      // The hit face is the one with the smallest penetration; equal
++      // penetration on both axes means a corner (both axes are reversed).
++      const minX = Math.min(left, right);
++      const minY = Math.min(top, bottom);
++      let face;
++      if (Math.abs(minX - minY) <= EPS) face = 'corner';
++      else if (minX < minY) face = left < right ? 'left' : 'right';
++      else face = top < bottom ? 'top' : 'bottom';
++
++      // Only bounce off a face the ball is moving INTO; a brick the ball is
++      // merely leaving must not reverse its velocity (ghost-collision guard).
++      let approached;
++      if (face === 'left') approached = ball.vx > 0;
++      else if (face === 'right') approached = ball.vx < 0;
++      else if (face === 'top') approached = ball.vy > 0;
++      else if (face === 'bottom') approached = ball.vy < 0;
++      else approached = ball.vx !== 0 || ball.vy !== 0; // corner: any motion counts
++
++      if (!best || (approached && !best.approached)) {
++        best = { brick, face, approached };
++      }
++    }
++
++    if (!best) break;
++
++    best.brick.alive = false;
++    state.combo += 1;
++    state.score += scoreForBrick(best.brick, state.combo);
++
++    if (best.face === 'top') {
++      // Ball above the brick, falling (vy > 0): bounce back up (vy < 0).
++      if (!bounced.y) { ball.vy = -Math.abs(ball.vy); bounced.y = true; }
++      ball.y = best.brick.y - ball.r;
++    } else if (best.face === 'bottom') {
++      // Ball below the brick, rising (vy < 0): bounce back down (vy > 0).
++      if (!bounced.y) { ball.vy = Math.abs(ball.vy); bounced.y = true; }
++      ball.y = best.brick.y + best.brick.h + ball.r;
++    } else if (best.face === 'left') {
++      // Ball left of the brick, moving right (vx > 0): bounce back left.
++      if (!bounced.x) { ball.vx = -Math.abs(ball.vx); bounced.x = true; }
++      ball.x = best.brick.x - ball.r;
++    } else if (best.face === 'right') {
++      // Ball right of the brick, moving left (vx < 0): bounce back right.
++      if (!bounced.x) { ball.vx = Math.abs(ball.vx); bounced.x = true; }
++      ball.x = best.brick.x + best.brick.w + ball.r;
++    } else {
++      // corner: reverse both axes (once per axis per pass) and push the
++      // ball diagonally out of the brick.
++      if (!bounced.x) { ball.vx = -ball.vx; bounced.x = true; }
++      if (!bounced.y) { ball.vy = -ball.vy; bounced.y = true; }
++      const b = best.brick;
++      ball.x = ball.x < b.x + b.w / 2 ? b.x - ball.r : b.x + b.w + ball.r;
++      ball.y = ball.y < b.y + b.h / 2 ? b.y - ball.r : b.y + b.h + ball.r;
++    }
++  }
++}
++
+ // --- Score & combo (NOT covered by tests — debt #5) ------------------------
+ 
+ // Combo multiplier. UNBOUNDED today: a long combo makes the score blow up
+@@ -156,17 +243,28 @@ export function saveBest(storage, score) {
+   return best;
+ }
+ 
+-// --- Physics (movement + wall/paddle bounces) ------------------------------
++// --- Physics (movement + wall/brick/paddle bounces) ------------------------
+ 
+ // Advances the ball by a time step `dt` (in seconds) and handles bounces off
+-// the walls and the paddle. Does NOT handle bricks: that responsibility still
+-// lives in the render loop `frame()` (debt #2).
++// the walls, the bricks and the paddle. The movement is sub-stepped so that
++// no brick can be skipped between two collision samples (see MAX_STEP).
+ // Returns `true` if the ball is lost (exits through the bottom).
+ export function step(state, dt) {
+   const { ball, paddle } = state;
+-
+-  ball.x += ball.vx * dt;
+-  ball.y += ball.vy * dt;
++  const px = ball.x;
++  const py = ball.y;
++
++  // Sub-stepped movement; the bounce budget spans the whole pass, so a ball
++  // touching two bricks on a grid seam still bounces exactly once per axis.
++  const bounced = { x: false, y: false };
++  const total = Math.hypot(ball.vx * dt, ball.vy * dt);
++  const steps = Math.max(1, Math.ceil(total / MAX_STEP));
++  const h = dt / steps;
++  for (let i = 0; i < steps; i++) {
++    ball.x += ball.vx * h;
++    ball.y += ball.vy * h;
++    resolveBricks(state, bounced);
++  }
+ 
+   // Side walls
+   if (ball.x - ball.r < 0) {
+@@ -183,20 +281,34 @@ export function step(state, dt) {
+     ball.vy = Math.abs(ball.vy);
+   }
+ 
+-  // Paddle
++  // Paddle — swept test: bounce when the ball's bottom edge crosses the top
++  // of the paddle band during this pass, even if no sample lands inside the
++  // band (a fast ball would otherwise skip the 12px band between samples).
++  const bottom0 = py + ball.r;
++  const bottom1 = ball.y + ball.r;
+   if (
+     ball.vy > 0 &&
+-    ball.y + ball.r >= paddle.y &&
+-    ball.y + ball.r <= paddle.y + paddle.h &&
+-    ball.x >= paddle.x &&
+-    ball.x <= paddle.x + paddle.w
++    bottom0 < paddle.y + paddle.h &&
++    bottom1 > paddle.y
+   ) {
+-    ball.y = paddle.y - ball.r;
+-    ball.vy = -Math.abs(ball.vy);
+-    // The rebound angle depends on where the paddle was hit.
+-    const hit = (ball.x - (paddle.x + paddle.w / 2)) / (paddle.w / 2);
+-    ball.vx = ballSpeed(state.level) * 0.6 * hit;
+-    state.combo = 0; // touching the paddle resets the combo
++    const t = Math.max(0, (paddle.y - bottom0) / (bottom1 - bottom0));
++    const xAtHit = px + (ball.x - px) * t;
++    if (xAtHit >= paddle.x && xAtHit <= paddle.x + paddle.w) {
++      ball.y = paddle.y - ball.r;
++      ball.vy = -Math.abs(ball.vy);
++      // The rebound angle depends on where the paddle was hit.
++      const hit = (ball.x - (paddle.x + paddle.w / 2)) / (paddle.w / 2);
++      ball.vx = ballSpeed(state.level) * 0.6 * hit;
++      // Keep the rebound at the level speed: rewriting vx without
++      // renormalizing lets the ball accelerate with every paddle hit.
++      const norm = Math.hypot(ball.vx, ball.vy);
++      if (norm > 0) {
++        const scale = ballSpeed(state.level) / norm;
++        ball.vx *= scale;
++        ball.vy *= scale;
++      }
++      state.combo = 0; // touching the paddle resets the combo
++    }
+   }
+ 
+   // Exit through the bottom: ball lost
+@@ -206,30 +318,18 @@ export function step(state, dt) {
+   return false;
+ }
+ 
+-// --- Rendering (DOM): brick collision logic STILL mixed in here ------------
++// --- Rendering (DOM) -------------------------------------------------------
+ 
+-// Main render loop. For each live brick we test collision AND draw in the same
+-// pass: this is where logic and rendering are entangled.
++// Main render loop. Drawing only: collision, bounce and scoring happen in the
++// pure logic of step(), keeping game rules out of the render path.
+ export function frame(ctx, state) {
+   // Background
+   ctx.fillStyle = palette.background;
+   ctx.fillRect(0, 0, WIDTH, HEIGHT);
+ 
+-  // Bricks: collision + bounce + score + drawing, all in one place.
++  // Bricks: draw the survivors.
+   for (const brick of state.bricks) {
+     if (!brick.alive) continue;
+-
+-    if (collides(state.ball, brick)) {
+-      brick.alive = false;
+-      state.combo += 1;
+-      state.score += scoreForBrick(brick, state.combo);
+-      // BUG (#1): the ball is NOT deflected here. Only the walls and the paddle
+-      // bounce (in step()); bricks were never given a bounce. So the ball plows
+-      // straight through a column head-on AND straight through the side of a
+-      // row. Fix = a real per-face bounce (flip vy on a top/bottom hit, vx on a
+-      // side hit) plus pushing the ball back out of the brick.
+-    }
+-
+     ctx.fillStyle = brickColor(brick.row);
+     ctx.fillRect(brick.x, brick.y, brick.w, brick.h);
+   }
+diff --git a/game/neon.test.js b/game/neon.test.js
+index 250d6a9..b47e787 100644
+--- a/game/neon.test.js
++++ b/game/neon.test.js
+@@ -15,6 +15,11 @@ import {
+   step,
+   makeBricks,
+   createState,
++  ballSpeed,
++  UP,
++  DOWN,
++  LEFT,
++  RIGHT,
+   BRICK_ROWS,
+   BRICK_COLS,
+   WIDTH,
+@@ -59,8 +64,119 @@ test('makeBricks: full, all-alive grid at start', () => {
+   assert.ok(bricks.every((b) => b.x >= 0 && b.x + b.w <= WIDTH));
+ });
+ 
+-// Small local helper: place the ball below the field without importing the
+-// height (coverage intentionally light).
++// --- Brick bounces (regression suite for the playtest ticket) --------------
++// The ball used to plow straight through bricks (no bounce, no push-out).
++// These cases pin the per-face bounce, the push-out, the corner rule, the
++// grid-seam guard, the anti-tunneling sub-step and the paddle sweep.
++
++const SPEED = ballSpeed(1);
++
++// D1: the reported symptom — a ball reaching a brick must bounce off it.
++// Row 4 is the bottom row (y in [160, 180]): nothing below it, so the
++// rising ball overlaps a single brick.
++test('brick bounce: ball hitting the bottom face is reflected down', () => {
++  const state = createState(1);
++  const brick = state.bricks[32]; // row 4, col 0
++  state.ball = { x: 40, y: 187, r: 7, vx: 0, vy: -SPEED }; // tangent below, rising
++  step(state, 1 / 60);
++  assert.equal(brick.alive, false, 'brick is destroyed');
++  assert.equal(Math.sign(state.ball.vy), DOWN, 'bounced back down, away from the brick');
++  assert.ok(state.ball.y - state.ball.r >= brick.y + brick.h, 'ball left below the brick');
++});
++
++// D2: a bounce must reposition the ball out of the brick, or it sticks and
++// re-inverts every frame.
++test('brick bounce: ball is pushed out of the brick (no sticking)', () => {
++  const state = createState(1);
++  const brick = state.bricks[0];
++  state.ball = { x: 40, y: 41, r: 7, vx: 0, vy: SPEED }; // falling into the top face
++  step(state, 1 / 60);
++  assert.equal(brick.alive, false);
++  assert.equal(Math.sign(state.ball.vy), UP, 'bounced back up');
++  assert.ok(state.ball.y + state.ball.r <= brick.y, 'ball repositioned above the brick');
++});
++
++// D3a: the axis that bounces is the axis of smallest penetration. The ball
++// approaches col 2 from the left; its left edge unavoidably grazes col 1
++// (columns are 80px apart, the ball is 14px wide), but only the face it is
++// moving INTO may reverse the velocity.
++test('brick bounce: side hit flips vx only, not vy', () => {
++  const state = createState(1);
++  const brick = state.bricks[2]; // col 2: x in [164, 236]
++  state.ball = { x: 156, y: 58, r: 7, vx: SPEED, vy: 0 };
++  step(state, 1 / 60);
++  assert.equal(brick.alive, false);
++  assert.equal(Math.sign(state.ball.vx), LEFT, 'horizontal velocity reversed');
++  assert.equal(state.ball.vy, 0, 'vertical velocity untouched by a side hit');
++});
++
++// D3b: equal penetration on both axes is a corner: both velocities reverse.
++test('brick bounce: corner hit (equal penetration) reverses BOTH axes', () => {
++  const state = createState(1);
++  const brick = state.bricks[3]; // col 3: x in [244, 316]
++  state.ball = { x: 240.5, y: 44.5, r: 7, vx: 200, vy: 200 }; // on the corner diagonal
++  step(state, 1 / 60);
++  assert.equal(brick.alive, false);
++  assert.equal(Math.sign(state.ball.vx), LEFT);
++  assert.equal(Math.sign(state.ball.vy), UP);
++});
++
++// D4: a ball straddling the seam between two adjacent bricks must bounce
++// once — two per-brick flips would cancel and the ball would pass through.
++test('brick bounce: grid seam reflects the ball exactly once', () => {
++  const state = createState(1);
++  const b0 = state.bricks[2]; // [164, 236]
++  const b1 = state.bricks[3]; // [244, 316]
++  state.ball = { x: 240, y: 58, r: 7, vx: -100, vy: 0 }; // straddles the 236-244 seam
++  step(state, 1 / 60);
++  assert.equal(b0.alive, false);
++  assert.equal(b1.alive, false);
++  assert.ok(state.ball.vx > 0, 'one bounce per axis per pass: ball heads back right');
++});
++
++// D5: anti-tunneling. At level 6 the max step (710 * 0.05 = 35.5px) exceeds
++// brick height + ball diameter (34px): a single sample could skip the brick.
++test('brick bounce: no tunneling at level 6 (step 35.5px > brick 34px)', () => {
++  const state = createState(6);
++  const brick = state.bricks[0];
++  state.ball = { x: 40, y: 75, r: 7, vx: 0, vy: -ballSpeed(6) };
++  step(state, 0.05);
++  assert.equal(brick.alive, false, 'the crossed brick is destroyed');
++  assert.equal(Math.sign(state.ball.vy), DOWN, 'ball bounced off the bottom face');
++  assert.ok(state.ball.y - state.ball.r >= brick.y + brick.h, 'ball never got above the brick');
++});
++
++// D6a: the paddle band is 12px; a level-2 ball falls 17.5px per capped step
++// and must still bounce off the paddle (swept test, not a single sample).
++test('paddle: fast falling ball does not skip the paddle band (level 2)', () => {
++  const state = createState(2);
++  state.ball = { x: 320, y: 440, r: 7, vx: 0, vy: ballSpeed(2) };
++  step(state, 0.05);
++  assert.equal(Math.sign(state.ball.vy), UP, 'bounced off the paddle');
++  assert.ok(state.ball.y + state.ball.r <= state.paddle.y, 'ball ends up above the paddle');
++});
++
++// D6b: a ball that starts below the paddle must NOT bounce (it is lost).
++test('paddle: ball already below the paddle does not bounce', () => {
++  const state = createState(2);
++  state.ball = { x: 320, y: 470, r: 7, vx: 0, vy: ballSpeed(2) }; // bottom 477 > 460
++  const lost = step(state, 0.05);
++  assert.equal(lost, true, 'ball is lost');
++  assert.equal(Math.sign(state.ball.vy), DOWN, 'no bounce once below the paddle');
++});
++
++// D7: the paddle rebound must conserve the level speed (no unbounded
++// acceleration across exchanges).
++test('paddle: rebound conserves the level speed', () => {
++  const state = createState(1);
++  state.ball = { x: 344, y: 440, r: 7, vx: 0, vy: SPEED }; // hit = (344-320)/48 = 0.5
++  step(state, 1 / 60);
++  const speed = Math.hypot(state.ball.vx, state.ball.vy);
++  assert.ok(Math.abs(speed - SPEED) < 0.01, `speed ${speed} must equal ${SPEED}`);
++});
++
++// Local helpers: place the ball below the field without importing the height
++// (coverage intentionally light).
+ function belowField() {
+   return 500;
+ }

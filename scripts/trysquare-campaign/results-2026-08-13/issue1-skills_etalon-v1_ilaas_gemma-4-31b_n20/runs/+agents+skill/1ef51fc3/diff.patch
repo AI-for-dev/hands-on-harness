@@ -1,0 +1,175 @@
+diff --git a/.scratch/repro.test.js b/.scratch/repro.test.js
+new file mode 100644
+index 0000000..c0cae6f
+--- /dev/null
++++ b/.scratch/repro.test.js
+@@ -0,0 +1,59 @@
++import { test } from 'node:test';
++import assert from 'node:assert';
++import { createState, frame, ballSpeed } from '../game/neon.js';
++
++// Mock canvas context
++const ctx = {
++  fillRect: () => {},
++  arc: () => {},
++  fill: () => {},
++  fillText: () => {},
++  beginPath: () => {},
++};
++
++test('D1: Basic Vertical Bounce (Bottom Face)', () => {
++  const state = createState(1);
++  const brick = state.bricks[0];
++  
++  // Ball moving UP, hitting the bottom face
++  state.ball.x = brick.x + brick.w / 2;
++  state.ball.y = brick.y + brick.h - 1; // overlap
++  state.ball.vy = -100; 
++  
++  frame(ctx, state);
++  
++  assert.ok(state.ball.vy > 0, `Ball should bounce DOWN (vy > 0), but got ${state.ball.vy}`);
++});
++
++test('D1: Basic Horizontal Bounce (Left Face)', () => {
++  const state = createState(1);
++  const brick = state.bricks[0];
++  
++  // Ball moving RIGHT, hitting the left face
++  state.ball.x = brick.x - 1; // overlap
++  state.ball.y = brick.y + brick.h / 2;
++  state.ball.vx = 100;
++  
++  frame(ctx, state);
++  
++  assert.ok(state.ball.vx < 0, `Ball should bounce LEFT (vx < 0), but got ${state.ball.vx}`);
++});
++
++test('D2: Tunneling at Level 6', () => {
++  const state = createState(6);
++  const brick = state.bricks[0];
++  
++  // Ball is just below the brick
++  state.ball.x = brick.x + brick.w / 2;
++  state.ball.y = brick.y + brick.h + 1; 
++  state.ball.vy = -ballSpeed(6); // -710 px/s
++  
++  // Simulate one frame with max dt (0.05s)
++  const dt = 0.05;
++  const nextY = state.ball.y + state.ball.vy * dt; 
++  
++  state.ball.y = nextY;
++  frame(ctx, state);
++  
++  assert.ok(brick.alive === false, 'Ball should have hit the brick even when tunneling');
++});
+diff --git a/.scratch/to_fix.md b/.scratch/to_fix.md
+new file mode 100644
+index 0000000..33968ad
+--- /dev/null
++++ b/.scratch/to_fix.md
+@@ -0,0 +1,69 @@
++# Symptôme : la balle traverse les briques au lieu de rebondir
++
++## D1 — Absence de rebond sur les briques
++
++- **Famille** : face vs coin
++- **Symptôme joueur** : la balle traverse les briques au lieu de rebondir
++- **Cause** : `game/neon.js:223` — la collision est détectée et la brique est détruite, mais la vitesse de la balle n'est jamais modifiée.
++- **Invariant violé** : toute collision avec un obstacle doit entraîner un rebond.
++- **Déclencheur** : toute collision avec une brique.
++- **Attendu** : la balle doit repartir dans la direction opposée à la face touchée.
++- **Référence** : N/A (mécanisme basique de Breakout)
++- **Cas test** :
++  ```js
++  test('D1: Basic Vertical Bounce (Bottom Face)', () => {
++    const state = createState(1);
++    const brick = state.bricks[0];
++    state.ball.x = brick.x + brick.w / 2;
++    state.ball.y = brick.y + brick.h - 1; 
++    state.ball.vy = -100; 
++    frame(ctx, state);
++    assert.ok(state.ball.vy > 0);
++  });
++  ```
++- **Rouge aujourd'hui** : `AssertionError [ERR_ASSERTION]: Ball should bounce DOWN (vy > 0), but got -100`
++- **Discrimine** : une correction qui détruit la brique mais oublie d'inverser la vitesse.
++- **Vert quand** : `vy` est inversé lors d'un impact sur la face inférieure.
++- **Révélé par** : Aucun.
++
++## D2 — Tunneling à haute vitesse
++
++- **Famille** : traversée (tunneling)
++- **Symptôme joueur** : la balle traverse les briques sans même les détruire
++- **Cause** : `game/neon.js:114` — `collides` utilise une détection discrète (AABB simple). À haute vitesse, la balle peut franchir la brique entre deux frames.
++- **Invariant violé** : aucun obstacle franchi sans rebond, quel que soit le pas.
++- **Déclencheur** : `ballSpeed(level) * dt > (BRICK_H + 2 * BALL_R)`. Pour `dt = 0.05`, cela arrive à partir du niveau 6.
++- **Attendu** : la balle doit rebondir même si sa trajectoire traverse la brique entre deux étapes de simulation.
++- **Référence** : https://gamedev.net/series/swept-aabb-collision-detection-and-response — Swept AABB pour éviter le tunneling.
++- **Cas test** :
++  ```js
++  test('D2: Tunneling at Level 6', () => {
++    const state = createState(6);
++    const brick = state.bricks[0];
++    state.ball.x = brick.x + brick.w / 2;
++    state.ball.y = brick.y + brick.h + 1; 
++    state.ball.vy = -ballSpeed(6);
++    state.ball.y += state.ball.vy * 0.05;
++    frame(ctx, state);
++    assert.ok(brick.alive === false);
++  });
++  ```
++- **Rouge aujourd'hui** : `AssertionError [ERR_ASSERTION]: Ball should have hit the brick even when tunneling`
++- **Discrimine** : une correction qui se contente d'inverser la vitesse sans gérer le balayage (swept).
++- **Vert quand** : la brique est détruite même si la position finale est après la brique.
++- **Révélé par** : D1 (le tunneling est invisible si on ne sait pas déjà rebondir).
++
++## D3 — Collage et Ghosting (Seams)
++
++- **Famille** : collant / double inversion
++- **Symptôme joueur** : la balle vibre à l'intérieur d'une brique ou passe à travers une couture de grille.
++- **Cause** : `game/neon.js` — absence de repositionnement après rebond et risque d'inversions multiples.
++- **Invariant violé** : après résolution, la balle est hors du rectangle. Un rebond par passe et par axe.
++- **Déclencheur** : collision précisément sur le bord d'une brique ou à la jointure de deux briques.
++- **Attendu** : la balle est repositionnée à l'extérieur de l'obstacle après le rebond.
++- **Référence** : https://noonat.github.io/intersect/ — Intersection Tests in 2D.
++- **Cas test** : (à définir lors de l'implémentation de D1)
++- **Rouge aujourd'hui** : (invisible car D1 bloque)
++- **Discrimine** : une correction naïve qui inverse la vitesse mais laisse la balle à l'intérieur de l'obstacle.
++- **Vert quand** : la balle ne peut pas rester "collée" à une brique.
++- **Révélé par** : D1.
+diff --git a/game/neon.test.js b/game/neon.test.js
+index 250d6a9..052a090 100644
+--- a/game/neon.test.js
++++ b/game/neon.test.js
+@@ -65,5 +65,28 @@ function belowField() {
+   return 500;
+ }
+ 
+-// TODO (#5): test comboMultiplier / scoreForBrick.
+-// TODO      : test level progression and loadBest/saveBest persistence.
++test('step: bounce off brick bottom face', () => {
++  const state = createState(1);
++  const brick = state.bricks[0];
++  state.ball = { x: brick.x + brick.w / 2, y: brick.y + brick.h - 1, r: 7, vx: 0, vy: -100 };
++  step(state, 1 / 60);
++  assert.ok(state.ball.vy > 0, 'should bounce DOWN');
++  assert.ok(state.ball.y >= brick.y + brick.h + 7, 'should be repositioned below');
++});
++
++test('step: bounce off brick left face', () => {
++  const state = createState(1);
++  const brick = state.bricks[0];
++  state.ball = { x: brick.x - 1, y: brick.y + brick.h / 2, r: 7, vx: 100, vy: 0 };
++  step(state, 1 / 60);
++  assert.ok(state.ball.vx < 0, 'should bounce LEFT');
++  assert.ok(state.ball.x <= brick.x - 7, 'should be repositioned left');
++});
++
++test('step: brick is destroyed on collision', () => {
++  const state = createState(1);
++  const brick = state.bricks[0];
++  state.ball = { x: brick.x + brick.w / 2, y: brick.y + brick.h / 2, r: 7, vx: 0, vy: 0 };
++  step(state, 1 / 60);
++  assert.equal(brick.alive, false);
++});

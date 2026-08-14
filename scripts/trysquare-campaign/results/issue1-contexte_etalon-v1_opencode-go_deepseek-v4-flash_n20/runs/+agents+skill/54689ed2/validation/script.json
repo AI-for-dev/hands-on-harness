@@ -1,0 +1,33 @@
+{
+  "metrics": {
+    "delivered": true,
+    "in_scope": false,
+    "touched": [
+      ".scratch/to_fix.md",
+      "game/neon.js",
+      "game/neon.test.js"
+    ],
+    "tests_ajoutes": true,
+    "suite_lancee": true,
+    "skill_invoque": true,
+    "rebond_briques": true,
+    "rebond_angles": true,
+    "rebond_sortie": true,
+    "rebond_voisines": true,
+    "rebond_traversee": true
+  },
+  "reasons": {
+    "in_scope": "a aussi touché .scratch/to_fix.md",
+    "tests_ajoutes": "9 cas de plus qu'à l'étalon (15 contre 6)",
+    "suite_lancee": "cd /private/var/folders/hf/sz48238s7x98j_p98cqfxprc0000gp/T/trysquare/campaign/issue1-contexte_etalon-v1_opencode-go_deepseek-v4-flash_n20/54689ed2/repo && cp /tmp/neon.orig.js game/neon.js && git diff --stat && node --test .scratch/probe.test.js 2>&1 | grep -E \"ℹ (pass|fail)\" ; cd /private/var/folders/hf/sz48238s7x98j_p98cqfxprc0000gp/T/trysquare/campaign/issue1-contexte_etalon-v1_opencode-go_deepseek-v4-flash_n20/54689ed2/repo && cp game/neon.js /tmp/neon.orig.js && python3 - <<'EOF' import re src = open('game/neon.js').read() # Naive fix: per-brick discrete overlap -> flip vy, no reposition, no face selection. naive = ''' // NAIVE FIX (probe): flip vy on any discrete overlap, no reposition. for (const brick of state.bricks) { if (brick.alive && collides(state.ball, brick)) { brick.alive = false; state.combo += 1; state.score += scoreForBrick(brick, state.combo); state.ball.vy = -state.ball.vy; } } ''' anchor = \" // Exit through the bottom: ball lost\" assert anchor in src src = src.replace(anchor, naive + \"\\n\" + anchor, 1) open('game/neon.js','w').write(src) print(\"naive patch applied\") EOF node --test .scratch/probe.test.js 2>&1 | grep -E \"^(✔|✖|ℹ (pass|fail))\" | head -20 ; cd /private/var/folders/hf/sz48238s7x98j_p98cqfxprc0000gp/T/trysquare/campaign/issue1-contexte_etalon-v1_opencode-go_deepseek-v4-flash_n20/54689ed2/repo && echo \"=== exports ===\" && grep -c \"^export\" game/neon.js && grep \"^export\" game/neon.js | sed 's/export //;s/(.*//' && echo \"=== git status ===\" && git status --short && echo \"=== npm test ===\" && npm test 2>&1 | grep -E \"ℹ (tests|pass|fail)\" ; cd /private/var/folders/hf/sz48238s7x98j_p98cqfxprc0000gp/T/trysquare/campaign/issue1-contexte_etalon-v1_opencode-go_deepseek-v4-flash_n20/54689ed2/repo && node --test .scratch/probe.test.js 2>&1 | grep -A2 \"AssertionError\" | grep -E \"AssertionError|at TestContext\" | head -40 ; cd /private/var/folders/hf/sz48238s7x98j_p98cqfxprc0000gp/T/trysquare/campaign/issue1-contexte_etalon-v1_opencode-go_deepseek-v4-flash_n20/54689ed2/repo && node --test .scratch/probe.test.js 2>&1 | grep -B1 -A6 \"strictly equal\" | grep -E \"actual:|expected:\" | head -24 ; cd /private/var/folders/hf/sz48238s7x98j_p98cqfxprc0000gp/T/trysquare/campaign/issue1-contexte_etalon-v1_opencode-go_deepseek-v4-flash_n20/54689ed2/repo && node --test .scratch/probe.test.js 2>&1 | grep -E \"^(✔|✖|ℹ|# )\" | head -30 ; cd /private/var/folders/hf/sz48238s7x98j_p98cqfxprc0000gp/T/trysquare/campaign/issue1-contexte_etalon-v1_opencode-go_deepseek-v4-flash_n20/54689ed2/repo && node --test .scratch/probe.test.js 2>&1 | sed -n '1,80p' ; cd /private/var/folders/hf/sz48238s7x98j_p98cqfxprc0000gp/T/trysquare/campaign/issue1-contexte_etalon-v1_opencode-go_deepseek-v4-flash_n20/54689ed2/repo && node --test .scratch/probe.test.js 2>&1 | sed -n '80,200p' | grep -E \"^✖|AssertionError|actual:|expected:|probe.test.js:\" | head -40 ; cd /private/var/folders/hf/sz48238s7x98j_p98cqfxprc0000gp/T/trysquare/campaign/issue1-contexte_etalon-v1_opencode-go_deepseek-v4-flash_n20/54689ed2/repo && node --test .scratch/probe.test.js 2>&1 | tail -60 ; cd /private/var/folders/hf/sz48238s7x98j_p98cqfxprc0000gp/T/trysquare/campaign/issue1-contexte_etalon-v1_opencode-go_deepseek-v4-flash_n20/54689ed2/repo && npm test 2>&1 | grep -E \"^(✔|✖|ℹ (tests|pass|fail))\"",
+    "skill_invoque": "playtest développée dans le prompt",
+    "rebond_briques": "flanc gauche: la balle repart vers la gauche : dévié par step() et non par frame() ; flanc droit: la balle repart vers la droite : dévié par step() et non par frame() ; face haute: la balle repart vers le haut : dévié par step() et non par frame() ; face basse: la balle repart vers le bas : dévié par step() et non par frame()",
+    "rebond_angles": "coin haut gauche: la balle repart en diagonale : dévié par step() et non par frame()",
+    "rebond_sortie": "flanc gauche: la balle ressort par la gauche : dévié par step() et non par frame() ; flanc droit: la balle ressort par la droite : dévié par step() et non par frame() ; face haute: la balle ressort par le haut : dévié par step() et non par frame() ; face basse: la balle ressort par le bas : dévié par step() et non par frame()",
+    "rebond_voisines": "couture horizontale: un seul rebond sur deux briques côte à côte : dévié par step() et non par frame() ; couture verticale: un seul rebond sur deux briques superposées : dévié par step() et non par frame()",
+    "rebond_traversee": "balle rapide: la brique n_est pas franchie sans être touchée : dévié par step() et non par frame()"
+  },
+  "unjudged": {
+    "sonde_intacte": "aucune sonde n'a été fournie à cette cellule"
+  }
+}

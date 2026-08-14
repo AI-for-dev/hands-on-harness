@@ -1,0 +1,34 @@
+{
+  "metrics": {
+    "delivered": true,
+    "in_scope": false,
+    "touched": [
+      ".scratch/repro.test.js",
+      ".scratch/to_fix.md",
+      "game/neon.js",
+      "game/neon.test.js"
+    ],
+    "tests_ajoutes": true,
+    "suite_lancee": true,
+    "skill_invoque": true,
+    "rebond_briques": false,
+    "rebond_angles": false,
+    "rebond_sortie": false,
+    "rebond_voisines": true,
+    "rebond_traversee": false
+  },
+  "reasons": {
+    "in_scope": "a aussi touché .scratch/repro.test.js, .scratch/to_fix.md",
+    "tests_ajoutes": "4 cas de plus qu'à l'étalon (10 contre 6)",
+    "suite_lancee": "node --test .scratch/repro.test.js ; node --test .scratch/test_collision.js ; node --test game/collision.test.js ; node --test game/probe.test.js ; npm test",
+    "skill_invoque": "/Users/loic.gouarin/Formations/2026/AI4Dev/hands-on-harness/scripts/trysquare-campaign/briques/skills/playtest/SKILL.md ; playtest développée dans le prompt",
+    "rebond_briques": "flanc gauche: la balle repart vers la gauche : vx devait devenir négatif : 300 ; dévié par step() et non par frame() ; flanc droit: la balle repart vers la droite : vx devait devenir positif : -300 ; dévié par step() et non par frame()",
+    "rebond_angles": "coin haut gauche: la balle repart en diagonale : vx devait devenir négatif : 300 ; dévié par step() et non par frame()",
+    "rebond_sortie": "flanc gauche: la balle ressort par la gauche : le bord droit de la balle devait revenir à x <= 100 : 108 ; dévié par step() et non par frame() ; flanc droit: la balle ressort par la droite : le bord gauche de la balle devait revenir à x >= 172 : 164 ; dévié par step() et non par frame() ; face haute: la balle ressort par le haut : le bord bas de la balle devait revenir à y <= 100 : 101 ; dévié par step() et non par frame() ; face basse: la balle ressort par le bas : le bord haut de la balle devait revenir à y >= 120 : 105 ; dévié par step() et non par frame()",
+    "rebond_voisines": "couture horizontale: un seul rebond sur deux briques côte à côte : dévié par step() et non par frame() ; couture verticale: un seul rebond sur deux briques superposées : dévié par step() et non par frame()",
+    "rebond_traversee": "balle rapide: la brique n_est pas franchie sans être touchée : la brique a survécu à une balle qui l_a traversée de part en part"
+  },
+  "unjudged": {
+    "sonde_intacte": "aucune sonde n'a été fournie à cette cellule"
+  }
+}

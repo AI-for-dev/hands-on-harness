@@ -1,0 +1,89 @@
+diff --git a/game/neon.js b/game/neon.js
+index 6b4a133..360e392 100644
+--- a/game/neon.js
++++ b/game/neon.js
+@@ -103,8 +103,8 @@ export function createState(level = 1) {
+ 
+ // True if the ball (circle approximated by its box) overlaps the brick.
+ // Simple AABB test: it only says WHETHER the ball and the brick overlap, not
+-// WHICH face was hit. The missing bounce in frame() is what lets the ball plow
+-// straight through bricks (see #1).
++// WHICH face was hit — `collisionNormal` answers that, and frame() uses both
++// to make the ball bounce off bricks instead of plowing through (see #1).
+ export function collides(ball, brick) {
+   return (
+     ball.x + ball.r > brick.x &&
+@@ -114,6 +114,38 @@ export function collides(ball, brick) {
+   );
+ }
+ 
++// Which axis(es) of `brick` the ball hit, inferred from the penetration depth
++// on each side. Returns an outward normal { x, y } giving the bounce direction:
++// `x` is ±1 for a left/right (side) hit, `y` is ±1 for a top/bottom hit. On a
++// near-diagonal shot the two deepest penetrations tie, so BOTH components are
++// set — frame() flips both to make the ball glance off a corner.
++export function collisionNormal(ball, brick) {
++  // Distance each projected edge has gone past its facing side (smaller = the
++  // ball came through that face).
++  const fromLeft = Math.abs(ball.x + ball.r - brick.x);
++  const fromRight = Math.abs(ball.x - ball.r - (brick.x + brick.w));
++  const fromTop = Math.abs(ball.y + ball.r - brick.y);
++  const fromBottom = Math.abs(ball.y - ball.r - (brick.y + brick.h));
++
++  const horizontal = Math.min(fromLeft, fromRight);
++  const vertical = Math.min(fromTop, fromBottom);
++  const min = Math.min(horizontal, vertical);
++
++  let x = 0;
++  let y = 0;
++  // Keep the resolution on the axis with the deepest cut; on a diagonal tie
++  // (within FP tolerance) resolve both axes so the ball glances off a corner.
++  if (horizontal === min && Math.abs(horizontal - vertical) < 0.001) {
++    x = fromLeft <= fromRight ? LEFT : RIGHT;
++    y = fromTop <= fromBottom ? UP : DOWN;
++  } else if (horizontal === min) {
++    x = fromLeft <= fromRight ? LEFT : RIGHT;
++  } else {
++    y = fromTop <= fromBottom ? UP : DOWN;
++  }
++  return { x, y };
++}
++
+ // --- Score & combo (NOT covered by tests — debt #5) ------------------------
+ 
+ // Combo multiplier. UNBOUNDED today: a long combo makes the score blow up
+@@ -223,11 +255,29 @@ export function frame(ctx, state) {
+       brick.alive = false;
+       state.combo += 1;
+       state.score += scoreForBrick(brick, state.combo);
+-      // BUG (#1): the ball is NOT deflected here. Only the walls and the paddle
+-      // bounce (in step()); bricks were never given a bounce. So the ball plows
+-      // straight through a column head-on AND straight through the side of a
+-      // row. Fix = a real per-face bounce (flip vy on a top/bottom hit, vx on a
+-      // side hit) plus pushing the ball back out of the brick.
++      // Real per-face bounce: flip whichever velocity component is normal to
++      // a hit face (both on a corner) and push the ball back out of the brick
++      // so it can't stay stuck or keep tunnelling through.
++      const n = collisionNormal(state.ball, brick);
++      if (n.x !== 0) {
++        // Side hit: reverse vx along the outward normal and park the ball
++        // just outside the face it came through.
++        state.ball.vx = Math.abs(state.ball.vx) * n.x;
++        state.ball.x =
++          n.x === RIGHT ? brick.x + brick.w + state.ball.r : brick.x - state.ball.r;
++      }
++      if (n.y !== 0) {
++        // Top/bottom hit: reverse vy along the outward normal and park the
++        // ball just outside the face it came through.
++        state.ball.vy = Math.abs(state.ball.vy) * n.y;
++        state.ball.y =
++          n.y === DOWN ? brick.y + brick.h + state.ball.r : brick.y - state.ball.r;
++      }
++      // Resolve one brick per frame: after the ball is pushed out of this
++      // brick it can still overlap a neighbour (e.g. a vertical cascade).
++      // Stop here and let the next frame pick up any further contact, which
++      // keeps the bounce clean and avoids double-breaking adjacent bricks.
++      break;
+     }
+ 
+     ctx.fillStyle = brickColor(brick.row);

@@ -1,0 +1,31 @@
+{
+  "metrics": {
+    "delivered": true,
+    "in_scope": true,
+    "touched": [
+      "game/neon.js",
+      "game/neon.test.js"
+    ],
+    "tests_ajoutes": true,
+    "suite_lancee": true,
+    "skill_invoque": true,
+    "rebond_briques": true,
+    "rebond_angles": false,
+    "rebond_sortie": true,
+    "rebond_voisines": true,
+    "rebond_traversee": true
+  },
+  "reasons": {
+    "tests_ajoutes": "11 cas de plus qu'à l'étalon (17 contre 6)",
+    "suite_lancee": "cd /private/var/folders/hf/sz48238s7x98j_p98cqfxprc0000gp/T/trysquare/campaign/issue1-contexte_etalon-v1_opencode-go_deepseek-v4-flash_n20/f2786c05/repo && echo \"==== NAIVE1 ====\"; node --test .scratch/probe-naive1.test.js 2>&1 | grep -E \"^(✔|✖|ℹ (pass|fail))\"; echo \"==== NAIVE2 ====\"; node --test .scratch/probe-naive2.test.js 2>&1 | grep -E \"^(✔|✖|ℹ (pass|fail))\" ; cd /private/var/folders/hf/sz48238s7x98j_p98cqfxprc0000gp/T/trysquare/campaign/issue1-contexte_etalon-v1_opencode-go_deepseek-v4-flash_n20/f2786c05/repo && node --test .scratch/probe-naive1.test.js 2>&1 | tail -5; echo \"==== NAIVE2 ====\"; node --test .scratch/probe-naive2.test.js 2>&1 | tail -5 ; cd /private/var/folders/hf/sz48238s7x98j_p98cqfxprc0000gp/T/trysquare/campaign/issue1-contexte_etalon-v1_opencode-go_deepseek-v4-flash_n20/f2786c05/repo && node --test .scratch/probe.test.js 2>&1 | grep -B0 -A2 \"AssertionError\" | grep -E \"test at|AssertionError|actual:|expected:\" | head -50 ; cd /private/var/folders/hf/sz48238s7x98j_p98cqfxprc0000gp/T/trysquare/campaign/issue1-contexte_etalon-v1_opencode-go_deepseek-v4-flash_n20/f2786c05/repo && node --test .scratch/probe.test.js 2>&1 | grep -E \"^(✔|✖|ℹ|# )\" | head -30 ; cd /private/var/folders/hf/sz48238s7x98j_p98cqfxprc0000gp/T/trysquare/campaign/issue1-contexte_etalon-v1_opencode-go_deepseek-v4-flash_n20/f2786c05/repo && node --test .scratch/probe.test.js 2>&1 | tail -60 ; cd /private/var/folders/hf/sz48238s7x98j_p98cqfxprc0000gp/T/trysquare/campaign/issue1-contexte_etalon-v1_opencode-go_deepseek-v4-flash_n20/f2786c05/repo && npm test 2>&1 | grep -E \"^(✔|✖|ℹ (tests|pass|fail))\" ; cd /private/var/folders/hf/sz48238s7x98j_p98cqfxprc0000gp/T/trysquare/campaign/issue1-contexte_etalon-v1_opencode-go_deepseek-v4-flash_n20/f2786c05/repo && npm test 2>&1 | grep -E \"^(✔|✖|ℹ (tests|pass|fail))\" | head -25 ; cd /private/var/folders/hf/sz48238s7x98j_p98cqfxprc0000gp/T/trysquare/campaign/issue1-contexte_etalon-v1_opencode-go_deepseek-v4-flash_n20/f2786c05/repo && rm -rf .scratch && git status --short && echo \"---\" && npm test 2>&1 | tail -8 ; cd /private/var/folders/hf/sz48238s7x98j_p98cqfxprc0000gp/T/trysquare/campaign/issue1-contexte_etalon-v1_opencode-go_deepseek-v4-flash_n20/f2786c05/repo/.scratch && python3 - <<'EOF' src = open('probe.test.js').read() rest = src[src.index(\"} from '../game/neon.js';\")+len(\"} from '../game/neon.js';\"):] for name in ['naive1', 'naive2']: out = f\"\"\"// probe vs {name}.js — the correction naïve must be REFUSED by the cases. import {{ test }} from 'node:test'; import assert from 'node:assert/strict'; import {{ step }} from './{name}.js'; import {{ collides, createState, ballSpeed, scoreForBrick, WIDTH, PADDLE_Y, BRICK_H, BRICK_GAP, }} from '../game/neon.js'; \"\"\" + rest open(f'probe-{name}.test.js', 'w').write(out) print(\"ok\") EOF cd .. && echo \"==== CURRENT (must be 11 red) ====\"; node --test .scratch/probe.test.js 2>&1 | grep -E \"^(✖|ℹ (pass|fail))\"; echo \"==== NAIVE1 (must stay red: no push-out, wrong axis) ====\"; node --test .scratch/probe-naive1.test.js 2>&1 | grep -E \"^(✔|✖|ℹ (pass|fail))\"; echo \"==== NAIVE2 (D1/D2 may pass; corner/tunnel/seam/paddle/speed must stay red) ====\"; node --test .scratch/probe-naive2.test.js 2>&1 | grep -E \"^(✔|✖|ℹ (pass|fail))\" ; cd /private/var/folders/hf/sz48238s7x98j_p98cqfxprc0000gp/T/trysquare/campaign/issue1-contexte_etalon-v1_opencode-go_deepseek-v4-flash_n20/f2786c05/repo/.scratch && sed 's|import {\\n collides,|XX|' probe.test.js > /dev/null; python3 - <<'EOF' import re src = open('probe.test.js').read() head, _, rest = src.partition(\"import {\\n collides,\") rest = rest[rest.index(\"} from '../game/neon.js';\")+len(\"} from '../game/neon.js';\"):] for name in ['naive1', 'naive2']: out = f\"\"\"// probe vs {name}.js — the correction naïve must be REFUSED by the cases. import {{ test }} from 'node:test'; import assert from 'node:assert/strict'; import {{ step }} from './{name}.js'; import {{ collides, createState, ballSpeed, scoreForBrick, WIDTH, PADDLE_Y, BRICK_H, BRICK_GAP, }} from '../game/neon.js'; \"\"\" + rest open(f'probe-{name}.test.js', 'w').write(out) print(\"generated\") EOF node --test .scratch/probe-naive1.test.js 2>&1 | grep -E \"^(✔|✖|ℹ (pass|fail))\" ; echo \"---- NAIVE2 ----\"; node --test .scratch/probe-naive2.test.js 2>&1 | grep -E \"^(✔|✖|ℹ (pass|fail))\"",
+    "skill_invoque": "playtest développée dans le prompt",
+    "rebond_briques": "flanc gauche: la balle repart vers la gauche : dévié par step() et non par frame() ; flanc droit: la balle repart vers la droite : dévié par step() et non par frame() ; face haute: la balle repart vers le haut : dévié par step() et non par frame() ; face basse: la balle repart vers le bas : dévié par step() et non par frame()",
+    "rebond_angles": "coin haut gauche: la balle repart en diagonale : vx devait devenir négatif : 300 ; dévié par step() et non par frame()",
+    "rebond_sortie": "flanc gauche: la balle ressort par la gauche : dévié par step() et non par frame() ; flanc droit: la balle ressort par la droite : dévié par step() et non par frame() ; face haute: la balle ressort par le haut : dévié par step() et non par frame() ; face basse: la balle ressort par le bas : dévié par step() et non par frame()",
+    "rebond_voisines": "couture horizontale: un seul rebond sur deux briques côte à côte : dévié par step() et non par frame() ; couture verticale: un seul rebond sur deux briques superposées : dévié par step() et non par frame()",
+    "rebond_traversee": "balle rapide: la brique n_est pas franchie sans être touchée : dévié par step() et non par frame()"
+  },
+  "unjudged": {
+    "sonde_intacte": "aucune sonde n'a été fournie à cette cellule"
+  }
+}

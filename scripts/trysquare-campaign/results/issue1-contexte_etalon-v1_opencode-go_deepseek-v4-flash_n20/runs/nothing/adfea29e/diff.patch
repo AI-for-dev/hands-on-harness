@@ -1,0 +1,61 @@
+diff --git a/game/neon.js b/game/neon.js
+index 6b4a133..5168df8 100644
+--- a/game/neon.js
++++ b/game/neon.js
+@@ -208,6 +208,40 @@ export function step(state, dt) {
+ 
+ // --- Rendering (DOM): brick collision logic STILL mixed in here ------------
+ 
++// Ejects the ball out of a brick it just hit and flips the velocity component
++// for the face that was struck (top/bottom -> vy, sides -> vx). Which face was
++// hit is decided by comparing how far the ball penetrated the brick along each
++// axis: the shallower penetration is the face it hit. Pushing the ball back out
++// of the brick prevents it from sticking to (or tunneling through) the brick.
++function bounceOffBrick(ball, brick) {
++  // Overlap on each axis (>= 0 whenever collides() is true).
++  const overlapX = Math.min(ball.x + ball.r - brick.x, brick.x + brick.w - (ball.x - ball.r));
++  const overlapY = Math.min(ball.y + ball.r - brick.y, brick.y + brick.h - (ball.y - ball.r));
++
++  const ballCenterY = ball.y;
++  const brickCenterY = brick.y + brick.h / 2;
++
++  if (overlapY < overlapX) {
++    // Top/bottom face: flip vertical velocity and push out vertically.
++    if (ballCenterY < brickCenterY) {
++      ball.y -= overlapY;
++      ball.vy = -Math.abs(ball.vy);
++    } else {
++      ball.y += overlapY;
++      ball.vy = Math.abs(ball.vy);
++    }
++  } else {
++    // Side face: flip horizontal velocity and push out horizontally.
++    if (ball.x < brick.x) {
++      ball.x -= overlapX;
++      ball.vx = -Math.abs(ball.vx);
++    } else {
++      ball.x += overlapX;
++      ball.vx = Math.abs(ball.vx);
++    }
++  }
++}
++
+ // Main render loop. For each live brick we test collision AND draw in the same
+ // pass: this is where logic and rendering are entangled.
+ export function frame(ctx, state) {
+@@ -220,14 +254,10 @@ export function frame(ctx, state) {
+     if (!brick.alive) continue;
+ 
+     if (collides(state.ball, brick)) {
++      bounceOffBrick(state.ball, brick);
+       brick.alive = false;
+       state.combo += 1;
+       state.score += scoreForBrick(brick, state.combo);
+-      // BUG (#1): the ball is NOT deflected here. Only the walls and the paddle
+-      // bounce (in step()); bricks were never given a bounce. So the ball plows
+-      // straight through a column head-on AND straight through the side of a
+-      // row. Fix = a real per-face bounce (flip vy on a top/bottom hit, vx on a
+-      // side hit) plus pushing the ball back out of the brick.
+     }
+ 
+     ctx.fillStyle = brickColor(brick.row);

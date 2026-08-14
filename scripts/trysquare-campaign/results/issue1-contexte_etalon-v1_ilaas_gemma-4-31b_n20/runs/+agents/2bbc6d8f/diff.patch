@@ -1,0 +1,32 @@
+diff --git a/game/neon.js b/game/neon.js
+index 6b4a133..d487636 100644
+--- a/game/neon.js
++++ b/game/neon.js
+@@ -223,11 +223,22 @@ export function frame(ctx, state) {
+       brick.alive = false;
+       state.combo += 1;
+       state.score += scoreForBrick(brick, state.combo);
+-      // BUG (#1): the ball is NOT deflected here. Only the walls and the paddle
+-      // bounce (in step()); bricks were never given a bounce. So the ball plows
+-      // straight through a column head-on AND straight through the side of a
+-      // row. Fix = a real per-face bounce (flip vy on a top/bottom hit, vx on a
+-      // side hit) plus pushing the ball back out of the brick.
++
++      // Bounce logic: determine which face was hit
++      const dx = state.ball.x - (brick.x + brick.w / 2);
++      const dy = state.ball.y - (brick.y + brick.h / 2);
++      const absX = Math.abs(dx);
++      const absY = Math.abs(dy);
++
++      if (absX / (brick.w / 2) > absY / (brick.h / 2)) {
++        // Side hit
++        state.ball.vx = -Math.sign(dx) * Math.abs(state.ball.vx);
++        state.ball.x += Math.sign(dx) * (absX - brick.w / 2 + state.ball.r);
++      } else {
++        // Top/Bottom hit
++        state.ball.vy = -Math.sign(dy) * Math.abs(state.ball.vy);
++        state.ball.y += Math.sign(dy) * (absY - brick.h / 2 + state.ball.r);
++      }
+     }
+ 
+     ctx.fillStyle = brickColor(brick.row);

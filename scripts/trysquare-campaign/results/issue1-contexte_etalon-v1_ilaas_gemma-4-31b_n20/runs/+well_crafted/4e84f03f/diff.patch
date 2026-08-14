@@ -1,0 +1,95 @@
+diff --git a/game/neon.test.js b/game/neon.test.js
+index 250d6a9..b581d41 100644
+--- a/game/neon.test.js
++++ b/game/neon.test.js
+@@ -18,6 +18,7 @@ import {
+   BRICK_ROWS,
+   BRICK_COLS,
+   WIDTH,
++  brickHit,
+ } from './neon.js';
+ 
+ test('collides: clear overlap detected', () => {
+@@ -65,5 +66,80 @@ function belowField() {
+   return 500;
+ }
+ 
+-// TODO (#5): test comboMultiplier / scoreForBrick.
+-// TODO      : test level progression and loadBest/saveBest persistence.
++// --- Issue #1: Brick Bounces ---
++
++test('brickHit: bounce off top face', () => {
++  const ball = { x: 100, y: 85, r: 7, vx: 0, vy: -200 };
++  const bricks = [{ x: 80, y: 90, w: 40, h: 20, alive: true }];
++  // Ball is moving UP, but its current position is already slightly overlapping (85+7=92 > 90)
++  // Wait, if vy is -200, it's moving towards the ceiling. 
++  // A top face hit means the ball hit the BOTTOM edge of the brick.
++  // Let's reposition: ball is below brick, moving UP.
++  ball.y = 112; // bottom of ball is 119, top is 105. 
++  // Brick is at y=90, h=20 -> bottom is 110.
++  // Ball top (105) is already inside brick bottom (110).
++  ball.vy = -200;
++  
++  const hit = brickHit(ball, bricks, 1/60);
++  assert.ok(hit, 'Should detect collision');
++  assert.equal(ball.vy, 200, 'vy should flip to DOWN');
++  assert.equal(ball.y, 110 + ball.r, 'ball should be pushed out to bottom of brick');
++});
++
++test('brickHit: bounce off bottom face', () => {
++  const ball = { x: 100, y: 85, r: 7, vx: 0, vy: 200 };
++  const bricks = [{ x: 80, y: 90, w: 40, h: 20, alive: true }];
++  // Ball is moving DOWN, hits top edge of brick (y=90).
++  // Ball bottom: 85+7 = 92. Overlaps top edge (90).
++  const hit = brickHit(ball, bricks, 1/60);
++  assert.ok(hit, 'Should detect collision');
++  assert.equal(ball.vy, -200, 'vy should flip to UP');
++  assert.equal(ball.y, 90 - ball.r, 'ball should be pushed out to top of brick');
++});
++
++test('brickHit: bounce off left face', () => {
++  const ball = { x: 75, y: 100, r: 7, vx: 200, vy: 0 };
++  const bricks = [{ x: 80, y: 90, w: 40, h: 20, alive: true }];
++  // Ball moving RIGHT, hits left edge of brick (x=80).
++  // Ball right: 75+7 = 82. Overlaps left edge (80).
++  const hit = brickHit(ball, bricks, 1/60);
++  assert.ok(hit, 'Should detect collision');
++  assert.equal(ball.vx, -200, 'vx should flip to LEFT');
++  assert.equal(ball.x, 80 - ball.r, 'ball should be pushed out to left of brick');
++});
++
++test('brickHit: bounce off right face', () => {
++  const ball = { x: 125, y: 100, r: 7, vx: -200, vy: 0 };
++  const bricks = [{ x: 80, y: 90, w: 40, h: 20, alive: true }];
++  // Ball moving LEFT, hits right edge (x=120).
++  // Ball left: 125-7 = 118. Overlaps right edge (120).
++  const hit = brickHit(ball, bricks, 1/60);
++  assert.ok(hit, 'Should detect collision');
++  assert.equal(ball.vx, 200, 'vx should flip to RIGHT');
++  assert.equal(ball.x, 120 + ball.r, 'ball should be pushed out to right of brick');
++});
++
++test('brickHit: corner bounce (diagonal)', () => {
++  const ball = { x: 75, y: 85, r: 7, vx: 200, vy: 200 };
++  const bricks = [{ x: 80, y: 90, w: 40, h: 20, alive: true }];
++  // Ball right: 82, Ball bottom: 92. 
++  // Brick left: 80, Brick top: 90.
++  // overlapX = 82 - 80 = 2
++  // overlapY = 92 - 90 = 2
++  // Equal penetration -> corner hit.
++  const hit = brickHit(ball, bricks, 1/60);
++  assert.ok(hit, 'Should detect collision');
++  assert.equal(ball.vx, -200, 'vx should flip');
++  assert.equal(ball.vy, -200, 'vy should flip');
++});
++
++test('brickHit: tunnelling detection', () => {
++  const ball = { x: 100, y: 70, r: 7, vx: 0, vy: 2000 }; // Very fast
++  const bricks = [{ x: 80, y: 100, w: 40, h: 20, alive: true }];
++  // In one frame (1/60s), ball moves 33.3px.
++  // Start: y=70 (bottom 77). End: y=103.3 (bottom 110.3).
++  // Brick is at y=100, h=20.
++  // The ball "jumped" from 77 to 110.3. It definitely crossed the brick.
++  const hit = brickHit(ball, bricks, 1/60);
++  assert.ok(hit, 'Should detect tunnelling collision');
++});

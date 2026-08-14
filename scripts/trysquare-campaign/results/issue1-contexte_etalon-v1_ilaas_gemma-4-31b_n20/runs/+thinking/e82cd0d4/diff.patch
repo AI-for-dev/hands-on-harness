@@ -1,0 +1,37 @@
+diff --git a/game/neon.js b/game/neon.js
+index 6b4a133..305046a 100644
+--- a/game/neon.js
++++ b/game/neon.js
+@@ -223,11 +223,27 @@ export function frame(ctx, state) {
+       brick.alive = false;
+       state.combo += 1;
+       state.score += scoreForBrick(brick, state.combo);
+-      // BUG (#1): the ball is NOT deflected here. Only the walls and the paddle
+-      // bounce (in step()); bricks were never given a bounce. So the ball plows
+-      // straight through a column head-on AND straight through the side of a
+-      // row. Fix = a real per-face bounce (flip vy on a top/bottom hit, vx on a
+-      // side hit) plus pushing the ball back out of the brick.
++
++      const overlapLeft = (state.ball.x + state.ball.r) - brick.x;
++      const overlapRight = (brick.x + brick.w) - (state.ball.x - state.ball.r);
++      const overlapTop = (state.ball.y + state.ball.r) - brick.y;
++      const overlapBottom = (brick.y + brick.h) - (state.ball.y - state.ball.r);
++
++      const minOverlap = Math.min(overlapLeft, overlapRight, overlapTop, overlapBottom);
++
++      if (minOverlap === overlapTop) {
++        state.ball.vy = -Math.abs(state.ball.vy);
++        state.ball.y = brick.y - state.ball.r;
++      } else if (minOverlap === overlapBottom) {
++        state.ball.vy = Math.abs(state.ball.vy);
++        state.ball.y = brick.y + brick.h + state.ball.r;
++      } else if (minOverlap === overlapLeft) {
++        state.ball.vx = -Math.abs(state.ball.vx);
++        state.ball.x = brick.x - state.ball.r;
++      } else if (minOverlap === overlapRight) {
++        state.ball.vx = Math.abs(state.ball.vx);
++        state.ball.x = brick.x + brick.w + state.ball.r;
++      }
+     }
+ 
+     ctx.fillStyle = brickColor(brick.row);

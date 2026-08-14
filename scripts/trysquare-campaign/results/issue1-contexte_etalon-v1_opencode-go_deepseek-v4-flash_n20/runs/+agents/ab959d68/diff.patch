@@ -1,0 +1,52 @@
+diff --git a/game/neon.js b/game/neon.js
+index 6b4a133..c28a6ac 100644
+--- a/game/neon.js
++++ b/game/neon.js
+@@ -206,6 +206,34 @@ export function step(state, dt) {
+   return false;
+ }
+ 
++// True if the ball (circle approximated by its box) overlaps the brick.
++// Simple AABB test: it only says WHETHER the ball and the brick overlap, not
++// WHICH face was hit.
++//
++// Resolve a brick hit with a real per-face bounce. The ball is pushed back out
++// along the axis of least penetration, and that axis's velocity component is
++// flipped. This stops the ball from plowing straight through a column head-on
++// (flips vy) and through the side of a row (flips vx).
++function bounceOffBrick(ball, brick) {
++  // Overlap (penetration) depth on each axis.
++  const overlapX =
++    Math.min(ball.x + ball.r, brick.x + brick.w) - Math.max(ball.x - ball.r, brick.x);
++  const overlapY =
++    Math.min(ball.y + ball.r, brick.y + brick.h) - Math.max(ball.y - ball.r, brick.y);
++
++  if (overlapX < overlapY) {
++    // Hit the left/right face: reflect horizontally.
++    const hitLeft = ball.x < brick.x + brick.w / 2;
++    ball.vx = Math.abs(ball.vx) * (hitLeft ? LEFT : RIGHT);
++    ball.x = hitLeft ? brick.x - ball.r : brick.x + brick.w + ball.r;
++  } else {
++    // Hit the top/bottom face: reflect vertically.
++    const hitTop = ball.y < brick.y + brick.h / 2;
++    ball.vy = Math.abs(ball.vy) * (hitTop ? UP : DOWN);
++    ball.y = hitTop ? brick.y - ball.r : brick.y + brick.h + ball.r;
++  }
++}
++
+ // --- Rendering (DOM): brick collision logic STILL mixed in here ------------
+ 
+ // Main render loop. For each live brick we test collision AND draw in the same
+@@ -223,11 +251,7 @@ export function frame(ctx, state) {
+       brick.alive = false;
+       state.combo += 1;
+       state.score += scoreForBrick(brick, state.combo);
+-      // BUG (#1): the ball is NOT deflected here. Only the walls and the paddle
+-      // bounce (in step()); bricks were never given a bounce. So the ball plows
+-      // straight through a column head-on AND straight through the side of a
+-      // row. Fix = a real per-face bounce (flip vy on a top/bottom hit, vx on a
+-      // side hit) plus pushing the ball back out of the brick.
++      bounceOffBrick(state.ball, brick);
+     }
+ 
+     ctx.fillStyle = brickColor(brick.row);

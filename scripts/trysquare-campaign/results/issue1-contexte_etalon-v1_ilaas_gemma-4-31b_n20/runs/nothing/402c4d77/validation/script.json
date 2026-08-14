@@ -1,0 +1,29 @@
+{
+  "metrics": {
+    "delivered": true,
+    "in_scope": true,
+    "touched": [
+      "game/neon.js"
+    ],
+    "tests_ajoutes": false,
+    "suite_lancee": false,
+    "skill_invoque": false,
+    "rebond_briques": true,
+    "rebond_angles": false,
+    "rebond_sortie": false,
+    "rebond_voisines": false,
+    "rebond_traversee": false
+  },
+  "reasons": {
+    "tests_ajoutes": "6 cas, comme à l'étalon",
+    "suite_lancee": "aucun lancement parmi : ls -R",
+    "skill_invoque": "aucune compétence développée dans le prompt, et aucun SKILL.md lu sur 6 appels d'outil",
+    "rebond_angles": "coin haut gauche: la balle repart en diagonale : vx devait devenir négatif : 300",
+    "rebond_sortie": "flanc gauche: la balle ressort par la gauche : le bord droit de la balle devait revenir à x <= 100 : 103 ; flanc droit: la balle ressort par la droite : le bord gauche de la balle devait revenir à x >= 172 : 169 ; face haute: la balle ressort par le haut : le bord bas de la balle devait revenir à y <= 100 : 103 ; face basse: la balle ressort par le bas : le bord haut de la balle devait revenir à y >= 120 : 117",
+    "rebond_voisines": "couture horizontale: un seul rebond sur deux briques côte à côte : vy devait s'inverser une seule fois : -60 ; couture verticale: un seul rebond sur deux briques superposées : vx devait s'inverser une seule fois : 60",
+    "rebond_traversee": "balle rapide: la brique n_est pas franchie sans être touchée : la brique a survécu à une balle qui l_a traversée de part en part"
+  },
+  "unjudged": {
+    "sonde_intacte": "aucune sonde n'a été fournie à cette cellule"
+  }
+}

@@ -1,0 +1,113 @@
+diff --git a/game/neon.js b/game/neon.js
+index 6b4a133..c1ce20d 100644
+--- a/game/neon.js
++++ b/game/neon.js
+@@ -103,8 +103,7 @@ export function createState(level = 1) {
+ 
+ // True if the ball (circle approximated by its box) overlaps the brick.
+ // Simple AABB test: it only says WHETHER the ball and the brick overlap, not
+-// WHICH face was hit. The missing bounce in frame() is what lets the ball plow
+-// straight through bricks (see #1).
++// WHICH face was hit.
+ export function collides(ball, brick) {
+   return (
+     ball.x + ball.r > brick.x &&
+@@ -114,6 +113,48 @@ export function collides(ball, brick) {
+   );
+ }
+ 
++// Reflects the ball off the face of the brick it overlapped and pushes it back
++// out so it can never tunnel through. Returns `true` when a bounce happened.
++// Which face was hit is decided by the axis of least penetration: a top/bottom
++// hit flips `vy`, a left/right hit flips `vx`. Correcting the position keeps
++// the ball from getting stuck inside a brick across successive frames.
++export function bounceBall(ball, brick) {
++  // Penetration from each of the four faces, all positive when overlapping.
++  const overlapLeft = (brick.x + brick.w) - (ball.x - ball.r);
++  const overlapRight = (ball.x + ball.r) - brick.x;
++  const overlapTop = (brick.y + brick.h) - (ball.y - ball.r);
++  const overlapBottom = (ball.y + ball.r) - brick.y;
++
++  const minX = Math.min(overlapLeft, overlapRight);
++  const minY = Math.min(overlapTop, overlapBottom);
++
++  // Bounce off the closest face: smallest penetration wins. For a face to the
++  // LEFT of its neighbor, the ball has barely crossed that edge, so the byte
++  // measured from that edge (penetration through it) is the smallest.
++  if (minY < minX) {
++    if (overlapBottom < overlapTop) {
++      // Ball barely crossed the TOP edge: send it back up.
++      ball.y = brick.y - ball.r;
++      ball.vy = -Math.abs(ball.vy);
++    } else {
++      // Ball barely crossed the BOTTOM edge: send it back down.
++      ball.y = brick.y + brick.h + ball.r;
++      ball.vy = Math.abs(ball.vy);
++    }
++  } else {
++    if (overlapRight < overlapLeft) {
++      // Ball barely crossed the LEFT edge: send it back left.
++      ball.x = brick.x - ball.r;
++      ball.vx = -Math.abs(ball.vx);
++    } else {
++      // Ball barely crossed the RIGHT edge: send it back right.
++      ball.x = brick.x + brick.w + ball.r;
++      ball.vx = Math.abs(ball.vx);
++    }
++  }
++  return true;
++}
++
+ // --- Score & combo (NOT covered by tests — debt #5) ------------------------
+ 
+ // Combo multiplier. UNBOUNDED today: a long combo makes the score blow up
+@@ -223,11 +264,9 @@ export function frame(ctx, state) {
+       brick.alive = false;
+       state.combo += 1;
+       state.score += scoreForBrick(brick, state.combo);
+-      // BUG (#1): the ball is NOT deflected here. Only the walls and the paddle
+-      // bounce (in step()); bricks were never given a bounce. So the ball plows
+-      // straight through a column head-on AND straight through the side of a
+-      // row. Fix = a real per-face bounce (flip vy on a top/bottom hit, vx on a
+-      // side hit) plus pushing the ball back out of the brick.
++      // Deflect the ball off the face it hit and push it out, so it bounces
++      // instead of tunneling through the brick (#1).
++      bounceBall(state.ball, brick);
+     }
+ 
+     ctx.fillStyle = brickColor(brick.row);
+diff --git a/game/neon.test.js b/game/neon.test.js
+index 250d6a9..a3feef2 100644
+--- a/game/neon.test.js
++++ b/game/neon.test.js
+@@ -12,6 +12,7 @@ import assert from 'node:assert/strict';
+ 
+ import {
+   collides,
++  bounceBall,
+   step,
+   makeBricks,
+   createState,
+@@ -45,6 +46,22 @@ test('step: bounce off the left wall', () => {
+   assert.ok(state.ball.vx > 0, 'horizontal velocity should flip to the right');
+ });
+ 
++test('bounceBall: top-face hit flips vy up and pushes ball out', () => {
++  const brick = { x: 100, y: 100, w: 40, h: 20 };
++  const ball = { x: 110, y: 95, r: 7, vx: 0, vy: 50 }; // bottom edge dips just into the top
++  bounceBall(ball, brick);
++  assert.ok(ball.vy < 0, 'vertical velocity should flip upward');
++  assert.ok(ball.y + ball.r <= brick.y, 'ball should sit above the brick');
++});
++
++test('bounceBall: side-face hit flips vx and pushes ball out', () => {
++  const brick = { x: 100, y: 100, w: 40, h: 20 };
++  const ball = { x: 89, y: 110, r: 7, vx: 50, vy: 0 }; // on the left side
++  bounceBall(ball, brick);
++  assert.ok(ball.vx < 0, 'horizontal velocity should flip leftward');
++  assert.ok(ball.x + ball.r <= brick.x, 'ball should sit left of the brick');
++});
++
+ test('step: ball exiting through the bottom => lost', () => {
+   const state = createState(1);
+   state.ball = { x: 320, y: belowField(), r: 7, vx: 0, vy: 400 };

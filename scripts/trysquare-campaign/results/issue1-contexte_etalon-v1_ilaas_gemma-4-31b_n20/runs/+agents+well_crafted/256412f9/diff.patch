@@ -1,0 +1,12 @@
+diff --git a/game/neon.test.js b/game/neon.test.js
+index 250d6a9..b0215e0 100644
+--- a/game/neon.test.js
++++ b/game/neon.test.js
+@@ -18,6 +18,7 @@ import {
+   BRICK_ROWS,
+   BRICK_COLS,
+   WIDTH,
++  frame,
+ } from './neon.js';
+ 
+ test('collides: clear overlap detected', () => {

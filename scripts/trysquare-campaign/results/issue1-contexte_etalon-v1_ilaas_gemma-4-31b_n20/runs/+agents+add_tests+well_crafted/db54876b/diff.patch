@@ -1,0 +1,114 @@
+diff --git a/game/neon.js b/game/neon.js
+index 6b4a133..d4c4a7a 100644
+--- a/game/neon.js
++++ b/game/neon.js
+@@ -164,6 +164,8 @@ export function saveBest(storage, score) {
+ // Returns `true` if the ball is lost (exits through the bottom).
+ export function step(state, dt) {
+   const { ball, paddle } = state;
++  ball.prevX = ball.x;
++  ball.prevY = ball.y;
+ 
+   ball.x += ball.vx * dt;
+   ball.y += ball.vy * dt;
+@@ -208,6 +210,83 @@ export function step(state, dt) {
+ 
+ // --- Rendering (DOM): brick collision logic STILL mixed in here ------------
+ 
++// Helper for swept AABB collision detection to prevent tunneling.
++function intersectSegmentAABB(p0, p1, min, max) {
++  let tMin = -Infinity, tMax = Infinity;
++  const d = { x: p1.x - p0.x, y: p1.y - p0.y };
++
++  if (d.x !== 0) {
++    const tx1 = (min.x - p0.x) / d.x;
++    const tx2 = (max.x - p0.x) / d.x;
++    tMin = Math.max(tMin, Math.min(tx1, tx2));
++    tMax = Math.min(tMax, Math.max(tx1, tx2));
++  } else if (p0.x < min.x || p0.x > max.x) {
++    return null;
++  }
++
++  if (d.y !== 0) {
++    const ty1 = (min.y - p0.y) / d.y;
++    const ty2 = (max.y - p0.y) / d.y;
++    tMin = Math.max(tMin, Math.min(ty1, ty2));
++    tMax = Math.min(tMax, Math.max(ty1, ty2));
++  } else if (p0.y < min.y || p0.y > max.y) {
++    return null;
++  }
++
++  if (tMax >= tMin && tMax >= 0 && tMin <= 1) {
++    return Math.max(0, tMin);
++  }
++  return null;
++}
++
++// Resolves a collision between the ball and a brick.
++// Handles face detection (smallest penetration), corner bounces,
++// pushing the ball out of the brick, and tunneling (sweep).
++function resolveBrickCollision(state, brick) {
++  const { ball } = state;
++  const r = ball.r;
++  const min = { x: brick.x - r, y: brick.y - r };
++  const max = { x: brick.x + brick.w + r, y: brick.y + brick.h + r };
++
++  let t = 0;
++  let swept = false;
++  if (!collides(ball, brick)) {
++    const p0 = { x: ball.prevX || ball.x, y: ball.prevY || ball.y };
++    const p1 = { x: ball.x, y: ball.y };
++    const hitT = intersectSegmentAABB(p0, p1, min, max);
++    if (hitT === null) return false;
++    t = hitT;
++    swept = true;
++  }
++
++  const p0 = { x: ball.prevX || ball.x, y: ball.prevY || ball.y };
++  const p1 = { x: ball.x, y: ball.y };
++  const hitX = p0.x + t * (p1.x - p0.x);
++  const hitY = p0.y + t * (p1.y - p0.y);
++
++  const dx1 = (hitX + r) - brick.x;
++  const dx2 = (brick.x + brick.w) - (hitX - r);
++  const dy1 = (hitY + r) - brick.y;
++  const dy2 = (brick.y + brick.h) - (hitY - r);
++
++  const minX = Math.min(dx1, dx2);
++  const minY = Math.min(dy1, dy2);
++
++  if (minX < minY) {
++    ball.vx = dx1 < dx2 ? -Math.abs(ball.vx) : Math.abs(ball.vx);
++    ball.x = dx1 < dx2 ? brick.x - r : brick.x + brick.w + r;
++  } else if (minY < minX) {
++    ball.vy = dy1 < dy2 ? -Math.abs(ball.vy) : Math.abs(ball.vy);
++    ball.y = dy1 < dy2 ? brick.y - r : brick.y + brick.h + r;
++  } else {
++    ball.vx = dx1 < dx2 ? -Math.abs(ball.vx) : Math.abs(ball.vx);
++    ball.vy = dy1 < dy2 ? -Math.abs(ball.vy) : Math.abs(ball.vy);
++    ball.x = dx1 < dx2 ? brick.x - r : brick.x + brick.w + r;
++    ball.y = dy1 < dy2 ? brick.y - r : brick.y + brick.h + r;
++  }
++  return true;
++}
++
+ // Main render loop. For each live brick we test collision AND draw in the same
+ // pass: this is where logic and rendering are entangled.
+ export function frame(ctx, state) {
+@@ -219,15 +298,10 @@ export function frame(ctx, state) {
+   for (const brick of state.bricks) {
+     if (!brick.alive) continue;
+ 
+-    if (collides(state.ball, brick)) {
++    if (resolveBrickCollision(state, brick)) {
+       brick.alive = false;
+       state.combo += 1;
+       state.score += scoreForBrick(brick, state.combo);
+-      // BUG (#1): the ball is NOT deflected here. Only the walls and the paddle
+-      // bounce (in step()); bricks were never given a bounce. So the ball plows
+-      // straight through a column head-on AND straight through the side of a
+-      // row. Fix = a real per-face bounce (flip vy on a top/bottom hit, vx on a
+-      // side hit) plus pushing the ball back out of the brick.
+     }
+ 
+     ctx.fillStyle = brickColor(brick.row);

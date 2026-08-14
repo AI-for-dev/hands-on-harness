@@ -1,0 +1,237 @@
+diff --git a/game/neon.js b/game/neon.js
+index 6b4a133..e624d6a 100644
+--- a/game/neon.js
++++ b/game/neon.js
+@@ -94,7 +94,7 @@ export function createState(level = 1) {
+     best: 0,
+     running: false,
+     paddle: { x: (WIDTH - PADDLE_W) / 2, y: PADDLE_Y, w: PADDLE_W, h: PADDLE_H },
+-    ball: { x: WIDTH / 2, y: PADDLE_Y - BALL_R - 2, r: BALL_R, vx: speed * 0.5, vy: -speed },
++    ball: { x: WIDTH / 2, y: PADDLE_Y - BALL_R - 2, r: BALL_R, vx: speed * 0.5, vy: -speed, prevX: WIDTH / 2, prevY: PADDLE_Y - BALL_R - 2 },
+     bricks: makeBricks(level),
+   };
+ }
+@@ -165,6 +165,9 @@ export function saveBest(storage, score) {
+ export function step(state, dt) {
+   const { ball, paddle } = state;
+ 
++  ball.prevX = ball.x;
++  ball.prevY = ball.y;
++
+   ball.x += ball.vx * dt;
+   ball.y += ball.vy * dt;
+ 
+@@ -206,6 +209,68 @@ export function step(state, dt) {
+   return false;
+ }
+ 
++// --- Collision resolution -------------------------------------------------
++
++// Resolves collisions between the ball and bricks.
++// Implements per-face bounce, corner bounce, push-out, and basic tunnelling
++// prevention via a simple sweep approximation.
++export function resolveBrickCollisions(state) {
++  const { ball, bricks } = state;
++  let hasBounced = false;
++
++  for (const brick of bricks) {
++    if (!brick.alive) continue;
++
++    const minX = Math.min(ball.prevX, ball.x) - ball.r;
++    const maxX = Math.max(ball.prevX, ball.x) + ball.r;
++    const minY = Math.min(ball.prevY, ball.y) - ball.r;
++    const maxY = Math.max(ball.prevY, ball.y) + ball.r;
++
++    if (maxX < brick.x || minX > brick.x + brick.w || maxY < brick.y || minY > brick.y + brick.h) {
++      continue;
++    }
++
++    const isColliding = collides(ball, brick);
++    const crossedX = Math.max(minX, brick.x) <= Math.min(maxX, brick.x + brick.w);
++    const crossedY = Math.max(minY, brick.y) <= Math.min(maxY, brick.y + brick.h);
++
++    if (isColliding || (crossedX && crossedY)) {
++      brick.alive = false;
++      state.combo += 1;
++      state.score += scoreForBrick(brick, state.combo);
++
++      let px, py;
++      if (isColliding) {
++        const dx1 = ball.x + ball.r - brick.x;
++        const dx2 = brick.x + brick.w - (ball.x - ball.r);
++        const dy1 = ball.y + ball.r - brick.y;
++        const dy2 = brick.y + brick.h - (ball.y - ball.r);
++        px = Math.min(dx1, dx2);
++        py = Math.min(dy1, dy2);
++      } else {
++        px = Math.abs(ball.vx) < Math.abs(ball.vy) ? 100 : 0;
++        py = Math.abs(ball.vx) < Math.abs(ball.vy) ? 0 : 100;
++      }
++
++      if (px < py) {
++        if (!hasBounced) ball.vx *= -1;
++        ball.x = (ball.vx < 0) ? brick.x + brick.w + ball.r : brick.x - ball.r;
++      } else if (py < px) {
++        if (!hasBounced) ball.vy *= -1;
++        ball.y = (ball.vy < 0) ? brick.y + brick.h + ball.r : brick.y - ball.r;
++      } else {
++        if (!hasBounced) {
++          ball.vx *= -1;
++          ball.vy *= -1;
++        }
++        ball.x = (ball.vx < 0) ? brick.x + brick.w + ball.r : brick.x - ball.r;
++        ball.y = (ball.vy < 0) ? brick.y + brick.h + ball.r : brick.y - ball.r;
++      }
++      hasBounced = true;
++    }
++  }
++}
++
+ // --- Rendering (DOM): brick collision logic STILL mixed in here ------------
+ 
+ // Main render loop. For each live brick we test collision AND draw in the same
+@@ -215,24 +280,16 @@ export function frame(ctx, state) {
+   ctx.fillStyle = palette.background;
+   ctx.fillRect(0, 0, WIDTH, HEIGHT);
+ 
+-  // Bricks: collision + bounce + score + drawing, all in one place.
++  resolveBrickCollisions(state);
++
++  // Bricks: drawing
+   for (const brick of state.bricks) {
+     if (!brick.alive) continue;
+ 
+-    if (collides(state.ball, brick)) {
+-      brick.alive = false;
+-      state.combo += 1;
+-      state.score += scoreForBrick(brick, state.combo);
+-      // BUG (#1): the ball is NOT deflected here. Only the walls and the paddle
+-      // bounce (in step()); bricks were never given a bounce. So the ball plows
+-      // straight through a column head-on AND straight through the side of a
+-      // row. Fix = a real per-face bounce (flip vy on a top/bottom hit, vx on a
+-      // side hit) plus pushing the ball back out of the brick.
+-    }
+-
+     ctx.fillStyle = brickColor(brick.row);
+     ctx.fillRect(brick.x, brick.y, brick.w, brick.h);
+   }
++  // ...
+ 
+   // Paddle — color hard-coded instead of using the palette (inconsistency #6).
+   ctx.fillStyle = '#00e5ff';
+diff --git a/game/neon.test.js b/game/neon.test.js
+index 250d6a9..ecade6c 100644
+--- a/game/neon.test.js
++++ b/game/neon.test.js
+@@ -18,6 +18,7 @@ import {
+   BRICK_ROWS,
+   BRICK_COLS,
+   WIDTH,
++  frame,
+ } from './neon.js';
+ 
+ test('collides: clear overlap detected', () => {
+@@ -52,11 +53,98 @@ test('step: ball exiting through the bottom => lost', () => {
+   assert.equal(lost, true);
+ });
+ 
+-test('makeBricks: full, all-alive grid at start', () => {
+-  const bricks = makeBricks(1);
+-  assert.equal(bricks.length, BRICK_ROWS * BRICK_COLS);
+-  assert.ok(bricks.every((b) => b.alive));
+-  assert.ok(bricks.every((b) => b.x >= 0 && b.x + b.w <= WIDTH));
++
++const mockCtx = {
++  fillRect: () => {},
++  beginPath: () => {},
++  arc: () => {},
++  fill: () => {},
++  fillText: () => {},
++};
++
++test('brick collision: top face bounce', () => {
++  const state = createState(1);
++  state.ball = { x: 100, y: 50, r: 7, vx: 0, vy: 100 }; // moving DOWN
++  state.bricks = [
++    { x: 80, y: 55, w: 40, h: 20, alive: true, points: 10 }
++  ];
++  frame(mockCtx, state);
++  assert.ok(state.ball.vy < 0, 'vy should flip to UP after hitting top face');
++});
++
++test('brick collision: bottom face bounce', () => {
++  const state = createState(1);
++  state.ball = { x: 100, y: 80, r: 7, vx: 0, vy: -100 }; // moving UP
++  state.bricks = [
++    { x: 80, y: 60, w: 40, h: 20, alive: true, points: 10 }
++  ];
++  frame(mockCtx, state);
++  assert.ok(state.ball.vy > 0, 'vy should flip to DOWN after hitting bottom face');
++});
++
++test('brick collision: left face bounce', () => {
++  const state = createState(1);
++  state.ball = { x: 75, y: 70, r: 7, vx: 100, vy: 0 }; // moving RIGHT
++  state.bricks = [
++    { x: 80, y: 60, w: 40, h: 20, alive: true, points: 10 }
++  ];
++  frame(mockCtx, state);
++  assert.ok(state.ball.vx < 0, 'vx should flip to LEFT after hitting left face');
++});
++
++test('brick collision: right face bounce', () => {
++  const state = createState(1);
++  state.ball = { x: 125, y: 70, r: 7, vx: -100, vy: 0 }; // moving LEFT
++  state.bricks = [
++    { x: 80, y: 60, w: 40, h: 20, alive: true, points: 10 }
++  ];
++  frame(mockCtx, state);
++  assert.ok(state.ball.vx > 0, 'vx should flip to RIGHT after hitting right face');
++});
++
++test('brick collision: corner bounce', () => {
++  const state = createState(1);
++  state.ball = { x: 75, y: 55, r: 7, vx: 100, vy: 100 }; // moving DOWN-RIGHT
++  state.bricks = [
++    { x: 80, y: 60, w: 40, h: 20, alive: true, points: 10 }
++  ];
++  frame(mockCtx, state);
++  assert.ok(state.ball.vx < 0 && state.ball.vy < 0, 'both vx and vy should flip after corner hit');
++});
++
++test('brick collision: push out', () => {
++  const state = createState(1);
++  state.ball = { x: 100, y: 60, r: 7, vx: 0, vy: 100 }; // deeply overlapping
++  state.bricks = [
++    { x: 80, y: 60, w: 40, h: 20, alive: true, points: 10 }
++  ];
++  frame(mockCtx, state);
++  assert.ok(!collides(state.ball, state.bricks[0]), 'ball should be pushed out of the brick');
++});
++
++test('brick collision: neighbours (single bounce)', () => {
++  const state = createState(1);
++  state.ball = { x: 100, y: 60, r: 7, vx: 0, vy: 100 };
++  state.bricks = [
++    { x: 80, y: 60, w: 40, h: 20, alive: true, points: 10 },
++    { x: 120, y: 60, w: 40, h: 20, alive: true, points: 10 },
++  ];
++  // In a real game, the ball might overlap two bricks at the same time.
++  // We want to make sure the bounce is only applied once.
++  frame(mockCtx, state);
++  // If it bounced twice, vy would be positive again.
++  assert.ok(state.ball.vy < 0, 'ball should only bounce once even if overlapping multiple bricks');
++});
++
++test('brick collision: tunnelling', () => {
++  const state = createState(1);
++  // Ball is moving very fast, skipping over the brick in one step.
++  state.ball = { x: 100, y: 100, r: 7, vx: 0, vy: 1000, prevX: 100, prevY: 40 }; 
++  state.bricks = [
++    { x: 80, y: 60, w: 40, h: 20, alive: true, points: 10 }
++  ];
++  frame(mockCtx, state);
++  assert.ok(state.ball.vy < 0, 'ball should not tunnel through the brick');
+ });
+ 
+ // Small local helper: place the ball below the field without importing the

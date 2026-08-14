@@ -1,0 +1,45 @@
+diff --git a/game/neon.js b/game/neon.js
+index 6b4a133..72cc2b2 100644
+--- a/game/neon.js
++++ b/game/neon.js
+@@ -103,8 +103,8 @@ export function createState(level = 1) {
+ 
+ // True if the ball (circle approximated by its box) overlaps the brick.
+ // Simple AABB test: it only says WHETHER the ball and the brick overlap, not
+-// WHICH face was hit. The missing bounce in frame() is what lets the ball plow
+-// straight through bricks (see #1).
++// WHICH face was hit. The face is deduced in frame() from the smallest overlap
++// so the ball bounces off the right side (see #1).
+ export function collides(ball, brick) {
+   return (
+     ball.x + ball.r > brick.x &&
+@@ -223,11 +223,24 @@ export function frame(ctx, state) {
+       brick.alive = false;
+       state.combo += 1;
+       state.score += scoreForBrick(brick, state.combo);
+-      // BUG (#1): the ball is NOT deflected here. Only the walls and the paddle
+-      // bounce (in step()); bricks were never given a bounce. So the ball plows
+-      // straight through a column head-on AND straight through the side of a
+-      // row. Fix = a real per-face bounce (flip vy on a top/bottom hit, vx on a
+-      // side hit) plus pushing the ball back out of the brick.
++      // Bounce the ball off the face it hit. Determine the closest face by how
++      // deeply the ball overlaps each side of the brick, then flip the matching
++      // velocity component and push the ball back out of the brick (#1).
++      const ball = state.ball;
++      const overlapL = ball.x + ball.r - brick.x;
++      const overlapR = brick.x + brick.w - (ball.x - ball.r);
++      const overlapT = ball.y + ball.r - brick.y;
++      const overlapB = brick.y + brick.h - (ball.y - ball.r);
++      const min = Math.min(overlapL, overlapR, overlapT, overlapB);
++      if (min === overlapT || min === overlapB) {
++        ball.vy = -ball.vy;
++        ball.y =
++          min === overlapT ? brick.y - ball.r : brick.y + brick.h + ball.r;
++      } else {
++        ball.vx = -ball.vx;
++        ball.x =
++          min === overlapL ? brick.x - ball.r : brick.x + brick.w + ball.r;
++      }
+     }
+ 
+     ctx.fillStyle = brickColor(brick.row);

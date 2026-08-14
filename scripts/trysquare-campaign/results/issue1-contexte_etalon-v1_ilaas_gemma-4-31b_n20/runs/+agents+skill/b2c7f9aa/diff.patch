@@ -1,0 +1,95 @@
+diff --git a/.scratch/probe.js b/.scratch/probe.js
+new file mode 100644
+index 0000000..69d5336
+--- /dev/null
++++ b/.scratch/probe.js
+@@ -0,0 +1,34 @@
++import assert from 'node:assert';
++import { test } from 'node:test';
++import { createState, collides, step, frame } from './game/neon.js';
++// Mock canvas context
++const mockCtx = {
++  fillRect: () => {},
++  arc: () => {},
++  fill: () => {},
++  fillText: () => {},
++  beginPath: () => {},
++  stroke: () => {},
++};
++
++test('D1 - Missing bounce: ball should deflect when hitting a brick', () => {
++  const state = createState(1);
++  const brick = state.bricks[0];
++  // Position ball to hit the top of the first brick
++  state.ball.x = brick.x + brick.w / 2;
++  state.ball.y = brick.y - ball_r - 1; // Just above
++  state.ball.vy = 100; // Moving down
++
++  // This is a bit tricky because collisions are in frame().
++  // We need to simulate the loop.
++  const dt = 0.01;
++  // Manually advance ball to be colliding
++  state.ball.y = brick.y - 1; 
++
++  const initialVy = state.ball.vy;
++  frame(mockCtx, state);
++
++  if (state.ball.vy === initialVy) {
++    throw new Error(`Ball did not bounce! vy: ${state.ball.vy}`);
++  }
++});
+diff --git a/game/neon.js b/game/neon.js
+index 6b4a133..c49563c 100644
+--- a/game/neon.js
++++ b/game/neon.js
+@@ -216,6 +216,9 @@ export function frame(ctx, state) {
+   ctx.fillRect(0, 0, WIDTH, HEIGHT);
+ 
+   // Bricks: collision + bounce + score + drawing, all in one place.
++  let hitX = false;
++  let hitY = false;
++
+   for (const brick of state.bricks) {
+     if (!brick.alive) continue;
+ 
+@@ -223,17 +226,35 @@ export function frame(ctx, state) {
+       brick.alive = false;
+       state.combo += 1;
+       state.score += scoreForBrick(brick, state.combo);
+-      // BUG (#1): the ball is NOT deflected here. Only the walls and the paddle
+-      // bounce (in step()); bricks were never given a bounce. So the ball plows
+-      // straight through a column head-on AND straight through the side of a
+-      // row. Fix = a real per-face bounce (flip vy on a top/bottom hit, vx on a
+-      // side hit) plus pushing the ball back out of the brick.
++
++      const b = state.ball;
++      const ox = Math.min(b.x + b.r - brick.x, brick.x + brick.w - (b.x - b.r));
++      const oy = Math.min(b.y + b.r - brick.y, brick.y + brick.h - (b.y - b.r));
++
++      if (Math.abs(ox - oy) < 0.01) {
++        if (!hitX) { b.vx = -b.vx; hitX = true; }
++        if (!hitY) { b.vy = -b.vy; hitY = true; }
++        if (b.x + b.r - brick.x < brick.x + brick.w - (b.x - b.r)) {
++          b.x = brick.x - b.r;
++          b.y = b.y + b.r - brick.y < brick.y + brick.h - (b.y - b.r) ? brick.y - b.r : brick.y + brick.h + b.r;
++        } else {
++          b.x = brick.x + brick.w + b.r;
++          b.y = b.y + b.r - brick.y < brick.y + brick.h - (b.y - b.r) ? brick.y - b.r : brick.y + brick.h + b.r;
++        }
++      } else if (ox < oy) {
++        if (!hitX) { b.vx = -b.vx; hitX = true; }
++        b.x = b.x + b.r - brick.x < brick.x + brick.w - (b.x - b.r) ? brick.x - b.r : brick.x + brick.w + b.r;
++      } else {
++        if (!hitY) { b.vy = -b.vy; hitY = true; }
++        b.y = b.y + b.r - brick.y < brick.y + brick.h - (b.y - b.r) ? brick.y - b.r : brick.y + brick.h + b.r;
++      }
+     }
+ 
+     ctx.fillStyle = brickColor(brick.row);
+     ctx.fillRect(brick.x, brick.y, brick.w, brick.h);
+   }
+ 
++
+   // Paddle — color hard-coded instead of using the palette (inconsistency #6).
+   ctx.fillStyle = '#00e5ff';
+   ctx.fillRect(state.paddle.x, state.paddle.y, state.paddle.w, state.paddle.h);

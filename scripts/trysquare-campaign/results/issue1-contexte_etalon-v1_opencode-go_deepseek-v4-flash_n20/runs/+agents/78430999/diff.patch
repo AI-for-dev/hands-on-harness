@@ -1,0 +1,79 @@
+diff --git a/game/neon.js b/game/neon.js
+index 6b4a133..9efb0b3 100644
+--- a/game/neon.js
++++ b/game/neon.js
+@@ -216,18 +216,68 @@ export function frame(ctx, state) {
+   ctx.fillRect(0, 0, WIDTH, HEIGHT);
+ 
+   // Bricks: collision + bounce + score + drawing, all in one place.
++  // NOTE: `state.ball` is intentionally captured once so the rebound applied on
++  // a brick is visible to the bricks scanned later in the same pass.
++  const ball = state.ball;
+   for (const brick of state.bricks) {
+     if (!brick.alive) continue;
+ 
+-    if (collides(state.ball, brick)) {
++    if (collides(ball, brick)) {
+       brick.alive = false;
+       state.combo += 1;
+       state.score += scoreForBrick(brick, state.combo);
+-      // BUG (#1): the ball is NOT deflected here. Only the walls and the paddle
+-      // bounce (in step()); bricks were never given a bounce. So the ball plows
+-      // straight through a column head-on AND straight through the side of a
+-      // row. Fix = a real per-face bounce (flip vy on a top/bottom hit, vx on a
+-      // side hit) plus pushing the ball back out of the brick.
++
++      // Bounce resolution. The ball is approximated by an AABB, so work on its
++      // top/left size independent of velocity sign.
++      const { x: bx, y: by, w: bw, h: bh } = brick;
++      // Penetration depth on each axis: the overlap left once we are flush with
++      // one face. The smaller penetration is the face actually hit.
++      const oxRight = ball.x + ball.r - bx; // how far the ball overran the left edge
++      const oxLeft = bx + bw - (ball.x - ball.r); // overrun of the right edge
++      const oyBottom = ball.y + ball.r - by; // overrun of the top edge
++      const oyTop = bh + by - (ball.y - ball.r); // overrun of the bottom edge
++      const penX = Math.min(oxRight, oxLeft);
++      const penY = Math.min(oyBottom, oyTop);
++
++      // Resolve the axis with the smaller penetration first (the face that was
++      // actually hit). On a tie it is a diagonal hit: bounce both axes.
++      if (penX < penY) {
++        // Side hit: flip horizontal velocity, push out along x.
++        if (oxRight < oxLeft) {
++          ball.x = bx - ball.r; // entering from the left
++          ball.vx = -Math.abs(ball.vx);
++        } else {
++          ball.x = bx + bw + ball.r; // entering from the right
++          ball.vx = Math.abs(ball.vx);
++        }
++      } else if (penY < penX) {
++        // Top/bottom hit: flip vertical velocity, push out along y.
++        if (oyBottom < oyTop) {
++          ball.y = by - ball.r; // entering from the top
++          ball.vy = -Math.abs(ball.vy);
++        } else {
++          ball.y = by + bh + ball.r; // entering from the bottom
++          ball.vy = Math.abs(ball.vy);
++        }
++      } else {
++        // Corner hit: bounce both axes, push out along both.
++        ball.vx = -ball.vx;
++        ball.vy = -ball.vy;
++        if (oxRight < oxLeft) {
++          ball.x = bx - ball.r;
++        } else {
++          ball.x = bx + bw + ball.r;
++        }
++        if (oyBottom < oyTop) {
++          ball.y = by - ball.r;
++        } else {
++          ball.y = by + bh + ball.r;
++        }
++      }
++
++      // Push-out must fully clear the brick: afterwards `collides(ball, brick)`
++      // is false, so a seam that overlaps two bricks in this pass does not cause
++      // a sticky re-flip (a second brick can only trigger if genuinely touched).
+     }
+ 
+     ctx.fillStyle = brickColor(brick.row);

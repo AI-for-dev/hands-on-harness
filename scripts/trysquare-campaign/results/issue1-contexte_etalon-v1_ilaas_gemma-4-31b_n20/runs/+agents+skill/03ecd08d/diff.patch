@@ -1,0 +1,198 @@
+diff --git a/.scratch/repro.test.js b/.scratch/repro.test.js
+new file mode 100644
+index 0000000..aecc34d
+--- /dev/null
++++ b/.scratch/repro.test.js
+@@ -0,0 +1,34 @@
++import { test } from 'node:test';
++import assert from 'node:assert';
++import { createState, frame } from '../game/neon.js';
++
++test('ball should bounce off the top of a brick', () => {
++  const state = createState(1);
++  const ctx = {
++    fillStyle: '',
++    fillRect: () => {},
++    beginPath: () => {},
++    arc: () => {},
++    fill: () => {},
++    fillText: () => {},
++  };
++
++  const brick = state.bricks[0]; // top-left brick
++  const ball = state.ball;
++
++  // Position ball just above the brick, moving DOWN
++  ball.x = brick.x + brick.w / 2;
++  ball.y = brick.y - ball.r - 1;
++  ball.vy = 100; // DOWN
++  ball.vx = 0;
++
++  // One frame of collision
++  // In reality, we should call step() then frame()
++  // But frame() is where the collision logic is.
++  // We need to simulate the ball entering the brick.
++  ball.y += ball.vy * 0.01; // move into the brick
++
++  frame(ctx, state);
++
++  assert.strictEqual(ball.vy < 0, true, 'Ball should be moving UP after hitting the top of a brick');
++});
+diff --git a/.scratch/to_fix.md b/.scratch/to_fix.md
+new file mode 100644
+index 0000000..53f15b5
+--- /dev/null
++++ b/.scratch/to_fix.md
+@@ -0,0 +1,86 @@
++# Symptôme : « la balle traverse les briques au lieu de rebondir »
++
++## D1 — Absence de rebond
++
++- **Famille** : face vs coin
++- **Symptôme joueur** : la balle traverse la brique et continue sa route sans dévier.
++- **Cause** : `game/neon.js:156` — Le code marque la brique comme morte mais ne modifie ni `ball.vx` ni `ball.vy`.
++- **Invariant violé** : Un impact avec un obstacle doit inverser la composante de vitesse perpendiculaire à la face touchée.
++- **Déclencheur** : Tout impact avec une brique.
++- **Attendu** : `ball.vy` inversé pour un impact haut/bas, `ball.vx` pour un impact gauche/droite.
++- **Référence** : https://noonat.github.io/intersect/ — AABB collision response involves reflecting the velocity across the collision normal.
++- **Cas test** : 
++  ```js
++  test('D1: bounce top', () => {
++    const state = createState(1);
++    const ctx = { fillStyle: '', fillRect: () => {}, beginPath: () => {}, arc: () => {}, fill: () => {}, fillText: () => {} };
++    const brick = state.bricks[0];
++    state.ball.x = brick.x + brick.w / 2;
++    state.ball.y = brick.y - ball.r - 1;
++    state.ball.vy = 100;
++    // simulate enter
++    state.ball.y += 2; 
++    frame(ctx, state);
++    assert.ok(state.ball.vy < 0);
++  });
++  ```
++- **Rouge aujourd'hui** : `AssertionError [ERR_ASSERTION]: Ball should be moving UP after hitting the top of a brick`
++- **Discrimine** : Une correction qui inverserait systématiquement les deux axes (vx et vy), ce qui serait faux pour un impact plat.
++- **Vert quand** : `ball.vy` change de signe lors d'un impact vertical.
++- **Révélé par** : (Premier défaut visible)
++
++## D2 — Collant (Sticky)
++
++- **Famille** : Collant
++- **Symptôme joueur** : la balle semble vibrer ou "s'enfoncer" dans la brique avant de ressortir ou traverser.
++- **Cause** : Absence de repositionnement de la balle hors de l'AABB après le rebond.
++- **Invariant violé** : Après résolution, la balle ne doit plus chevaucher l'obstacle.
++- **Déclencheur** : Impact à faible vitesse ou `dt` élevé laissant la balle profonde dans la brique.
++- **Attendu** : `ball.y` est ajusté pour être exactement à `brick.y - ball.r` (impact haut).
++- **Référence** : https://gamedev.net/ (implied) — Collision resolution requires resolving penetration (projection).
++- **Cas test** : 
++  ```js
++  test('D2: reposition top', () => {
++    const state = createState(1);
++    const ctx = { fillStyle: '', fillRect: () => {}, beginPath: () => {}, arc: () => {}, fill: () => {}, fillText: () => {} };
++    const brick = state.bricks[0];
++    state.ball.x = brick.x + brick.w / 2;
++    state.ball.y = brick.y + 5; // Deep inside
++    state.ball.vy = 10;
++    frame(ctx, state);
++    assert.ok(state.ball.y <= brick.y - state.ball.r);
++  });
++  ```
++- **Rouge aujourd'hui** : La balle reste à `brick.y + 5`.
++- **Discrimine** : Une correction qui inverse la vitesse sans repositionner.
++- **Vert quand** : La balle est expulsée de la brique.
++- **Révélé par** : D1 (on s'aperçoit que ça colle une fois que ça rebondit).
++
++## D3 — Double inversion (Seam)
++
++- **Famille** : Double inversion
++- **Symptôme joueur** : la balle traverse une couture entre deux briques.
++- **Cause** : `game/neon.js:153` — Boucle `for (const brick of state.bricks)` qui peut déclencher deux rebonds sur le même axe dans la même frame.
++- **Invariant violé** : Un rebond par axe et par frame.
++- **Déclencheur** : `ball.x` chevauche la frontière entre `brick[i]` et `brick[i+1]`.
++- **Attendu** : La vitesse n'est inversée qu'une seule fois même si deux briques sont touchées.
++- **Référence** : "Tile seam ghost collision" — Common issue in grid-based AABB.
++- **Cas test** : 
++  ```js
++  test('D3: seam bounce', () => {
++    const state = createState(1);
++    const ctx = { fillStyle: '', fillRect: () => {}, beginPath: () => {}, arc: () => {}, fill: () => {}, fillText: () => {} };
++    // Ball hits the seam between two bricks horizontally
++    const b1 = state.bricks[0];
++    const b2 = state.bricks[1];
++    state.ball.y = b1.y + b1.h / 2;
++    state.ball.x = b1.x + b1.w - 1; // Overlap both b1 and b2
++    state.ball.vx = 100;
++    frame(ctx, state);
++    assert.ok(state.ball.vx < 0);
++  });
++  ```
++- **Rouge aujourd'hui** : `vx` devient `-100` puis `100` à nouveau.
++- **Discrimine** : Une correction qui gère le rebond sans tracker si un rebond a déjà eu lieu sur cet axe.
++- **Vert quand** : `ball.vx` reste négatif.
++- **Révélé par** : D1 & D2.
+diff --git a/game/neon.js b/game/neon.js
+index 6b4a133..dda1dcb 100644
+--- a/game/neon.js
++++ b/game/neon.js
+@@ -216,6 +216,8 @@ export function frame(ctx, state) {
+   ctx.fillRect(0, 0, WIDTH, HEIGHT);
+ 
+   // Bricks: collision + bounce + score + drawing, all in one place.
++  let vxFlipped = false;
++  let vyFlipped = false;
+   for (const brick of state.bricks) {
+     if (!brick.alive) continue;
+ 
+@@ -223,17 +225,47 @@ export function frame(ctx, state) {
+       brick.alive = false;
+       state.combo += 1;
+       state.score += scoreForBrick(brick, state.combo);
+-      // BUG (#1): the ball is NOT deflected here. Only the walls and the paddle
+-      // bounce (in step()); bricks were never given a bounce. So the ball plows
+-      // straight through a column head-on AND straight through the side of a
+-      // row. Fix = a real per-face bounce (flip vy on a top/bottom hit, vx on a
+-      // side hit) plus pushing the ball back out of the brick.
++
++      // Resolve collision: determine hit face by minimum penetration
++      const dx1 = (brick.x + brick.w) - (state.ball.x - state.ball.r);
++      const dx2 = (state.ball.x + state.ball.r) - brick.x;
++      const dy1 = (brick.y + brick.h) - (state.ball.y - state.ball.r);
++      const dy2 = (state.ball.y + state.ball.r) - brick.y;
++
++      const min = Math.min(dx1, dx2, dy1, dy2);
++
++      if (min === dx1) {
++        if (!vxFlipped) {
++          state.ball.vx = -Math.abs(state.ball.vx);
++          vxFlipped = true;
++        }
++        state.ball.x += dx1;
++      } else if (min === dx2) {
++        if (!vxFlipped) {
++          state.ball.vx = Math.abs(state.ball.vx);
++          vxFlipped = true;
++        }
++        state.ball.x -= dx2;
++      } else if (min === dy1) {
++        if (!vyFlipped) {
++          state.ball.vy = Math.abs(state.ball.vy);
++          vyFlipped = true;
++        }
++        state.ball.y += dy1;
++      } else if (min === dy2) {
++        if (!vyFlipped) {
++          state.ball.vy = -Math.abs(state.ball.vy);
++          vyFlipped = true;
++        }
++        state.ball.y -= dy2;
++      }
+     }
+ 
+     ctx.fillStyle = brickColor(brick.row);
+     ctx.fillRect(brick.x, brick.y, brick.w, brick.h);
+   }
+ 
++
+   // Paddle — color hard-coded instead of using the palette (inconsistency #6).
+   ctx.fillStyle = '#00e5ff';
+   ctx.fillRect(state.paddle.x, state.paddle.y, state.paddle.w, state.paddle.h);

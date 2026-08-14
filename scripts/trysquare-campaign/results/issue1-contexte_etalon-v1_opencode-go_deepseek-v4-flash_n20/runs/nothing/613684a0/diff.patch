@@ -1,0 +1,59 @@
+diff --git a/game/neon.js b/game/neon.js
+index 6b4a133..00e6833 100644
+--- a/game/neon.js
++++ b/game/neon.js
+@@ -103,8 +103,8 @@ export function createState(level = 1) {
+ 
+ // True if the ball (circle approximated by its box) overlaps the brick.
+ // Simple AABB test: it only says WHETHER the ball and the brick overlap, not
+-// WHICH face was hit. The missing bounce in frame() is what lets the ball plow
+-// straight through bricks (see #1).
++// WHICH face was hit. The work of choosing the hit face and bouncing lives in
++// frame(), which resolved (see #1).
+ export function collides(ball, brick) {
+   return (
+     ball.x + ball.r > brick.x &&
+@@ -223,11 +223,38 @@ export function frame(ctx, state) {
+       brick.alive = false;
+       state.combo += 1;
+       state.score += scoreForBrick(brick, state.combo);
+-      // BUG (#1): the ball is NOT deflected here. Only the walls and the paddle
+-      // bounce (in step()); bricks were never given a bounce. So the ball plows
+-      // straight through a column head-on AND straight through the side of a
+-      // row. Fix = a real per-face bounce (flip vy on a top/bottom hit, vx on a
+-      // side hit) plus pushing the ball back out of the brick.
++
++      // Bounce (#1): deflect the ball off the brick face that was hit. We pick
++      // the face by comparing the penetration depth on each axis — the smaller
++      // overlap is the collision face. Then we flip the velocity on that axis
++      // and push the ball back out so it no longer overlaps the brick (which is
++      // what lets it plow through otherwise).
++      const overlapX =
++        Math.min(state.ball.x + state.ball.r, brick.x + brick.w) -
++        Math.max(state.ball.x - state.ball.r, brick.x);
++      const overlapY =
++        Math.min(state.ball.y + state.ball.r, brick.y + brick.h) -
++        Math.max(state.ball.y - state.ball.r, brick.y);
++
++      if (overlapX < overlapY) {
++        // Side hit: flip horizontal velocity, push out sideways.
++        if (state.ball.x < brick.x + brick.w / 2) {
++          state.ball.x = brick.x - state.ball.r;
++          state.ball.vx = -Math.abs(state.ball.vx);
++        } else {
++          state.ball.x = brick.x + brick.w + state.ball.r;
++          state.ball.vx = Math.abs(state.ball.vx);
++        }
++      } else {
++        // Top/bottom hit: flip vertical velocity, push out up/down.
++        if (state.ball.y < brick.y + brick.h / 2) {
++          state.ball.y = brick.y - state.ball.r;
++          state.ball.vy = -Math.abs(state.ball.vy);
++        } else {
++          state.ball.y = brick.y + brick.h + state.ball.r;
++          state.ball.vy = Math.abs(state.ball.vy);
++        }
++      }
+     }
+ 
+     ctx.fillStyle = brickColor(brick.row);

@@ -1,0 +1,70 @@
+diff --git a/.scratch/probe.test.js b/.scratch/probe.test.js
+new file mode 100644
+index 0000000..78f3777
+--- /dev/null
++++ b/.scratch/probe.test.js
+@@ -0,0 +1,64 @@
++import { test } from 'node:test';
++import assert from 'node:assert';
++import { createState, frame } from '../game/neon.js';
++
++test('D1: Ball should bounce off brick (no deflection currently)', () => {
++  const state = createState(1);
++  const brick = state.bricks[0];
++  state.ball.x = brick.x + brick.w / 2;
++  state.ball.y = brick.y - 7 - 1; // Just above
++  state.ball.vy = 100; 
++  state.ball.vx = 0;
++
++  const ctx = { fillRect: () => {}, arc: () => {}, fill: () => {}, beginPath: () => {}, fillText: () => {} };
++  frame(ctx, state);
++
++  assert.strictEqual(Math.sign(state.ball.vy), -1, 'Ball should have bounced UP');
++});
++
++test('D2: Tunneling at high speed', () => {
++  const state = createState(6);
++  const brick = state.bricks[0];
++  state.ball.x = brick.x + brick.w / 2;
++  state.ball.y = 40; 
++  state.ball.vy = 710;
++  state.ball.vx = 0;
++
++  const ctx = { fillRect: () => {}, arc: () => {}, fill: () => {}, beginPath: () => {}, fillText: () => {} };
++  const dt = 0.05;
++  state.ball.y += state.ball.vy * dt; // 40 + 35.5 = 75.5 (Brick bottom is 68)
++  
++  frame(ctx, state);
++  assert.strictEqual(brick.alive, false, 'Brick should have been broken even with high speed');
++});
++
++test('D3: Double inversion at seam', () => {
++  const state = createState(1);
++  const brick1 = state.bricks[0];
++  const brick2 = state.bricks[1];
++  
++  // Position ball so it overlaps both bricks at the seam
++  // Brick 0: x = offsetX, w = 72
++  // Brick 1: x = offsetX + 80, w = 72
++  // Gap is 8px.
++  // Ball r = 7.
++  // If ball is at x = offsetX + 76, it's 4px into brick 1 and 4px away from brick 0? No.
++  // Let's put it exactly in the gap: x = offsetX + 76.
++  // Ball left = 76-7 = 69. Ball right = 76+7 = 83.
++  // Brick 0 right = offsetX + 72. (If offsetX=0, 72)
++  // Brick 1 left = offsetX + 80. (If offsetX=0, 80)
++  // It overlaps both.
++  
++  const offsetX = (640 - (8 * (72 + 8) - 8)) / 2; // (640 - 632)/2 = 4
++  state.ball.x = offsetX + 76; 
++  state.ball.y = brick1.y + brick1.h / 2;
++  state.ball.vx = 100;
++  state.ball.vy = 0;
++
++  const ctx = { fillRect: () => {}, arc: () => {}, fill: () => {}, beginPath: () => {}, fillText: () => {} };
++  frame(ctx, state);
++
++  // If both bricks flip vx, then vx remains 100.
++  // Expected: vx should be negative (LEFT)
++  assert.strictEqual(Math.sign(state.ball.vx), -1, 'Ball should have bounced LEFT');
++});

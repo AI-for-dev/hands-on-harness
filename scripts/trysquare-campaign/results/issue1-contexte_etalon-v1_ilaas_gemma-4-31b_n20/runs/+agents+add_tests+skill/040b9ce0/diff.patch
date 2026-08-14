@@ -1,0 +1,216 @@
+diff --git a/.scratch/probe.test.js b/.scratch/probe.test.js
+new file mode 100644
+index 0000000..4433976
+--- /dev/null
++++ b/.scratch/probe.test.js
+@@ -0,0 +1,64 @@
++import assert from 'node:assert';
++import { test } from 'node:test';
++import { createState, collides, frame, UP, DOWN, LEFT, RIGHT } from '../game/neon.js';
++
++// Mock canvas context
++const ctx = {
++  fillStyle: '',
++  fillRect: () => {},
++  beginPath: () => {},
++  arc: () => {},
++  fill: () => {},
++  fillText: () => {},
++};
++
++test('D1 - Ball should bounce off top of brick', () => {
++  const state = createState(1);
++  const brick = state.bricks[0]; // Top-left brick
++  
++  // Position ball just hitting the top face of the brick
++  // Brick is at BRICK_TOP = 48, BRICK_H = 20.
++  // Ball r = 7. Top face hit: ball.y + 7 > 48 and ball.vy > 0.
++  state.ball.x = brick.x + brick.w / 2;
++  state.ball.y = brick.y - 6; // bottom of ball is at 42 + 7 = 49 > 48
++  state.ball.vy = 100; // moving DOWN
++  
++  frame(ctx, state);
++  
++  assert.strictEqual(state.ball.vy, -100, 'Ball should have bounced UP');
++});
++
++test('D2 - Ball should not stick to brick', () => {
++  const state = createState(1);
++  const brick = state.bricks[0];
++  
++  state.ball.x = brick.x + brick.w / 2;
++  state.ball.y = brick.y + 2; // Deeply inside the brick
++  state.ball.vy = -100; // moving UP
++  
++  // First frame: detect and bounce
++  frame(ctx, state);
++  const vy1 = state.ball.vy;
++  
++  // Second frame: should not bounce again if already moving away or repositioned
++  frame(ctx, state);
++  const vy2 = state.ball.vy;
++  
++  assert.strictEqual(vy1, 100, 'Should bounce DOWN');
++  assert.strictEqual(vy2, 100, 'Should stay moving DOWN (not stick/vibrate)');
++});
++
++test('D3 - Ball should bounce off side of brick', () => {
++  const state = createState(1);
++  const brick = state.bricks[0];
++  
++  // Ball hitting the left face of the brick
++  state.ball.y = brick.y + brick.h / 2;
++  state.ball.x = brick.x - 6; // right edge of ball at -6 + 7 = 1 > brick.x
++  state.ball.vx = 100; // moving RIGHT
++  
++  frame(ctx, state);
++  
++  assert.strictEqual(state.ball.vx, -100, 'Ball should have bounced LEFT');
++  assert.strictEqual(state.ball.vy, 100, 'Ball vy should not have changed (if it was 100)');
++});
+diff --git a/.scratch/to_fix.md b/.scratch/to_fix.md
+new file mode 100644
+index 0000000..27de183
+--- /dev/null
++++ b/.scratch/to_fix.md
+@@ -0,0 +1,77 @@
++# Symptôme : La balle traverse les briques au lieu de rebondir.
++
++## D1 — Absence de rebond
++- **Famille** : Face vs coin / Traversée
++- **Symptôme joueur** : la balle traverse les briques sans changer de direction.
++- **Cause** : `game/neon.js:211` — La collision est détectée et la brique est détruite, mais aucune modification de la vitesse de la balle n'est appliquée.
++- **Invariant violé** : Un impact avec une brique doit inverser la composante de vitesse perpendiculaire à la face touchée.
++- **Déclencheur** : Toute collision avec une brique.
++- **Attendu** : `ball.vx` ou `ball.vy` est inversé selon la face touchée.
++- **Référence** : https://noonat.github.io/intersect/ — AABB vs AABB collision response.
++- **Cas test** :
++  ```js
++  test('D1 - Ball should bounce off top of brick', () => {
++    const state = createState(1);
++    const brick = state.bricks[0];
++    state.ball.x = brick.x + brick.w / 2;
++    state.ball.y = brick.y - 6;
++    state.ball.vy = 100;
++    frame(ctx, state);
++    assert.strictEqual(state.ball.vy, -100, 'Ball should have bounced UP');
++  });
++  ```
++- **Rouge aujourd'hui** : `AssertionError [ERR_ASSERTION]: Ball should have bounced UP (100 !== -100)`
++- **Discrimine** : Le fait que le code actuel ne fait rien.
++- **Vert quand** : La vitesse est inversée lors d'un impact.
++
++## D2 — Effet collant (Sticky)
++- **Famille** : Collant
++- **Symptôme joueur** : la balle semble "vibrer" ou rester collée à l'intérieur d'une brique.
++- **Cause** : Absence de repositionnement après l'inversion de la vitesse.
++- **Invariant violé** : Après résolution d'une collision, l'objet ne doit plus chevaucher l'obstacle.
++- **Déclencheur** : Collision où la balle pénètre significativement dans la brique.
++- **Attendu** : La balle est repositionnée sur le bord de la brique.
++- **Référence** : https://gamedev.net (Swept AABB response)
++- **Cas test** :
++  ```js
++  test('D2 - Ball should not stick to brick', () => {
++    const state = createState(1);
++    const brick = state.bricks[0];
++    state.ball.x = brick.x + brick.w / 2;
++    state.ball.y = brick.y + 2;
++    state.ball.vy = -100;
++    frame(ctx, state);
++    const vy1 = state.ball.vy;
++    frame(ctx, state);
++    const vy2 = state.ball.vy;
++    assert.strictEqual(vy1, 100, 'Should bounce DOWN');
++    assert.strictEqual(vy2, 100, 'Should stay moving DOWN');
++  });
++  ```
++- **Rouge aujourd'hui** : `AssertionError [ERR_ASSERTION]: Should bounce DOWN (-100 !== 100)`
++- **Discrimine** : La correction naïve `ball.vy = -ball.vy` sans repositionnement.
++- **Vert quand** : La balle ne change pas de direction au tour suivant si elle s'éloigne.
++
++## D3 — Confusion Face vs Coin
++- **Famille** : Face vs coin
++- **Symptôme joueur** : la balle rebondit verticalement alors qu'elle a touché le côté d'une brique.
++- **Cause** : Utilisation d'un simple booléen `collides()` sans analyse de la normale d'impact.
++- **Invariant violé** : Seule la vitesse perpendiculaire à la face d'impact doit être inversée.
++- **Déclencheur** : Collision latérale.
++- **Attendu** : `ball.vx` est inversé, `ball.vy` reste inchangé.
++- **Référence** : https://noonat.github.io/intersect/
++- **Cas test** :
++  ```js
++  test('D3 - Ball should bounce off side of brick', () => {
++    const state = createState(1);
++    const brick = state.bricks[0];
++    state.ball.y = brick.y + brick.h / 2;
++    state.ball.x = brick.x - 6;
++    state.ball.vx = 100;
++    frame(ctx, state);
++    assert.strictEqual(state.ball.vx, -100, 'Ball should have bounced LEFT');
++  });
++  ```
++- **Rouge aujourd'hui** : `AssertionError [ERR_ASSERTION]: Ball should have bounced LEFT (100 !== -100)`
++- **Discrimine** : La correction naïve qui inverserait `vy` systématiquement.
++- **Vert quand** : L'axe de rebond correspond à la face touchée.
+diff --git a/game/neon.test.js b/game/neon.test.js
+index 250d6a9..526675f 100644
+--- a/game/neon.test.js
++++ b/game/neon.test.js
+@@ -15,6 +15,7 @@ import {
+   step,
+   makeBricks,
+   createState,
++  frame,
+   BRICK_ROWS,
+   BRICK_COLS,
+   WIDTH,
+@@ -65,5 +66,48 @@ function belowField() {
+   return 500;
+ }
+ 
+-// TODO (#5): test comboMultiplier / scoreForBrick.
+-// TODO      : test level progression and loadBest/saveBest persistence.
++
++const mockCtx = {
++  fillStyle: '',
++  fillRect: () => {},
++  beginPath: () => {},
++  arc: () => {},
++  fill: () => {},
++  fillText: () => {},
++};
++
++test('D1 - Ball should bounce off top of brick', () => {
++  const state = createState(1);
++  const brick = state.bricks[0];
++  state.ball.x = brick.x + brick.w / 2;
++  state.ball.y = brick.y - 6; // ball.y + 7 = 42 - 6 + 7 = 36... wait.
++  // BRICK_TOP = 48. Ball r = 7.
++  // If ball.y = 48 - 6 = 42, then ball.y + r = 49 > 48. Correct.
++  state.ball.vy = 100;
++  frame(mockCtx, state);
++  assert.equal(state.ball.vy, -100, 'Ball should have bounced UP');
++});
++
++test('D2 - Ball should not stick to brick', () => {
++  const state = createState(1);
++  const brick = state.bricks[0];
++  state.ball.x = brick.x + brick.w / 2;
++  state.ball.y = brick.y + 2;
++  state.ball.vy = -100;
++  frame(mockCtx, state);
++  const vy1 = state.ball.vy;
++  frame(mockCtx, state);
++  const vy2 = state.ball.vy;
++  assert.equal(vy1, 100, 'Should bounce DOWN');
++  assert.equal(vy2, 100, 'Should stay moving DOWN');
++});
++
++test('D3 - Ball should bounce off side of brick', () => {
++  const state = createState(1);
++  const brick = state.bricks[0];
++  state.ball.y = brick.y + brick.h / 2;
++  state.ball.x = brick.x - 6;
++  state.ball.vx = 100;
++  frame(mockCtx, state);
++  assert.equal(state.ball.vx, -100, 'Ball should have bounced LEFT');
++});

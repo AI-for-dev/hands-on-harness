@@ -1,0 +1,114 @@
+diff --git a/game/neon.js b/game/neon.js
+index 6b4a133..37ac9bf 100644
+--- a/game/neon.js
++++ b/game/neon.js
+@@ -159,8 +159,7 @@ export function saveBest(storage, score) {
+ // --- Physics (movement + wall/paddle bounces) ------------------------------
+ 
+ // Advances the ball by a time step `dt` (in seconds) and handles bounces off
+-// the walls and the paddle. Does NOT handle bricks: that responsibility still
+-// lives in the render loop `frame()` (debt #2).
++// the walls, the paddle, and the bricks.
+ // Returns `true` if the ball is lost (exits through the bottom).
+ export function step(state, dt) {
+   const { ball, paddle } = state;
+@@ -199,6 +198,38 @@ export function step(state, dt) {
+     state.combo = 0; // touching the paddle resets the combo
+   }
+ 
++  // Bricks
++  for (const brick of state.bricks) {
++    if (!brick.alive) continue;
++
++    if (collides(ball, brick)) {
++      brick.alive = false;
++      state.combo += 1;
++      state.score += scoreForBrick(brick, state.combo);
++
++      const distLeft = ball.x + ball.r - brick.x;
++      const distRight = brick.x + brick.w - (ball.x - ball.r);
++      const distTop = ball.y + ball.r - brick.y;
++      const distBottom = brick.y + brick.h - (ball.y - ball.r);
++      const minDist = Math.min(distLeft, distRight, distTop, distBottom);
++
++      if (minDist === distLeft) {
++        ball.vx = -Math.abs(ball.vx);
++        ball.x = brick.x - ball.r;
++      } else if (minDist === distRight) {
++        ball.vx = Math.abs(ball.vx);
++        ball.x = brick.x + brick.w + ball.r;
++      } else if (minDist === distTop) {
++        ball.vy = Math.abs(ball.vy);
++        ball.y = brick.y - ball.r;
++      } else if (minDist === distBottom) {
++        ball.vy = -Math.abs(ball.vy);
++        ball.y = brick.y + brick.h + ball.r;
++      }
++      break; // Only one brick per step to avoid weirdness
++    }
++  }
++
+   // Exit through the bottom: ball lost
+   if (ball.y - ball.r > HEIGHT) {
+     return true;
+@@ -215,21 +246,10 @@ export function frame(ctx, state) {
+   ctx.fillStyle = palette.background;
+   ctx.fillRect(0, 0, WIDTH, HEIGHT);
+ 
+-  // Bricks: collision + bounce + score + drawing, all in one place.
++  // Bricks: drawing only. Collision is handled in step().
+   for (const brick of state.bricks) {
+     if (!brick.alive) continue;
+ 
+-    if (collides(state.ball, brick)) {
+-      brick.alive = false;
+-      state.combo += 1;
+-      state.score += scoreForBrick(brick, state.combo);
+-      // BUG (#1): the ball is NOT deflected here. Only the walls and the paddle
+-      // bounce (in step()); bricks were never given a bounce. So the ball plows
+-      // straight through a column head-on AND straight through the side of a
+-      // row. Fix = a real per-face bounce (flip vy on a top/bottom hit, vx on a
+-      // side hit) plus pushing the ball back out of the brick.
+-    }
+-
+     ctx.fillStyle = brickColor(brick.row);
+     ctx.fillRect(brick.x, brick.y, brick.w, brick.h);
+   }
+diff --git a/game/neon.test.js b/game/neon.test.js
+index 250d6a9..0856b27 100644
+--- a/game/neon.test.js
++++ b/game/neon.test.js
+@@ -65,5 +65,31 @@ function belowField() {
+   return 500;
+ }
+ 
+-// TODO (#5): test comboMultiplier / scoreForBrick.
+-// TODO      : test level progression and loadBest/saveBest persistence.
++test('step: bounce off a brick (top)', () => {
++  const state = createState(1);
++  // Position ball just above a brick and moving UP (actually it's moving DOWN in my test setup to hit the top? No, it must be moving UP to hit the top of a brick if bricks are at the top).
++  // Wait, bricks are at the TOP. Y increases DOWNWARD.
++  // Brick Y is BRICK_TOP (48).
++  // Ball Y moving UP means vy < 0.
++  // To hit the TOP of the brick, the ball must be moving UP (vy < 0) and then it should bounce DOWN (vy > 0).
++  state.ball = { x: 100, y: 60, r: 7, vx: 0, vy: -300 };
++  state.bricks = [{ x: 90, y: 50, w: 40, h: 20, alive: true }];
++  
++  // Step a bit to cause collision
++  step(state, 1 / 60);
++  
++  assert.ok(state.ball.vy > 0, 'ball should bounce DOWN after hitting the top of a brick');
++  assert.equal(state.bricks[0].alive, false, 'brick should be destroyed');
++});
++
++test('step: bounce off a brick (left)', () => {
++  const state = createState(1);
++  // Ball moving RIGHT (vx > 0) and hits the left side of a brick.
++  state.ball = { x: 80, y: 100, r: 7, vx: 300, vy: 0 };
++  state.bricks = [{ x: 90, y: 90, w: 40, h: 20, alive: true }];
++  
++  step(state, 1 / 60);
++  
++  assert.ok(state.ball.vx < 0, 'ball should bounce LEFT after hitting the left side of a brick');
++  assert.equal(state.bricks[0].alive, false, 'brick should be destroyed');
++});

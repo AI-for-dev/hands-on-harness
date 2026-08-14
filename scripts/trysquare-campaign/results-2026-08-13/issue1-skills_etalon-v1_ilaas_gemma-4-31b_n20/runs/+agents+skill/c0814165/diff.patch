@@ -1,0 +1,35 @@
+diff --git a/.scratch/test_d1.js b/.scratch/test_d1.js
+new file mode 100644
+index 0000000..a22c57e
+--- /dev/null
++++ b/.scratch/test_d1.js
+@@ -0,0 +1,29 @@
++import assert from 'node:assert';
++import { test } from 'node:test';
++import { createState, frame, collides } from './game/neon.js';
++
++test('D1 - Ball should bounce off the bottom face of a brick', () => {
++  const state = createState(1);
++  const brick = state.bricks[0];
++  brick.alive = true;
++
++  // Position ball so it's just about to hit the bottom face of the first brick
++  // Brick 0 is at BRICK_TOP, BRICK_W, BRICK_H
++  // Ball is moving UP (vy < 0)
++  state.ball.x = brick.x + brick.w / 2;
++  state.ball.y = brick.y + brick.h + state.ball.r - 1; 
++  state.ball.vy = -260; // Moving UP
++
++  // Mock canvas context
++  const ctx = {
++    fillRect: () => {},
++    arc: () => {},
++    fill: () => {},
++    fillText: () => {},
++    beginPath: () => {},
++  };
++
++  frame(ctx, state);
++
++  assert.strictEqual(state.ball.vy > 0, true, 'Ball should be moving DOWN after hitting bottom face');
++});

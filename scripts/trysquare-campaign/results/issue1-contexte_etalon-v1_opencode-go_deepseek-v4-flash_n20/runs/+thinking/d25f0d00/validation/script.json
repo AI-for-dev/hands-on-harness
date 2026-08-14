@@ -1,0 +1,29 @@
+{
+  "metrics": {
+    "delivered": true,
+    "in_scope": false,
+    "touched": [
+      "ISSUES.md",
+      "game/neon.js",
+      "game/neon.test.js"
+    ],
+    "tests_ajoutes": true,
+    "suite_lancee": true,
+    "skill_invoque": false,
+    "rebond_briques": true,
+    "rebond_angles": true,
+    "rebond_sortie": true,
+    "rebond_voisines": true,
+    "rebond_traversee": true
+  },
+  "reasons": {
+    "in_scope": "a aussi touché ISSUES.md",
+    "tests_ajoutes": "12 cas de plus qu'à l'étalon (18 contre 6)",
+    "suite_lancee": "cd /private/var/folders/hf/sz48238s7x98j_p98cqfxprc0000gp/T/trysquare/campaign/issue1-contexte_etalon-v1_opencode-go_deepseek-v4-flash_n20/d25f0d00/repo && git diff --stat && echo \"---\" && npm test 2>&1 | grep -E \"ℹ (tests|pass|fail)\" ; cd /private/var/folders/hf/sz48238s7x98j_p98cqfxprc0000gp/T/trysquare/campaign/issue1-contexte_etalon-v1_opencode-go_deepseek-v4-flash_n20/d25f0d00/repo && git log --oneline -5 && npm test 2>&1 | tail -20 ; cd /private/var/folders/hf/sz48238s7x98j_p98cqfxprc0000gp/T/trysquare/campaign/issue1-contexte_etalon-v1_opencode-go_deepseek-v4-flash_n20/d25f0d00/repo && npm test 2>&1 | grep -A3 \"Error\\|error\" | head -10 ; cd /private/var/folders/hf/sz48238s7x98j_p98cqfxprc0000gp/T/trysquare/campaign/issue1-contexte_etalon-v1_opencode-go_deepseek-v4-flash_n20/d25f0d00/repo && npm test 2>&1 | grep -E \"^(✔|✖)\" ; cd /private/var/folders/hf/sz48238s7x98j_p98cqfxprc0000gp/T/trysquare/campaign/issue1-contexte_etalon-v1_opencode-go_deepseek-v4-flash_n20/d25f0d00/repo && npm test 2>&1 | grep -E \"^(✔|✖|ℹ (tests|pass|fail))\" ; cd /private/var/folders/hf/sz48238s7x98j_p98cqfxprc0000gp/T/trysquare/campaign/issue1-contexte_etalon-v1_opencode-go_deepseek-v4-flash_n20/d25f0d00/repo && npm test 2>&1 | grep -E \"ℹ (tests|pass|fail)\" && echo \"---\" && head -20 ISSUES.md ; cd /private/var/folders/hf/sz48238s7x98j_p98cqfxprc0000gp/T/trysquare/campaign/issue1-contexte_etalon-v1_opencode-go_deepseek-v4-flash_n20/d25f0d00/repo && npm test 2>&1 | grep -E \"ℹ (tests|pass|fail)\" && node --input-type=module -e \" import { createState, step, brickHit } from './game/neon.js'; // Ball sent straight up INSIDE a brick column (x=280, col 3: 244..316). const s = createState(1); s.ball = { ...s.ball, x: 280, y: 350, vx: 0, vy: -260 }; let minY = 999, broken = 0; for (let i = 0; i < 600 && s.ball.vy < 0; i++) { const prev = { x: s.ball.x, y: s.ball.y }; step(s, 1 / 60); broken += brickHit(prev.x, prev.y, s.ball, s.bricks).length; minY = Math.min(minY, s.ball.y); } // top row spans y 48..68; a correct bounce flips vy before the ball reaches the ceiling (y < 48 - r = 41 impossible above the brick... actually it must stop descending in y at ~41) console.log('straight-up inside column: broken =', broken, '| min y reached =', minY.toFixed(1), '| vy now =', s.ball.vy, '=> ball bounced back down:', s.ball.vy > 0); // Level 6 stutter, inside a column. const s6 = createState(6); s6.ball = { ...s6.ball, x: 280, y: 90, vx: 0, vy: -710 }; let f = 0, b6 = 0; const prev6 = { x: s6.ball.x, y: s6.ball.y }; step(s6, 0.05); b6 += brickHit(prev6.x, prev6.y, s6.ball, s6.bricks).length; console.log('level-6 35px stutter: broken =', b6, '| vy =', s6.ball.vy, '(should be +710: bounced down)', '| y =', s6.ball.y.toFixed(1)); \" ; cd /private/var/folders/hf/sz48238s7x98j_p98cqfxprc0000gp/T/trysquare/campaign/issue1-contexte_etalon-v1_opencode-go_deepseek-v4-flash_n20/d25f0d00/repo && npm test 2>&1 | tail -30 ; cd /private/var/folders/hf/sz48238s7x98j_p98cqfxprc0000gp/T/trysquare/campaign/issue1-contexte_etalon-v1_opencode-go_deepseek-v4-flash_n20/d25f0d00/repo && npm test 2>&1 | tail -8",
+    "skill_invoque": "aucune compétence développée dans le prompt, et aucun SKILL.md lu sur 47 appels d'outil",
+    "rebond_traversee": "balle rapide: la brique n_est pas franchie sans être touchée : dévié par frame() après le déplacement de step()"
+  },
+  "unjudged": {
+    "sonde_intacte": "aucune sonde n'a été fournie à cette cellule"
+  }
+}

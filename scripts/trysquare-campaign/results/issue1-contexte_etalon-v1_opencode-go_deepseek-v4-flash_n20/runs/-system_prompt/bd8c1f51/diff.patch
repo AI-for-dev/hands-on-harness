@@ -1,0 +1,80 @@
+diff --git a/game/neon.js b/game/neon.js
+index 6b4a133..ef80842 100644
+--- a/game/neon.js
++++ b/game/neon.js
+@@ -114,6 +114,47 @@ export function collides(ball, brick) {
+   );
+ }
+ 
++// Deflects the ball off a brick it just collided with and pushes it back out.
++// Determines which face was hit by comparing how far the ball's center sits
++// past each face; bounces the dominant axis (treating a corner, equal on both
++// axes, as a two-axis slap) and nudges the center back outside the brick so the
++// next frame cannot re-trigger the same brick (sticky bounce).
++export function bounceOff(ball, brick) {
++  // Center of the brick.
++  const cx = brick.x + brick.w / 2;
++  const cy = brick.y + brick.h / 2;
++
++  // Signed overlap ratio per axis from the ball centre to the brick faces.
++  const dx = (ball.x - cx) / (brick.w / 2 + ball.r);
++  const dy = (ball.y - cy) / (brick.h / 2 + ball.r);
++
++  const ax = Math.abs(dx);
++  const ay = Math.abs(dy);
++
++  // Corner: both faces are hit about as deeply, so slap both components.
++  if (Math.abs(ax - ay) < 0.15) {
++    ball.vx = dx > 0 ? Math.abs(ball.vx) : -Math.abs(ball.vx);
++    ball.vy = dy > 0 ? Math.abs(ball.vy) : -Math.abs(ball.vy);
++    // Push out along the axis that needs the least travel; prefer the
++    // horizontal when it is the deeper one, else push vertically.
++    if (ax >= ay) {
++      ball.x = dx > 0 ? brick.x + brick.w + ball.r : brick.x - ball.r;
++    } else {
++      ball.y = dy > 0 ? brick.y + brick.h + ball.r : brick.y - ball.r;
++    }
++    return;
++  }
++
++  // Otherwise bounce the deeper axis only and leave the other component as-is.
++  if (ax > ay) {
++    ball.vx = dx > 0 ? Math.abs(ball.vx) : -Math.abs(ball.vx);
++    ball.x = dx > 0 ? brick.x + brick.w + ball.r : brick.x - ball.r;
++  } else {
++    ball.vy = dy > 0 ? Math.abs(ball.vy) : -Math.abs(ball.vy);
++    ball.y = dy > 0 ? brick.y + brick.h + ball.r : brick.y - ball.r;
++  }
++}
++
+ // --- Score & combo (NOT covered by tests — debt #5) ------------------------
+ 
+ // Combo multiplier. UNBOUNDED today: a long combo makes the score blow up
+@@ -216,6 +257,7 @@ export function frame(ctx, state) {
+   ctx.fillRect(0, 0, WIDTH, HEIGHT);
+ 
+   // Bricks: collision + bounce + score + drawing, all in one place.
++  let bounced = false; // bounce at most once per frame (debt #1: neighbours)
+   for (const brick of state.bricks) {
+     if (!brick.alive) continue;
+ 
+@@ -223,11 +265,14 @@ export function frame(ctx, state) {
+       brick.alive = false;
+       state.combo += 1;
+       state.score += scoreForBrick(brick, state.combo);
+-      // BUG (#1): the ball is NOT deflected here. Only the walls and the paddle
+-      // bounce (in step()); bricks were never given a bounce. So the ball plows
+-      // straight through a column head-on AND straight through the side of a
+-      // row. Fix = a real per-face bounce (flip vy on a top/bottom hit, vx on a
+-      // side hit) plus pushing the ball back out of the brick.
++      // The grid gap (8 px) is smaller than the ball (14 px across), so a ball
++      // at a seam overlaps two bricks in the same pass. Every overlap must
++      // still destroy its brick, but the velocity must flip only once or the
++      // two flips cancel out and the ball slips straight through.
++      if (!bounced) {
++        bounceOff(state.ball, brick);
++        bounced = true;
++      }
+     }
+ 
+     ctx.fillStyle = brickColor(brick.row);

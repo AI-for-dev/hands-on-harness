@@ -1,0 +1,33 @@
+diff --git a/game/neon.js b/game/neon.js
+index 6b4a133..688a886 100644
+--- a/game/neon.js
++++ b/game/neon.js
+@@ -223,11 +223,23 @@ export function frame(ctx, state) {
+       brick.alive = false;
+       state.combo += 1;
+       state.score += scoreForBrick(brick, state.combo);
+-      // BUG (#1): the ball is NOT deflected here. Only the walls and the paddle
+-      // bounce (in step()); bricks were never given a bounce. So the ball plows
+-      // straight through a column head-on AND straight through the side of a
+-      // row. Fix = a real per-face bounce (flip vy on a top/bottom hit, vx on a
+-      // side hit) plus pushing the ball back out of the brick.
++      // Bounce (#1): deflect the ball off the brick face it actually hit. Compare
++      // the horizontal vs vertical penetration depth to decide top/bottom vs
++      // left/right, flip the matching velocity component and push the ball back
++      // out of the brick so it can't tunnel through on the next frame.
++      const brickCx = brick.x + brick.w / 2;
++      const brickCy = brick.y + brick.h / 2;
++      const penX = brick.w / 2 + state.ball.r - Math.abs(state.ball.x - brickCx);
++      const penY = brick.h / 2 + state.ball.r - Math.abs(state.ball.y - brickCy);
++      if (penX < penY) {
++        // Hit the left/right face: flip horizontal velocity, push out sideways.
++        state.ball.vx = state.ball.x < brickCx ? -Math.abs(state.ball.vx) : Math.abs(state.ball.vx);
++        state.ball.x += state.ball.x < brickCx ? -penX : penX;
++      } else {
++        // Hit the top/bottom face: flip vertical velocity, push out up/down.
++        state.ball.vy = state.ball.y < brickCy ? -Math.abs(state.ball.vy) : Math.abs(state.ball.vy);
++        state.ball.y += state.ball.y < brickCy ? -penY : penY;
++      }
+     }
+ 
+     ctx.fillStyle = brickColor(brick.row);

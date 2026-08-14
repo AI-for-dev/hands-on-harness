@@ -1,0 +1,64 @@
+diff --git a/game/neon.js b/game/neon.js
+index 6b4a133..44b3785 100644
+--- a/game/neon.js
++++ b/game/neon.js
+@@ -199,6 +199,36 @@ export function step(state, dt) {
+     state.combo = 0; // touching the paddle resets the combo
+   }
+ 
++  // Bricks collision
++  for (const brick of state.bricks) {
++    if (!brick.alive) continue;
++    if (collides(ball, brick)) {
++      brick.alive = false;
++      state.combo += 1;
++      state.score += scoreForBrick(brick, state.combo);
++
++      const dx1 = (ball.x + ball.r) - brick.x;
++      const dx2 = (brick.x + brick.w) - (ball.x - ball.r);
++      const dy1 = (ball.y + ball.r) - brick.y;
++      const dy2 = (brick.y + brick.h) - (ball.y - ball.r);
++      const min = Math.min(dx1, dx2, dy1, dy2);
++
++      if (min === dx1) {
++        ball.vx = -Math.abs(ball.vx);
++        ball.x = brick.x - ball.r;
++      } else if (min === dx2) {
++        ball.vx = Math.abs(ball.vx);
++        ball.x = brick.x + brick.w + ball.r;
++      } else if (min === dy1) {
++        ball.vy = Math.abs(ball.vy);
++        ball.y = brick.y - ball.r;
++      } else if (min === dy2) {
++        ball.vy = -Math.abs(ball.vy);
++        ball.y = brick.y + brick.h + ball.r;
++      }
++    }
++  }
++
+   // Exit through the bottom: ball lost
+   if (ball.y - ball.r > HEIGHT) {
+     return true;
+@@ -215,21 +245,10 @@ export function frame(ctx, state) {
+   ctx.fillStyle = palette.background;
+   ctx.fillRect(0, 0, WIDTH, HEIGHT);
+ 
+-  // Bricks: collision + bounce + score + drawing, all in one place.
++  // Bricks: drawing. Collision is handled in step().
+   for (const brick of state.bricks) {
+     if (!brick.alive) continue;
+ 
+-    if (collides(state.ball, brick)) {
+-      brick.alive = false;
+-      state.combo += 1;
+-      state.score += scoreForBrick(brick, state.combo);
+-      // BUG (#1): the ball is NOT deflected here. Only the walls and the paddle
+-      // bounce (in step()); bricks were never given a bounce. So the ball plows
+-      // straight through a column head-on AND straight through the side of a
+-      // row. Fix = a real per-face bounce (flip vy on a top/bottom hit, vx on a
+-      // side hit) plus pushing the ball back out of the brick.
+-    }
+-
+     ctx.fillStyle = brickColor(brick.row);
+     ctx.fillRect(brick.x, brick.y, brick.w, brick.h);
+   }

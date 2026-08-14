@@ -1,0 +1,208 @@
+diff --git a/game/neon.js b/game/neon.js
+index 6b4a133..3b50d6f 100644
+--- a/game/neon.js
++++ b/game/neon.js
+@@ -99,7 +99,86 @@ export function createState(level = 1) {
+   };
+ }
+ 
+-// --- Collision (tested primitive) ------------------------------------------
++// --- Collision resolution ------------------------------------------------
++
++// Resolves collisions between the ball and all alive bricks.
++// Updates ball velocity, position, and brick status.
++export function resolveBricks(state) {
++  const { ball } = state;
++  let collision = null;
++  let minOverlap = Infinity;
++
++  for (const brick of state.bricks) {
++    if (!brick.alive) continue;
++
++    // Tunnelling detection: check if the ball's movement path overlaps the brick.
++    if (!collides(ball, brick)) {
++      const minX = Math.min(ball.prevX - ball.r, ball.x - ball.r);
++      const maxX = Math.max(ball.prevX + ball.r, ball.x + ball.r);
++      const minY = Math.min(ball.prevY - ball.r, ball.y - ball.r);
++      const maxY = Math.max(ball.prevY + ball.r, ball.y + ball.r);
++
++      if (maxX > brick.x && minX < brick.x + brick.w && maxY > brick.y && minY < brick.y + brick.h) {
++        // Tunnelled! Resolve as a simple bounce based on velocity direction.
++        brick.alive = false;
++        state.combo += 1;
++        state.score += scoreForBrick(brick, state.combo);
++        if (Math.abs(ball.vx) > Math.abs(ball.vy) * (brick.w / brick.h)) {
++          ball.vx = ball.vx > 0 ? -Math.abs(ball.vx) : Math.abs(ball.vx);
++          ball.x = ball.vx > 0 ? brick.x - ball.r : brick.x + brick.w + ball.r;
++        } else {
++          ball.vy = ball.vy > 0 ? Math.abs(ball.vy) : -Math.abs(ball.vy);
++          ball.y = ball.vy > 0 ? brick.y - ball.r : brick.y + brick.h + ball.r;
++        }
++        return; // Resolve one tunnel per frame to avoid double-bounce
++      }
++      continue;
++    }
++
++    // Standard AABB collision: find the face with the smallest penetration.
++    const overlapX = Math.min(ball.x + ball.r - brick.x, brick.x + brick.w - (ball.x - ball.r));
++    const overlapY = Math.min(ball.y + ball.r - brick.y, brick.y + brick.h - (ball.y - ball.r));
++    const overlap = Math.min(overlapX, overlapY);
++
++    if (overlap < minOverlap) {
++      minOverlap = overlap;
++      collision = { brick, overlapX, overlapY };
++    }
++  }
++
++  if (collision) {
++    const { brick, overlapX, overlapY } = collision;
++    brick.alive = false;
++    state.combo += 1;
++    state.score += scoreForBrick(brick, state.combo);
++
++    if (overlapX === overlapY) {
++      // Corner hit: flip both and push out diagonally.
++      ball.vx = ball.vx > 0 ? -Math.abs(ball.vx) : Math.abs(ball.vx);
++      ball.vy = ball.vy > 0 ? -Math.abs(ball.vy) : Math.abs(ball.vy);
++      ball.x = ball.vx > 0 ? brick.x - ball.r : brick.x + brick.w + ball.r;
++      ball.y = ball.vy > 0 ? brick.y - ball.r : brick.y + brick.h + ball.r;
++    } else if (overlapX < overlapY) {
++      // Side hit: flip vx and push out.
++      if (ball.vx > 0) {
++        ball.vx = -Math.abs(ball.vx);
++        ball.x = brick.x - ball.r;
++      } else {
++        ball.vx = Math.abs(ball.vx);
++        ball.x = brick.x + brick.w + ball.r;
++      }
++    } else {
++      // Top/Bottom hit: flip vy and push out.
++      if (ball.vy > 0) {
++        ball.vy = -Math.abs(ball.vy);
++        ball.y = brick.y - ball.r;
++      } else {
++        ball.vy = Math.abs(ball.vy);
++        ball.y = brick.y + brick.h + ball.r;
++      }
++    }
++  }
++}
+ 
+ // True if the ball (circle approximated by its box) overlaps the brick.
+ // Simple AABB test: it only says WHETHER the ball and the brick overlap, not
+@@ -165,6 +244,8 @@ export function saveBest(storage, score) {
+ export function step(state, dt) {
+   const { ball, paddle } = state;
+ 
++  ball.prevX = ball.x;
++  ball.prevY = ball.y;
+   ball.x += ball.vx * dt;
+   ball.y += ball.vy * dt;
+ 
+@@ -219,21 +300,11 @@ export function frame(ctx, state) {
+   for (const brick of state.bricks) {
+     if (!brick.alive) continue;
+ 
+-    if (collides(state.ball, brick)) {
+-      brick.alive = false;
+-      state.combo += 1;
+-      state.score += scoreForBrick(brick, state.combo);
+-      // BUG (#1): the ball is NOT deflected here. Only the walls and the paddle
+-      // bounce (in step()); bricks were never given a bounce. So the ball plows
+-      // straight through a column head-on AND straight through the side of a
+-      // row. Fix = a real per-face bounce (flip vy on a top/bottom hit, vx on a
+-      // side hit) plus pushing the ball back out of the brick.
+-    }
+-
+     ctx.fillStyle = brickColor(brick.row);
+     ctx.fillRect(brick.x, brick.y, brick.w, brick.h);
+   }
+ 
++
+   // Paddle — color hard-coded instead of using the palette (inconsistency #6).
+   ctx.fillStyle = '#00e5ff';
+   ctx.fillRect(state.paddle.x, state.paddle.y, state.paddle.w, state.paddle.h);
+@@ -289,6 +360,7 @@ export function boot(doc = document) {
+ 
+     if (state.running) {
+       const lost = step(state, dt);
++      resolveBricks(state);
+       if (lost) {
+         state.lives -= 1;
+         state.combo = 0;
+diff --git a/game/neon.test.js b/game/neon.test.js
+index 250d6a9..7df058a 100644
+--- a/game/neon.test.js
++++ b/game/neon.test.js
+@@ -15,6 +15,7 @@ import {
+   step,
+   makeBricks,
+   createState,
++  resolveBricks,
+   BRICK_ROWS,
+   BRICK_COLS,
+   WIDTH,
+@@ -65,5 +66,61 @@ function belowField() {
+   return 500;
+ }
+ 
+-// TODO (#5): test comboMultiplier / scoreForBrick.
+-// TODO      : test level progression and loadBest/saveBest persistence.
++test('resolveBricks: bounce off top face', () => {
++  const state = createState(1);
++  state.ball = { x: 100, y: 80, r: 7, vx: 0, vy: -100 }; // Moving UP
++  state.bricks = [{ x: 80, y: 70, w: 40, h: 20, alive: true }];
++  resolveBricks(state);
++  assert.ok(state.ball.vy > 0, 'vy should be flipped to DOWN');
++});
++
++test('resolveBricks: bounce off bottom face', () => {
++  const state = createState(1);
++  state.ball = { x: 100, y: 110, r: 7, vx: 0, vy: 100 }; // Moving DOWN
++  state.bricks = [{ x: 80, y: 90, w: 40, h: 20, alive: true }];
++  resolveBricks(state);
++  assert.ok(state.ball.vy < 0, 'vy should be flipped to UP');
++});
++
++test('resolveBricks: bounce off left face', () => {
++  const state = createState(1);
++  state.ball = { x: 75, y: 100, r: 7, vx: 100, vy: 0 }; // overlapping by 2px
++  state.bricks = [{ x: 80, y: 90, w: 40, h: 20, alive: true }];
++  resolveBricks(state);
++  assert.ok(state.ball.vx < 0, 'vx should be flipped to LEFT');
++});
++
++test('resolveBricks: bounce off right face', () => {
++  const state = createState(1);
++  state.ball = { x: 125, y: 100, r: 7, vx: -100, vy: 0 }; // overlapping by 2px
++  state.bricks = [{ x: 80, y: 90, w: 40, h: 20, alive: true }];
++  resolveBricks(state);
++  assert.ok(state.ball.vx > 0, 'vx should be flipped to RIGHT');
++});
++
++test('resolveBricks: corner hit flips both', () => {
++  const state = createState(1);
++  state.ball = { x: 75, y: 75, r: 7, vx: 100, vy: -100 }; // overlapping corner
++  state.bricks = [{ x: 80, y: 80, w: 40, h: 20, alive: true }];
++  resolveBricks(state);
++  assert.ok(state.ball.vx < 0 && state.ball.vy > 0, 'both vx and vy should flip');
++});
++
++test('resolveBricks: push-out prevents sticking', () => {
++  const state = createState(1);
++  state.ball = { x: 100, y: 75, r: 7, vx: 0, vy: -100 };
++  state.bricks = [{ x: 80, y: 70, w: 40, h: 20, alive: true }];
++  resolveBricks(state);
++  assert.ok(state.ball.y - state.ball.r >= 90 || state.ball.y + state.ball.r <= 70, 'ball should be outside brick');
++});
++
++test('resolveBricks: tunnelling prevention', () => {
++  const state = createState(1);
++  // Ball speed is so high it would skip the brick in one step
++  state.ball = { x: 100, y: 60, r: 7, vx: 0, vy: -1000 }; 
++  state.bricks = [{ x: 80, y: 40, w: 40, h: 20, alive: true }];
++  // We need to simulate a step and then resolve, or handle it in resolveBricks.
++  // If resolveBricks handles tunnelling, it should detect it.
++  resolveBricks(state);
++  assert.ok(!state.bricks[0].alive, 'brick should be destroyed even if ball jumped over it');
++});
