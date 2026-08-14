@@ -3,7 +3,7 @@ index 6b4a133..3c78d9c 100644
 --- a/game/neon.js
 +++ b/game/neon.js
 @@ -103,8 +103,7 @@ export function createState(level = 1) {
- 
+
  // True if the ball (circle approximated by its box) overlaps the brick.
  // Simple AABB test: it only says WHETHER the ball and the brick overlap, not
 -// WHICH face was hit. The missing bounce in frame() is what lets the ball plow
@@ -15,7 +15,7 @@ index 6b4a133..3c78d9c 100644
 @@ -114,6 +113,44 @@ export function collides(ball, brick) {
    );
  }
- 
+
 +// Resolves collisions between the ball and bricks.
 +// This was previously in frame() (debt #2).
 +export function resolveCollisions(state) {
@@ -55,7 +55,7 @@ index 6b4a133..3c78d9c 100644
 +}
 +
  // --- Score & combo (NOT covered by tests — debt #5) ------------------------
- 
+
  // Combo multiplier. UNBOUNDED today: a long combo makes the score blow up
 @@ -164,39 +201,44 @@ export function saveBest(storage, score) {
  // Returns `true` if the ball is lost (exits through the bottom).
@@ -76,7 +76,7 @@ index 6b4a133..3c78d9c 100644
 +      ball.x = WIDTH - ball.r;
 +      ball.vx = -Math.abs(ball.vx);
 +    }
- 
+
 -  ball.x += ball.vx * dt;
 -  ball.y += ball.vy * dt;
 -
@@ -93,7 +93,7 @@ index 6b4a133..3c78d9c 100644
 +      ball.y = ball.r;
 +      ball.vy = Math.abs(ball.vy);
 +    }
- 
+
 -  // Ceiling
 -  if (ball.y - ball.r < 0) {
 -    ball.y = ball.r;
@@ -113,7 +113,7 @@ index 6b4a133..3c78d9c 100644
 +      ball.vx = ballSpeed(state.level) * 0.6 * hit;
 +      state.combo = 0;
 +    }
- 
+
 -  // Paddle
 -  if (
 -    ball.vy > 0 &&
@@ -130,12 +130,12 @@ index 6b4a133..3c78d9c 100644
 -    state.combo = 0; // touching the paddle resets the combo
 +    resolveCollisions(state);
    }
- 
+
    // Exit through the bottom: ball lost
 @@ -215,21 +257,9 @@ export function frame(ctx, state) {
    ctx.fillStyle = palette.background;
    ctx.fillRect(0, 0, WIDTH, HEIGHT);
- 
+
 -  // Bricks: collision + bounce + score + drawing, all in one place.
 +  // Bricks: drawing only.
    for (const brick of state.bricks) {
@@ -168,12 +168,12 @@ index 250d6a9..623cae5 100644
 +  DOWN,
 +  resolveCollisions,
  } from './neon.js';
- 
+
  test('collides: clear overlap detected', () => {
 @@ -65,5 +69,55 @@ function belowField() {
    return 500;
  }
- 
+
 -// TODO (#5): test comboMultiplier / scoreForBrick.
 -// TODO      : test level progression and loadBest/saveBest persistence.
 +test('resolveCollisions: ball bouncing off the bottom of a brick', () => {
@@ -220,7 +220,7 @@ index 250d6a9..623cae5 100644
 +    vx: 0,
 +    vy: 2000,
 +  };
-+  
++
 +  // We test via step(), which now uses sub-stepping.
 +  // vy = 2000, dt = 0.05 => distance = 100.
 +  // Brick height = 20. 100 > 20, so it would tunnel without sub-stepping.

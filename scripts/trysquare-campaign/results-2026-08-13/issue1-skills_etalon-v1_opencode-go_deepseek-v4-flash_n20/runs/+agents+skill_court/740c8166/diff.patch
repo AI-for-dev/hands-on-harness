@@ -15,13 +15,13 @@ index 6b4a133..3b79336 100644
 +// Pure logic (physics, collision, score) lives in exported functions tested
 +// from `node --test`; rendering lives in `frame()`; only `boot()` touches the
 +// DOM. The module runs nothing on import.
- 
+
  import { palette, brickColor } from './theme.js';
  import { createGlowMap, drawGlow, GLOW_W, GLOW_H } from './bloom.js';
 @@ -46,6 +42,15 @@ export const PADDLE_Y = HEIGHT - 32;
- 
+
  export const BALL_R = 7;
- 
+
 +// Bounce-resolution tolerance: a ball is placed this far beyond the face it
 +// bounces off, so floating-point noise never leaves it overlapping.
 +const EPS = 0.001;
@@ -64,9 +64,9 @@ index 6b4a133..3b79336 100644
      bricks: makeBricks(level),
    };
  }
- 
+
  // --- Collision (tested primitive) ------------------------------------------
- 
+
 -// True if the ball (circle approximated by its box) overlaps the brick.
 -// Simple AABB test: it only says WHETHER the ball and the brick overlap, not
 -// WHICH face was hit. The missing bounce in frame() is what lets the ball plow
@@ -91,10 +91,10 @@ index 6b4a133..3b79336 100644
 +    y - r < brick.y + brick.h
    );
  }
- 
+
 -// --- Score & combo (NOT covered by tests — debt #5) ------------------------
 +// --- Score & combo ----------------------------------------------------------
- 
+
 -// Combo multiplier. UNBOUNDED today: a long combo makes the score blow up
 -// uncontrollably (see #5, expected improvement = clamp it).
 +// Combo multiplier, bounded so a long chain cannot blow the score up.
@@ -102,11 +102,11 @@ index 6b4a133..3b79336 100644
 -  return 1 + combo * 0.5;
 +  return Math.min(1 + combo * 0.5, MAX_COMBO_MULTIPLIER);
  }
- 
+
  // Points earned for breaking a brick, combo included.
 @@ -159,12 +181,16 @@ export function saveBest(storage, score) {
  // --- Physics (movement + wall/paddle bounces) ------------------------------
- 
+
  // Advances the ball by a time step `dt` (in seconds) and handles bounces off
 -// the walls and the paddle. Does NOT handle bricks: that responsibility still
 -// lives in the render loop `frame()` (debt #2).
@@ -114,7 +114,7 @@ index 6b4a133..3b79336 100644
  // Returns `true` if the ball is lost (exits through the bottom).
  export function step(state, dt) {
    const { ball, paddle } = state;
- 
+
 +  // Record where the step started: `resolveBricks()` sweeps from there to the
 +  // new position, which is what stops tunneling.
 +  ball.px = ball.x;
@@ -122,7 +122,7 @@ index 6b4a133..3b79336 100644
 +
    ball.x += ball.vx * dt;
    ball.y += ball.vy * dt;
- 
+
 @@ -172,30 +198,43 @@ export function step(state, dt) {
    if (ball.x - ball.r < 0) {
      ball.x = ball.r;
@@ -133,14 +133,14 @@ index 6b4a133..3b79336 100644
      ball.vx = -Math.abs(ball.vx);
 +    setSpeed(state);
    }
- 
+
    // Ceiling
    if (ball.y - ball.r < 0) {
      ball.y = ball.r;
      ball.vy = Math.abs(ball.vy);
 +    setSpeed(state);
    }
- 
+
 -  // Paddle
 +  // Paddle: swept over the ball's path — a fast ball, or a paddle the mouse
 +  // teleported onto the ball, always bounces out through the top.
@@ -173,11 +173,11 @@ index 6b4a133..3b79336 100644
 +    }
      state.combo = 0; // touching the paddle resets the combo
    }
- 
+
 @@ -206,7 +245,186 @@ export function step(state, dt) {
    return false;
  }
- 
+
 -// --- Rendering (DOM): brick collision logic STILL mixed in here ------------
 +// --- Brick collision & bounce (pure, tested) -------------------------------
 +
@@ -359,13 +359,13 @@ index 6b4a133..3b79336 100644
 +}
 +
 +// --- Rendering (DOM): drawing only, the collision logic lives above ---------
- 
+
  // Main render loop. For each live brick we test collision AND draw in the same
  // pass: this is where logic and rendering are entangled.
 @@ -215,21 +433,9 @@ export function frame(ctx, state) {
    ctx.fillStyle = palette.background;
    ctx.fillRect(0, 0, WIDTH, HEIGHT);
- 
+
 -  // Bricks: collision + bounce + score + drawing, all in one place.
 +  // Bricks: drawing only — bounce and scoring happen in `resolveBricks()`.
    for (const brick of state.bricks) {
@@ -388,7 +388,7 @@ index 6b4a133..3b79336 100644
 @@ -252,6 +458,36 @@ export function frame(ctx, state) {
    ctx.fillText(`Lives ${state.lives}`, WIDTH / 2 - 30, 24);
  }
- 
+
 +// --- Transitions (pure, tested) --------------------------------------------
 +
 +// Applies the end-of-frame transitions. A cleared level wins over a ball lost
@@ -420,10 +420,10 @@ index 6b4a133..3b79336 100644
 +}
 +
  // --- Boot (browser entry point) --------------------------------------------
- 
+
  // Starts the game: wires up the canvas, the mouse and the animation loop.
 @@ -289,25 +525,8 @@ export function boot(doc = document) {
- 
+
      if (state.running) {
        const lost = step(state, dt);
 -      if (lost) {
@@ -448,7 +448,7 @@ index 6b4a133..3b79336 100644
 +      resolveBricks(state);
 +      advance(state, lost);
      }
- 
+
      frame(ctx, state);
 diff --git a/game/neon.test.js b/game/neon.test.js
 index 250d6a9..df17b39 100644
@@ -465,7 +465,7 @@ index 250d6a9..df17b39 100644
 -//
 -// Run: `node --test "game/**/*.test.js"`  (or `npm test`)
 +// Run: `npm test`  (node --test "game/**/*.test.js")
- 
+
  import { test } from 'node:test';
  import assert from 'node:assert/strict';
 @@ -13,11 +8,22 @@ import assert from 'node:assert/strict';
@@ -489,12 +489,12 @@ index 250d6a9..df17b39 100644
 +  BALL_R,
 +  BRICK_GAP,
  } from './neon.js';
- 
+
  test('collides: clear overlap detected', () => {
 @@ -59,11 +65,255 @@ test('makeBricks: full, all-alive grid at start', () => {
    assert.ok(bricks.every((b) => b.x >= 0 && b.x + b.w <= WIDTH));
  });
- 
+
 +// A lone brick, away from the walls, so one collision is exercised at a time
 +// without the grid's neighbours or the wall interfering.
 +function loneBrick() {

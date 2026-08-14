@@ -5,7 +5,7 @@ index 6b4a133..b34f566 100644
 @@ -114,6 +114,61 @@ export function collides(ball, brick) {
    );
  }
- 
+
 +function intersectSegmentAABB(x1, y1, x2, y2, minX, minY, maxX, maxY) {
 +  let tMin = 0, tMax = 1;
 +  const dx = x2 - x1;
@@ -62,12 +62,12 @@ index 6b4a133..b34f566 100644
 +
 +
  // --- Score & combo (NOT covered by tests — debt #5) ------------------------
- 
+
  // Combo multiplier. UNBOUNDED today: a long combo makes the score blow up
 @@ -158,16 +213,16 @@ export function saveBest(storage, score) {
- 
+
  // --- Physics (movement + wall/paddle bounces) ------------------------------
- 
+
 -// Advances the ball by a time step `dt` (in seconds) and handles bounces off
 -// the walls and the paddle. Does NOT handle bricks: that responsibility still
 -// lives in the render loop `frame()` (debt #2).
@@ -76,10 +76,10 @@ index 6b4a133..b34f566 100644
    const { ball, paddle } = state;
 +  const prevX = ball.x;
 +  const prevY = ball.y;
- 
+
    ball.x += ball.vx * dt;
    ball.y += ball.vy * dt;
- 
+
 +  resolveBrickCollisions(state, dt, prevX, prevY);
 +
    // Side walls
@@ -87,13 +87,13 @@ index 6b4a133..b34f566 100644
      ball.x = ball.r;
 @@ -216,20 +271,11 @@ export function frame(ctx, state) {
    ctx.fillRect(0, 0, WIDTH, HEIGHT);
- 
+
    // Bricks: collision + bounce + score + drawing, all in one place.
 +  resolveBrickCollisions(state, 0, state.ball.x, state.ball.y);
 +
    for (const brick of state.bricks) {
      if (!brick.alive) continue;
- 
+
 -    if (collides(state.ball, brick)) {
 -      brick.alive = false;
 -      state.combo += 1;

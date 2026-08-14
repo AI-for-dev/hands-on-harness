@@ -14,16 +14,16 @@ index 6b4a133..23473cf 100644
 @@ -165,6 +165,9 @@ export function saveBest(storage, score) {
  export function step(state, dt) {
    const { ball, paddle } = state;
- 
+
 +  ball.prevX = ball.x;
 +  ball.prevY = ball.y;
 +
    ball.x += ball.vx * dt;
    ball.y += ball.vy * dt;
- 
+
 @@ -216,18 +219,64 @@ export function frame(ctx, state) {
    ctx.fillRect(0, 0, WIDTH, HEIGHT);
- 
+
    // Bricks: collision + bounce + score + drawing, all in one place.
 +  const { ball } = state;
 +  let bouncedX = false;
@@ -31,7 +31,7 @@ index 6b4a133..23473cf 100644
 +
    for (const brick of state.bricks) {
      if (!brick.alive) continue;
- 
+
 -    if (collides(state.ball, brick)) {
 +    let hit = collides(ball, brick);
 +    if (!hit && ball.prevX !== undefined) {
@@ -90,7 +90,7 @@ index 6b4a133..23473cf 100644
 +        }
 +      }
      }
- 
+
      ctx.fillStyle = brickColor(brick.row);
 diff --git a/game/neon.test.js b/game/neon.test.js
 index 250d6a9..963f459 100644
@@ -102,7 +102,7 @@ index 250d6a9..963f459 100644
    WIDTH,
 +  frame,
  } from './neon.js';
- 
+
 +function mockCtx() {
 +  return {
 +    fillStyle: '',
@@ -118,7 +118,7 @@ index 250d6a9..963f459 100644
    const ball = { x: 100, y: 100, r: 8 };
    const brick = { x: 90, y: 90, w: 40, h: 20 };
 @@ -67,3 +79,65 @@ function belowField() {
- 
+
  // TODO (#5): test comboMultiplier / scoreForBrick.
  // TODO      : test level progression and loadBest/saveBest persistence.
 +

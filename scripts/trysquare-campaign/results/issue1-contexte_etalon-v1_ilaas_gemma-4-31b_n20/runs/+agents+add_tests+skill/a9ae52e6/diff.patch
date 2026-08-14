@@ -11,7 +11,7 @@ index 0000000..1d9fd7b
 +test('D1: Ball should bounce off brick', () => {
 +  const state = createState(1);
 +  const brick = state.bricks[0]; // Row 0, Col 0
-+  
++
 +  // Position ball so it's about to hit the top of the brick
 +  // Brick 0: y = BRICK_TOP = 48, h = 20. Top is 48, bottom is 68.
 +  // Ball: r = 7. To hit top, ball.y + 7 should be > 48 and ball.y - 7 should be < 68.
@@ -34,9 +34,9 @@ index 0000000..1d9fd7b
 +  // In the real game, step() happens then frame().
 +  // Let's manually move the ball into the brick.
 +  state.ball.y = 45; // 45 + 7 = 52 > 48. Collision!
-+  
++
 +  frame(ctx, state);
-+  
++
 +  assert.strictEqual(state.ball.vy, -200, 'Ball vy should be inverted after hitting the top of a brick');
 +});
 diff --git a/.scratch/repro_seams.test.js b/.scratch/repro_seams.test.js
@@ -53,7 +53,7 @@ index 0000000..1e95ca2
 +  const state = createState(1);
 +  const brick1 = state.bricks[0];
 +  const brick2 = state.bricks[1]; // Next brick in the same row
-+  
++
 +  // Position ball so it overlaps both bricks
 +  // Brick 0: x = offsetX, w = 72.
 +  // Brick 1: x = offsetX + 72 + 8.
@@ -75,7 +75,7 @@ index 0000000..1e95ca2
 +  };
 +
 +  frame(ctx, state);
-+  
++
 +  // If it hit two bricks and flipped vy twice, it will be 200.
 +  // It should be -200.
 +  assert.strictEqual(state.ball.vy, -200, 'Ball should only bounce once per frame per axis even if multiple bricks are hit');
@@ -92,8 +92,8 @@ index 0000000..1c75a14
 +
 +test('D1.2: Ball should bounce off side of brick', () => {
 +  const state = createState(1);
-+  const brick = state.bricks[0]; 
-+  
++  const brick = state.bricks[0];
++
 +  // Brick 0: x = offsetX, y = 48, w = 72, h = 20.
 +  // Ball: r = 7.
 +  // To hit left side, ball.x + 7 > brick.x and ball.x - 7 < brick.x + 72.
@@ -113,7 +113,7 @@ index 0000000..1c75a14
 +  };
 +
 +  frame(ctx, state);
-+  
++
 +  assert.strictEqual(state.ball.vx, -200, 'Ball vx should be inverted after hitting the side of a brick');
 +  assert.strictEqual(state.ball.vy, 0, 'Ball vy should NOT be inverted after hitting the side of a brick');
 +});
@@ -129,8 +129,8 @@ index 0000000..e7e710f
 +
 +test('D2: Ball should not get stuck inside brick', () => {
 +  const state = createState(1);
-+  const brick = state.bricks[0]; 
-+  
++  const brick = state.bricks[0];
++
 +  // Position ball so it's overlapping the top
 +  state.ball.x = brick.x + brick.w / 2;
 +  state.ball.y = brick.y - 2; // r = 7, so it penetrates 5 pixels
@@ -147,19 +147,19 @@ index 0000000..e7e710f
 +
 +  // First frame: collision and bounce
 +  frame(ctx, state);
-+  
++
 +  // After first frame, it should have bounced (vy = -200)
 +  assert.strictEqual(state.ball.vy, -200);
-+  
++
 +  // Now, imagine the next frame. In the real game, step() happens.
 +  // If we didn't reposition, and step() is small, ball.y might still be inside the brick.
 +  // The current implementation of step() doesn't handle bricks.
 +  // Let's see if frame() would flip it back.
-+  
++
 +  // We simulate the ball still being in the brick
-+  state.ball.y = brick.y - 2; 
++  state.ball.y = brick.y - 2;
 +  frame(ctx, state);
-+  
++
 +  // If it's still colliding, it will flip vy back to 200!
 +  assert.strictEqual(state.ball.vy, -200, 'Ball should not flip vy back if it is still overlapping after the first bounce');
 +});
@@ -314,11 +314,11 @@ index 6b4a133..c5f4972 100644
    );
 +  return result;
  }
- 
+
  // --- Score & combo (NOT covered by tests — debt #5) ------------------------
 @@ -159,44 +160,92 @@ export function saveBest(storage, score) {
  // --- Physics (movement + wall/paddle bounces) ------------------------------
- 
+
  // Advances the ball by a time step `dt` (in seconds) and handles bounces off
 -// the walls and the paddle. Does NOT handle bricks: that responsibility still
 -// lives in the render loop `frame()` (debt #2).
@@ -326,7 +326,7 @@ index 6b4a133..c5f4972 100644
  // Returns `true` if the ball is lost (exits through the bottom).
  export function step(state, dt) {
    const { ball, paddle } = state;
- 
+
 -  ball.x += ball.vx * dt;
 -  ball.y += ball.vy * dt;
 +  // Sub-stepping to prevent tunneling (D5)
@@ -350,7 +350,7 @@ index 6b4a133..c5f4972 100644
 +      ball.vx = -Math.abs(ball.vx);
 +      hitX = true;
 +    }
- 
+
 -  // Side walls
 -  if (ball.x - ball.r < 0) {
 -    ball.x = ball.r;
@@ -365,7 +365,7 @@ index 6b4a133..c5f4972 100644
 +      ball.vy = Math.abs(ball.vy);
 +      hitY = true;
 +    }
- 
+
 -  // Ceiling
 -  if (ball.y - ball.r < 0) {
 -    ball.y = ball.r;
@@ -386,7 +386,7 @@ index 6b4a133..c5f4972 100644
 +      state.combo = 0;
 +      hitY = true;
 +    }
- 
+
 -  // Paddle
 -  if (
 -    ball.vy > 0 &&
@@ -438,17 +438,17 @@ index 6b4a133..c5f4972 100644
 +      }
 +    }
    }
- 
+
    // Exit through the bottom: ball lost
 @@ -215,21 +264,10 @@ export function frame(ctx, state) {
    ctx.fillStyle = palette.background;
    ctx.fillRect(0, 0, WIDTH, HEIGHT);
- 
+
 -  // Bricks: collision + bounce + score + drawing, all in one place.
 +  // Bricks: drawing only.
    for (const brick of state.bricks) {
      if (!brick.alive) continue;
- 
+
 -    if (collides(state.ball, brick)) {
 -      brick.alive = false;
 -      state.combo += 1;
@@ -470,7 +470,7 @@ index 250d6a9..1e62246 100644
 @@ -59,11 +59,60 @@ test('makeBricks: full, all-alive grid at start', () => {
    assert.ok(bricks.every((b) => b.x >= 0 && b.x + b.w <= WIDTH));
  });
- 
+
 -// Small local helper: place the ball below the field without importing the
 -// height (coverage intentionally light).
 +test('D1: Ball should bounce off top of brick', () => {
@@ -480,7 +480,7 @@ index 250d6a9..1e62246 100644
 +  state.ball.y = brick.y - 2;
 +  state.ball.vx = 0;
 +  state.ball.vy = 200;
-+  step(state, 0.01); 
++  step(state, 0.01);
 +  assert.equal(state.ball.vy, -200);
 +});
 +

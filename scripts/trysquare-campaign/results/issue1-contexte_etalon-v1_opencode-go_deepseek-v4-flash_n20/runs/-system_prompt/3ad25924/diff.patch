@@ -3,7 +3,7 @@ index 6b4a133..5abec36 100644
 --- a/game/neon.js
 +++ b/game/neon.js
 @@ -103,8 +103,7 @@ export function createState(level = 1) {
- 
+
  // True if the ball (circle approximated by its box) overlaps the brick.
  // Simple AABB test: it only says WHETHER the ball and the brick overlap, not
 -// WHICH face was hit. The missing bounce in frame() is what lets the ball plow
@@ -15,7 +15,7 @@ index 6b4a133..5abec36 100644
 @@ -114,6 +113,46 @@ export function collides(ball, brick) {
    );
  }
- 
+
 +// Resolves a brick hit: deflects the ball off the face that was struck and
 +// pushes it back OUT of the brick so it cannot re-collide on the next frame
 +// (a "sticky") bounce that would otherwise re-flip the velocity forever).
@@ -57,11 +57,11 @@ index 6b4a133..5abec36 100644
 +}
 +
  // --- Score & combo (NOT covered by tests — debt #5) ------------------------
- 
+
  // Combo multiplier. UNBOUNDED today: a long combo makes the score blow up
 @@ -216,6 +255,11 @@ export function frame(ctx, state) {
    ctx.fillRect(0, 0, WIDTH, HEIGHT);
- 
+
    // Bricks: collision + bounce + score + drawing, all in one place.
 +  // `bounced` guards against a multi-brick pass: two bricks sharing an 8 px
 +  // seam can both overlap the 14 px ball in the same frame, but the velocity
@@ -70,7 +70,7 @@ index 6b4a133..5abec36 100644
 +  let bounced = false;
    for (const brick of state.bricks) {
      if (!brick.alive) continue;
- 
+
 @@ -223,11 +267,10 @@ export function frame(ctx, state) {
        brick.alive = false;
        state.combo += 1;
@@ -85,5 +85,5 @@ index 6b4a133..5abec36 100644
 +        bounced = true;
 +      }
      }
- 
+
      ctx.fillStyle = brickColor(brick.row);

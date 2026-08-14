@@ -20,7 +20,7 @@ index 6b4a133..1eb1641 100644
 @@ -53,6 +56,14 @@ export const BRICK_H = 20;
  export const BRICK_GAP = 8;
  export const BRICK_TOP = 48;
- 
+
 +// Maximum distance (px) travelled in a single integration substep. The ball
 +// crosses a brick in BRICK_H + 2 * BALL_R = 34 px, so a discrete position
 +// check can jump over one at level 6 (35.5 px per capped frame — see #1
@@ -30,10 +30,10 @@ index 6b4a133..1eb1641 100644
 +const MAX_SUBSTEP_PX = 12;
 +
  const STORAGE_KEY = 'neon.best';
- 
+
  // --- State construction ----------------------------------------------------
 @@ -103,8 +114,8 @@ export function createState(level = 1) {
- 
+
  // True if the ball (circle approximated by its box) overlaps the brick.
  // Simple AABB test: it only says WHETHER the ball and the brick overlap, not
 -// WHICH face was hit. The missing bounce in frame() is what lets the ball plow
@@ -46,7 +46,7 @@ index 6b4a133..1eb1641 100644
 @@ -114,6 +125,67 @@ export function collides(ball, brick) {
    );
  }
- 
+
 +// Resolves a single ball/brick overlap (see #1):
 +//   - per face: the axis with the SMALLER penetration is the face that was
 +//     hit — flip vy on a top/bottom hit, vx on a side hit, and leave the
@@ -109,15 +109,15 @@ index 6b4a133..1eb1641 100644
 +}
 +
  // --- Score & combo (NOT covered by tests — debt #5) ------------------------
- 
+
  // Combo multiplier. UNBOUNDED today: a long combo makes the score blow up
 @@ -156,47 +228,61 @@ export function saveBest(storage, score) {
    return best;
  }
- 
+
 -// --- Physics (movement + wall/paddle bounces) ------------------------------
 +// --- Physics (movement + wall/paddle/brick bounces) ------------------------
- 
+
  // Advances the ball by a time step `dt` (in seconds) and handles bounces off
 -// the walls and the paddle. Does NOT handle bricks: that responsibility still
 -// lives in the render loop `frame()` (debt #2).
@@ -131,7 +131,7 @@ index 6b4a133..1eb1641 100644
  // Returns `true` if the ball is lost (exits through the bottom).
  export function step(state, dt) {
    const { ball, paddle } = state;
- 
+
 -  ball.x += ball.vx * dt;
 -  ball.y += ball.vy * dt;
 +  const distance = Math.hypot(ball.vx, ball.vy) * dt;
@@ -150,7 +150,7 @@ index 6b4a133..1eb1641 100644
 +      ball.x = WIDTH - ball.r;
 +      ball.vx = -Math.abs(ball.vx);
 +    }
- 
+
 -  // Side walls
 -  if (ball.x - ball.r < 0) {
 -    ball.x = ball.r;
@@ -164,7 +164,7 @@ index 6b4a133..1eb1641 100644
 +      ball.y = ball.r;
 +      ball.vy = Math.abs(ball.vy);
 +    }
- 
+
 -  // Ceiling
 -  if (ball.y - ball.r < 0) {
 -    ball.y = ball.r;
@@ -185,7 +185,7 @@ index 6b4a133..1eb1641 100644
 +      ball.vx = ballSpeed(state.level) * 0.6 * hit;
 +      state.combo = 0; // touching the paddle resets the combo
 +    }
- 
+
 -  // Paddle
 -  if (
 -    ball.vy > 0 &&
@@ -203,15 +203,15 @@ index 6b4a133..1eb1641 100644
 +    // Bricks: destroy what the ball touches, bounce exactly once per pass.
 +    brickCollisions(state);
    }
- 
+
    // Exit through the bottom: ball lost
 @@ -206,30 +292,18 @@ export function step(state, dt) {
    return false;
  }
- 
+
 -// --- Rendering (DOM): brick collision logic STILL mixed in here ------------
 +// --- Rendering (DOM): pure drawing, no game logic --------------------------
- 
+
 -// Main render loop. For each live brick we test collision AND draw in the same
 -// pass: this is where logic and rendering are entangled.
 +// Main render loop. Brick collision, bounce and scoring all happen in step()
@@ -220,7 +220,7 @@ index 6b4a133..1eb1641 100644
    // Background
    ctx.fillStyle = palette.background;
    ctx.fillRect(0, 0, WIDTH, HEIGHT);
- 
+
 -  // Bricks: collision + bounce + score + drawing, all in one place.
 +  // Bricks
    for (const brick of state.bricks) {
@@ -255,7 +255,7 @@ index 250d6a9..e317400 100644
 @@ -45,6 +46,99 @@ test('step: bounce off the left wall', () => {
    assert.ok(state.ball.vx > 0, 'horizontal velocity should flip to the right');
  });
- 
+
 +// --- Issue #1: the ball must bounce off bricks, not plow through ----------
 +
 +// A small helper: one brick, default-ish points, alive.

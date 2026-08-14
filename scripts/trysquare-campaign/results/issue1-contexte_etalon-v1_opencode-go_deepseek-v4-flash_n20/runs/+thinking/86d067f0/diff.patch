@@ -15,11 +15,11 @@ index 6b4a133..d9e716e 100644
 +// Game logic lives in the pure functions below (tested under `node --test`);
 +// only `boot()` touches the DOM. Nothing runs on import, so the logic can be
 +// imported from the tests without a browser.
- 
+
  import { palette, brickColor } from './theme.js';
  import { createGlowMap, drawGlow, GLOW_W, GLOW_H } from './bloom.js';
 @@ -103,8 +99,7 @@ export function createState(level = 1) {
- 
+
  // True if the ball (circle approximated by its box) overlaps the brick.
  // Simple AABB test: it only says WHETHER the ball and the brick overlap, not
 -// WHICH face was hit. The missing bounce in frame() is what lets the ball plow
@@ -31,7 +31,7 @@ index 6b4a133..d9e716e 100644
 @@ -114,6 +109,182 @@ export function collides(ball, brick) {
    );
  }
- 
+
 +// --- Brick collision (#1): sweep, single bounce, push-out -----------------
 +
 +// Extra room the ball is pushed out of a brick after a bounce, so the very
@@ -209,15 +209,15 @@ index 6b4a133..d9e716e 100644
 +}
 +
  // --- Score & combo (NOT covered by tests — debt #5) ------------------------
- 
+
  // Combo multiplier. UNBOUNDED today: a long combo makes the score blow up
 @@ -156,15 +327,17 @@ export function saveBest(storage, score) {
    return best;
  }
- 
+
 -// --- Physics (movement + wall/paddle bounces) ------------------------------
 +// --- Physics (movement + wall/paddle/brick bounces) ------------------------
- 
+
  // Advances the ball by a time step `dt` (in seconds) and handles bounces off
 -// the walls and the paddle. Does NOT handle bricks: that responsibility still
 -// lives in the render loop `frame()` (debt #2).
@@ -225,17 +225,17 @@ index 6b4a133..d9e716e 100644
  // Returns `true` if the ball is lost (exits through the bottom).
  export function step(state, dt) {
    const { ball, paddle } = state;
- 
+
 +  const prevX = ball.x;
 +  const prevY = ball.y;
 +
    ball.x += ball.vx * dt;
    ball.y += ball.vy * dt;
- 
+
 @@ -183,6 +356,13 @@ export function step(state, dt) {
      ball.vy = Math.abs(ball.vy);
    }
- 
+
 +  // Bricks: the path from the position at the start of this step is swept
 +  // against the grid, so the ball bounces off every face it crosses (and a
 +  // fast ball cannot tunnel through). Resolved BEFORE the paddle: the sweep
@@ -249,10 +249,10 @@ index 6b4a133..d9e716e 100644
 @@ -206,30 +386,19 @@ export function step(state, dt) {
    return false;
  }
- 
+
 -// --- Rendering (DOM): brick collision logic STILL mixed in here ------------
 +// --- Rendering (DOM) -------------------------------------------------------
- 
+
 -// Main render loop. For each live brick we test collision AND draw in the same
 -// pass: this is where logic and rendering are entangled.
 +// Main render loop. Pure drawing: all game logic (movement, bounces, brick
@@ -262,7 +262,7 @@ index 6b4a133..d9e716e 100644
    // Background
    ctx.fillStyle = palette.background;
    ctx.fillRect(0, 0, WIDTH, HEIGHT);
- 
+
 -  // Bricks: collision + bounce + score + drawing, all in one place.
 +  // Bricks: drawing only — collision resolution happens in step() (#1).
    for (const brick of state.bricks) {
@@ -297,7 +297,7 @@ index 250d6a9..42a3815 100644
 @@ -59,6 +60,144 @@ test('makeBricks: full, all-alive grid at start', () => {
    assert.ok(bricks.every((b) => b.x >= 0 && b.x + b.w <= WIDTH));
  });
- 
+
 +// --- Brick bounce (#1) ----------------------------------------------------
 +// The ball must be deflected by a brick, not plow through it: per-face bounce
 +// (flip vy on top/bottom, vx on side), corner hits flip both, the ball is

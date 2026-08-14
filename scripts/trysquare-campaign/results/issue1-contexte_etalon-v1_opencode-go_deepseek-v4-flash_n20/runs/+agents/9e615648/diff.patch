@@ -5,7 +5,7 @@ index 6b4a133..a60f270 100644
 @@ -114,6 +114,42 @@ export function collides(ball, brick) {
    );
  }
- 
+
 +// Bounces the ball off a brick, flipping the correct velocity axis and
 +// pushing the ball back out so it does not re-collide on the next frame.
 +// A narrow overlap (from below/above) means a top/bottom hit => flip vy;
@@ -43,7 +43,7 @@ index 6b4a133..a60f270 100644
 +}
 +
  // --- Score & combo (NOT covered by tests — debt #5) ------------------------
- 
+
  // Combo multiplier. UNBOUNDED today: a long combo makes the score blow up
 @@ -223,11 +259,7 @@ export function frame(ctx, state) {
        brick.alive = false;
@@ -56,14 +56,14 @@ index 6b4a133..a60f270 100644
 -      // side hit) plus pushing the ball back out of the brick.
 +      bounceBall(state.ball, brick);
      }
- 
+
      ctx.fillStyle = brickColor(brick.row);
 diff --git a/game/neon.test.js b/game/neon.test.js
 index 250d6a9..3d84df5 100644
 --- a/game/neon.test.js
 +++ b/game/neon.test.js
 @@ -12,6 +12,7 @@ import assert from 'node:assert/strict';
- 
+
  import {
    collides,
 +  bounceBall,
@@ -73,7 +73,7 @@ index 250d6a9..3d84df5 100644
 @@ -59,6 +60,30 @@ test('makeBricks: full, all-alive grid at start', () => {
    assert.ok(bricks.every((b) => b.x >= 0 && b.x + b.w <= WIDTH));
  });
- 
+
 +test('bounceBall: head-on top hit flips vy up and keeps it above the brick', () => {
 +  const ball = { x: 320, y: 50, r: 7, vx: 0, vy: 300 };
 +  const brick = { x: 300, y: 60, w: 72, h: 20 };

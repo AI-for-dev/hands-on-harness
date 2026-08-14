@@ -3,7 +3,7 @@ index 6b4a133..6f801c2 100644
 --- a/game/neon.js
 +++ b/game/neon.js
 @@ -103,8 +103,8 @@ export function createState(level = 1) {
- 
+
  // True if the ball (circle approximated by its box) overlaps the brick.
  // Simple AABB test: it only says WHETHER the ball and the brick overlap, not
 -// WHICH face was hit. The missing bounce in frame() is what lets the ball plow
@@ -16,7 +16,7 @@ index 6b4a133..6f801c2 100644
 @@ -114,6 +114,112 @@ export function collides(ball, brick) {
    );
  }
- 
+
 +// --- Brick collision resolution (issue #1) --------------------------------
 +
 +// Liang–Barsky segment/rectangle intersection. True when the segment from
@@ -124,11 +124,11 @@ index 6b4a133..6f801c2 100644
 +}
 +
  // --- Score & combo (NOT covered by tests — debt #5) ------------------------
- 
+
  // Combo multiplier. UNBOUNDED today: a long combo makes the score blow up
 @@ -159,12 +265,19 @@ export function saveBest(storage, score) {
  // --- Physics (movement + wall/paddle bounces) ------------------------------
- 
+
  // Advances the ball by a time step `dt` (in seconds) and handles bounces off
 -// the walls and the paddle. Does NOT handle bricks: that responsibility still
 -// lives in the render loop `frame()` (debt #2).
@@ -137,7 +137,7 @@ index 6b4a133..6f801c2 100644
  // Returns `true` if the ball is lost (exits through the bottom).
  export function step(state, dt) {
    const { ball, paddle } = state;
- 
+
 +  // Keep the previous position so brick collision can sweep the path (issue #1
 +  // — tunnelling: at high level speed the ball can jump straight past a brick
 +  // in one frame). `frame()` reads it when it resolves brick bounces.
@@ -147,14 +147,14 @@ index 6b4a133..6f801c2 100644
 +
    ball.x += ball.vx * dt;
    ball.y += ball.vy * dt;
- 
+
 @@ -206,30 +319,25 @@ export function step(state, dt) {
    return false;
  }
- 
+
 -// --- Rendering (DOM): brick collision logic STILL mixed in here ------------
 +// --- Rendering (DOM) -------------------------------------------------------
- 
+
 -// Main render loop. For each live brick we test collision AND draw in the same
 -// pass: this is where logic and rendering are entangled.
 +// Main render loop. Brick collision is delegated to the pure `brickHit()`
@@ -164,7 +164,7 @@ index 6b4a133..6f801c2 100644
    // Background
    ctx.fillStyle = palette.background;
    ctx.fillRect(0, 0, WIDTH, HEIGHT);
- 
+
 -  // Bricks: collision + bounce + score + drawing, all in one place.
 -  for (const brick of state.bricks) {
 -    if (!brick.alive) continue;
@@ -185,7 +185,7 @@ index 6b4a133..6f801c2 100644
 +    state.combo += 1;
 +    state.score += scoreForBrick(hit, state.combo);
 +  }
- 
+
 +  // Draw pass.
 +  for (const brick of state.bricks) {
      ctx.fillStyle = brickColor(brick.row);
@@ -196,7 +196,7 @@ index 250d6a9..b4f1a1e 100644
 --- a/game/neon.test.js
 +++ b/game/neon.test.js
 @@ -12,6 +12,7 @@ import assert from 'node:assert/strict';
- 
+
  import {
    collides,
 +  brickHit,
@@ -206,7 +206,7 @@ index 250d6a9..b4f1a1e 100644
 @@ -52,6 +53,110 @@ test('step: ball exiting through the bottom => lost', () => {
    assert.equal(lost, true);
  });
- 
+
 +// --- brickHit: the issue #1 fix -------------------------------------------
 +
 +// Builds a state with the ball inside the first brick, approaching from the top.

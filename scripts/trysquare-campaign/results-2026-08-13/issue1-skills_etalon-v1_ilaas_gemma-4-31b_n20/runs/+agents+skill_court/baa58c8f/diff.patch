@@ -40,7 +40,7 @@ index 6b4a133..cc75865 100644
 +        }
 +      }
      }
- 
+
      ctx.fillStyle = brickColor(brick.row);
 diff --git a/game/neon.test.js b/game/neon.test.js
 index 250d6a9..404c382 100644
@@ -63,10 +63,10 @@ index 250d6a9..404c382 100644
 +  BRICK_GAP,
 +  BRICK_TOP,
  } from './neon.js';
- 
+
  test('collides: clear overlap detected', () => {
 @@ -67,3 +76,76 @@ function belowField() {
- 
+
  // TODO (#5): test comboMultiplier / scoreForBrick.
  // TODO      : test level progression and loadBest/saveBest persistence.
 +
@@ -118,16 +118,16 @@ index 250d6a9..404c382 100644
 +
 +test('frame: double inversion at brick seam', () => {
 +  const state = createState(1);
-+  
++
 +  const offsetX = (WIDTH - (BRICK_COLS * (BRICK_W + BRICK_GAP) - BRICK_GAP)) / 2;
 +  state.ball = {
 +    x: offsetX + BRICK_W + BRICK_GAP / 2,
-+    y: BRICK_TOP - 7 + 2, 
++    y: BRICK_TOP - 7 + 2,
 +    r: 7,
 +    vx: 0,
 +    vy: 100,
 +  };
-+  
++
 +  const ctx = {
 +    fillRect: () => {},
 +    arc: () => {},
@@ -137,8 +137,8 @@ index 250d6a9..404c382 100644
 +    fillStyle: '',
 +    font: '',
 +  };
-+  
++
 +  frame(ctx, state);
-+  
++
 +  assert.equal(Math.sign(state.ball.vy), UP, 'ball should still bounce up even when hitting two bricks');
 +});

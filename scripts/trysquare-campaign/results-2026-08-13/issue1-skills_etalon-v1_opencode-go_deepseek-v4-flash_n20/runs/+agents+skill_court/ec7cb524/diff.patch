@@ -14,7 +14,7 @@ index 6b4a133..56558f0 100644
  // The module runs nothing on import: only `boot()` touches the DOM. Pure
  // logic can therefore be imported from the tests (`node --test`) without a
 @@ -103,8 +103,9 @@ export function createState(level = 1) {
- 
+
  // True if the ball (circle approximated by its box) overlaps the brick.
  // Simple AABB test: it only says WHETHER the ball and the brick overlap, not
 -// WHICH face was hit. The missing bounce in frame() is what lets the ball plow
@@ -28,7 +28,7 @@ index 6b4a133..56558f0 100644
 @@ -165,6 +166,11 @@ export function saveBest(storage, score) {
  export function step(state, dt) {
    const { ball, paddle } = state;
- 
+
 +  // Remember where the step started: `bounceBricks()` sweeps from here so a
 +  // fast ball cannot skip an obstacle between two frames (tunneling).
 +  ball.prevX = ball.x;
@@ -36,11 +36,11 @@ index 6b4a133..56558f0 100644
 +
    ball.x += ball.vx * dt;
    ball.y += ball.vy * dt;
- 
+
 @@ -183,13 +189,18 @@ export function step(state, dt) {
      ball.vy = Math.abs(ball.vy);
    }
- 
+
 -  // Paddle
 +  // Paddle — swept test: the ball bounces when its bottom crosses the
 +  // paddle's top plane during the step (a fast ball used to jump the whole
@@ -63,7 +63,7 @@ index 6b4a133..56558f0 100644
 @@ -206,30 +217,134 @@ export function step(state, dt) {
    return false;
  }
- 
+
 -// --- Rendering (DOM): brick collision logic STILL mixed in here ------------
 +// --- Brick collision (pure, swept) -----------------------------------------
 +
@@ -181,7 +181,7 @@ index 6b4a133..56558f0 100644
 +}
 +
 +// --- Rendering (DOM) -------------------------------------------------------
- 
+
 -// Main render loop. For each live brick we test collision AND draw in the same
 -// pass: this is where logic and rendering are entangled.
 +// Main render loop. Collision resolution stays OUT of the drawing pass:
@@ -190,7 +190,7 @@ index 6b4a133..56558f0 100644
    // Background
    ctx.fillStyle = palette.background;
    ctx.fillRect(0, 0, WIDTH, HEIGHT);
- 
+
 -  // Bricks: collision + bounce + score + drawing, all in one place.
 +  // Bricks: resolve ball-vs-brick collisions, then draw the survivors.
 +  bounceBricks(state);
@@ -228,7 +228,7 @@ index 250d6a9..eb1bcba 100644
 +// (see ISSUES.md #5), nor level progression.
  //
  // Run: `node --test "game/**/*.test.js"`  (or `npm test`)
- 
+
 @@ -15,6 +14,15 @@ import {
    step,
    makeBricks,
@@ -248,7 +248,7 @@ index 250d6a9..eb1bcba 100644
 @@ -65,5 +73,130 @@ function belowField() {
    return 500;
  }
- 
+
 +// --- Brick bounce regression tests ----------------------------------------
 +//
 +// The reported symptom — "the ball goes through the bricks" — decomposes into

@@ -5,7 +5,7 @@ index 6b4a133..bce64c4 100644
 @@ -156,6 +156,30 @@ export function saveBest(storage, score) {
    return best;
  }
- 
+
 +// Collision response: reflects the ball and pushes it out of the brick.
 +function resolveBrickCollision(state, brick) {
 +  const { ball } = state;
@@ -31,7 +31,7 @@ index 6b4a133..bce64c4 100644
 +}
 +
  // --- Physics (movement + wall/paddle bounces) ------------------------------
- 
+
  // Advances the ball by a time step `dt` (in seconds) and handles bounces off
 @@ -164,39 +188,49 @@ export function saveBest(storage, score) {
  // Returns `true` if the ball is lost (exits through the bottom).
@@ -52,7 +52,7 @@ index 6b4a133..bce64c4 100644
 +      ball.x = WIDTH - ball.r;
 +      ball.vx = -Math.abs(ball.vx);
 +    }
- 
+
 -  ball.x += ball.vx * dt;
 -  ball.y += ball.vy * dt;
 -
@@ -69,7 +69,7 @@ index 6b4a133..bce64c4 100644
 +      ball.y = ball.r;
 +      ball.vy = Math.abs(ball.vy);
 +    }
- 
+
 -  // Ceiling
 -  if (ball.y - ball.r < 0) {
 -    ball.y = ball.r;
@@ -89,7 +89,7 @@ index 6b4a133..bce64c4 100644
 +      ball.vx = ballSpeed(state.level) * 0.6 * hit;
 +      state.combo = 0;
 +    }
- 
+
 -  // Paddle
 -  if (
 -    ball.vy > 0 &&
@@ -111,17 +111,17 @@ index 6b4a133..bce64c4 100644
 +      }
 +    }
    }
- 
+
    // Exit through the bottom: ball lost
 @@ -215,21 +249,10 @@ export function frame(ctx, state) {
    ctx.fillStyle = palette.background;
    ctx.fillRect(0, 0, WIDTH, HEIGHT);
- 
+
 -  // Bricks: collision + bounce + score + drawing, all in one place.
 +  // Bricks: only drawing now, collision is handled in step()
    for (const brick of state.bricks) {
      if (!brick.alive) continue;
- 
+
 -    if (collides(state.ball, brick)) {
 -      brick.alive = false;
 -      state.combo += 1;

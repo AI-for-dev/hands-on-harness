@@ -5,7 +5,7 @@ index 6b4a133..0c9f776 100644
 @@ -114,6 +114,113 @@ export function collides(ball, brick) {
    );
  }
- 
+
 +// True if the ball circle (at cx, cy) overlaps the given brick. Same AABB test
 +// as `collides` but for an arbitrary centre, used by the sweep in
 +// `resolveBrickCollision`.
@@ -114,12 +114,12 @@ index 6b4a133..0c9f776 100644
 +}
 +
  // --- Score & combo (NOT covered by tests — debt #5) ------------------------
- 
+
  // Combo multiplier. UNBOUNDED today: a long combo makes the score blow up
 @@ -208,28 +315,28 @@ export function step(state, dt) {
- 
+
  // --- Rendering (DOM): brick collision logic STILL mixed in here ------------
- 
+
 -// Main render loop. For each live brick we test collision AND draw in the same
 -// pass: this is where logic and rendering are entangled.
 +// Main render loop. Brick collision resolution is delegated to the pure
@@ -130,7 +130,7 @@ index 6b4a133..0c9f776 100644
    // Background
    ctx.fillStyle = palette.background;
    ctx.fillRect(0, 0, WIDTH, HEIGHT);
- 
+
 -  // Bricks: collision + bounce + score + drawing, all in one place.
 +  // Bricks: bounce the ball against them (once), then draw the survivors.
 +  // Collision resolution is delegated to the pure `resolveBrickCollision`
@@ -162,7 +162,7 @@ index 6b4a133..0c9f776 100644
    }
 @@ -288,6 +395,10 @@ export function boot(doc = document) {
      last = now;
- 
+
      if (state.running) {
 +      // Capture where the ball was before this frame's move so the brick
 +      // collision can sweep the segment and catch frame-skip tunnelling (#1).
@@ -186,7 +186,7 @@ index 250d6a9..f738c7f 100644
 @@ -52,6 +53,69 @@ test('step: ball exiting through the bottom => lost', () => {
    assert.equal(lost, true);
  });
- 
+
 +// --- Brick bounce (#1) ------------------------------------------------------
 +
 +function brickAt(x, y) {

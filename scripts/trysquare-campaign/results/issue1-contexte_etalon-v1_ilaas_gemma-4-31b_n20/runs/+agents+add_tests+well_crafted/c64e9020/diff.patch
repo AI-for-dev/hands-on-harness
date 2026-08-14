@@ -4,7 +4,7 @@ index 6b4a133..e7a0de8 100644
 +++ b/game/neon.js
 @@ -159,11 +159,13 @@ export function saveBest(storage, score) {
  // --- Physics (movement + wall/paddle bounces) ------------------------------
- 
+
  // Advances the ball by a time step `dt` (in seconds) and handles bounces off
 -// the walls and the paddle. Does NOT handle bricks: that responsibility still
 -// lives in the render loop `frame()` (debt #2).
@@ -15,13 +15,13 @@ index 6b4a133..e7a0de8 100644
    const { ball, paddle } = state;
 +  const oldX = ball.x;
 +  const oldY = ball.y;
- 
+
    ball.x += ball.vx * dt;
    ball.y += ball.vy * dt;
 @@ -199,6 +201,79 @@ export function step(state, dt) {
      state.combo = 0; // touching the paddle resets the combo
    }
- 
+
 +  // Brick collisions (Sweep to prevent tunnelling)
 +  let firstT = 1.0;
 +  let firstBrick = null;
@@ -101,12 +101,12 @@ index 6b4a133..e7a0de8 100644
 @@ -215,21 +290,10 @@ export function frame(ctx, state) {
    ctx.fillStyle = palette.background;
    ctx.fillRect(0, 0, WIDTH, HEIGHT);
- 
+
 -  // Bricks: collision + bounce + score + drawing, all in one place.
 +  // Bricks: drawing only (collision logic moved to step())
    for (const brick of state.bricks) {
      if (!brick.alive) continue;
- 
+
 -    if (collides(state.ball, brick)) {
 -      brick.alive = false;
 -      state.combo += 1;
@@ -128,7 +128,7 @@ index 250d6a9..cb626c4 100644
 @@ -65,5 +65,63 @@ function belowField() {
    return 500;
  }
- 
+
 -// TODO (#5): test comboMultiplier / scoreForBrick.
 -// TODO      : test level progression and loadBest/saveBest persistence.
 +test('step: bounce off the top of a brick', () => {
@@ -163,7 +163,7 @@ index 250d6a9..cb626c4 100644
 +  const customBrick = { x: 100, y: 100, w: 72, h: 20, alive: true };
 +  state.bricks = [customBrick];
 +  // Position ball at the corner
-+  state.ball = { x: 95, y: 95, r: 7, vx: 100, vy: 100 }; 
++  state.ball = { x: 95, y: 95, r: 7, vx: 100, vy: 100 };
 +  step(state, 1 / 60);
 +  assert.ok(state.ball.vx < 0 && state.ball.vy < 0, 'both velocities should flip');
 +});
@@ -173,7 +173,7 @@ index 250d6a9..cb626c4 100644
 +  const customBrick = { x: 100, y: 100, w: 72, h: 20, alive: true };
 +  state.bricks = [customBrick];
 +  // Ball is moving very fast, jumps over the brick in one step
-+  state.ball = { x: 50, y: 110, r: 7, vx: 10000, vy: 0 }; 
++  state.ball = { x: 50, y: 110, r: 7, vx: 10000, vy: 0 };
 +  step(state, 1 / 60); // dt = 0.016, dx = 166px, so it jumps from 50 to 216, skipping the brick at 100-172.
 +  assert.equal(customBrick.alive, false, 'brick should be destroyed even if ball tunnels through');
 +  assert.ok(state.ball.vx < 0, 'ball should still bounce');

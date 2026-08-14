@@ -39,5 +39,5 @@ index 6b4a133..d0a5346 100644
 +        state.ball.x = minDist === distL ? bL - state.ball.r : bR + state.ball.r;
 +      }
      }
- 
+
      ctx.fillStyle = brickColor(brick.row);

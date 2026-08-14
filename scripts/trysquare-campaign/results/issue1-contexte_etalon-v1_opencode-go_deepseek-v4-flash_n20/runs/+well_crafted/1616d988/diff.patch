@@ -5,7 +5,7 @@ index 6b4a133..58acb22 100644
 @@ -114,6 +114,110 @@ export function collides(ball, brick) {
    );
  }
- 
+
 +// --- Brick bounce ----------------------------------------------------------
 +
 +// Sub-step length for swept brick collision (px). The fastest ball covers ~35 px
@@ -111,23 +111,23 @@ index 6b4a133..58acb22 100644
 +}
 +
  // --- Score & combo (NOT covered by tests — debt #5) ------------------------
- 
+
  // Combo multiplier. UNBOUNDED today: a long combo makes the score blow up
 @@ -165,6 +269,10 @@ export function saveBest(storage, score) {
  export function step(state, dt) {
    const { ball, paddle } = state;
- 
+
 +  // Remember where the ball was before this step: brick collision sweeps the
 +  // segment between the two positions to catch tunnelling (see ISSUES.md #1).
 +  ball.px = ball.x;
 +  ball.py = ball.y;
    ball.x += ball.vx * dt;
    ball.y += ball.vy * dt;
- 
+
 @@ -215,21 +323,18 @@ export function frame(ctx, state) {
    ctx.fillStyle = palette.background;
    ctx.fillRect(0, 0, WIDTH, HEIGHT);
- 
+
 -  // Bricks: collision + bounce + score + drawing, all in one place.
 -  for (const brick of state.bricks) {
 -    if (!brick.alive) continue;
@@ -148,7 +148,7 @@ index 6b4a133..58acb22 100644
 -      // side hit) plus pushing the ball back out of the brick.
      }
 +  }
- 
+
 +  for (const brick of state.bricks) {
 +    if (!brick.alive) continue;
      ctx.fillStyle = brickColor(brick.row);
@@ -169,7 +169,7 @@ index 250d6a9..565ea43 100644
 @@ -59,6 +60,76 @@ test('makeBricks: full, all-alive grid at start', () => {
    assert.ok(bricks.every((b) => b.x >= 0 && b.x + b.w <= WIDTH));
  });
- 
+
 +// ---------------------------------------------------------------------------
 +// Brick bounce (#1)
 +// ---------------------------------------------------------------------------

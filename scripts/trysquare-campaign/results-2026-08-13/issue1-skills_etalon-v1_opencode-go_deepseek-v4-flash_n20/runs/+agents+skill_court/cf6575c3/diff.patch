@@ -15,9 +15,9 @@ index 6b4a133..0aab566 100644
  // The module runs nothing on import: only `boot()` touches the DOM. Pure
  // logic can therefore be imported from the tests (`node --test`) without a
 @@ -55,6 +55,14 @@ export const BRICK_TOP = 48;
- 
+
  const STORAGE_KEY = 'neon.best';
- 
+
 +// Maximum distance the ball may travel per collision substep, in pixels.
 +// Every crossing that must be detected is narrower than this: the paddle band
 +// the ball's bottom edge must land in is PADDLE_H = 12px wide, and a brick is
@@ -27,10 +27,10 @@ index 6b4a133..0aab566 100644
 +const SUBSTEP = Math.min(PADDLE_H, BRICK_H) - 2;
 +
  // --- State construction ----------------------------------------------------
- 
+
  // Builds the brick grid for a given level.
 @@ -103,8 +111,9 @@ export function createState(level = 1) {
- 
+
  // True if the ball (circle approximated by its box) overlaps the brick.
  // Simple AABB test: it only says WHETHER the ball and the brick overlap, not
 -// WHICH face was hit. The missing bounce in frame() is what lets the ball plow
@@ -44,7 +44,7 @@ index 6b4a133..0aab566 100644
 @@ -114,10 +123,75 @@ export function collides(ball, brick) {
    );
  }
- 
+
 -// --- Score & combo (NOT covered by tests — debt #5) ------------------------
 +// Resolves the ball against every live brick it overlaps: the brick dies and
 +// scores, and the ball bounces. Called once per collision substep from
@@ -110,7 +110,7 @@ index 6b4a133..0aab566 100644
 +}
 +
 +// --- Score & combo (multiplier NOT covered — debt #5) ----------------------
- 
+
  // Combo multiplier. UNBOUNDED today: a long combo makes the score blow up
  // uncontrollably (see #5, expected improvement = clamp it).
 +// Brick-hit scoring itself is covered by the tests; only the multiplier
@@ -121,10 +121,10 @@ index 6b4a133..0aab566 100644
 @@ -156,17 +230,30 @@ export function saveBest(storage, score) {
    return best;
  }
- 
+
 -// --- Physics (movement + wall/paddle bounces) ------------------------------
 +// --- Physics (movement + wall/paddle/brick bounces) ------------------------
- 
+
  // Advances the ball by a time step `dt` (in seconds) and handles bounces off
 -// the walls and the paddle. Does NOT handle bricks: that responsibility still
 -// lives in the render loop `frame()` (debt #2).
@@ -146,18 +146,18 @@ index 6b4a133..0aab566 100644
 +// walls, the ceiling, the paddle and the bricks. True if the ball is lost.
 +function moveAndCollide(state, h) {
    const { ball, paddle } = state;
- 
+
 -  ball.x += ball.vx * dt;
 -  ball.y += ball.vy * dt;
 +  ball.x += ball.vx * h;
 +  ball.y += ball.vy * h;
- 
+
    // Side walls
    if (ball.x - ball.r < 0) {
 @@ -199,37 +286,25 @@ export function step(state, dt) {
      state.combo = 0; // touching the paddle resets the combo
    }
- 
+
 +  // Bricks
 +  bounceBricks(state);
 +
@@ -168,10 +168,10 @@ index 6b4a133..0aab566 100644
 -  return false;
 +  return ball.y - ball.r > HEIGHT;
  }
- 
+
 -// --- Rendering (DOM): brick collision logic STILL mixed in here ------------
 +// --- Rendering (DOM) -------------------------------------------------------
- 
+
 -// Main render loop. For each live brick we test collision AND draw in the same
 -// pass: this is where logic and rendering are entangled.
 +// Main render loop. Purely draws the current state: brick collisions, scores
@@ -180,7 +180,7 @@ index 6b4a133..0aab566 100644
    // Background
    ctx.fillStyle = palette.background;
    ctx.fillRect(0, 0, WIDTH, HEIGHT);
- 
+
 -  // Bricks: collision + bounce + score + drawing, all in one place.
 +  // Bricks (drawing only — collisions happen in the physics step).
    for (const brick of state.bricks) {
@@ -219,7 +219,7 @@ index 250d6a9..b641a71 100644
 +// starting point for the testing work ahead, not a complete suite.
  //
  // Run: `node --test "game/**/*.test.js"`  (or `npm test`)
- 
+
 @@ -13,10 +14,15 @@ import assert from 'node:assert/strict';
  import {
    collides,
@@ -235,11 +235,11 @@ index 250d6a9..b641a71 100644
 +  PADDLE_Y,
    WIDTH,
  } from './neon.js';
- 
+
 @@ -59,6 +65,125 @@ test('makeBricks: full, all-alive grid at start', () => {
    assert.ok(bricks.every((b) => b.x >= 0 && b.x + b.w <= WIDTH));
  });
- 
+
 +// --- Brick collision: "the ball plows through bricks instead of bouncing" --
 +// (see neon.js BUG #1). Decomposed into: no bounce at all (D1), scoring in the
 +// render loop instead of the physics (D8), sticky re-inversion (D2), seam

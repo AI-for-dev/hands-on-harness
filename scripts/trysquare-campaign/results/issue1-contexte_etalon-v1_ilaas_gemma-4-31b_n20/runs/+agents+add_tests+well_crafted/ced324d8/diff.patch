@@ -4,7 +4,7 @@ index 6b4a133..baad914 100644
 +++ b/game/neon.js
 @@ -159,47 +159,88 @@ export function saveBest(storage, score) {
  // --- Physics (movement + wall/paddle bounces) ------------------------------
- 
+
  // Advances the ball by a time step `dt` (in seconds) and handles bounces off
 -// the walls and the paddle. Does NOT handle bricks: that responsibility still
 -// lives in the render loop `frame()` (debt #2).
@@ -43,7 +43,7 @@ index 6b4a133..baad914 100644
 +      ball.x = WIDTH - ball.r;
 +      ball.vx = -Math.abs(ball.vx);
 +    }
- 
+
 -  // Ceiling
 -  if (ball.y - ball.r < 0) {
 -    ball.y = ball.r;
@@ -53,7 +53,7 @@ index 6b4a133..baad914 100644
 +      ball.y = ball.r;
 +      ball.vy = Math.abs(ball.vy);
 +    }
- 
+
 -  // Paddle
 -  if (
 -    ball.vy > 0 &&
@@ -114,14 +114,14 @@ index 6b4a133..baad914 100644
 +        brick.alive = false;
 +        state.combo += 1;
 +        state.score += scoreForBrick(brick, state.combo);
-+        
++
 +        // To prevent bouncing off multiple bricks in the same sub-step (neighbours),
 +        // we break and re-evaluate from the new position.
-+        break; 
++        break;
 +      }
 +    }
    }
- 
+
 -  // Exit through the bottom: ball lost
    if (ball.y - ball.r > HEIGHT) {
      return true;
@@ -129,12 +129,12 @@ index 6b4a133..baad914 100644
 @@ -215,21 +256,10 @@ export function frame(ctx, state) {
    ctx.fillStyle = palette.background;
    ctx.fillRect(0, 0, WIDTH, HEIGHT);
- 
+
 -  // Bricks: collision + bounce + score + drawing, all in one place.
 +  // Bricks: only drawing now (collision moved to step() to fix #1).
    for (const brick of state.bricks) {
      if (!brick.alive) continue;
- 
+
 -    if (collides(state.ball, brick)) {
 -      brick.alive = false;
 -      state.combo += 1;
@@ -154,7 +154,7 @@ index 250d6a9..8781ff6 100644
 --- a/game/neon.test.js
 +++ b/game/neon.test.js
 @@ -67,3 +67,97 @@ function belowField() {
- 
+
  // TODO (#5): test comboMultiplier / scoreForBrick.
  // TODO      : test level progression and loadBest/saveBest persistence.
 +
@@ -163,7 +163,7 @@ index 250d6a9..8781ff6 100644
 +  // Ball moving DOWN, positioned just above the top edge of the brick
 +  state.ball = { x: 320, y: 75, r: 7, vx: 0, vy: 200 };
 +  state.bricks = [{ x: 300, y: 80, w: 40, h: 20, alive: true }];
-+  
++
 +  step(state, 1 / 60);
 +  assert.ok(state.ball.vy < 0, 'Ball should bounce UP after hitting the top of a brick');
 +});
@@ -173,7 +173,7 @@ index 250d6a9..8781ff6 100644
 +  // Ball moving UP, positioned just below the bottom edge of the brick
 +  state.ball = { x: 320, y: 105, r: 7, vx: 0, vy: -200 };
 +  state.bricks = [{ x: 300, y: 80, w: 40, h: 20, alive: true }];
-+  
++
 +  step(state, 1 / 60);
 +  assert.ok(state.ball.vy > 0, 'Ball should bounce DOWN after hitting the bottom of a brick');
 +});
@@ -183,7 +183,7 @@ index 250d6a9..8781ff6 100644
 +  // Ball moving RIGHT, positioned just to the left of the left edge of the brick
 +  state.ball = { x: 290, y: 90, r: 7, vx: 200, vy: 0 };
 +  state.bricks = [{ x: 300, y: 80, w: 40, h: 20, alive: true }];
-+  
++
 +  step(state, 1 / 60);
 +  assert.ok(state.ball.vx < 0, 'Ball should bounce LEFT after hitting the left side of a brick');
 +});
@@ -193,7 +193,7 @@ index 250d6a9..8781ff6 100644
 +  // Ball moving LEFT, positioned just to the right of the right edge of the brick
 +  state.ball = { x: 345, y: 90, r: 7, vx: -200, vy: 0 };
 +  state.bricks = [{ x: 300, y: 80, w: 40, h: 20, alive: true }];
-+  
++
 +  step(state, 1 / 60);
 +  assert.ok(state.ball.vx > 0, 'Ball should bounce RIGHT after hitting the right side of a brick');
 +});
@@ -203,7 +203,7 @@ index 250d6a9..8781ff6 100644
 +  // Position the ball exactly such that overlapX == overlapY (2px each)
 +  state.ball = { x: 295, y: 75, r: 7, vx: 200, vy: -200 };
 +  state.bricks = [{ x: 300, y: 80, w: 40, h: 20, alive: true }];
-+  
++
 +  step(state, 0);
 +  assert.ok(state.ball.vx < 0 && state.ball.vy > 0, 'Ball should flip both vx and vy on corner hit');
 +});
@@ -213,7 +213,7 @@ index 250d6a9..8781ff6 100644
 +  // Ball deep inside the brick
 +  state.ball = { x: 320, y: 90, r: 7, vx: 0, vy: -200 };
 +  state.bricks = [{ x: 300, y: 80, w: 40, h: 20, alive: true }];
-+  
++
 +  step(state, 1 / 60);
 +  // The ball should be repositioned so it's not overlapping anymore
 +  const brick = state.bricks[0];
@@ -234,7 +234,7 @@ index 250d6a9..8781ff6 100644
 +    { x: 300, y: 80, w: 72, h: 20, alive: true },
 +    { x: 300 + 72 + 8, y: 80, w: 72, h: 20, alive: true }
 +  ];
-+  
++
 +  step(state, 1 / 60);
 +  // vy should be flipped exactly once (positive)
 +  assert.ok(state.ball.vy > 0, 'Ball should bounce once even if overlapping multiple bricks');
@@ -247,7 +247,7 @@ index 250d6a9..8781ff6 100644
 +  // Ball is at y=110, moves to y=110 - (700 * 0.05) = 75
 +  state.ball = { x: 320, y: 110, r: 7, vx: 0, vy: -700 };
 +  state.bricks = [{ x: 300, y: 80, w: 40, h: 20, alive: true }];
-+  
++
 +  step(state, 0.05); // max dt
 +  assert.ok(state.ball.vy > 0, 'Ball should not tunnel through bricks at high speed');
 +});

@@ -5,8 +5,8 @@ index 6b4a133..24d8a72 100644
 @@ -114,6 +114,51 @@ export function collides(ball, brick) {
    );
  }
- 
-+// Resolves collisions between the ball and bricks. 
+
++// Resolves collisions between the ball and bricks.
 +// It handles per-face bouncing, push-out to avoid sticky bounces, and
 +// ensures only one brick is hit per call to avoid seam issues.
 +export function resolveBrickCollisions(state) {
@@ -52,11 +52,11 @@ index 6b4a133..24d8a72 100644
 +}
 +
  // --- Score & combo (NOT covered by tests — debt #5) ------------------------
- 
+
  // Combo multiplier. UNBOUNDED today: a long combo makes the score blow up
 @@ -159,44 +204,50 @@ export function saveBest(storage, score) {
  // --- Physics (movement + wall/paddle bounces) ------------------------------
- 
+
  // Advances the ball by a time step `dt` (in seconds) and handles bounces off
 -// the walls and the paddle. Does NOT handle bricks: that responsibility still
 -// lives in the render loop `frame()` (debt #2).
@@ -65,12 +65,12 @@ index 6b4a133..24d8a72 100644
  // Returns `true` if the ball is lost (exits through the bottom).
  export function step(state, dt) {
    const { ball, paddle } = state;
- 
+
 -  ball.x += ball.vx * dt;
 -  ball.y += ball.vy * dt;
 +  const subSteps = 4;
 +  const subDt = dt / subSteps;
- 
+
 -  // Side walls
 -  if (ball.x - ball.r < 0) {
 -    ball.x = ball.r;
@@ -82,7 +82,7 @@ index 6b4a133..24d8a72 100644
 +  for (let s = 0; s < subSteps; s++) {
 +    ball.x += ball.vx * subDt;
 +    ball.y += ball.vy * subDt;
- 
+
 -  // Ceiling
 -  if (ball.y - ball.r < 0) {
 -    ball.y = ball.r;
@@ -102,7 +102,7 @@ index 6b4a133..24d8a72 100644
 +      ball.y = ball.r;
 +      ball.vy = Math.abs(ball.vy);
 +    }
- 
+
 -  // Paddle
 -  if (
 -    ball.vy > 0 &&
@@ -134,12 +134,12 @@ index 6b4a133..24d8a72 100644
 +
 +    resolveBrickCollisions(state);
    }
- 
+
    // Exit through the bottom: ball lost
 @@ -219,17 +270,6 @@ export function frame(ctx, state) {
    for (const brick of state.bricks) {
      if (!brick.alive) continue;
- 
+
 -    if (collides(state.ball, brick)) {
 -      brick.alive = false;
 -      state.combo += 1;
@@ -167,7 +167,7 @@ index 250d6a9..8391ae8 100644
    BRICK_COLS,
    WIDTH,
 @@ -67,3 +68,54 @@ function belowField() {
- 
+
  // TODO (#5): test comboMultiplier / scoreForBrick.
  // TODO      : test level progression and loadBest/saveBest persistence.
 +
@@ -183,10 +183,10 @@ index 250d6a9..8391ae8 100644
 +
 +test('brick bounce: top face hit (ball moving DOWN)', () => {
 +  const state = createState(1);
-+  state.ball = { x: 100, y: 55, r: 7, vx: 0, vy: 100 }; 
++  state.ball = { x: 100, y: 55, r: 7, vx: 0, vy: 100 };
 +  const brick = { x: 80, y: 48, w: 72, h: 20, alive: true };
 +  state.bricks = [brick];
-+  resolveBrickCollisions(state); 
++  resolveBrickCollisions(state);
 +  assert.ok(state.ball.vy < 0, 'should bounce UP');
 +  assert.ok(state.ball.y <= 48 - 7, 'should be pushed out');
 +});

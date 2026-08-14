@@ -40,5 +40,5 @@ index 6b4a133..e58ff07 100644
 +        }
 +      }
      }
- 
+
      ctx.fillStyle = brickColor(brick.row);

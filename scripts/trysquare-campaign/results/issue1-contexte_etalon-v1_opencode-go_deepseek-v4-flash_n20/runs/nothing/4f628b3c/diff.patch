@@ -5,7 +5,7 @@ index 6b4a133..3081def 100644
 @@ -114,6 +114,183 @@ export function collides(ball, brick) {
    );
  }
- 
+
 +// --- Brick bounce resolution (#1) ------------------------------------------
 +//
 +// Resolves a single ball-vs-brick collision: flips the correct velocity
@@ -184,12 +184,12 @@ index 6b4a133..3081def 100644
 +}
 +
  // --- Score & combo (NOT covered by tests — debt #5) ------------------------
- 
+
  // Combo multiplier. UNBOUNDED today: a long combo makes the score blow up
 @@ -165,6 +342,12 @@ export function saveBest(storage, score) {
  export function step(state, dt) {
    const { ball, paddle } = state;
- 
+
 +  // Remember where the ball started this step so brick collision can sweep the
 +  // travelled segment (high-speed steps would otherwise tunnel through a brick,
 +  // see #1).
@@ -198,11 +198,11 @@ index 6b4a133..3081def 100644
 +
    ball.x += ball.vx * dt;
    ball.y += ball.vy * dt;
- 
+
 @@ -215,21 +398,11 @@ export function frame(ctx, state) {
    ctx.fillStyle = palette.background;
    ctx.fillRect(0, 0, WIDTH, HEIGHT);
- 
+
 -  // Bricks: collision + bounce + score + drawing, all in one place.
 +  // Bricks: collision + bounce + score handled in applyBrickHits (#1, #2 debt:
 +  // logic and rendering are still in the same render loop). Then draw live ones.
@@ -239,7 +239,7 @@ index 250d6a9..a890dac 100644
 +  BALL_R,
    WIDTH,
  } from './neon.js';
- 
+
 +// Small helper: a single brick for the bounce tests.
 +function brickAt(x, y, w = 40, h = 20) {
 +  return { x, y, w, h, row: 0, alive: true, points: 10 };
@@ -251,7 +251,7 @@ index 250d6a9..a890dac 100644
 @@ -52,6 +60,98 @@ test('step: ball exiting through the bottom => lost', () => {
    assert.equal(lost, true);
  });
- 
+
 +// --- #1: brick bounce resolution -------------------------------------------------
 +
 +test('brick: top hit flips vy, leaves vx untouched, pushes out above', () => {

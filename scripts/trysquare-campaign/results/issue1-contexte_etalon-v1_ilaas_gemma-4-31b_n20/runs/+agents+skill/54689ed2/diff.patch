@@ -16,7 +16,7 @@ index 0000000..57625f3
 +  state.ball.x = brick.x + brick.w / 2;
 +  state.ball.y = brick.y - 1; // Just above the brick
 +  state.ball.vy = 100; // Moving DOWN
-+  
++
 +  // Mock canvas context
 +  const ctx = {
 +    fillStyle: '',
@@ -48,11 +48,11 @@ index 0000000..bc3d1cc
 +  // Remove all bricks except the first one
 +  state.bricks = [state.bricks[0]];
 +  const brick = state.bricks[0];
-+  
++
 +  state.ball.x = brick.x + brick.w / 2;
 +  state.ball.y = 40;
 +  state.ball.vy = 710;
-+  
++
 +  const dt = 0.05;
 +  const ctx = {
 +    fillStyle: '',
@@ -65,7 +65,7 @@ index 0000000..bc3d1cc
 +
 +  step(state, dt);
 +  frame(ctx, state);
-+  
++
 +  assert.notStrictEqual(state.ball.vy, 710, 'Ball should have bounced and changed vy');
 +});
 diff --git a/.scratch/to_fix.md b/.scratch/to_fix.md
@@ -136,12 +136,12 @@ index 6b4a133..5f7301c 100644
 @@ -215,22 +215,46 @@ export function frame(ctx, state) {
    ctx.fillStyle = palette.background;
    ctx.fillRect(0, 0, WIDTH, HEIGHT);
- 
+
 +  let bounced = false;
    // Bricks: collision + bounce + score + drawing, all in one place.
    for (const brick of state.bricks) {
      if (!brick.alive) continue;
- 
+
 -    if (collides(state.ball, brick)) {
 +    if (!bounced && collides(state.ball, brick)) {
 +      bounced = true;
@@ -180,12 +180,12 @@ index 6b4a133..5f7301c 100644
 +        }
 +      }
      }
- 
+
      ctx.fillStyle = brickColor(brick.row);
 +
      ctx.fillRect(brick.x, brick.y, brick.w, brick.h);
    }
- 
+
 diff --git a/game/neon.test.js b/game/neon.test.js
 index 250d6a9..2f57779 100644
 --- a/game/neon.test.js
@@ -201,7 +201,7 @@ index 250d6a9..2f57779 100644
 @@ -45,6 +46,7 @@ test('step: bounce off the left wall', () => {
    assert.ok(state.ball.vx > 0, 'horizontal velocity should flip to the right');
  });
- 
+
 +// ... (existing tests)
  test('step: ball exiting through the bottom => lost', () => {
    const state = createState(1);
@@ -209,7 +209,7 @@ index 250d6a9..2f57779 100644
 @@ -52,7 +54,57 @@ test('step: ball exiting through the bottom => lost', () => {
    assert.equal(lost, true);
  });
- 
+
 +test('frame: bounce off brick top', () => {
 +  const state = createState(1);
 +  const brick = state.bricks[0];
@@ -227,7 +227,7 @@ index 250d6a9..2f57779 100644
 +  const state = createState(1);
 +  const brick = state.bricks[0];
 +  state.ball.x = brick.x + brick.w / 2;
-+  state.ball.y = brick.y + brick.h + 1; 
++  state.ball.y = brick.y + brick.h + 1;
 +  state.ball.vy = -100;
 +  const ctx = { fillStyle: '', fillRect: () => {}, beginPath: () => {}, arc: () => {}, fill: () => {}, fillText: () => {} };
 +  frame(ctx, state);

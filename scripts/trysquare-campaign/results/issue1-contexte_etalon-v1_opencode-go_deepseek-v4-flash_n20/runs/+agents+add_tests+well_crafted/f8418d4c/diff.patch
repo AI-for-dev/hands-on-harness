@@ -14,7 +14,7 @@ index 6b4a133..ac6ae6b 100644
 @@ -114,6 +114,113 @@ export function collides(ball, brick) {
    );
  }
- 
+
 +// --- Brick bounce (issue #1) -----------------------------------------------
 +
 +// Tolerance for comparing penetrations: below this, the two axes are
@@ -123,12 +123,12 @@ index 6b4a133..ac6ae6b 100644
 +}
 +
  // --- Score & combo (NOT covered by tests — debt #5) ------------------------
- 
+
  // Combo multiplier. UNBOUNDED today: a long combo makes the score blow up
 @@ -165,6 +272,11 @@ export function saveBest(storage, score) {
  export function step(state, dt) {
    const { ball, paddle } = state;
- 
+
 +  // Remember where the step started: the next brick pass sweeps between this
 +  // position and the new one so a fast ball cannot tunnel through a brick.
 +  ball.px = ball.x;
@@ -136,11 +136,11 @@ index 6b4a133..ac6ae6b 100644
 +
    ball.x += ball.vx * dt;
    ball.y += ball.vy * dt;
- 
+
 @@ -215,21 +327,38 @@ export function frame(ctx, state) {
    ctx.fillStyle = palette.background;
    ctx.fillRect(0, 0, WIDTH, HEIGHT);
- 
+
 -  // Bricks: collision + bounce + score + drawing, all in one place.
 +  // Bricks: collide + bounce + score in one place, then draw. The ball is
 +  // resolved against every brick it touches (a seam overlaps two at once) but
@@ -152,7 +152,7 @@ index 6b4a133..ac6ae6b 100644
 +
    for (const brick of state.bricks) {
      if (!brick.alive) continue;
- 
+
 -    if (collides(state.ball, brick)) {
 -      brick.alive = false;
 -      state.combo += 1;
@@ -171,7 +171,7 @@ index 6b4a133..ac6ae6b 100644
 +    state.score += scoreForBrick(brick, state.combo);
 +    if (!first) first = { brick, contact };
 +  }
- 
+
 +  // Apply the deflection once, from the first brick the ball met. The ball is
 +  // placed at the contact point (only a swept hit moves it) so the face and
 +  // the push-out are computed on the geometry that was actually crossed, and
@@ -207,12 +207,12 @@ index 250d6a9..de610d4 100644
 +  BRICK_H,
 +  BRICK_GAP,
  } from './neon.js';
- 
+
  test('collides: clear overlap detected', () => {
 @@ -59,6 +65,143 @@ test('makeBricks: full, all-alive grid at start', () => {
    assert.ok(bricks.every((b) => b.x >= 0 && b.x + b.w <= WIDTH));
  });
- 
+
 +// --- Issue #1: the ball plows through bricks instead of bouncing -----------
 +// Each case below was added FIRST as a red test (the ball just destroyed the
 +// brick without any deflection), then made green by the bounce fix in

@@ -28,5 +28,5 @@ index 6b4a133..53c2c05 100644
 +        state.ball.y = ballCenterY < brickCenterY ? brick.y - state.ball.r : brick.y + brick.h + state.ball.r;
 +      }
      }
- 
+
      ctx.fillStyle = brickColor(brick.row);

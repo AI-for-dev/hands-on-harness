@@ -5,7 +5,7 @@ index 6b4a133..db34037 100644
 @@ -114,6 +114,173 @@ export function collides(ball, brick) {
    );
  }
- 
+
 +// --- Issue #1: brick bounce ------------------------------------------------
 +//
 +// The bounce is a per-face resolution, not a blanket velocity flip:
@@ -174,12 +174,12 @@ index 6b4a133..db34037 100644
 +}
 +
  // --- Score & combo (NOT covered by tests — debt #5) ------------------------
- 
+
  // Combo multiplier. UNBOUNDED today: a long combo makes the score blow up
 @@ -165,6 +332,12 @@ export function saveBest(storage, score) {
  export function step(state, dt) {
    const { ball, paddle } = state;
- 
+
 +  // Remember where we were before this move so the brick collision pass can
 +  // sweep the path (tunnelling detection, issue #1): a 14 px ball crossing a
 +  // 34 px thick brick at level 6 can jump clean over it in one stuttered frame.
@@ -188,11 +188,11 @@ index 6b4a133..db34037 100644
 +
    ball.x += ball.vx * dt;
    ball.y += ball.vy * dt;
- 
+
 @@ -215,21 +388,19 @@ export function frame(ctx, state) {
    ctx.fillStyle = palette.background;
    ctx.fillRect(0, 0, WIDTH, HEIGHT);
- 
+
 -  // Bricks: collision + bounce + score + drawing, all in one place.
 +  // Bricks: collision + bounce once, then destroy / score each hit brick.
 +  // (The bounce itself lives in `brickBounce`; this loop stays split from the
@@ -240,11 +240,11 @@ index 250d6a9..f19e1ae 100644
 +  RIGHT,
    WIDTH,
  } from './neon.js';
- 
+
 @@ -59,6 +65,79 @@ test('makeBricks: full, all-alive grid at start', () => {
    assert.ok(bricks.every((b) => b.x >= 0 && b.x + b.w <= WIDTH));
  });
- 
+
 +// --- Issue #1: brick bounce -------------------------------------------------
 +// The ball used to plow straight through bricks: frame() destroyed the hit
 +// brick but never deflected the ball. These tests lock in the per-face bounce,

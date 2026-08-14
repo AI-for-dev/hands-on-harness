@@ -8,7 +8,7 @@ index 250d6a9..8d86691 100644
    WIDTH,
 +  frame,
  } from './neon.js';
- 
+
 +const mockCtx = {
 +  fillRect: () => {},
 +  beginPath: () => {},

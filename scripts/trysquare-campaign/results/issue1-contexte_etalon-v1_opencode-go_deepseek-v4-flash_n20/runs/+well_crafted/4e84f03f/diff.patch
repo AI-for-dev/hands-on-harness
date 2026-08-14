@@ -5,7 +5,7 @@ index 6b4a133..fcecf92 100644
 @@ -114,6 +114,146 @@ export function collides(ball, brick) {
    );
  }
- 
+
 +// --- Brick collision resolution (#1) -------------------------------------
 +
 +// True if the ball's travel from its previous position (px, py) to its
@@ -147,12 +147,12 @@ index 6b4a133..fcecf92 100644
 +}
 +
  // --- Score & combo (NOT covered by tests — debt #5) ------------------------
- 
+
  // Combo multiplier. UNBOUNDED today: a long combo makes the score blow up
 @@ -165,6 +305,11 @@ export function saveBest(storage, score) {
  export function step(state, dt) {
    const { ball, paddle } = state;
- 
+
 +  // Remember where we were before this step so brick collision can sweep the
 +  // travelled segment for a fast ball (#1 tunnelling).
 +  ball.prevX = ball.x;
@@ -160,11 +160,11 @@ index 6b4a133..fcecf92 100644
 +
    ball.x += ball.vx * dt;
    ball.y += ball.vy * dt;
- 
+
 @@ -215,21 +360,17 @@ export function frame(ctx, state) {
    ctx.fillStyle = palette.background;
    ctx.fillRect(0, 0, WIDTH, HEIGHT);
- 
+
 -  // Bricks: collision + bounce + score + drawing, all in one place.
 +  // Bricks: collision is resolved once (pure logic), then score/combo are
 +  // applied for each broken brick, and only the surviving bricks are drawn.
@@ -176,7 +176,7 @@ index 6b4a133..fcecf92 100644
 +
    for (const brick of state.bricks) {
      if (!brick.alive) continue;
- 
+
 -    if (collides(state.ball, brick)) {
 -      brick.alive = false;
 -      state.combo += 1;
@@ -205,11 +205,11 @@ index 250d6a9..3df5e95 100644
 +  DOWN,
    WIDTH,
  } from './neon.js';
- 
+
 @@ -59,6 +61,115 @@ test('makeBricks: full, all-alive grid at start', () => {
    assert.ok(bricks.every((b) => b.x >= 0 && b.x + b.w <= WIDTH));
  });
- 
+
 +// --- #1 brick bounce ------------------------------------------------------
 +
 +// A brick with friendly numbers for the collision math.

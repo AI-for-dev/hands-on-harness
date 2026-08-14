@@ -3,7 +3,7 @@ index 6b4a133..02cbf4d 100644
 --- a/game/neon.js
 +++ b/game/neon.js
 @@ -103,8 +103,7 @@ export function createState(level = 1) {
- 
+
  // True if the ball (circle approximated by its box) overlaps the brick.
  // Simple AABB test: it only says WHETHER the ball and the brick overlap, not
 -// WHICH face was hit. The missing bounce in frame() is what lets the ball plow
@@ -15,7 +15,7 @@ index 6b4a133..02cbf4d 100644
 @@ -114,6 +113,80 @@ export function collides(ball, brick) {
    );
  }
- 
+
 +// Resolves a head-on collision (issue #1): the ball is currently overlapping a
 +// brick, so decide which face was actually hit and bounce it off that face.
 +//
@@ -91,12 +91,12 @@ index 6b4a133..02cbf4d 100644
 +}
 +
  // --- Score & combo (NOT covered by tests — debt #5) ------------------------
- 
+
  // Combo multiplier. UNBOUNDED today: a long combo makes the score blow up
 @@ -165,6 +238,13 @@ export function saveBest(storage, score) {
  export function step(state, dt) {
    const { ball, paddle } = state;
- 
+
 +  // Remember where the ball started this frame so the brick sweep in the next
 +  // frame() can catch high-speed tunnelling (issue #1).
 +  ball.px = ball.x;
@@ -106,11 +106,11 @@ index 6b4a133..02cbf4d 100644
 +
    ball.x += ball.vx * dt;
    ball.y += ball.vy * dt;
- 
+
 @@ -219,15 +299,33 @@ export function frame(ctx, state) {
    for (const brick of state.bricks) {
      if (!brick.alive) continue;
- 
+
 -    if (collides(state.ball, brick)) {
 +    // Issue #1: bricks now bounce the ball back. `_deflected` makes sure the
 +    // bounce is applied exactly ONCE per frame: the grid gap (8 px) is smaller
@@ -145,7 +145,7 @@ index 6b4a133..02cbf4d 100644
 -      // row. Fix = a real per-face bounce (flip vy on a top/bottom hit, vx on a
 -      // side hit) plus pushing the ball back out of the brick.
      }
- 
+
      ctx.fillStyle = brickColor(brick.row);
 diff --git a/game/neon.test.js b/game/neon.test.js
 index 250d6a9..d8d4a25 100644
@@ -165,12 +165,12 @@ index 250d6a9..d8d4a25 100644
 +  BRICK_GAP,
 +  BRICK_TOP,
  } from './neon.js';
- 
+
  test('collides: clear overlap detected', () => {
 @@ -59,6 +65,104 @@ test('makeBricks: full, all-alive grid at start', () => {
    assert.ok(bricks.every((b) => b.x >= 0 && b.x + b.w <= WIDTH));
  });
- 
+
 +// --- Issue #1: the ball bounces off bricks instead of plowing through -----
 +
 +function makeBrick(x, y) {

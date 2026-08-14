@@ -24,7 +24,7 @@ index 6b4a133..0006b35 100644
 @@ -114,6 +124,148 @@ export function collides(ball, brick) {
    );
  }
- 
+
 +// --- Brick bounce resolution (issue #1) -------------------------------------
 +
 +// Liang-Barsky slab clip: the t-interval of the segment p -> p + t*d (t in
@@ -168,12 +168,12 @@ index 6b4a133..0006b35 100644
 +}
 +
  // --- Score & combo (NOT covered by tests — debt #5) ------------------------
- 
+
  // Combo multiplier. UNBOUNDED today: a long combo makes the score blow up
 @@ -165,6 +317,11 @@ export function saveBest(storage, score) {
  export function step(state, dt) {
    const { ball, paddle } = state;
- 
+
 +  // Remember where this move started: the brick collision in frame() sweeps
 +  // that segment, so a fast ball cannot jump over a brick between frames (#1).
 +  ball.px = ball.x;
@@ -181,11 +181,11 @@ index 6b4a133..0006b35 100644
 +
    ball.x += ball.vx * dt;
    ball.y += ball.vy * dt;
- 
+
 @@ -215,21 +372,12 @@ export function frame(ctx, state) {
    ctx.fillStyle = palette.background;
    ctx.fillRect(0, 0, WIDTH, HEIGHT);
- 
+
 -  // Bricks: collision + bounce + score + drawing, all in one place.
 +  // Bricks: resolve the ball against the grid first (issue #1: the ball used
 +  // to plow straight through), then draw what is still standing.
@@ -226,7 +226,7 @@ index 250d6a9..218fbb7 100644
 @@ -65,5 +67,90 @@ function belowField() {
    return 500;
  }
- 
+
 +// --- Issue #1: the ball bounces off bricks ----------------------------------
 +//
 +// The grid gap (8 px) is narrower than the ball (14 px): a seam overlaps two

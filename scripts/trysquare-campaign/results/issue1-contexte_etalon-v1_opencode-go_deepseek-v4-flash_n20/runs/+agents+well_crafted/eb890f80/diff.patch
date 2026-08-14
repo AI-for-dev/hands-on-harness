@@ -35,7 +35,7 @@ index 6b4a133..959489d 100644
    };
  }
 @@ -103,8 +114,8 @@ export function createState(level = 1) {
- 
+
  // True if the ball (circle approximated by its box) overlaps the brick.
  // Simple AABB test: it only says WHETHER the ball and the brick overlap, not
 -// WHICH face was hit. The missing bounce in frame() is what lets the ball plow
@@ -48,7 +48,7 @@ index 6b4a133..959489d 100644
 @@ -114,6 +125,129 @@ export function collides(ball, brick) {
    );
  }
- 
+
 +// Entry parameter of the ball's path into the brick's expanded rectangle
 +// (the brick grown by the ball radius — the Minkowski sum of the box and the
 +// ball). The path is the segment from the ball's previous position to its
@@ -173,21 +173,21 @@ index 6b4a133..959489d 100644
 +}
 +
  // --- Score & combo (NOT covered by tests — debt #5) ------------------------
- 
+
  // Combo multiplier. UNBOUNDED today: a long combo makes the score blow up
 @@ -165,6 +299,8 @@ export function saveBest(storage, score) {
  export function step(state, dt) {
    const { ball, paddle } = state;
- 
+
 +  ball.px = ball.x;
 +  ball.py = ball.y;
    ball.x += ball.vx * dt;
    ball.y += ball.vy * dt;
- 
+
 @@ -208,28 +344,45 @@ export function step(state, dt) {
- 
+
  // --- Rendering (DOM): brick collision logic STILL mixed in here ------------
- 
+
 -// Main render loop. For each live brick we test collision AND draw in the same
 -// pass: this is where logic and rendering are entangled.
 +// Main render loop. Brick collision is resolved here (still entangled with
@@ -199,7 +199,7 @@ index 6b4a133..959489d 100644
    // Background
    ctx.fillStyle = palette.background;
    ctx.fillRect(0, 0, WIDTH, HEIGHT);
- 
+
 -  // Bricks: collision + bounce + score + drawing, all in one place.
 +  // Bricks: detect every brick the ball crossed this frame (swept segment), so
 +  // a fast ball cannot tunnel through; score and destroy them all, then apply
@@ -236,7 +236,7 @@ index 6b4a133..959489d 100644
      }
 +  }
 +  resolveBrickCollision(ball, hits);
- 
+
 +  // Draw the surviving bricks.
 +  for (const brick of state.bricks) {
 +    if (!brick.alive) continue;
@@ -263,11 +263,11 @@ index 250d6a9..7f6ad9c 100644
 +  BALL_R,
    WIDTH,
  } from './neon.js';
- 
+
 @@ -65,5 +71,112 @@ function belowField() {
    return 500;
  }
- 
+
 +// --- issue #1: the ball bounces off bricks instead of plowing through ------
 +
 +// A lone brick with the standard geometry, isolated from the grid so a test

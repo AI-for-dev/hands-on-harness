@@ -3,7 +3,7 @@ index 6b4a133..067f92f 100644
 --- a/game/neon.js
 +++ b/game/neon.js
 @@ -103,8 +103,7 @@ export function createState(level = 1) {
- 
+
  // True if the ball (circle approximated by its box) overlaps the brick.
  // Simple AABB test: it only says WHETHER the ball and the brick overlap, not
 -// WHICH face was hit. The missing bounce in frame() is what lets the ball plow
@@ -15,7 +15,7 @@ index 6b4a133..067f92f 100644
 @@ -114,6 +113,39 @@ export function collides(ball, brick) {
    );
  }
- 
+
 +// Bounces the ball off the brick it overlaps, flipping the velocity component
 +// for the face actually hit (vy on a top/bottom hit, vx on a side hit) and
 +// pushing the ball back out so it cannot sink in and tunnel through.
@@ -50,7 +50,7 @@ index 6b4a133..067f92f 100644
 +}
 +
  // --- Score & combo (NOT covered by tests — debt #5) ------------------------
- 
+
  // Combo multiplier. UNBOUNDED today: a long combo makes the score blow up
 @@ -223,11 +255,9 @@ export function frame(ctx, state) {
        brick.alive = false;
@@ -65,5 +65,5 @@ index 6b4a133..067f92f 100644
 +      // out of the brick so it cannot tunnel through.
 +      bounceBall(state.ball, brick);
      }
- 
+
      ctx.fillStyle = brickColor(brick.row);

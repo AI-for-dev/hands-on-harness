@@ -15,7 +15,7 @@ index 6b4a133..c5f78c2 100644
  // The module runs nothing on import: only `boot()` touches the DOM. Pure
  // logic can therefore be imported from the tests (`node --test`) without a
 @@ -103,8 +103,8 @@ export function createState(level = 1) {
- 
+
  // True if the ball (circle approximated by its box) overlaps the brick.
  // Simple AABB test: it only says WHETHER the ball and the brick overlap, not
 -// WHICH face was hit. The missing bounce in frame() is what lets the ball plow
@@ -28,7 +28,7 @@ index 6b4a133..c5f78c2 100644
 @@ -114,6 +114,137 @@ export function collides(ball, brick) {
    );
  }
- 
+
 +// --- Brick bounce (pure, tested primitive) --------------------------------
 +//
 +// Resolves the ball bouncing off bricks. Given the ball's position at the
@@ -161,11 +161,11 @@ index 6b4a133..c5f78c2 100644
 +}
 +
  // --- Score & combo (NOT covered by tests — debt #5) ------------------------
- 
+
  // Combo multiplier. UNBOUNDED today: a long combo makes the score blow up
 @@ -159,8 +290,8 @@ export function saveBest(storage, score) {
  // --- Physics (movement + wall/paddle bounces) ------------------------------
- 
+
  // Advances the ball by a time step `dt` (in seconds) and handles bounces off
 -// the walls and the paddle. Does NOT handle bricks: that responsibility still
 -// lives in the render loop `frame()` (debt #2).
@@ -177,10 +177,10 @@ index 6b4a133..c5f78c2 100644
 @@ -206,30 +337,19 @@ export function step(state, dt) {
    return false;
  }
- 
+
 -// --- Rendering (DOM): brick collision logic STILL mixed in here ------------
 +// --- Rendering (DOM) -------------------------------------------------------
- 
+
 -// Main render loop. For each live brick we test collision AND draw in the same
 -// pass: this is where logic and rendering are entangled.
 +// Main render loop. Collision and scoring no longer live here (they moved to
@@ -190,7 +190,7 @@ index 6b4a133..c5f78c2 100644
    // Background
    ctx.fillStyle = palette.background;
    ctx.fillRect(0, 0, WIDTH, HEIGHT);
- 
+
 -  // Bricks: collision + bounce + score + drawing, all in one place.
 +  // Bricks: only ever drawn here; their physics lives in the pure functions.
    for (const brick of state.bricks) {
@@ -212,7 +212,7 @@ index 6b4a133..c5f78c2 100644
    }
 @@ -288,6 +408,11 @@ export function boot(doc = document) {
      last = now;
- 
+
      if (state.running) {
 +      // Capture where the ball was BEFORE this step: the brick sweep needs it
 +      // to catch tunnelling (fix #1).
@@ -234,7 +234,7 @@ index 6b4a133..c5f78c2 100644
 +          state.score += scoreForBrick(brick, state.combo);
 +        }
        }
- 
+
        // Level cleared: all bricks broken
 diff --git a/game/neon.test.js b/game/neon.test.js
 index 250d6a9..e12fddc 100644
@@ -251,7 +251,7 @@ index 250d6a9..e12fddc 100644
 @@ -59,6 +60,79 @@ test('makeBricks: full, all-alive grid at start', () => {
    assert.ok(bricks.every((b) => b.x >= 0 && b.x + b.w <= WIDTH));
  });
- 
+
 +// --- #1 brick bounce -------------------------------------------------------
 +// Each case of ISSUES #1 is exercised here: per-face, corner, push out,
 +// neighbour seams (no double flip) and tunnelling at high speed.

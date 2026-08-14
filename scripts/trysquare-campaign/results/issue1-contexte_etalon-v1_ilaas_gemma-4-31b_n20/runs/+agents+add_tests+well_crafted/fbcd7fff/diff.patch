@@ -4,7 +4,7 @@ index 6b4a133..f9e4db4 100644
 +++ b/game/neon.js
 @@ -102,9 +102,6 @@ export function createState(level = 1) {
  // --- Collision (tested primitive) ------------------------------------------
- 
+
  // True if the ball (circle approximated by its box) overlaps the brick.
 -// Simple AABB test: it only says WHETHER the ball and the brick overlap, not
 -// WHICH face was hit. The missing bounce in frame() is what lets the ball plow
@@ -15,7 +15,7 @@ index 6b4a133..f9e4db4 100644
 @@ -114,6 +111,42 @@ export function collides(ball, brick) {
    );
  }
- 
+
 +// Resolve collisions between the ball and all live bricks.
 +function resolveBrickCollisions(state) {
 +  const { ball } = state;
@@ -53,12 +53,12 @@ index 6b4a133..f9e4db4 100644
 +}
 +
  // --- Score & combo (NOT covered by tests — debt #5) ------------------------
- 
+
  // Combo multiplier. UNBOUNDED today: a long combo makes the score blow up
 @@ -156,47 +189,54 @@ export function saveBest(storage, score) {
    return best;
  }
- 
+
 -// --- Physics (movement + wall/paddle bounces) ------------------------------
 -
  // Advances the ball by a time step `dt` (in seconds) and handles bounces off
@@ -69,7 +69,7 @@ index 6b4a133..f9e4db4 100644
  // Returns `true` if the ball is lost (exits through the bottom).
  export function step(state, dt) {
    const { ball, paddle } = state;
- 
+
 -  ball.x += ball.vx * dt;
 -  ball.y += ball.vy * dt;
 +  // Sub-stepping to prevent tunnelling (max 5px per step).
@@ -90,7 +90,7 @@ index 6b4a133..f9e4db4 100644
 +      ball.x = WIDTH - ball.r;
 +      ball.vx = -Math.abs(ball.vx);
 +    }
- 
+
 -  // Side walls
 -  if (ball.x - ball.r < 0) {
 -    ball.x = ball.r;
@@ -104,7 +104,7 @@ index 6b4a133..f9e4db4 100644
 +      ball.y = ball.r;
 +      ball.vy = Math.abs(ball.vy);
 +    }
- 
+
 -  // Ceiling
 -  if (ball.y - ball.r < 0) {
 -    ball.y = ball.r;
@@ -124,7 +124,7 @@ index 6b4a133..f9e4db4 100644
 +      ball.vx = ballSpeed(state.level) * 0.6 * hit;
 +      state.combo = 0;
 +    }
- 
+
 -  // Paddle
 -  if (
 -    ball.vy > 0 &&
@@ -141,17 +141,17 @@ index 6b4a133..f9e4db4 100644
 -    state.combo = 0; // touching the paddle resets the combo
 +    resolveBrickCollisions(state);
    }
- 
+
    // Exit through the bottom: ball lost
 @@ -215,21 +255,10 @@ export function frame(ctx, state) {
    ctx.fillStyle = palette.background;
    ctx.fillRect(0, 0, WIDTH, HEIGHT);
- 
+
 -  // Bricks: collision + bounce + score + drawing, all in one place.
 +  // Bricks: drawing only. Collision is handled in step() (see #1).
    for (const brick of state.bricks) {
      if (!brick.alive) continue;
- 
+
 -    if (collides(state.ball, brick)) {
 -      brick.alive = false;
 -      state.combo += 1;
@@ -173,7 +173,7 @@ index 250d6a9..5bff202 100644
 @@ -65,5 +65,71 @@ function belowField() {
    return 500;
  }
- 
+
 -// TODO (#5): test comboMultiplier / scoreForBrick.
 -// TODO      : test level progression and loadBest/saveBest persistence.
 +// Helper to create a state with a ball at a specific position/velocity

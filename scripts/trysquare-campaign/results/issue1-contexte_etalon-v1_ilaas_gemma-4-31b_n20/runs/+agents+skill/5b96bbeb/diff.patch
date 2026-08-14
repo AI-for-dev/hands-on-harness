@@ -283,7 +283,7 @@ index 6b4a133..5fe8946 100644
 +++ b/game/neon.js
 @@ -102,9 +102,6 @@ export function createState(level = 1) {
  // --- Collision (tested primitive) ------------------------------------------
- 
+
  // True if the ball (circle approximated by its box) overlaps the brick.
 -// Simple AABB test: it only says WHETHER the ball and the brick overlap, not
 -// WHICH face was hit. The missing bounce in frame() is what lets the ball plow
@@ -294,7 +294,7 @@ index 6b4a133..5fe8946 100644
 @@ -114,6 +111,32 @@ export function collides(ball, brick) {
    );
  }
- 
+
 +// Handles the collision between the ball and a single brick.
 +// Returns true if a collision occurred.
 +export function handleBrickCollision(state, brick) {
@@ -322,7 +322,7 @@ index 6b4a133..5fe8946 100644
 +}
 +
  // --- Score & combo (NOT covered by tests — debt #5) ------------------------
- 
+
  // Combo multiplier. UNBOUNDED today: a long combo makes the score blow up
 @@ -223,11 +246,23 @@ export function frame(ctx, state) {
        brick.alive = false;
@@ -351,7 +351,7 @@ index 6b4a133..5fe8946 100644
 +        state.ball.vx = -state.ball.vx;
 +      }
      }
- 
+
      ctx.fillStyle = brickColor(brick.row);
 diff --git a/game/neon.test.js b/game/neon.test.js
 index 250d6a9..1d2cc56 100644
@@ -368,7 +368,7 @@ index 250d6a9..1d2cc56 100644
 @@ -38,7 +39,42 @@ test('collides: edge contact (radius) detected', () => {
    assert.equal(collides(ball, brick), true);
  });
- 
+
 +test('brick bounce: ball bounces up when hitting brick top', () => {
 +  const state = createState(1);
 +  const ctx = { fillRect: ()=>{}, fillText: ()=>{}, beginPath: ()=>{}, arc: ()=>{}, fill: ()=>{} };

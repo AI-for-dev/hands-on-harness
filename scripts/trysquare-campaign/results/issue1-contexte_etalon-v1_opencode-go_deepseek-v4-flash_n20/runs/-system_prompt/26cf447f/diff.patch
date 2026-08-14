@@ -5,7 +5,7 @@ index 6b4a133..fbde341 100644
 @@ -206,6 +206,64 @@ export function step(state, dt) {
    return false;
  }
- 
+
 +// Bounce a ball off a single brick. Determines which face was hit (the axis
 +// with the *smaller* penetration), flips the matching velocity component(s),
 +// and pushes the ball back OUTSIDE the brick so it does not stay overlapped on
@@ -65,7 +65,7 @@ index 6b4a133..fbde341 100644
 +}
 +
  // --- Rendering (DOM): brick collision logic STILL mixed in here ------------
- 
+
  // Main render loop. For each live brick we test collision AND draw in the same
 @@ -223,11 +281,14 @@ export function frame(ctx, state) {
        brick.alive = false;
@@ -85,5 +85,5 @@ index 6b4a133..fbde341 100644
 +      bounceOffBrick(state.ball, brick);
 +      break;
      }
- 
+
      ctx.fillStyle = brickColor(brick.row);

@@ -18,7 +18,7 @@ index 6b4a133..b246df1 100644
 @@ -114,6 +118,158 @@ export function collides(ball, brick) {
    );
  }
- 
+
 +// True if a circle centred on (x, y) with radius r overlaps the brick.
 +// Same AABB test as `collides`, but position is passed explicitly so we can
 +// test intermediate sweep positions without mutating the ball (see #1).
@@ -172,12 +172,12 @@ index 6b4a133..b246df1 100644
 +}
 +
  // --- Score & combo (NOT covered by tests — debt #5) ------------------------
- 
+
  // Combo multiplier. UNBOUNDED today: a long combo makes the score blow up
 @@ -165,6 +321,11 @@ export function saveBest(storage, score) {
  export function step(state, dt) {
    const { ball, paddle } = state;
- 
+
 +  // Remember where we started so brick collision can sweep the whole path
 +  // (used by bounceBricks to avoid tunnelling, see #1).
 +  ball.px = ball.x;
@@ -185,11 +185,11 @@ index 6b4a133..b246df1 100644
 +
    ball.x += ball.vx * dt;
    ball.y += ball.vy * dt;
- 
+
 @@ -215,21 +376,17 @@ export function frame(ctx, state) {
    ctx.fillStyle = palette.background;
    ctx.fillRect(0, 0, WIDTH, HEIGHT);
- 
+
 -  // Bricks: collision + bounce + score + drawing, all in one place.
 +  // Bricks: real bounce + push-out + score, then drawing of the survivors.
 +  // The swept collision (bounceBricks) resolves every brick the ball crossed
@@ -235,7 +235,7 @@ index 250d6a9..a4e9df1 100644
 +// starting point for the testing work ahead, not a complete suite.
  //
  // Run: `node --test "game/**/*.test.js"`  (or `npm test`)
- 
+
 @@ -13,13 +14,23 @@ import assert from 'node:assert/strict';
  import {
    collides,
@@ -251,7 +251,7 @@ index 250d6a9..a4e9df1 100644
 +  BRICK_TOP,
    WIDTH,
  } from './neon.js';
- 
+
 +// A single standing brick centered near the top of the field.
 +function brick(x, y, w = BRICK_W, h = BRICK_H) {
 +  return { x, y, w, h, alive: true };
@@ -263,7 +263,7 @@ index 250d6a9..a4e9df1 100644
 @@ -65,5 +76,104 @@ function belowField() {
    return 500;
  }
- 
+
 +// --- Brick bounce: issue #1 -------------------------------------------------
 +
 +// A ball falling onto a brick from above must lose its downward speed and come

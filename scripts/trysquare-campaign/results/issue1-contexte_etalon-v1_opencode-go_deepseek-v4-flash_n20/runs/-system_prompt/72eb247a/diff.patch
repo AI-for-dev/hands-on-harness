@@ -32,7 +32,7 @@ index 6b4a133..9552787 100644
    };
  }
 @@ -103,8 +111,7 @@ export function createState(level = 1) {
- 
+
  // True if the ball (circle approximated by its box) overlaps the brick.
  // Simple AABB test: it only says WHETHER the ball and the brick overlap, not
 -// WHICH face was hit. The missing bounce in frame() is what lets the ball plow
@@ -44,7 +44,7 @@ index 6b4a133..9552787 100644
 @@ -114,6 +121,136 @@ export function collides(ball, brick) {
    );
  }
- 
+
 +// --- Brick collision resolution (pure, testable) ---------------------------
 +
 +// Circle-vs-rect overlap for the ball against a single brick.
@@ -176,12 +176,12 @@ index 6b4a133..9552787 100644
 +}
 +
  // --- Score & combo (NOT covered by tests — debt #5) ------------------------
- 
+
  // Combo multiplier. UNBOUNDED today: a long combo makes the score blow up
 @@ -165,6 +302,11 @@ export function saveBest(storage, score) {
  export function step(state, dt) {
    const { ball, paddle } = state;
- 
+
 +  // Remember where the ball was before this step so the brick bounce can
 +  // tell which face it struck (and to sweep for tunnelling).
 +  ball.prevX = ball.x;
@@ -189,11 +189,11 @@ index 6b4a133..9552787 100644
 +
    ball.x += ball.vx * dt;
    ball.y += ball.vy * dt;
- 
+
 @@ -215,21 +357,16 @@ export function frame(ctx, state) {
    ctx.fillStyle = palette.background;
    ctx.fillRect(0, 0, WIDTH, HEIGHT);
- 
+
 -  // Bricks: collision + bounce + score + drawing, all in one place.
 +  // Bricks: resolve collisions first (fix #1: the ball now actually bounces
 +  // off bricks instead of plowing straight through them) then draw them.
@@ -235,7 +235,7 @@ index 250d6a9..c1b33dc 100644
 @@ -59,6 +60,85 @@ test('makeBricks: full, all-alive grid at start', () => {
    assert.ok(bricks.every((b) => b.x >= 0 && b.x + b.w <= WIDTH));
  });
- 
+
 +// --- brickHit (bounce off bricks, ISSUES.md #1) ----------------------------
 +
 +// Dries up the brick fixtures used by the brick-break tests.

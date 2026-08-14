@@ -49,4 +49,3 @@ is precisely what this is for.
 - `+agents+skill_court`: **duration -362**, interval [-573, -1]
 
 :warning: **The cost columns (in, out, turns, duration) must not be read here.** 23 retries across the matrix, in +agents+skill, +agents+skill_court. A retry replays the turn with the whole accumulated context, so these columns reflect our own load on the provider rather than the configuration - including any of them marked established.
-

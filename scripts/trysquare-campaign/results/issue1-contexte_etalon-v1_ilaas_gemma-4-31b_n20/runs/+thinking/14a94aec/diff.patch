@@ -5,7 +5,7 @@ index 6b4a133..44b3785 100644
 @@ -199,6 +199,36 @@ export function step(state, dt) {
      state.combo = 0; // touching the paddle resets the combo
    }
- 
+
 +  // Bricks collision
 +  for (const brick of state.bricks) {
 +    if (!brick.alive) continue;
@@ -42,12 +42,12 @@ index 6b4a133..44b3785 100644
 @@ -215,21 +245,10 @@ export function frame(ctx, state) {
    ctx.fillStyle = palette.background;
    ctx.fillRect(0, 0, WIDTH, HEIGHT);
- 
+
 -  // Bricks: collision + bounce + score + drawing, all in one place.
 +  // Bricks: drawing. Collision is handled in step().
    for (const brick of state.bricks) {
      if (!brick.alive) continue;
- 
+
 -    if (collides(state.ball, brick)) {
 -      brick.alive = false;
 -      state.combo += 1;

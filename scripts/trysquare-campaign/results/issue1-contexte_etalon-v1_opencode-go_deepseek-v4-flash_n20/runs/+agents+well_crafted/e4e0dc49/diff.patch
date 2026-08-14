@@ -16,7 +16,7 @@ index 6b4a133..984592e 100644
 +// (see ISSUES.md #1) and only *called* from the render loop `frame()`. The
 +// module runs nothing on import: only `boot()` touches the DOM. Pure logic
 +// can therefore be imported from the tests (`node --test`) without a browser.
- 
+
  import { palette, brickColor } from './theme.js';
  import { createGlowMap, drawGlow, GLOW_W, GLOW_H } from './bloom.js';
 @@ -86,6 +83,18 @@ export function ballSpeed(level = 1) {
@@ -48,7 +48,7 @@ index 6b4a133..984592e 100644
    };
  }
 @@ -103,8 +112,7 @@ export function createState(level = 1) {
- 
+
  // True if the ball (circle approximated by its box) overlaps the brick.
  // Simple AABB test: it only says WHETHER the ball and the brick overlap, not
 -// WHICH face was hit. The missing bounce in frame() is what lets the ball plow
@@ -60,7 +60,7 @@ index 6b4a133..984592e 100644
 @@ -114,6 +122,136 @@ export function collides(ball, brick) {
    );
  }
- 
+
 +// --- Brick collision resolution (ISSUES.md #1) ------------------------------
 +
 +// Coarsest sub-step allowed when sweeping the ball's path. The ball is 14 px
@@ -192,11 +192,11 @@ index 6b4a133..984592e 100644
 +}
 +
  // --- Score & combo (NOT covered by tests — debt #5) ------------------------
- 
+
  // Combo multiplier. UNBOUNDED today: a long combo makes the score blow up
 @@ -159,12 +297,17 @@ export function saveBest(storage, score) {
  // --- Physics (movement + wall/paddle bounces) ------------------------------
- 
+
  // Advances the ball by a time step `dt` (in seconds) and handles bounces off
 -// the walls and the paddle. Does NOT handle bricks: that responsibility still
 -// lives in the render loop `frame()` (debt #2).
@@ -205,7 +205,7 @@ index 6b4a133..984592e 100644
  // Returns `true` if the ball is lost (exits through the bottom).
  export function step(state, dt) {
    const { ball, paddle } = state;
- 
+
 +  // Remember where the ball was before this move: brickHit() sweeps the path
 +  // between the two positions to catch fast balls (tunnelling, see #1).
 +  ball.px = ball.x;
@@ -213,14 +213,14 @@ index 6b4a133..984592e 100644
 +
    ball.x += ball.vx * dt;
    ball.y += ball.vy * dt;
- 
+
 @@ -206,30 +349,25 @@ export function step(state, dt) {
    return false;
  }
- 
+
 -// --- Rendering (DOM): brick collision logic STILL mixed in here ------------
 +// --- Rendering (DOM) -------------------------------------------------------
- 
+
 -// Main render loop. For each live brick we test collision AND draw in the same
 -// pass: this is where logic and rendering are entangled.
 +// Main render loop: resolves brick collisions via `brickHit()`, then draws
@@ -229,7 +229,7 @@ index 6b4a133..984592e 100644
    // Background
    ctx.fillStyle = palette.background;
    ctx.fillRect(0, 0, WIDTH, HEIGHT);
- 
+
 -  // Bricks: collision + bounce + score + drawing, all in one place.
 +  // Bricks: one collision-resolution pass (logic), then draw.
 +  // brickHit() destroys the bricks it bounces off of; scoring happens here.
@@ -275,12 +275,12 @@ index 250d6a9..368cb95 100644
    WIDTH,
 +  UP,
  } from './neon.js';
- 
+
  test('collides: clear overlap detected', () => {
 @@ -59,6 +66,149 @@ test('makeBricks: full, all-alive grid at start', () => {
    assert.ok(bricks.every((b) => b.x >= 0 && b.x + b.w <= WIDTH));
  });
- 
+
 +// --- Issue #1: the ball plows through bricks (no bounce) ---------------------
 +//
 +// Each case below was added first as a red test, then made green in neon.js:

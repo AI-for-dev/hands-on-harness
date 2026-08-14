@@ -17,11 +17,11 @@ index 6b4a133..ef8630a 100644
 +// renders. The module runs nothing on import: only `boot()` touches the DOM.
 +// Pure logic can therefore be imported from the tests (`node --test`) without
 +// a browser.
- 
+
  import { palette, brickColor } from './theme.js';
  import { createGlowMap, drawGlow, GLOW_W, GLOW_H } from './bloom.js';
 @@ -103,8 +101,7 @@ export function createState(level = 1) {
- 
+
  // True if the ball (circle approximated by its box) overlaps the brick.
  // Simple AABB test: it only says WHETHER the ball and the brick overlap, not
 -// WHICH face was hit. The missing bounce in frame() is what lets the ball plow
@@ -33,7 +33,7 @@ index 6b4a133..ef8630a 100644
 @@ -165,9 +162,20 @@ export function saveBest(storage, score) {
  export function step(state, dt) {
    const { ball, paddle } = state;
- 
+
 +  // Where the ball started this step: the brick collision sweeps the segment
 +  // between the two positions, so a fast ball cannot jump over a brick in a
 +  // single frame without ever touching it (tunnelling, see #1).
@@ -42,7 +42,7 @@ index 6b4a133..ef8630a 100644
 +
    ball.x += ball.vx * dt;
    ball.y += ball.vy * dt;
- 
+
 +  // Bricks: bounce, push the ball back out, award the score. This used to
 +  // happen inside the render loop frame() (see #1/#2); a real bounce must see
 +  // the movement of the ball, so it lives with the physics here.
@@ -54,7 +54,7 @@ index 6b4a133..ef8630a 100644
 @@ -206,30 +214,128 @@ export function step(state, dt) {
    return false;
  }
- 
+
 -// --- Rendering (DOM): brick collision logic STILL mixed in here ------------
 +// --- Brick collision (#1) --------------------------------------------------
 +
@@ -165,7 +165,7 @@ index 6b4a133..ef8630a 100644
 +}
 +
 +// --- Rendering (DOM) -------------------------------------------------------
- 
+
 -// Main render loop. For each live brick we test collision AND draw in the same
 -// pass: this is where logic and rendering are entangled.
 +// Main render loop. Pure drawing: brick collision (bounce + push-out + score)
@@ -175,12 +175,12 @@ index 6b4a133..ef8630a 100644
    // Background
    ctx.fillStyle = palette.background;
    ctx.fillRect(0, 0, WIDTH, HEIGHT);
- 
+
 -  // Bricks: collision + bounce + score + drawing, all in one place.
 +  // Bricks: drawing only.
    for (const brick of state.bricks) {
      if (!brick.alive) continue;
- 
+
 -    if (collides(state.ball, brick)) {
 -      brick.alive = false;
 -      state.combo += 1;
@@ -210,11 +210,11 @@ index 250d6a9..eb0ee1a 100644
 +  ballSpeed,
    WIDTH,
  } from './neon.js';
- 
+
 @@ -65,5 +70,81 @@ function belowField() {
    return 500;
  }
- 
+
 +// --- Brick bounce (ISSUES.md #1) ------------------------------------------
 +
 +// A lone brick and a ball that already overlaps it, exactly like the fixtures

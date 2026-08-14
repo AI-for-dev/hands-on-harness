@@ -38,5 +38,5 @@ index 6b4a133..59d4f2a 100644
 +        state.ball.y += (dy > 0 ? 1 : -1) * (brick.h / 2 + state.ball.r - contactY);
 +      }
      }
- 
+
      ctx.fillStyle = brickColor(brick.row);

@@ -20,7 +20,7 @@ index 6b4a133..646b896 100644
 +++ b/game/neon.js
 @@ -159,49 +159,84 @@ export function saveBest(storage, score) {
  // --- Physics (movement + wall/paddle bounces) ------------------------------
- 
+
  // Advances the ball by a time step `dt` (in seconds) and handles bounces off
 -// the walls and the paddle. Does NOT handle bricks: that responsibility still
 -// lives in the render loop `frame()` (debt #2).
@@ -43,7 +43,7 @@ index 6b4a133..646b896 100644
 +      ball.x = WIDTH - ball.r;
 +      ball.vx = -Math.abs(ball.vx);
 +    }
- 
+
 -  ball.x += ball.vx * dt;
 -  ball.y += ball.vy * dt;
 -
@@ -60,7 +60,7 @@ index 6b4a133..646b896 100644
 +      ball.y = ball.r;
 +      ball.vy = Math.abs(ball.vy);
 +    }
- 
+
 -  // Ceiling
 -  if (ball.y - ball.r < 0) {
 -    ball.y = ball.r;
@@ -80,7 +80,7 @@ index 6b4a133..646b896 100644
 +      ball.vx = ballSpeed(state.level) * 0.6 * hit;
 +      state.combo = 0;
 +    }
- 
+
 -  // Paddle
 -  if (
 -    ball.vy > 0 &&
@@ -128,7 +128,7 @@ index 6b4a133..646b896 100644
 +        }
 +      }
 +    }
- 
+
 -  // Exit through the bottom: ball lost
 -  if (ball.y - ball.r > HEIGHT) {
 -    return true;
@@ -142,12 +142,12 @@ index 6b4a133..646b896 100644
 @@ -215,21 +250,10 @@ export function frame(ctx, state) {
    ctx.fillStyle = palette.background;
    ctx.fillRect(0, 0, WIDTH, HEIGHT);
- 
+
 -  // Bricks: collision + bounce + score + drawing, all in one place.
 +  // Bricks: drawing only.
    for (const brick of state.bricks) {
      if (!brick.alive) continue;
- 
+
 -    if (collides(state.ball, brick)) {
 -      brick.alive = false;
 -      state.combo += 1;

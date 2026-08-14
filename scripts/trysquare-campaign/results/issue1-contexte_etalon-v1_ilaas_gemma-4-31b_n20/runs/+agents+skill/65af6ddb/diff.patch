@@ -4,14 +4,14 @@ index 6b4a133..bbe5b45 100644
 +++ b/game/neon.js
 @@ -216,22 +216,56 @@ export function frame(ctx, state) {
    ctx.fillRect(0, 0, WIDTH, HEIGHT);
- 
+
    // Bricks: collision + bounce + score + drawing, all in one place.
 +  let closestBrick = null;
 +  let minPenetration = Infinity;
 +
    for (const brick of state.bricks) {
      if (!brick.alive) continue;
- 
+
      if (collides(state.ball, brick)) {
 -      brick.alive = false;
 -      state.combo += 1;
@@ -58,7 +58,7 @@ index 6b4a133..bbe5b45 100644
 +      state.ball.y += (dy > 0) ? py : -py;
      }
 +  }
- 
+
 -    ctx.fillStyle = brickColor(brick.row);
 -    ctx.fillRect(brick.x, brick.y, brick.w, brick.h);
 +  for (const brick of state.bricks) {
@@ -67,7 +67,7 @@ index 6b4a133..bbe5b45 100644
 +      ctx.fillRect(brick.x, brick.y, brick.w, brick.h);
 +    }
    }
- 
+
    // Paddle — color hard-coded instead of using the palette (inconsistency #6).
 diff --git a/game/neon.test.js b/game/neon.test.js
 index 250d6a9..516b562 100644
@@ -82,7 +82,7 @@ index 250d6a9..516b562 100644
    BRICK_COLS,
    WIDTH,
  } from './neon.js';
- 
+
 +const mockCtx = {
 +  fillRect: () => {},
 +  arc: () => {},
@@ -125,7 +125,7 @@ index 250d6a9..516b562 100644
 +  state.ball.vy = -100;
 +
 +  frame(mockCtx, state);
-+  
++
 +  assert.equal(collides(state.ball, brick), false, 'Ball should be pushed out of the brick');
 +});
 +

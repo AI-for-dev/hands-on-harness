@@ -21,35 +21,35 @@ index 0000000..4433976
 +test('D1 - Ball should bounce off top of brick', () => {
 +  const state = createState(1);
 +  const brick = state.bricks[0]; // Top-left brick
-+  
++
 +  // Position ball just hitting the top face of the brick
 +  // Brick is at BRICK_TOP = 48, BRICK_H = 20.
 +  // Ball r = 7. Top face hit: ball.y + 7 > 48 and ball.vy > 0.
 +  state.ball.x = brick.x + brick.w / 2;
 +  state.ball.y = brick.y - 6; // bottom of ball is at 42 + 7 = 49 > 48
 +  state.ball.vy = 100; // moving DOWN
-+  
++
 +  frame(ctx, state);
-+  
++
 +  assert.strictEqual(state.ball.vy, -100, 'Ball should have bounced UP');
 +});
 +
 +test('D2 - Ball should not stick to brick', () => {
 +  const state = createState(1);
 +  const brick = state.bricks[0];
-+  
++
 +  state.ball.x = brick.x + brick.w / 2;
 +  state.ball.y = brick.y + 2; // Deeply inside the brick
 +  state.ball.vy = -100; // moving UP
-+  
++
 +  // First frame: detect and bounce
 +  frame(ctx, state);
 +  const vy1 = state.ball.vy;
-+  
++
 +  // Second frame: should not bounce again if already moving away or repositioned
 +  frame(ctx, state);
 +  const vy2 = state.ball.vy;
-+  
++
 +  assert.strictEqual(vy1, 100, 'Should bounce DOWN');
 +  assert.strictEqual(vy2, 100, 'Should stay moving DOWN (not stick/vibrate)');
 +});
@@ -57,14 +57,14 @@ index 0000000..4433976
 +test('D3 - Ball should bounce off side of brick', () => {
 +  const state = createState(1);
 +  const brick = state.bricks[0];
-+  
++
 +  // Ball hitting the left face of the brick
 +  state.ball.y = brick.y + brick.h / 2;
 +  state.ball.x = brick.x - 6; // right edge of ball at -6 + 7 = 1 > brick.x
 +  state.ball.vx = 100; // moving RIGHT
-+  
++
 +  frame(ctx, state);
-+  
++
 +  assert.strictEqual(state.ball.vx, -100, 'Ball should have bounced LEFT');
 +  assert.strictEqual(state.ball.vy, 100, 'Ball vy should not have changed (if it was 100)');
 +});
@@ -166,7 +166,7 @@ index 250d6a9..526675f 100644
 @@ -65,5 +66,48 @@ function belowField() {
    return 500;
  }
- 
+
 -// TODO (#5): test comboMultiplier / scoreForBrick.
 -// TODO      : test level progression and loadBest/saveBest persistence.
 +

@@ -4,7 +4,7 @@ index 6b4a133..72ccd54 100644
 +++ b/game/neon.js
 @@ -159,44 +159,82 @@ export function saveBest(storage, score) {
  // --- Physics (movement + wall/paddle bounces) ------------------------------
- 
+
  // Advances the ball by a time step `dt` (in seconds) and handles bounces off
 -// the walls and the paddle. Does NOT handle bricks: that responsibility still
 -// lives in the render loop `frame()` (debt #2).
@@ -13,7 +13,7 @@ index 6b4a133..72ccd54 100644
  // Returns `true` if the ball is lost (exits through the bottom).
  export function step(state, dt) {
    const { ball, paddle } = state;
- 
+
 -  ball.x += ball.vx * dt;
 -  ball.y += ball.vy * dt;
 +  // Sub-stepping to prevent tunnelling and handle precise brick bounces.
@@ -32,7 +32,7 @@ index 6b4a133..72ccd54 100644
 +      ball.x = WIDTH - ball.r;
 +      ball.vx = -Math.abs(ball.vx);
 +    }
- 
+
 -  // Side walls
 -  if (ball.x - ball.r < 0) {
 -    ball.x = ball.r;
@@ -46,7 +46,7 @@ index 6b4a133..72ccd54 100644
 +      ball.y = ball.r;
 +      ball.vy = Math.abs(ball.vy);
 +    }
- 
+
 -  // Ceiling
 -  if (ball.y - ball.r < 0) {
 -    ball.y = ball.r;
@@ -66,7 +66,7 @@ index 6b4a133..72ccd54 100644
 +      ball.vx = ballSpeed(state.level) * 0.6 * hit;
 +      state.combo = 0;
 +    }
- 
+
 -  // Paddle
 -  if (
 -    ball.vy > 0 &&
@@ -114,15 +114,15 @@ index 6b4a133..72ccd54 100644
 +      }
 +    }
    }
- 
+
    // Exit through the bottom: ball lost
 @@ -206,30 +244,19 @@ export function step(state, dt) {
    return false;
  }
- 
+
 +
  // --- Rendering (DOM): brick collision logic STILL mixed in here ------------
- 
+
 -// Main render loop. For each live brick we test collision AND draw in the same
 -// pass: this is where logic and rendering are entangled.
 +// Main render loop. Now only handles drawing (collision logic moved to step()).
@@ -130,12 +130,12 @@ index 6b4a133..72ccd54 100644
    // Background
    ctx.fillStyle = palette.background;
    ctx.fillRect(0, 0, WIDTH, HEIGHT);
- 
+
 -  // Bricks: collision + bounce + score + drawing, all in one place.
 +  // Bricks: drawing only.
    for (const brick of state.bricks) {
      if (!brick.alive) continue;
- 
+
 -    if (collides(state.ball, brick)) {
 -      brick.alive = false;
 -      state.combo += 1;
@@ -160,12 +160,12 @@ index 250d6a9..6c907b3 100644
    WIDTH,
 +  BALL_R,
  } from './neon.js';
- 
+
  test('collides: clear overlap detected', () => {
 @@ -59,6 +60,99 @@ test('makeBricks: full, all-alive grid at start', () => {
    assert.ok(bricks.every((b) => b.x >= 0 && b.x + b.w <= WIDTH));
  });
- 
+
 +// --- Brick Collision Tests (#1) ---
 +
 +test('step: bounce off brick top face', () => {
@@ -228,7 +228,7 @@ index 250d6a9..6c907b3 100644
 +  state.bricks = [brick];
 +  state.ball = { x: 125, y: 100 - BALL_R, r: BALL_R, vx: 0, vy: 100 };
 +  // We simulate a few steps. If there is no push-out, it might flip vy every frame.
-+  step(state, 0.01); 
++  step(state, 0.01);
 +  const vy1 = state.ball.vy;
 +  step(state, 0.01);
 +  const vy2 = state.ball.vy;

@@ -4,7 +4,7 @@ index 6b4a133..320e365 100644
 +++ b/game/neon.js
 @@ -159,8 +159,7 @@ export function saveBest(storage, score) {
  // --- Physics (movement + wall/paddle bounces) ------------------------------
- 
+
  // Advances the ball by a time step `dt` (in seconds) and handles bounces off
 -// the walls and the paddle. Does NOT handle bricks: that responsibility still
 -// lives in the render loop `frame()` (debt #2).
@@ -15,7 +15,7 @@ index 6b4a133..320e365 100644
 @@ -168,6 +167,9 @@ export function step(state, dt) {
    ball.x += ball.vx * dt;
    ball.y += ball.vy * dt;
- 
+
 +  // Handle brick collisions (see #1)
 +  resolveBrickCollisions(state, dt);
 +
@@ -25,7 +25,7 @@ index 6b4a133..320e365 100644
 @@ -206,6 +208,103 @@ export function step(state, dt) {
    return false;
  }
- 
+
 +// Resolve collisions between the ball and bricks.
 +// This handles bounces, scores, and prevents tunnelling using sweep collision detection.
 +export function resolveBrickCollisions(state, dt) {
@@ -124,17 +124,17 @@ index 6b4a133..320e365 100644
 +}
 +
  // --- Rendering (DOM): brick collision logic STILL mixed in here ------------
- 
+
  // Main render loop. For each live brick we test collision AND draw in the same
 @@ -215,21 +314,10 @@ export function frame(ctx, state) {
    ctx.fillStyle = palette.background;
    ctx.fillRect(0, 0, WIDTH, HEIGHT);
- 
+
 -  // Bricks: collision + bounce + score + drawing, all in one place.
 +  // Bricks: drawing only.
    for (const brick of state.bricks) {
      if (!brick.alive) continue;
- 
+
 -    if (collides(state.ball, brick)) {
 -      brick.alive = false;
 -      state.combo += 1;
@@ -162,7 +162,7 @@ index 250d6a9..2151d6f 100644
    BRICK_COLS,
    WIDTH,
 @@ -67,3 +68,60 @@ function belowField() {
- 
+
  // TODO (#5): test comboMultiplier / scoreForBrick.
  // TODO      : test level progression and loadBest/saveBest persistence.
 +

@@ -24,5 +24,5 @@ index 6b4a133..3fcf9c8 100644
 +        state.ball.y += (state.ball.y < brick.y + brick.h / 2) ? -overlapY : overlapY;
 +      }
      }
- 
+
      ctx.fillStyle = brickColor(brick.row);

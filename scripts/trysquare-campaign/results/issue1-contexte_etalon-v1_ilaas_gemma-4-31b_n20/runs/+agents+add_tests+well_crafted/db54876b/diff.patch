@@ -8,13 +8,13 @@ index 6b4a133..d4c4a7a 100644
    const { ball, paddle } = state;
 +  ball.prevX = ball.x;
 +  ball.prevY = ball.y;
- 
+
    ball.x += ball.vx * dt;
    ball.y += ball.vy * dt;
 @@ -208,6 +210,83 @@ export function step(state, dt) {
- 
+
  // --- Rendering (DOM): brick collision logic STILL mixed in here ------------
- 
+
 +// Helper for swept AABB collision detection to prevent tunneling.
 +function intersectSegmentAABB(p0, p1, min, max) {
 +  let tMin = -Infinity, tMax = Infinity;
@@ -98,7 +98,7 @@ index 6b4a133..d4c4a7a 100644
 @@ -219,15 +298,10 @@ export function frame(ctx, state) {
    for (const brick of state.bricks) {
      if (!brick.alive) continue;
- 
+
 -    if (collides(state.ball, brick)) {
 +    if (resolveBrickCollision(state, brick)) {
        brick.alive = false;
@@ -110,5 +110,5 @@ index 6b4a133..d4c4a7a 100644
 -      // row. Fix = a real per-face bounce (flip vy on a top/bottom hit, vx on a
 -      // side hit) plus pushing the ball back out of the brick.
      }
- 
+
      ctx.fillStyle = brickColor(brick.row);

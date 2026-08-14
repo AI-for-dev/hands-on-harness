@@ -14,7 +14,7 @@ index 6b4a133..00bdaaf 100644
 @@ -114,6 +114,62 @@ export function collides(ball, brick) {
    );
  }
- 
+
 +export function sweptCollides(ball, brick) {
 +  if (collides(ball, brick)) return true;
 +  if (ball.prevX === undefined || (ball.prevX === ball.x && ball.prevY === ball.y)) return false;
@@ -31,7 +31,7 @@ index 6b4a133..00bdaaf 100644
 +  const prevX_in = ball.prevX + ball.r > brick.x && ball.prevX - ball.r < brick.x + brick.w;
 +  const nextX_in = ball.x + ball.r > brick.x && ball.x - ball.r < brick.x + brick.w;
 +  if (prevX_in && nextX_in) return true;
-+  
++
 +  const prevY_in = ball.prevY + ball.r > brick.y && ball.prevY - ball.r < brick.y + brick.h;
 +  const nextY_in = ball.y + ball.r > brick.y && ball.y - ball.r < brick.y + brick.h;
 +  if (prevY_in && nextY_in) return true;
@@ -72,22 +72,22 @@ index 6b4a133..00bdaaf 100644
 +}
 +
  // --- Score & combo (NOT covered by tests — debt #5) ------------------------
- 
+
  // Combo multiplier. UNBOUNDED today: a long combo makes the score blow up
 @@ -165,6 +221,9 @@ export function saveBest(storage, score) {
  export function step(state, dt) {
    const { ball, paddle } = state;
- 
+
 +  ball.prevX = ball.x;
 +  ball.prevY = ball.y;
 +
    ball.x += ball.vx * dt;
    ball.y += ball.vy * dt;
- 
+
 @@ -219,15 +278,11 @@ export function frame(ctx, state) {
    for (const brick of state.bricks) {
      if (!brick.alive) continue;
- 
+
 -    if (collides(state.ball, brick)) {
 +    if (sweptCollides(state.ball, brick)) {
        brick.alive = false;
@@ -100,7 +100,7 @@ index 6b4a133..00bdaaf 100644
 -      // side hit) plus pushing the ball back out of the brick.
 +      resolveCollision(state, brick);
      }
- 
+
      ctx.fillStyle = brickColor(brick.row);
 diff --git a/game/neon.test.js b/game/neon.test.js
 index 250d6a9..2b10d60 100644
@@ -113,10 +113,10 @@ index 250d6a9..2b10d60 100644
 +  BALL_R,
 +  frame,
  } from './neon.js';
- 
+
  test('collides: clear overlap detected', () => {
 @@ -67,3 +69,4 @@ function belowField() {
- 
+
  // TODO (#5): test comboMultiplier / scoreForBrick.
  // TODO      : test level progression and loadBest/saveBest persistence.
 +

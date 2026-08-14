@@ -5,7 +5,7 @@ index 6b4a133..7f5306e 100644
 @@ -156,15 +156,155 @@ export function saveBest(storage, score) {
    return best;
  }
- 
+
 -// --- Physics (movement + wall/paddle bounces) ------------------------------
 +// --- Brick bounce resolution (issue #1) -------------------------------------
 +
@@ -143,7 +143,7 @@ index 6b4a133..7f5306e 100644
 +}
 +
 +// --- Physics (movement + wall/paddle/brick bounces) -------------------------
- 
+
  // Advances the ball by a time step `dt` (in seconds) and handles bounces off
 -// the walls and the paddle. Does NOT handle bricks: that responsibility still
 -// lives in the render loop `frame()` (debt #2).
@@ -155,17 +155,17 @@ index 6b4a133..7f5306e 100644
 +// be entangled with drawing.
  export function step(state, dt) {
    const { ball, paddle } = state;
- 
+
 +  const prevX = ball.x;
 +  const prevY = ball.y;
 +
    ball.x += ball.vx * dt;
    ball.y += ball.vy * dt;
- 
+
 @@ -199,6 +339,30 @@ export function step(state, dt) {
      state.combo = 0; // touching the paddle resets the combo
    }
- 
+
 +  // Bricks: bounce, destroy, score. A ball that overlaps a brick is resolved
 +  // by penetration (which face was hit); a fast ball that jumped over a brick
 +  // in this single step is caught by sweeping between the previous and the new
@@ -196,10 +196,10 @@ index 6b4a133..7f5306e 100644
 @@ -206,30 +370,19 @@ export function step(state, dt) {
    return false;
  }
- 
+
 -// --- Rendering (DOM): brick collision logic STILL mixed in here ------------
 +// --- Rendering (DOM) --------------------------------------------------------
- 
+
 -// Main render loop. For each live brick we test collision AND draw in the same
 -// pass: this is where logic and rendering are entangled.
 +// Main render loop: drawing only. Brick collision and scoring now live in
@@ -209,7 +209,7 @@ index 6b4a133..7f5306e 100644
    // Background
    ctx.fillStyle = palette.background;
    ctx.fillRect(0, 0, WIDTH, HEIGHT);
- 
+
 -  // Bricks: collision + bounce + score + drawing, all in one place.
 +  // Bricks: drawing only.
    for (const brick of state.bricks) {
@@ -245,11 +245,11 @@ index 250d6a9..d42bdef 100644
 +  BALL_R,
    WIDTH,
  } from './neon.js';
- 
+
 @@ -65,5 +69,100 @@ function belowField() {
    return 500;
  }
- 
+
 +// --- Issue #1: the ball bounces off bricks ----------------------------------
 +//
 +// Each face case places a ball already overlapping a brick by 3 px on the

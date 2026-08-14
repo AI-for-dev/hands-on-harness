@@ -54,7 +54,7 @@ index 6b4a133..a5326e9 100644
 +        }
 +      }
      }
- 
+
      ctx.fillStyle = brickColor(brick.row);
 diff --git a/game/neon.test.js b/game/neon.test.js
 index 250d6a9..4cf7acd 100644
@@ -63,7 +63,7 @@ index 250d6a9..4cf7acd 100644
 @@ -20,6 +20,7 @@ import {
    WIDTH,
  } from './neon.js';
- 
+
 +
  test('collides: clear overlap detected', () => {
    const ball = { x: 100, y: 100, r: 8 };

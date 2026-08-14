@@ -3,7 +3,7 @@ index 6b4a133..d296ce1 100644
 --- a/game/neon.js
 +++ b/game/neon.js
 @@ -103,8 +103,7 @@ export function createState(level = 1) {
- 
+
  // True if the ball (circle approximated by its box) overlaps the brick.
  // Simple AABB test: it only says WHETHER the ball and the brick overlap, not
 -// WHICH face was hit. The missing bounce in frame() is what lets the ball plow
@@ -15,7 +15,7 @@ index 6b4a133..d296ce1 100644
 @@ -114,6 +113,79 @@ export function collides(ball, brick) {
    );
  }
- 
+
 +// Resolves ball-brick collisions using a sweep-test to prevent tunnelling.
 +// Handles per-face and corner bounces and pushes the ball out to avoid sticking.
 +export function resolveBrickCollisions(state, dt) {
@@ -63,12 +63,12 @@ index 6b4a133..d296ce1 100644
 +
 +  if (firstCollision) {
 +    const { brick, t, normal } = firstCollision;
-+    
++
 +    let finalNormal = normal;
 +    if (t === 0) {
 +      const overlapX = Math.min(ball.x + ball.r - brick.x, brick.x + brick.w - (ball.x - ball.r));
 +      const overlapY = Math.min(ball.y + ball.r - brick.y, brick.y + brick.h - (ball.y - ball.r));
-+      
++
 +      if (overlapX < overlapY) {
 +        finalNormal = { x: ball.x < brick.x + brick.w / 2 ? -1 : 1, y: 0 };
 +      } else if (overlapY < overlapX) {
@@ -90,12 +90,12 @@ index 6b4a133..d296ce1 100644
 +
 +
  // --- Score & combo (NOT covered by tests — debt #5) ------------------------
- 
+
  // Combo multiplier. UNBOUNDED today: a long combo makes the score blow up
 @@ -183,6 +255,8 @@ export function step(state, dt) {
      ball.vy = Math.abs(ball.vy);
    }
- 
+
 +  resolveBrickCollisions(state, dt);
 +
    // Paddle
@@ -104,12 +104,12 @@ index 6b4a133..d296ce1 100644
 @@ -215,21 +289,10 @@ export function frame(ctx, state) {
    ctx.fillStyle = palette.background;
    ctx.fillRect(0, 0, WIDTH, HEIGHT);
- 
+
 -  // Bricks: collision + bounce + score + drawing, all in one place.
 +  // Bricks
    for (const brick of state.bricks) {
      if (!brick.alive) continue;
- 
+
 -    if (collides(state.ball, brick)) {
 -      brick.alive = false;
 -      state.combo += 1;
@@ -131,7 +131,7 @@ index 250d6a9..f069c6e 100644
 @@ -59,8 +59,58 @@ test('makeBricks: full, all-alive grid at start', () => {
    assert.ok(bricks.every((b) => b.x >= 0 && b.x + b.w <= WIDTH));
  });
- 
+
 -// Small local helper: place the ball below the field without importing the
 -// height (coverage intentionally light).
 +import { resolveBrickCollisions } from './neon.js';
@@ -181,7 +181,7 @@ index 250d6a9..f069c6e 100644
 +  // Ball is between two bricks, but should only hit one if it's precisely placed
 +  // or if it's a sweep test, it hits the first one.
 +  resolveBrickCollisions(state, 1 / 60);
-+  const flippedOnce = (state.ball.vy > 0); 
++  const flippedOnce = (state.ball.vy > 0);
 +  // If it hit both and flipped twice, it would be vy < 0 again.
 +  assert.ok(flippedOnce, 'should have bounced exactly once');
 +});

@@ -4,7 +4,7 @@ index 6b4a133..a361692 100644
 +++ b/game/neon.js
 @@ -159,11 +159,12 @@ export function saveBest(storage, score) {
  // --- Physics (movement + wall/paddle bounces) ------------------------------
- 
+
  // Advances the ball by a time step `dt` (in seconds) and handles bounces off
 -// the walls and the paddle. Does NOT handle bricks: that responsibility still
 -// lives in the render loop `frame()` (debt #2).
@@ -14,13 +14,13 @@ index 6b4a133..a361692 100644
    const { ball, paddle } = state;
 +  const oldX = ball.x;
 +  const oldY = ball.y;
- 
+
    ball.x += ball.vx * dt;
    ball.y += ball.vy * dt;
 @@ -183,6 +184,41 @@ export function step(state, dt) {
      ball.vy = Math.abs(ball.vy);
    }
- 
+
 +  // Bricks: physics check (moved from frame to prevent tunneling)
 +  let collided = false;
 +  for (const brick of state.bricks) {
@@ -28,14 +28,14 @@ index 6b4a133..a361692 100644
 +
 +    // Tunneling check: if the ball moved so fast it jumped over the brick,
 +    // or if it's currently colliding.
-+    if (!collided && (collides(ball, brick) || 
-+        (Math.abs(ball.vx * dt) > 0 && 
-+         Math.abs(ball.vy * dt) > 0 && 
-+         ((oldY + ball.r > brick.y && ball.y - ball.r < brick.y + brick.h && 
++    if (!collided && (collides(ball, brick) ||
++        (Math.abs(ball.vx * dt) > 0 &&
++         Math.abs(ball.vy * dt) > 0 &&
++         ((oldY + ball.r > brick.y && ball.y - ball.r < brick.y + brick.h &&
 +           ((oldX + ball.r > brick.x && ball.x - ball.r < brick.x + brick.w))) ||
 +          (oldX + ball.r > brick.x && ball.x - ball.r < brick.x + brick.w &&
 +           ((oldY + ball.r > brick.y && ball.y - ball.r < brick.y + brick.h))))))) {
-+      
++
 +      collided = true;
 +      brick.alive = false;
 +      state.combo += 1;
@@ -69,7 +69,7 @@ index 6b4a133..a361692 100644
 -    state.combo = 0; // touching the paddle resets the combo
 +    state.combo = 0;
    }
- 
+
 -  // Exit through the bottom: ball lost
    if (ball.y - ball.r > HEIGHT) {
      return true;
@@ -77,12 +77,12 @@ index 6b4a133..a361692 100644
 @@ -215,21 +249,10 @@ export function frame(ctx, state) {
    ctx.fillStyle = palette.background;
    ctx.fillRect(0, 0, WIDTH, HEIGHT);
- 
+
 -  // Bricks: collision + bounce + score + drawing, all in one place.
 +  // Bricks: only drawing now (physics moved to step()).
    for (const brick of state.bricks) {
      if (!brick.alive) continue;
- 
+
 -    if (collides(state.ball, brick)) {
 -      brick.alive = false;
 -      state.combo += 1;
@@ -111,7 +111,7 @@ index 250d6a9..ff9b8c9 100644
    BRICK_COLS,
    WIDTH,
  } from './neon.js';
- 
+
 +
  test('collides: clear overlap detected', () => {
    const ball = { x: 100, y: 100, r: 8 };
@@ -119,65 +119,65 @@ index 250d6a9..ff9b8c9 100644
 @@ -65,5 +68,63 @@ function belowField() {
    return 500;
  }
- 
+
 -// TODO (#5): test comboMultiplier / scoreForBrick.
 -// TODO      : test level progression and loadBest/saveBest persistence.
 +test('frame: bounce off the bottom of a brick', () => {
 +  const state = createState(1);
 +  const brick = state.bricks[0];
-+  state.ball = { 
-+    x: brick.x + brick.w / 2, 
-+    y: brick.y + brick.h + 2, 
-+    r: 7, 
-+    vx: 0, 
-+    vy: -200 
++  state.ball = {
++    x: brick.x + brick.w / 2,
++    y: brick.y + brick.h + 2,
++    r: 7,
++    vx: 0,
++    vy: -200
 +  };
-+  
-+  const ctx = { 
-+    fillRect: () => {}, 
-+    arc: () => {}, 
-+    fill: () => {}, 
-+    fillText: () => {}, 
++
++  const ctx = {
++    fillRect: () => {},
++    arc: () => {},
++    fill: () => {},
++    fillText: () => {},
 +    beginPath: () => {},
-+    fillText: () => {} 
++    fillText: () => {}
 +  };
-+  
++
 +  step(state, 0); // Trigger physics
 +  frame(ctx, state);
-+  
++
 +  assert.ok(state.ball.vy > 0, 'ball should bounce DOWN after hitting brick bottom');
 +});
 +
 +test('frame: ball should not tunnel through brick at high speed', () => {
 +  const state = createState(6); // Level 6: speed = 710 px/s
 +  const brick = state.bricks[0];
-+  
++
 +  // Position ball below the brick such that one step at dt=0.05 jumps over it
 +  // Brick y: 48, h: 20 -> [48, 68]
 +  // Ball y: 120, r: 7 -> [113, 127]
 +  // After step (dt=0.05, vy=-710): y = 120 - 35.5 = 84.5
 +  // Ball range: [77.5, 91.5] -> NO overlap with [48, 68]
-+  state.ball = { 
-+    x: brick.x + brick.w / 2, 
-+    y: 120, 
-+    r: 7, 
-+    vx: 0, 
-+    vy: -ballSpeed(6) 
++  state.ball = {
++    x: brick.x + brick.w / 2,
++    y: 120,
++    r: 7,
++    vx: 0,
++    vy: -ballSpeed(6)
 +  };
-+  
++
 +  // We simulate the loop: step then frame
 +  step(state, 0.05);
-+  
-+  const ctx = { 
-+    fillRect: () => {}, 
-+    arc: () => {}, 
-+    fill: () => {}, 
-+    fillText: () => {}, 
-+    beginPath: () => {} 
++
++  const ctx = {
++    fillRect: () => {},
++    arc: () => {},
++    fill: () => {},
++    fillText: () => {},
++    beginPath: () => {}
 +  };
-+  
++
 +  frame(ctx, state);
-+  
++
 +  assert.ok(!brick.alive, 'brick should be broken even if ball tunnels through it');
 +  assert.ok(state.ball.vy > 0, 'ball should have bounced');
 +});

@@ -3,7 +3,7 @@ index 87396ac..46db753 100644
 --- a/ISSUES.md
 +++ b/ISSUES.md
 @@ -5,8 +5,8 @@ bug to fix, debt to pay down, or a feature to add.
- 
+
  | #   | Type         | Title                                                                        |
  | --- | ------------ | ---------------------------------------------------------------------------- |
 -| 1   | bug          | The ball **plows through** bricks instead of bouncing (no brick bounce)      |
@@ -14,12 +14,12 @@ index 87396ac..46db753 100644
  | 4   | feature      | **CSV import** of a score table, compatible with the current local save      |
  | 5   | debt         | The **score/combo logic is not tested**                                      |
 @@ -14,38 +14,38 @@ bug to fix, debt to pay down, or a feature to add.
- 
+
  ---
- 
+
 -## #1 — bug: the ball plows through bricks instead of bouncing
 +## #1 — bug: the ball plows through bricks instead of bouncing ✅ FIXED
- 
+
 -`frame()` (in `game/neon.js`) destroys the brick it hits but never touches the
 -ball's velocity: only the walls and the paddle bounce (`step()`). The whole
 -collision resolution has to be fixed, not just the visible symptom.
@@ -27,7 +27,7 @@ index 87396ac..46db753 100644
 +logic and rendering: collision resolution lives in a pure, exported function
 +`brickHit(ball, bricks, prev)` in `game/neon.js`, called from the game loop
 +before drawing. Implementation notes:
- 
+
  - **per face**: the axis with the *smaller* penetration is the face that was hit -
 -  flip `vy` on a top/bottom hit, `vx` on a side hit, and leave the other
 -  component exactly as it was;
@@ -58,9 +58,9 @@ index 87396ac..46db753 100644
 +  cannot jump over a brick.
 +
 +Each case is covered by a test in `game/neon.test.js` (written red first).
- 
+
  ## #2 — perf/quality: collision entangled with rendering
- 
+
 -Brick collision detection lives inside the draw loop (`frame()` in
 -`game/neon.js`): logic and rendering are mixed, and we scan every brick on
 -every frame.
@@ -68,15 +68,15 @@ index 87396ac..46db753 100644
 +render loop only draws (delivered while fixing #1). What remains: `brickHit`
 +still scans **every** brick on every frame — a spatial index (e.g. a coarse
 +grid bucket) is the remaining perf work.
- 
+
 -- **Expected**: extract a **pure**, testable function `brickHit(ball, bricks)`,
 -  **without changing the public API** (the already-exported functions).
 +- **Expected**: ~~extract a pure, testable function `brickHit(ball, bricks)`~~
 +  (done, with an optional `prev` argument for the tunnelling sweep), without
 +  changing the public API (the already-exported functions).
- 
+
  ## #3 — feature: night mode
- 
+
 diff --git a/game/neon.js b/game/neon.js
 index 6b4a133..6d7a553 100644
 --- a/game/neon.js
@@ -95,10 +95,10 @@ index 6b4a133..6d7a553 100644
 @@ -99,12 +98,11 @@ export function createState(level = 1) {
    };
  }
- 
+
 -// --- Collision (tested primitive) ------------------------------------------
 +// --- Collision (tested primitives) -----------------------------------------
- 
+
  // True if the ball (circle approximated by its box) overlaps the brick.
  // Simple AABB test: it only says WHETHER the ball and the brick overlap, not
 -// WHICH face was hit. The missing bounce in frame() is what lets the ball plow
@@ -110,7 +110,7 @@ index 6b4a133..6d7a553 100644
 @@ -114,6 +112,115 @@ export function collides(ball, brick) {
    );
  }
- 
+
 +// --- Brick collision resolution (issue #1) ---------------------------------
 +
 +// Earliest fraction t in [0, 1] at which the segment p0 -> p1 enters the box
@@ -221,11 +221,11 @@ index 6b4a133..6d7a553 100644
 +}
 +
  // --- Score & combo (NOT covered by tests — debt #5) ------------------------
- 
+
  // Combo multiplier. UNBOUNDED today: a long combo makes the score blow up
 @@ -159,8 +266,8 @@ export function saveBest(storage, score) {
  // --- Physics (movement + wall/paddle bounces) ------------------------------
- 
+
  // Advances the ball by a time step `dt` (in seconds) and handles bounces off
 -// the walls and the paddle. Does NOT handle bricks: that responsibility still
 -// lives in the render loop `frame()` (debt #2).
@@ -237,10 +237,10 @@ index 6b4a133..6d7a553 100644
 @@ -206,30 +313,19 @@ export function step(state, dt) {
    return false;
  }
- 
+
 -// --- Rendering (DOM): brick collision logic STILL mixed in here ------------
 +// --- Rendering (draw only) --------------------------------------------------
- 
+
 -// Main render loop. For each live brick we test collision AND draw in the same
 -// pass: this is where logic and rendering are entangled.
 +// Main render loop. Bricks are drawn here and nothing else: collision
@@ -250,7 +250,7 @@ index 6b4a133..6d7a553 100644
    // Background
    ctx.fillStyle = palette.background;
    ctx.fillRect(0, 0, WIDTH, HEIGHT);
- 
+
 -  // Bricks: collision + bounce + score + drawing, all in one place.
 +  // Bricks (dead ones are simply skipped).
    for (const brick of state.bricks) {
@@ -272,7 +272,7 @@ index 6b4a133..6d7a553 100644
    }
 @@ -288,6 +384,10 @@ export function boot(doc = document) {
      last = now;
- 
+
      if (state.running) {
 +      // Remember where the ball was BEFORE this frame's move: `brickHit`
 +      // sweeps the segment between the two positions so a fast ball cannot
@@ -293,7 +293,7 @@ index 6b4a133..6d7a553 100644
 +          state.score += scoreForBrick(brick, state.combo);
 +        }
        }
- 
+
        // Level cleared: all bricks broken
 diff --git a/game/neon.test.js b/game/neon.test.js
 index 250d6a9..0a729c5 100644
@@ -313,7 +313,7 @@ index 250d6a9..0a729c5 100644
 +// starting point for the testing work ahead, not a complete suite.
  //
  // Run: `node --test "game/**/*.test.js"`  (or `npm test`)
- 
+
 @@ -15,6 +16,7 @@ import {
    step,
    makeBricks,
@@ -325,7 +325,7 @@ index 250d6a9..0a729c5 100644
 @@ -52,6 +54,91 @@ test('step: ball exiting through the bottom => lost', () => {
    assert.equal(lost, true);
  });
- 
+
 +// --- Issue #1: the ball must bounce off bricks -----------------------------
 +
 +// A lone brick outside the real grid, for precise collision setups.

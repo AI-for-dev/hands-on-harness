@@ -35,7 +35,7 @@ index 6b4a133..2ef16cd 100644
    };
  }
 @@ -103,8 +114,8 @@ export function createState(level = 1) {
- 
+
  // True if the ball (circle approximated by its box) overlaps the brick.
  // Simple AABB test: it only says WHETHER the ball and the brick overlap, not
 -// WHICH face was hit. The missing bounce in frame() is what lets the ball plow
@@ -48,7 +48,7 @@ index 6b4a133..2ef16cd 100644
 @@ -165,6 +176,11 @@ export function saveBest(storage, score) {
  export function step(state, dt) {
    const { ball, paddle } = state;
- 
+
 +  // Remember where the ball was before this move: brickCollide() sweeps from
 +  // here to the new position so a fast ball cannot jump over a brick (#1).
 +  ball.px = ball.x;
@@ -56,11 +56,11 @@ index 6b4a133..2ef16cd 100644
 +
    ball.x += ball.vx * dt;
    ball.y += ball.vy * dt;
- 
+
 @@ -206,30 +222,115 @@ export function step(state, dt) {
    return false;
  }
- 
+
 -// --- Rendering (DOM): brick collision logic STILL mixed in here ------------
 +// --- Brick collision (pure, testable) --------------------------------------
 +
@@ -146,7 +146,7 @@ index 6b4a133..2ef16cd 100644
 +      maxX = Math.max(maxX, brick.x + brick.w);
 +      maxY = Math.max(maxY, brick.y + brick.h);
 +    }
- 
+
 -// Main render loop. For each live brick we test collision AND draw in the same
 -// pass: this is where logic and rendering are entangled.
 +    // Place the ball at the point of first contact, then push it out.
@@ -166,7 +166,7 @@ index 6b4a133..2ef16cd 100644
    // Background
    ctx.fillStyle = palette.background;
    ctx.fillRect(0, 0, WIDTH, HEIGHT);
- 
+
 -  // Bricks: collision + bounce + score + drawing, all in one place.
 +  // Brick collision: swept detection, one bounce per pass, scoring — all in
 +  // brickCollide(). frame() only draws.
@@ -207,7 +207,7 @@ index 250d6a9..f6ffd03 100644
 +// ahead, not a complete suite.
  //
  // Run: `node --test "game/**/*.test.js"`  (or `npm test`)
- 
+
 @@ -15,9 +16,13 @@ import {
    step,
    makeBricks,
@@ -220,12 +220,12 @@ index 250d6a9..f6ffd03 100644
    WIDTH,
 +  BALL_R,
  } from './neon.js';
- 
+
  test('collides: clear overlap detected', () => {
 @@ -59,6 +64,125 @@ test('makeBricks: full, all-alive grid at start', () => {
    assert.ok(bricks.every((b) => b.x >= 0 && b.x + b.w <= WIDTH));
  });
- 
+
 +// --- #1: brick bounce (see ISSUES.md) --------------------------------------
 +
 +test('bounceOffBrick: top hit flips vy only and pushes the ball out', () => {

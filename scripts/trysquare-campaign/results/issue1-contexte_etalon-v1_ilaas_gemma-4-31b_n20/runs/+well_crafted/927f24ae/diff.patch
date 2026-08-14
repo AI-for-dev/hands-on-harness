@@ -5,17 +5,17 @@ index 6b4a133..d477b78 100644
 @@ -114,6 +114,50 @@ export function collides(ball, brick) {
    );
  }
- 
+
 +function resolveBrickCollision(state, brick, prevBall) {
 +  const { ball } = state;
-+  
++
 +  let hit = collides(ball, brick);
 +  if (!hit && prevBall) {
 +    const minX = Math.min(prevBall.x, ball.x) - ball.r;
 +    const maxX = Math.max(prevBall.x, ball.x) + ball.r;
 +    const minY = Math.min(prevBall.y, ball.y) - ball.r;
 +    const maxY = Math.max(prevBall.y, ball.y) + ball.r;
-+    
++
 +    if (maxX > brick.x && minX < brick.x + brick.w && maxY > brick.y && minY < brick.y + brick.h) {
 +      hit = true;
 +    }
@@ -51,10 +51,10 @@ index 6b4a133..d477b78 100644
 +}
 +
  // --- Score & combo (NOT covered by tests — debt #5) ------------------------
- 
+
  // Combo multiplier. UNBOUNDED today: a long combo makes the score blow up
 @@ -210,7 +254,7 @@ export function step(state, dt) {
- 
+
  // Main render loop. For each live brick we test collision AND draw in the same
  // pass: this is where logic and rendering are entangled.
 -export function frame(ctx, state) {
@@ -65,7 +65,7 @@ index 6b4a133..d477b78 100644
 @@ -219,15 +263,10 @@ export function frame(ctx, state) {
    for (const brick of state.bricks) {
      if (!brick.alive) continue;
- 
+
 -    if (collides(state.ball, brick)) {
 +    if (resolveBrickCollision(state, brick, prevBall)) {
        brick.alive = false;
@@ -77,7 +77,7 @@ index 6b4a133..d477b78 100644
 -      // row. Fix = a real per-face bounce (flip vy on a top/bottom hit, vx on a
 -      // side hit) plus pushing the ball back out of the brick.
      }
- 
+
      ctx.fillStyle = brickColor(brick.row);
 diff --git a/game/neon.test.js b/game/neon.test.js
 index 250d6a9..3a41774 100644
@@ -95,19 +95,19 @@ index 250d6a9..3a41774 100644
 -
  import { test } from 'node:test';
  import assert from 'node:assert/strict';
- 
+
 @@ -18,6 +9,7 @@ import {
    BRICK_ROWS,
    BRICK_COLS,
    WIDTH,
 +  frame,
  } from './neon.js';
- 
+
  test('collides: clear overlap detected', () => {
 @@ -59,11 +51,117 @@ test('makeBricks: full, all-alive grid at start', () => {
    assert.ok(bricks.every((b) => b.x >= 0 && b.x + b.w <= WIDTH));
  });
- 
+
 -// Small local helper: place the ball below the field without importing the
 -// height (coverage intentionally light).
 +// --- NEW TESTS FOR ISSUE #1 ---
@@ -120,17 +120,17 @@ index 250d6a9..3a41774 100644
 +  // Ball is at (125, 118), radius 7. Ball bottom is at 125, top is at 111.
 +  // Brick bottom is at 120. Overlap: ball top (111) < brick bottom (120).
 +  state.ball = { x: 125, y: 118, r: 7, vx: 0, vy: -100 };
-+  
-+  const ctx = { 
-+    fillRect: () => {}, 
-+    beginPath: () => {}, 
-+    arc: () => {}, 
++
++  const ctx = {
++    fillRect: () => {},
++    beginPath: () => {},
++    arc: () => {},
 +    fill: () => {},
 +    fillText: () => {}
 +  };
-+  
++
 +  frame(ctx, state);
-+  
++
 +  assert.equal(brick.alive, false, 'Brick should be destroyed');
 +  assert.ok(state.ball.vy > 0, 'vy should be flipped to DOWN');
 +  assert.ok(state.ball.y >= 120 + 7, 'Ball should be pushed out of the brick bottom');
@@ -143,17 +143,17 @@ index 250d6a9..3a41774 100644
 +  // Ball moving RIGHT, hits the LEFT face of the brick
 +  // Ball x=95, r=7 => right edge 102. Brick x=100. Overlap.
 +  state.ball = { x: 95, y: 110, r: 7, vx: 100, vy: 0 };
-+  
-+  const ctx = { 
-+    fillRect: () => {}, 
-+    beginPath: () => {}, 
-+    arc: () => {}, 
++
++  const ctx = {
++    fillRect: () => {},
++    beginPath: () => {},
++    arc: () => {},
 +    fill: () => {},
 +    fillText: () => {}
 +  };
-+  
++
 +  frame(ctx, state);
-+  
++
 +  assert.equal(brick.alive, false, 'Brick should be destroyed');
 +  assert.ok(state.ball.vx < 0, 'vx should be flipped to LEFT');
 +  assert.ok(state.ball.x <= 100 - 7, 'Ball should be pushed out of the brick left');
@@ -175,17 +175,17 @@ index 250d6a9..3a41774 100644
 +  // If x = 95, overlapLeft = 2.
 +  // If y = 95, overlapTop = 2.
 +  state.ball = { x: 95, y: 95, r: 7, vx: 100, vy: 100 };
-+  
-+  const ctx = { 
-+    fillRect: () => {}, 
-+    beginPath: () => {}, 
-+    arc: () => {}, 
++
++  const ctx = {
++    fillRect: () => {},
++    beginPath: () => {},
++    arc: () => {},
 +    fill: () => {},
 +    fillText: () => {}
 +  };
-+  
++
 +  frame(ctx, state);
-+  
++
 +  assert.ok(state.ball.vx < 0, 'vx should be flipped');
 +  assert.ok(state.ball.vy < 0, 'vy should be flipped');
 +});
@@ -194,30 +194,30 @@ index 250d6a9..3a41774 100644
 +  const state = createState(1);
 +  const brick = { x: 100, y: 100, w: 50, h: 20, alive: true };
 +  state.bricks = [brick];
-+  
-+  // Level 6 speed: 710 px/s. 
++
++  // Level 6 speed: 710 px/s.
 +  // Let's simulate a step where the ball jumps over the brick.
 +  // Ball starts at y=130 (below brick), vx=0, vy=-1000 (very fast UP).
 +  // In one step of 0.05s, ball moves 50px UP to y=80.
-+  // Brick is at y=100, h=20 (bottom=120). 
++  // Brick is at y=100, h=20 (bottom=120).
 +  // The ball was at 130, then 80. It jumped over the brick's 100-120 range.
 +  state.ball = { x: 125, y: 130, r: 7, vx: 0, vy: -1000 };
-+  
-+  // We need a way to test tunnelling. Since currently tunnelling 
++
++  // We need a way to test tunnelling. Since currently tunnelling
 +  // detection is not implemented, this test should fail (the brick stays alive).
 +  // We'll call step() and then frame() with the previous position.
 +  const prevBall = { ...state.ball };
 +  step(state, 0.05); // ball.y becomes 80
-+  
-+  const ctx = { 
-+    fillRect: () => {}, 
-+    beginPath: () => {}, 
-+    arc: () => {}, 
++
++  const ctx = {
++    fillRect: () => {},
++    beginPath: () => {},
++    arc: () => {},
 +    fill: () => {},
 +    fillText: () => {}
 +  };
 +  frame(ctx, state, prevBall);
-+  
++
 +  assert.equal(brick.alive, false, 'Ball should have hit the brick via sweep/tunnelling check');
 +});
 +

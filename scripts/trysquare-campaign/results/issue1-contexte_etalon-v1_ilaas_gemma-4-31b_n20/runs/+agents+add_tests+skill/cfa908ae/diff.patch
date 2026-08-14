@@ -123,7 +123,7 @@ index 6b4a133..415f6ee 100644
  }
 @@ -102,9 +102,6 @@ export function createState(level = 1) {
  // --- Collision (tested primitive) ------------------------------------------
- 
+
  // True if the ball (circle approximated by its box) overlaps the brick.
 -// Simple AABB test: it only says WHETHER the ball and the brick overlap, not
 -// WHICH face was hit. The missing bounce in frame() is what lets the ball plow
@@ -134,7 +134,7 @@ index 6b4a133..415f6ee 100644
 @@ -114,6 +111,57 @@ export function collides(ball, brick) {
    );
  }
- 
+
 +// Resolves collisions between the ball and the bricks.
 +export function resolveBrickCollisions(state) {
 +  const { ball, bricks } = state;
@@ -187,11 +187,11 @@ index 6b4a133..415f6ee 100644
 +}
 +
  // --- Score & combo (NOT covered by tests — debt #5) ------------------------
- 
+
  // Combo multiplier. UNBOUNDED today: a long combo makes the score blow up
 @@ -159,12 +207,14 @@ export function saveBest(storage, score) {
  // --- Physics (movement + wall/paddle bounces) ------------------------------
- 
+
  // Advances the ball by a time step `dt` (in seconds) and handles bounces off
 -// the walls and the paddle. Does NOT handle bricks: that responsibility still
 -// lives in the render loop `frame()` (debt #2).
@@ -199,13 +199,13 @@ index 6b4a133..415f6ee 100644
  // Returns `true` if the ball is lost (exits through the bottom).
  export function step(state, dt) {
    const { ball, paddle } = state;
- 
+
 +  ball.oldX = ball.x;
 +  ball.oldY = ball.y;
 +
    ball.x += ball.vx * dt;
    ball.y += ball.vy * dt;
- 
+
 @@ -193,10 +243,9 @@ export function step(state, dt) {
    ) {
      ball.y = paddle.y - ball.r;
@@ -216,15 +216,15 @@ index 6b4a133..415f6ee 100644
 -    state.combo = 0; // touching the paddle resets the combo
 +    state.combo = 0;
    }
- 
+
    // Exit through the bottom: ball lost
 @@ -206,39 +255,28 @@ export function step(state, dt) {
    return false;
  }
- 
+
 -// --- Rendering (DOM): brick collision logic STILL mixed in here ------------
 +// --- Rendering (DOM) -------------------------------------------------------
- 
+
 -// Main render loop. For each live brick we test collision AND draw in the same
 -// pass: this is where logic and rendering are entangled.
 +// Main render loop.
@@ -234,7 +234,7 @@ index 6b4a133..415f6ee 100644
    // Background
    ctx.fillStyle = palette.background;
    ctx.fillRect(0, 0, WIDTH, HEIGHT);
- 
+
 -  // Bricks: collision + bounce + score + drawing, all in one place.
 +  // Bricks: drawing only.
    for (const brick of state.bricks) {
@@ -254,12 +254,12 @@ index 6b4a133..415f6ee 100644
      ctx.fillStyle = brickColor(brick.row);
      ctx.fillRect(brick.x, brick.y, brick.w, brick.h);
    }
- 
+
 -  // Paddle — color hard-coded instead of using the palette (inconsistency #6).
 +  // Paddle
    ctx.fillStyle = '#00e5ff';
    ctx.fillRect(state.paddle.x, state.paddle.y, state.paddle.w, state.paddle.h);
- 
+
 -  // Ball — also hard-coded (#6).
 +  // Ball
    ctx.fillStyle = '#39ff14';
@@ -267,7 +267,7 @@ index 6b4a133..415f6ee 100644
    ctx.arc(state.ball.x, state.ball.y, state.ball.r, 0, Math.PI * 2);
 @@ -255,7 +293,6 @@ export function frame(ctx, state) {
  // --- Boot (browser entry point) --------------------------------------------
- 
+
  // Starts the game: wires up the canvas, the mouse and the animation loop.
 -// The only function that depends on the DOM; never called on import.
  export function boot(doc = document) {
@@ -276,7 +276,7 @@ index 6b4a133..415f6ee 100644
 @@ -266,7 +303,6 @@ export function boot(doc = document) {
    state.best = loadBest(doc.defaultView?.localStorage ?? globalThis.localStorage);
    state.running = true;
- 
+
 -  // Glow pass: a coarse offscreen light map, stretched over the field.
    const offscreen = doc.createElement('canvas');
    offscreen.width = GLOW_W;
@@ -284,7 +284,7 @@ index 6b4a133..415f6ee 100644
 @@ -275,7 +311,6 @@ export function boot(doc = document) {
      image: offscreen.getContext('2d').createImageData(GLOW_W, GLOW_H),
    };
- 
+
 -  // Move the paddle with the mouse.
    canvas.addEventListener('mousemove', (e) => {
      const rect = canvas.getBoundingClientRect();
@@ -297,7 +297,7 @@ index 6b4a133..415f6ee 100644
            state.ball = createState(state.level).ball;
          }
        }
- 
+
 -      // Level cleared: all bricks broken
        if (state.bricks.every((b) => !b.alive)) {
          state.level += 1;
@@ -317,7 +317,7 @@ index 250d6a9..e3f017e 100644
 @@ -59,11 +60,61 @@ test('makeBricks: full, all-alive grid at start', () => {
    assert.ok(bricks.every((b) => b.x >= 0 && b.x + b.w <= WIDTH));
  });
- 
+
 +// --- Mock Context for Frame Tests ----------------------------------------
 +const mockCtx = {
 +  fillRect: () => {},

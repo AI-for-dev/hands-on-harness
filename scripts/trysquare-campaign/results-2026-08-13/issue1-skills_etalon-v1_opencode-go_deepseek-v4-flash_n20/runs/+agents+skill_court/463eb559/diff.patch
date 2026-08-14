@@ -17,16 +17,16 @@ index 6b4a133..3f61272 100644
 @@ -114,7 +114,7 @@ export function collides(ball, brick) {
    );
  }
- 
+
 -// --- Score & combo (NOT covered by tests — debt #5) ------------------------
 +// --- Score & combo (basic flow covered by tests; debt #5) -------------------
- 
+
  // Combo multiplier. UNBOUNDED today: a long combo makes the score blow up
  // uncontrollably (see #5, expected improvement = clamp it).
 @@ -156,14 +156,154 @@ export function saveBest(storage, score) {
    return best;
  }
- 
+
 -// --- Physics (movement + wall/paddle bounces) ------------------------------
 +// --- Physics (movement + wall/paddle/brick bounces) ------------------------
 +
@@ -166,7 +166,7 @@ index 6b4a133..3f61272 100644
 +  normalizeSpeed(state);
 +  return true;
 +}
- 
+
  // Advances the ball by a time step `dt` (in seconds) and handles bounces off
 -// the walls and the paddle. Does NOT handle bricks: that responsibility still
 -// lives in the render loop `frame()` (debt #2).
@@ -178,7 +178,7 @@ index 6b4a133..3f61272 100644
    const { ball, paddle } = state;
 +  const x0 = ball.x; // position at the start of the frame, for the sweeps
 +  const y0 = ball.y;
- 
+
    ball.x += ball.vx * dt;
    ball.y += ball.vy * dt;
 @@ -172,31 +312,57 @@ export function step(state, dt) {
@@ -191,14 +191,14 @@ index 6b4a133..3f61272 100644
      ball.vx = -Math.abs(ball.vx);
 +    normalizeSpeed(state);
    }
- 
+
    // Ceiling
    if (ball.y - ball.r < 0) {
      ball.y = ball.r;
      ball.vy = Math.abs(ball.vy);
 +    normalizeSpeed(state);
    }
- 
+
 -  // Paddle
 -  if (
 -    ball.vy > 0 &&
@@ -251,12 +251,12 @@ index 6b4a133..3f61272 100644
 +      }
 +    }
    }
- 
+
    // Exit through the bottom: ball lost
 @@ -215,21 +381,9 @@ export function frame(ctx, state) {
    ctx.fillStyle = palette.background;
    ctx.fillRect(0, 0, WIDTH, HEIGHT);
- 
+
 -  // Bricks: collision + bounce + score + drawing, all in one place.
 +  // Bricks: drawing only — collision, bounce and score live in step().
    for (const brick of state.bricks) {
@@ -298,12 +298,12 @@ index 250d6a9..36856b1 100644
    WIDTH,
 +  HEIGHT,
  } from './neon.js';
- 
+
  test('collides: clear overlap detected', () => {
 @@ -65,5 +75,271 @@ function belowField() {
    return 500;
  }
- 
+
 +// --- Helpers for the brick-collision defect suite --------------------------
 +
 +// A single live brick, 20 pts, at the given top-left corner.

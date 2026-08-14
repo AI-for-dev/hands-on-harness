@@ -97,4 +97,3 @@ is precisely what this is for.
 - `-system_prompt`: **in -2 436**, interval [-3 268, -2 400]
 
 :warning: **The cost columns (in, out, turns, duration) must not be read here.** 1151 retries across the matrix, in +agents, +agents+add_tests+skill, +agents+add_tests+well_crafted, +agents+skill, +agents+well_crafted, +thinking, +well_crafted, -system_prompt, nothing. A retry replays the turn with the whole accumulated context, so these columns reflect our own load on the provider rather than the configuration - including any of them marked established.
-

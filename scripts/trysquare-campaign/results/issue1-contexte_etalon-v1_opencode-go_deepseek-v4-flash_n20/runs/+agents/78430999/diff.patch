@@ -4,14 +4,14 @@ index 6b4a133..9efb0b3 100644
 +++ b/game/neon.js
 @@ -216,18 +216,68 @@ export function frame(ctx, state) {
    ctx.fillRect(0, 0, WIDTH, HEIGHT);
- 
+
    // Bricks: collision + bounce + score + drawing, all in one place.
 +  // NOTE: `state.ball` is intentionally captured once so the rebound applied on
 +  // a brick is visible to the bricks scanned later in the same pass.
 +  const ball = state.ball;
    for (const brick of state.bricks) {
      if (!brick.alive) continue;
- 
+
 -    if (collides(state.ball, brick)) {
 +    if (collides(ball, brick)) {
        brick.alive = false;
@@ -75,5 +75,5 @@ index 6b4a133..9efb0b3 100644
 +      // is false, so a seam that overlaps two bricks in this pass does not cause
 +      // a sticky re-flip (a second brick can only trigger if genuinely touched).
      }
- 
+
      ctx.fillStyle = brickColor(brick.row);

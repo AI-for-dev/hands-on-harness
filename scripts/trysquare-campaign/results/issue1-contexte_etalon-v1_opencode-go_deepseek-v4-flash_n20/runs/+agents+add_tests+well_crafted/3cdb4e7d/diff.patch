@@ -15,7 +15,7 @@ index 6b4a133..88023da 100644
  // The module runs nothing on import: only `boot()` touches the DOM. Pure
  // logic can therefore be imported from the tests (`node --test`) without a
 @@ -103,8 +103,7 @@ export function createState(level = 1) {
- 
+
  // True if the ball (circle approximated by its box) overlaps the brick.
  // Simple AABB test: it only says WHETHER the ball and the brick overlap, not
 -// WHICH face was hit. The missing bounce in frame() is what lets the ball plow
@@ -27,7 +27,7 @@ index 6b4a133..88023da 100644
 @@ -114,6 +113,157 @@ export function collides(ball, brick) {
    );
  }
- 
+
 +// --- Brick bounce resolution (issue #1) ------------------------------------
 +
 +// Tolerance under which the two penetrations count as "equal" (a corner hit).
@@ -180,15 +180,15 @@ index 6b4a133..88023da 100644
 +}
 +
  // --- Score & combo (NOT covered by tests — debt #5) ------------------------
- 
+
  // Combo multiplier. UNBOUNDED today: a long combo makes the score blow up
 @@ -156,15 +306,22 @@ export function saveBest(storage, score) {
    return best;
  }
- 
+
 -// --- Physics (movement + wall/paddle bounces) ------------------------------
 +// --- Physics (movement + wall/paddle/brick bounces) ------------------------
- 
+
  // Advances the ball by a time step `dt` (in seconds) and handles bounces off
 -// the walls and the paddle. Does NOT handle bricks: that responsibility still
 -// lives in the render loop `frame()` (debt #2).
@@ -198,7 +198,7 @@ index 6b4a133..88023da 100644
  // Returns `true` if the ball is lost (exits through the bottom).
  export function step(state, dt) {
    const { ball, paddle } = state;
- 
+
 +  // Position before the move: the segment [prev → current] is what the swept
 +  // brick check sweeps, so a fast ball cannot jump over a brick between two
 +  // discrete samples.
@@ -207,11 +207,11 @@ index 6b4a133..88023da 100644
 +
    ball.x += ball.vx * dt;
    ball.y += ball.vy * dt;
- 
+
 @@ -199,6 +356,9 @@ export function step(state, dt) {
      state.combo = 0; // touching the paddle resets the combo
    }
- 
+
 +  // Bricks: per-face bounce + push-out, with a swept check against tunnelling.
 +  resolveBricks(state, prevX, prevY);
 +
@@ -221,10 +221,10 @@ index 6b4a133..88023da 100644
 @@ -206,30 +366,18 @@ export function step(state, dt) {
    return false;
  }
- 
+
 -// --- Rendering (DOM): brick collision logic STILL mixed in here ------------
 +// --- Rendering (DOM) -------------------------------------------------------
- 
+
 -// Main render loop. For each live brick we test collision AND draw in the same
 -// pass: this is where logic and rendering are entangled.
 +// Main render loop: pure drawing. Brick collision resolution happens in
@@ -233,7 +233,7 @@ index 6b4a133..88023da 100644
    // Background
    ctx.fillStyle = palette.background;
    ctx.fillRect(0, 0, WIDTH, HEIGHT);
- 
+
 -  // Bricks: collision + bounce + score + drawing, all in one place.
 +  // Bricks: rendering only — collision resolution lives in step() (#1).
    for (const brick of state.bricks) {
@@ -270,11 +270,11 @@ index 250d6a9..918c10f 100644
 +  BALL_R,
    WIDTH,
  } from './neon.js';
- 
+
 @@ -59,6 +64,78 @@ test('makeBricks: full, all-alive grid at start', () => {
    assert.ok(bricks.every((b) => b.x >= 0 && b.x + b.w <= WIDTH));
  });
- 
+
 +// Brick collisions (issue #1). The fixtures mirror sonde.test.js but drive
 +// `step()` directly, where the resolution now lives.
 +

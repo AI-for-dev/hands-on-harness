@@ -3,9 +3,9 @@ index 6b4a133..593b336 100644
 --- a/game/neon.js
 +++ b/game/neon.js
 @@ -158,11 +158,35 @@ export function saveBest(storage, score) {
- 
+
  // --- Physics (movement + wall/paddle bounces) ------------------------------
- 
+
 -// Advances the ball by a time step `dt` (in seconds) and handles bounces off
 -// the walls and the paddle. Does NOT handle bricks: that responsibility still
 -// lives in the render loop `frame()` (debt #2).
@@ -39,12 +39,12 @@ index 6b4a133..593b336 100644
 +// brick bounces. Keeping each sub-step small is what prevents tunnelling (#1).
 +function moveBallAndBounce(state, dt) {
    const { ball, paddle } = state;
- 
+
    ball.x += ball.vx * dt;
 @@ -199,11 +223,75 @@ export function step(state, dt) {
      state.combo = 0; // touching the paddle resets the combo
    }
- 
+
 -  // Exit through the bottom: ball lost
 -  if (ball.y - ball.r > HEIGHT) {
 -    return true;
@@ -119,12 +119,12 @@ index 6b4a133..593b336 100644
    }
 -  return false;
  }
- 
+
  // --- Rendering (DOM): brick collision logic STILL mixed in here ------------
 @@ -215,21 +303,11 @@ export function frame(ctx, state) {
    ctx.fillStyle = palette.background;
    ctx.fillRect(0, 0, WIDTH, HEIGHT);
- 
+
 -  // Bricks: collision + bounce + score + drawing, all in one place.
 +  // Bricks: collision + bounce + score are computed in moveBallAndBounce()
 +  // (inside step), so each frame we only DRAW the survivors. The integration
@@ -153,7 +153,7 @@ index 250d6a9..b053a97 100644
 @@ -65,5 +65,80 @@ function belowField() {
    return 500;
  }
- 
+
 +// ---- Ball / brick bounce (#1) ---------------------------------------------
 +
 +// A minimal state with bricks and a real paddle (never reached in these tests).

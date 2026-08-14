@@ -5,7 +5,7 @@ index 6b4a133..c1e1253 100644
 @@ -127,6 +127,42 @@ export function scoreForBrick(brick, combo) {
    return Math.round(brick.points * comboMultiplier(combo));
  }
- 
+
 +// Resolves collisions between the ball and live bricks.
 +// Handles bounce deflection and repositioning to prevent sticking.
 +export function resolveBrickCollisions(state) {
@@ -43,11 +43,11 @@ index 6b4a133..c1e1253 100644
 +}
 +
  // --- Best score persistence ------------------------------------------------
- 
+
  // Reads the best score from a localStorage-compatible storage.
 @@ -159,50 +195,58 @@ export function saveBest(storage, score) {
  // --- Physics (movement + wall/paddle bounces) ------------------------------
- 
+
  // Advances the ball by a time step `dt` (in seconds) and handles bounces off
 -// the walls and the paddle. Does NOT handle bricks: that responsibility still
 -// lives in the render loop `frame()` (debt #2).
@@ -55,7 +55,7 @@ index 6b4a133..c1e1253 100644
  // Returns `true` if the ball is lost (exits through the bottom).
  export function step(state, dt) {
    const { ball, paddle } = state;
-+  
++
 +  // Sub-stepping to prevent tunneling at high speeds.
 +  const SUB_STEPS = 4;
 +  const subDt = dt / SUB_STEPS;
@@ -72,7 +72,7 @@ index 6b4a133..c1e1253 100644
 +      ball.x = WIDTH - ball.r;
 +      ball.vx = -Math.abs(ball.vx);
 +    }
- 
+
 -  ball.x += ball.vx * dt;
 -  ball.y += ball.vy * dt;
 +    // Ceiling
@@ -80,7 +80,7 @@ index 6b4a133..c1e1253 100644
 +      ball.y = ball.r;
 +      ball.vy = Math.abs(ball.vy);
 +    }
- 
+
 -  // Side walls
 -  if (ball.x - ball.r < 0) {
 -    ball.x = ball.r;
@@ -103,7 +103,7 @@ index 6b4a133..c1e1253 100644
 +      ball.vx = ballSpeed(state.level) * 0.6 * hit;
 +      state.combo = 0;
 +    }
- 
+
 -  // Ceiling
 -  if (ball.y - ball.r < 0) {
 -    ball.y = ball.r;
@@ -111,7 +111,7 @@ index 6b4a133..c1e1253 100644
 -  }
 +    // Bricks: now handled in the physics step to prevent tunneling.
 +    resolveBrickCollisions(state);
- 
+
 -  // Paddle
 -  if (
 -    ball.vy > 0 &&
@@ -131,18 +131,18 @@ index 6b4a133..c1e1253 100644
 +      return true;
 +    }
    }
- 
+
 -  // Exit through the bottom: ball lost
 -  if (ball.y - ball.r > HEIGHT) {
 -    return true;
 -  }
    return false;
  }
- 
+
 @@ -219,17 +263,6 @@ export function frame(ctx, state) {
    for (const brick of state.bricks) {
      if (!brick.alive) continue;
- 
+
 -    if (collides(state.ball, brick)) {
 -      brick.alive = false;
 -      state.combo += 1;

@@ -5,7 +5,7 @@ index 6b4a133..8c0f03d 100644
 @@ -114,7 +114,69 @@ export function collides(ball, brick) {
    );
  }
- 
+
 -// --- Score & combo (NOT covered by tests — debt #5) ------------------------
 +// --- Brick Collision Resolution ------------------------------------------
 +
@@ -70,18 +70,18 @@ index 6b4a133..8c0f03d 100644
 +    }
 +  }
 +}
- 
+
  // Combo multiplier. UNBOUNDED today: a long combo makes the score blow up
  // uncontrollably (see #5, expected improvement = clamp it).
 @@ -215,21 +277,10 @@ export function frame(ctx, state) {
    ctx.fillStyle = palette.background;
    ctx.fillRect(0, 0, WIDTH, HEIGHT);
- 
+
 -  // Bricks: collision + bounce + score + drawing, all in one place.
 +  // Bricks: only drawing.
    for (const brick of state.bricks) {
      if (!brick.alive) continue;
- 
+
 -    if (collides(state.ball, brick)) {
 -      brick.alive = false;
 -      state.combo += 1;
@@ -99,7 +99,7 @@ index 6b4a133..8c0f03d 100644
 @@ -302,6 +353,8 @@ export function boot(doc = document) {
          }
        }
- 
+
 +      resolveBrickCollisions(state, dt);
 +
        // Level cleared: all bricks broken
@@ -115,11 +115,11 @@ index 250d6a9..fa30c98 100644
    WIDTH,
 +  resolveBrickCollisions,
  } from './neon.js';
- 
+
  test('collides: clear overlap detected', () => {
 @@ -66,4 +67,45 @@ function belowField() {
  }
- 
+
  // TODO (#5): test comboMultiplier / scoreForBrick.
 -// TODO      : test level progression and loadBest/saveBest persistence.
 +

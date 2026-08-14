@@ -25,7 +25,7 @@ index 6b4a133..6142585 100644
 @@ -165,6 +176,11 @@ export function saveBest(storage, score) {
  export function step(state, dt) {
    const { ball, paddle } = state;
- 
+
 +  // Remember where the ball was before this move: brickHit sweeps the segment
 +  // between the two positions so a fast ball cannot tunnel through a brick.
 +  ball.px = ball.x;
@@ -33,11 +33,11 @@ index 6b4a133..6142585 100644
 +
    ball.x += ball.vx * dt;
    ball.y += ball.vy * dt;
- 
+
 @@ -206,30 +222,173 @@ export function step(state, dt) {
    return false;
  }
- 
+
 +// --- Brick bounce (issue #1) ----------------------------------------------
 +
 +// Penetrations closer than this (in px) are treated as equal: the ball hit a
@@ -188,7 +188,7 @@ index 6b4a133..6142585 100644
 +}
 +
  // --- Rendering (DOM): brick collision logic STILL mixed in here ------------
- 
+
 -// Main render loop. For each live brick we test collision AND draw in the same
 -// pass: this is where logic and rendering are entangled.
 +// Main render loop. Collision resolution now lives in the pure `brickHit`
@@ -197,7 +197,7 @@ index 6b4a133..6142585 100644
    // Background
    ctx.fillStyle = palette.background;
    ctx.fillRect(0, 0, WIDTH, HEIGHT);
- 
+
 -  // Bricks: collision + bounce + score + drawing, all in one place.
 +  // Bricks: bounce the ball, then score the bricks it hit and draw the rest.
 +  for (const brick of brickHit(state.ball, state.bricks)) {
@@ -228,7 +228,7 @@ index 250d6a9..0e1143a 100644
 --- a/game/neon.test.js
 +++ b/game/neon.test.js
 @@ -12,12 +12,17 @@ import assert from 'node:assert/strict';
- 
+
  import {
    collides,
 +  brickHit,
@@ -243,12 +243,12 @@ index 250d6a9..0e1143a 100644
 +  BRICK_H,
 +  BRICK_GAP,
  } from './neon.js';
- 
+
  test('collides: clear overlap detected', () => {
 @@ -65,5 +70,126 @@ function belowField() {
    return 500;
  }
- 
+
 +// ---------------------------------------------------------------------------
 +// Issue #1: brick bounce. A brick far from any neighbor, so the swept segment
 +// of each fixture touches exactly it and nothing else.

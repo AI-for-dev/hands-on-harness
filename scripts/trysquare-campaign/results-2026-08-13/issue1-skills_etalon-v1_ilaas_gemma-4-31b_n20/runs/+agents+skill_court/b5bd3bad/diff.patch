@@ -40,7 +40,7 @@ index 6b4a133..3608b7e 100644
 +        }
 +      }
      }
- 
+
      ctx.fillStyle = brickColor(brick.row);
 diff --git a/game/neon.test.js b/game/neon.test.js
 index 250d6a9..af69a78 100644
@@ -56,12 +56,12 @@ index 250d6a9..af69a78 100644
 +  LEFT,
 +  RIGHT,
  } from './neon.js';
- 
+
  test('collides: clear overlap detected', () => {
 @@ -59,6 +64,107 @@ test('makeBricks: full, all-alive grid at start', () => {
    assert.ok(bricks.every((b) => b.x >= 0 && b.x + b.w <= WIDTH));
  });
- 
+
 +const mockCtx = {
 +  fillStyle: '',
 +  fillRect: () => {},
@@ -79,7 +79,7 @@ index 250d6a9..af69a78 100644
 +  state.bricks.push(brick);
 +  state.ball = {
 +    x: brick.x + brick.w / 2,
-+    y: brick.y + brick.h + 2, 
++    y: brick.y + brick.h + 2,
 +    r: 7,
 +    vx: 0,
 +    vy: UP * 200,

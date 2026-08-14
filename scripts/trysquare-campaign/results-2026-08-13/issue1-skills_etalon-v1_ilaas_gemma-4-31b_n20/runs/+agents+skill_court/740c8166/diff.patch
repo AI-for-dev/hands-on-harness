@@ -25,7 +25,7 @@ index 6b4a133..b362c3d 100644
 +        state.ball.vy *= -1;
 +      }
      }
- 
+
      ctx.fillStyle = brickColor(brick.row);
 diff --git a/game/neon.test.js b/game/neon.test.js
 index 250d6a9..ba4b299 100644
@@ -44,26 +44,26 @@ index 250d6a9..ba4b299 100644
 +  BRICK_H,
 +  BALL_R,
  } from './neon.js';
- 
+
  test('collides: clear overlap detected', () => {
 @@ -59,11 +64,68 @@ test('makeBricks: full, all-alive grid at start', () => {
    assert.ok(bricks.every((b) => b.x >= 0 && b.x + b.w <= WIDTH));
  });
- 
+
 +test('frame: ball hitting brick bottom => bounce UP to DOWN', () => {
 +  const state = createState(1);
 +  state.bricks = []; // Clear all bricks
 +  const brick = { x: 4, y: 48, w: 72, h: 20, alive: true, row: 0, points: 10 };
 +  state.bricks.push(brick);
 +  // Position ball just below the brick, moving UP
-+  state.ball = { 
-+    x: brick.x + brick.w / 2, 
-+    y: brick.y + brick.h + BALL_R - 1, 
-+    r: BALL_R, 
-+    vx: 0, 
-+    vy: 100 * UP 
++  state.ball = {
++    x: brick.x + brick.w / 2,
++    y: brick.y + brick.h + BALL_R - 1,
++    r: BALL_R,
++    vx: 0,
++    vy: 100 * UP
 +  };
-+  
++
 +  const ctx = {
 +    fillRect: () => {},
 +    fillText: () => {},
@@ -71,9 +71,9 @@ index 250d6a9..ba4b299 100644
 +    arc: () => {},
 +    fill: () => {},
 +  };
-+  
++
 +  frame(ctx, state);
-+  
++
 +  assert.equal(brick.alive, false, 'brick should be destroyed');
 +  assert.equal(state.ball.vy, 100 * DOWN, 'velocity should flip to DOWN');
 +});
@@ -83,7 +83,7 @@ index 250d6a9..ba4b299 100644
  function belowField() {
    return 500;
  }
- 
+
 -// TODO (#5): test comboMultiplier / scoreForBrick.
 -// TODO      : test level progression and loadBest/saveBest persistence.
 +test('frame: ball hitting two bricks at a seam => bounce once', () => {
@@ -93,16 +93,16 @@ index 250d6a9..ba4b299 100644
 +  const b1 = { x: 0, y: 0, w: 10, h: 10, alive: true, row: 0, points: 10 };
 +  const b2 = { x: 10, y: 0, w: 10, h: 10, alive: true, row: 0, points: 10 };
 +  state.bricks.push(b1, b2);
-+  
++
 +  // Ball is moving RIGHT and hits the seam (vertical edge)
-+  state.ball = { 
++  state.ball = {
 +    x: 10 - BALL_R + 0.1, // just slightly inside b2
-+    y: 5, 
-+    r: BALL_R, 
-+    vx: 100, 
-+    vy: 0 
++    y: 5,
++    r: BALL_R,
++    vx: 100,
++    vy: 0
 +  };
-+  
++
 +  const ctx = {
 +    fillRect: () => {},
 +    fillText: () => {},
@@ -110,9 +110,9 @@ index 250d6a9..ba4b299 100644
 +    arc: () => {},
 +    fill: () => {},
 +  };
-+  
++
 +  frame(ctx, state);
-+  
++
 +  assert.equal(state.ball.vx, -100, 'velocity should be inverted once');
 +  assert.equal(b1.alive, false);
 +  assert.equal(b2.alive, false);

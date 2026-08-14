@@ -350,7 +350,7 @@ index 6b4a133..1249f29 100644
  // The module runs nothing on import: only `boot()` touches the DOM. Pure
  // logic can therefore be imported from the tests (`node --test`) without a
 @@ -103,8 +104,9 @@ export function createState(level = 1) {
- 
+
  // True if the ball (circle approximated by its box) overlaps the brick.
  // Simple AABB test: it only says WHETHER the ball and the brick overlap, not
 -// WHICH face was hit. The missing bounce in frame() is what lets the ball plow
@@ -364,7 +364,7 @@ index 6b4a133..1249f29 100644
 @@ -156,15 +158,120 @@ export function saveBest(storage, score) {
    return best;
  }
- 
+
 -// --- Physics (movement + wall/paddle bounces) ------------------------------
 +// --- Brick collision resolution (swept) ------------------------------------
 +
@@ -468,7 +468,7 @@ index 6b4a133..1249f29 100644
 +}
 +
 +// --- Physics (movement + wall/paddle/brick bounces) ------------------------
- 
+
  // Advances the ball by a time step `dt` (in seconds) and handles bounces off
 -// the walls and the paddle. Does NOT handle bricks: that responsibility still
 -// lives in the render loop `frame()` (debt #2).
@@ -477,18 +477,18 @@ index 6b4a133..1249f29 100644
  // Returns `true` if the ball is lost (exits through the bottom).
  export function step(state, dt) {
    const { ball, paddle } = state;
- 
+
 +  // Position before the move: brick collision sweeps the path between the two
 +  // samples, so a fast ball cannot jump over a brick in one step (tunneling).
 +  const prev = { x: ball.x, y: ball.y };
 +
    ball.x += ball.vx * dt;
    ball.y += ball.vy * dt;
- 
+
 @@ -199,6 +306,36 @@ export function step(state, dt) {
      state.combo = 0; // touching the paddle resets the combo
    }
- 
+
 +  // Bricks: collision + bounce + score, moved out of `frame()`. The sweep
 +  // origin is reset after every resolution, so a ball resting on a grid seam
 +  // (BRICK_GAP = 8 < ball diameter = 14) bounces on the first brick and no
@@ -525,10 +525,10 @@ index 6b4a133..1249f29 100644
 @@ -206,30 +343,18 @@ export function step(state, dt) {
    return false;
  }
- 
+
 -// --- Rendering (DOM): brick collision logic STILL mixed in here ------------
 +// --- Rendering (DOM) -------------------------------------------------------
- 
+
 -// Main render loop. For each live brick we test collision AND draw in the same
 -// pass: this is where logic and rendering are entangled.
 +// Main render loop: pure drawing. Collision, bounce and scoring live in
@@ -537,7 +537,7 @@ index 6b4a133..1249f29 100644
    // Background
    ctx.fillStyle = palette.background;
    ctx.fillRect(0, 0, WIDTH, HEIGHT);
- 
+
 -  // Bricks: collision + bounce + score + drawing, all in one place.
 +  // Bricks: rendering only.
    for (const brick of state.bricks) {

@@ -5,7 +5,7 @@ index 6b4a133..5448e14 100644
 @@ -114,6 +114,36 @@ export function collides(ball, brick) {
    );
  }
- 
+
 +// True if the ball's travel segment from (px, py) to its current position
 +// crosses the brick grown by the ball's radius (swept AABB, slab method).
 +// Returns whether the segment enters the expanded rectangle before its end.
@@ -37,11 +37,11 @@ index 6b4a133..5448e14 100644
 +}
 +
  // --- Score & combo (NOT covered by tests — debt #5) ------------------------
- 
+
  // Combo multiplier. UNBOUNDED today: a long combo makes the score blow up
 @@ -159,12 +189,17 @@ export function saveBest(storage, score) {
  // --- Physics (movement + wall/paddle bounces) ------------------------------
- 
+
  // Advances the ball by a time step `dt` (in seconds) and handles bounces off
 -// the walls and the paddle. Does NOT handle bricks: that responsibility still
 -// lives in the render loop `frame()` (debt #2).
@@ -49,7 +49,7 @@ index 6b4a133..5448e14 100644
  // Returns `true` if the ball is lost (exits through the bottom).
  export function step(state, dt) {
    const { ball, paddle } = state;
- 
+
 +  // Start of the step: the brick collision below is swept across the segment
 +  // (prevX, prevY) -> (ball.x, ball.y), so a step longer than an obstacle
 +  // cannot tunnel through it.
@@ -58,11 +58,11 @@ index 6b4a133..5448e14 100644
 +
    ball.x += ball.vx * dt;
    ball.y += ball.vy * dt;
- 
+
 @@ -183,22 +218,73 @@ export function step(state, dt) {
      ball.vy = Math.abs(ball.vy);
    }
- 
+
 -  // Paddle
 +  // Paddle: swept band test — the ball's bottom edge travelled from
 +  // prevY + r to ball.y + r during this step, and bounces when that segment
@@ -96,7 +96,7 @@ index 6b4a133..5448e14 100644
 +    ball.vy = -Math.sqrt(Math.max(speed * speed - vx * vx, 0));
      state.combo = 0; // touching the paddle resets the combo
    }
- 
+
 +  // Bricks: kill on contact and bounce — one resolution per pass.
 +  // Detection is swept: the travel segment from (prevX, prevY) to the current
 +  // position is tested against each brick, so a step longer than the brick
@@ -143,7 +143,7 @@ index 6b4a133..5448e14 100644
 @@ -206,30 +292,47 @@ export function step(state, dt) {
    return false;
  }
- 
+
 -// --- Rendering (DOM): brick collision logic STILL mixed in here ------------
 +// End-of-frame bookkeeping: level clearing, life loss, game over.
 +// A cleared level is credited BEFORE the loss is processed, so destroying the
@@ -175,7 +175,7 @@ index 6b4a133..5448e14 100644
 +}
 +
 +// --- Rendering (DOM) -------------------------------------------------------
- 
+
 -// Main render loop. For each live brick we test collision AND draw in the same
 -// pass: this is where logic and rendering are entangled.
 +// Main render loop. Pure rendering: brick collision and scoring now live in
@@ -184,7 +184,7 @@ index 6b4a133..5448e14 100644
    // Background
    ctx.fillStyle = palette.background;
    ctx.fillRect(0, 0, WIDTH, HEIGHT);
- 
+
 -  // Bricks: collision + bounce + score + drawing, all in one place.
 +  // Bricks: draw only the surviving ones.
    for (const brick of state.bricks) {
@@ -205,7 +205,7 @@ index 6b4a133..5448e14 100644
      ctx.fillRect(brick.x, brick.y, brick.w, brick.h);
    }
 @@ -289,25 +392,7 @@ export function boot(doc = document) {
- 
+
      if (state.running) {
        const lost = step(state, dt);
 -      if (lost) {
@@ -229,7 +229,7 @@ index 6b4a133..5448e14 100644
 -      }
 +      settle(state, lost, globalThis.localStorage);
      }
- 
+
      frame(ctx, state);
 diff --git a/game/neon.test.js b/game/neon.test.js
 index 250d6a9..474cc95 100644
@@ -247,7 +247,7 @@ index 250d6a9..474cc95 100644
 +  BRICK_H,
    WIDTH,
  } from './neon.js';
- 
+
 +// Brick (row, col) of the level-1 grid (row-major, 8 columns).
 +function brick(state, row, col) {
 +  return state.bricks[row * BRICK_COLS + col];
@@ -259,7 +259,7 @@ index 250d6a9..474cc95 100644
 @@ -45,6 +54,127 @@ test('step: bounce off the left wall', () => {
    assert.ok(state.ball.vx > 0, 'horizontal velocity should flip to the right');
  });
- 
+
 +test('D1: ball bouncing off the underside of a brick flips vy and kills it', () => {
 +  const state = createState(1);
 +  const b = brick(state, 0, 3); // [244,316] x [48,68]

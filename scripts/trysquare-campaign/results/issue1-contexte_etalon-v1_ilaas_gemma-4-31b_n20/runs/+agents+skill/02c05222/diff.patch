@@ -19,7 +19,7 @@ index 0000000..bd906ac
 +  ```js
 +  test('D1 - Ball should bounce off a brick top face', () => {
 +    const state = createState(1);
-+    const brick = state.bricks[0]; 
++    const brick = state.bricks[0];
 +    state.ball.x = brick.x + brick.w / 2;
 +    state.ball.y = brick.y + 2; // overlap top
 +    state.ball.vy = 100; // DOWN
@@ -60,7 +60,7 @@ index 0000000..bd906ac
 +  ```js
 +  test('D3 - Ball should not double-bounce at seams', () => {
 +    const state = createState(1);
-+    const b1 = state.bricks[0]; 
++    const b1 = state.bricks[0];
 +    const b2 = state.bricks[1];
 +    state.ball.y = b1.y + b1.h / 2;
 +    state.ball.x = b1.x + b1.w + 4; // Center of gap
@@ -80,7 +80,7 @@ index 6b4a133..230d7db 100644
 +++ b/game/neon.js
 @@ -159,49 +159,83 @@ export function saveBest(storage, score) {
  // --- Physics (movement + wall/paddle bounces) ------------------------------
- 
+
  // Advances the ball by a time step `dt` (in seconds) and handles bounces off
 -// the walls and the paddle. Does NOT handle bricks: that responsibility still
 -// lives in the render loop `frame()` (debt #2).
@@ -120,7 +120,7 @@ index 6b4a133..230d7db 100644
 +      ball.x = WIDTH - ball.r;
 +      ball.vx = -Math.abs(ball.vx);
 +    }
- 
+
 -  // Ceiling
 -  if (ball.y - ball.r < 0) {
 -    ball.y = ball.r;
@@ -131,7 +131,7 @@ index 6b4a133..230d7db 100644
 +      ball.y = ball.r;
 +      ball.vy = Math.abs(ball.vy);
 +    }
- 
+
 -  // Paddle
 -  if (
 -    ball.vy > 0 &&
@@ -168,7 +168,7 @@ index 6b4a133..230d7db 100644
 +          }
 +          ball.y += hitTop ? -(ball.y + ball.r - brick.y) : (brick.y + brick.h - (ball.y - ball.r));
 +        }
- 
+
 -  // Exit through the bottom: ball lost
 -  if (ball.y - ball.r > HEIGHT) {
 -    return true;
@@ -203,7 +203,7 @@ index 6b4a133..230d7db 100644
 @@ -219,17 +253,6 @@ export function frame(ctx, state) {
    for (const brick of state.bricks) {
      if (!brick.alive) continue;
- 
+
 -    if (collides(state.ball, brick)) {
 -      brick.alive = false;
 -      state.combo += 1;

@@ -19,7 +19,7 @@ index 0000000..f56cdde
 +test('D1 - Missing Deflection: Ball should bounce off top face', () => {
 +  const state = createState(1);
 +  const brick = state.bricks[0];
-+  
++
 +  // Position ball hitting the top of the brick
 +  state.ball.x = brick.x + brick.w / 2;
 +  state.ball.y = brick.y - 2; // Inside the collision zone
@@ -35,7 +35,7 @@ index 0000000..f56cdde
 +test('D4 - Face vs Corner: Ball should bounce off side face', () => {
 +  const state = createState(1);
 +  const brick = state.bricks[0];
-+  
++
 +  // Position ball hitting the left side of the brick
 +  state.ball.x = brick.x - 2; // Inside collision zone
 +  state.ball.y = brick.y + brick.h / 2;
@@ -52,10 +52,10 @@ index 0000000..f56cdde
 +test('D2 - Sticky: Ball should be pushed out of brick', () => {
 +  const state = createState(1);
 +  const brick = state.bricks[0];
-+  
++
 +  // Position ball deep inside the brick
 +  state.ball.x = brick.x + brick.w / 2;
-+  state.ball.y = brick.y + 2; 
++  state.ball.y = brick.y + 2;
 +  state.ball.vy = 100; // Moving DOWN
 +  state.ball.vx = 0;
 +
@@ -65,7 +65,7 @@ index 0000000..f56cdde
 +  // (or at least be moving away and NOT inside if we were to check again)
 +  // For this test, since the brick is now 'dead', collides() still works if we check.
 +  // But the goal is that the position is corrected.
-+  
++
 +  // Correct behavior: if it hit the top, it should be at y = brick.y - ball.r
 +  assert.ok(state.ball.y <= brick.y - 7, `Ball should be pushed above brick. Got y=${state.ball.y}`);
 +});
@@ -91,25 +91,25 @@ index 0000000..724f9e9
 +  // Let's simplify and use a mock brick.
 +  const brick = { x: 100, y: 100, w: 72, h: 20, alive: true };
 +  state.ball = { x: 136, y: 90, r: 7, vx: 0, vy: 100 }; // moving DOWN
-+  
++
 +  // We need to simulate what happens in frame() since that's where collision is handled
 +  // But frame() is tied to rendering. Let's see how it's implemented.
 +  // Actually, the bug is that frame() DOES NOT deflect.
 +  // To test this "logically", we have to simulate the logic inside frame()
-+  
++
 +  // In neon.js, the collision is checked in frame().
 +  // Let's see if we can reproduce the "no bounce" by checking the ball's state
 +  // after a simulated collision.
-+  
++
 +  // Since I can't change neon.js yet, I'll just test the current behavior.
 +  // Currently, collides() is true, but the ball's vy doesn't change.
-+  
++
 +  assert.strictEqual(collides(state.ball, brick), false);
-+  
++
 +  // Move ball into brick
 +  state.ball.y = 100 - 2; // just above the brick
 +  state.ball.y += 100 * 0.01; // move it down
-+  
++
 +  assert.strictEqual(collides(state.ball, brick), true);
 +  // Now, if we were in frame(), the brick would be killed but vy would remain 100.
 +  // This is the bug.
@@ -136,8 +136,8 @@ index 0000000..8df5bde
 +    const state = createState(1);
 +    const brick = state.bricks[0];
 +    state.ball.x = brick.x + brick.w / 2;
-+    state.ball.y = brick.y - 2; 
-+    state.ball.vy = 100; 
++    state.ball.y = brick.y - 2;
++    state.ball.vy = 100;
 +    state.ball.vx = 0;
 +    frame(mockCtx, state);
 +    assert.strictEqual(state.ball.vy, -100, 'Ball should bounce UP');
@@ -161,9 +161,9 @@ index 0000000..8df5bde
 +  test('D4 - Face vs Corner: Ball should bounce off side face', () => {
 +    const state = createState(1);
 +    const brick = state.bricks[0];
-+    state.ball.x = brick.x - 2; 
++    state.ball.x = brick.x - 2;
 +    state.ball.y = brick.y + brick.h / 2;
-+    state.ball.vx = 100; 
++    state.ball.vx = 100;
 +    state.ball.vy = 0;
 +    frame(mockCtx, state);
 +    assert.strictEqual(state.ball.vx, -100, 'Ball should bounce LEFT');
@@ -189,8 +189,8 @@ index 0000000..8df5bde
 +    const state = createState(1);
 +    const brick = state.bricks[0];
 +    state.ball.x = brick.x + brick.w / 2;
-+    state.ball.y = brick.y + 2; 
-+    state.ball.vy = 100; 
++    state.ball.y = brick.y + 2;
++    state.ball.vy = 100;
 +    state.ball.vx = 0;
 +    frame(mockCtx, state);
 +    assert.ok(state.ball.y <= brick.y - 7, 'Ball should be pushed above brick');
@@ -247,18 +247,18 @@ index 0000000..512762a
 +};
 +
 +test('D5 - Tunneling: Ball should not pass through brick at high speed', () => {
-+  const state = createState(6); 
++  const state = createState(6);
 +  const brick = state.bricks[0];
-+  
++
 +  state.ball.x = brick.x + brick.w / 2;
-+  state.ball.y = brick.y - 10; 
-+  state.ball.vy = 1000; 
++  state.ball.y = brick.y - 10;
++  state.ball.vy = 1000;
 +  state.ball.vx = 0;
-+  
++
 +  const dt = 0.05;
 +  state.ball.x += state.ball.vx * dt;
 +  state.ball.y += state.ball.vy * dt;
-+  
++
 +  frame(mockCtx, state);
 +
 +  assert.ok(!brick.alive, 'Brick should have been destroyed');
@@ -280,13 +280,13 @@ index 6b4a133..35bc902 100644
 @@ -165,6 +165,9 @@ export function saveBest(storage, score) {
  export function step(state, dt) {
    const { ball, paddle } = state;
- 
+
 +  ball.oldX = ball.x;
 +  ball.oldY = ball.y;
 +
    ball.x += ball.vx * dt;
    ball.y += ball.vy * dt;
- 
+
 @@ -211,6 +214,9 @@ export function step(state, dt) {
  // Main render loop. For each live brick we test collision AND draw in the same
  // pass: this is where logic and rendering are entangled.
@@ -300,7 +300,7 @@ index 6b4a133..35bc902 100644
 @@ -219,15 +225,37 @@ export function frame(ctx, state) {
    for (const brick of state.bricks) {
      if (!brick.alive) continue;
- 
+
 -    if (collides(state.ball, brick)) {
 +    if (collides(ball, brick) || (
 +      ball.x + ball.r > brick.x && ball.x - ball.r < brick.x + brick.w && (
@@ -339,7 +339,7 @@ index 6b4a133..35bc902 100644
 +        ball.y = ball.vy > 0 ? brick.y - ball.r : brick.y + brick.h + ball.r;
 +      }
      }
- 
+
      ctx.fillStyle = brickColor(brick.row);
 @@ -241,7 +269,7 @@ export function frame(ctx, state) {
    // Ball — also hard-coded (#6).
@@ -348,5 +348,5 @@ index 6b4a133..35bc902 100644
 -  ctx.arc(state.ball.x, state.ball.y, state.ball.r, 0, Math.PI * 2);
 +  ctx.arc(ball.x, ball.y, ball.r, 0, Math.PI * 2);
    ctx.fill();
- 
+
    // HUD

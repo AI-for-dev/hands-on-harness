@@ -5,7 +5,7 @@ index 6b4a133..dd447e3 100644
 @@ -114,6 +114,116 @@ export function collides(ball, brick) {
    );
  }
- 
+
 +// Circle/AABB overlap test at an explicit centre. `collides` reads the ball's
 +// live x/y, but brickHit sweeps the path and needs to ask about intermediate
 +// positions, so the centre is passed in.
@@ -117,12 +117,12 @@ index 6b4a133..dd447e3 100644
 +}
 +
  // --- Score & combo (NOT covered by tests — debt #5) ------------------------
- 
+
  // Combo multiplier. UNBOUNDED today: a long combo makes the score blow up
 @@ -165,6 +275,11 @@ export function saveBest(storage, score) {
  export function step(state, dt) {
    const { ball, paddle } = state;
- 
+
 +  // Remember the pre-move position so brickHit() can sweep the ball's path
 +  // between the two frames and catch high-speed (tunnelling) passes.
 +  ball.px = ball.x;
@@ -130,11 +130,11 @@ index 6b4a133..dd447e3 100644
 +
    ball.x += ball.vx * dt;
    ball.y += ball.vy * dt;
- 
+
 @@ -215,21 +330,18 @@ export function frame(ctx, state) {
    ctx.fillStyle = palette.background;
    ctx.fillRect(0, 0, WIDTH, HEIGHT);
- 
+
 -  // Bricks: collision + bounce + score + drawing, all in one place.
 +  // Brick collision: brickHit() sweeps the ball's motion, resolves the bounce
 +  // exactly once, pushes the ball out and destroys the touched bricks. Scoring
@@ -178,7 +178,7 @@ index 250d6a9..aeeafee 100644
 @@ -52,6 +53,108 @@ test('step: ball exiting through the bottom => lost', () => {
    assert.equal(lost, true);
  });
- 
+
 +// --- #1: brick bounce ---------------------------------------------
 +// Issue #1 asked for every case to land as a (red) test first, then go green:
 +// per-face, corner, push-out, neighbours (bounce exactly once), tunnelling.

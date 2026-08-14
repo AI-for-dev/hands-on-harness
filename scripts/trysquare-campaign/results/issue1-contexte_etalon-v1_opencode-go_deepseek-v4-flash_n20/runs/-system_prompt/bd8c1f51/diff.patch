@@ -5,7 +5,7 @@ index 6b4a133..ef80842 100644
 @@ -114,6 +114,47 @@ export function collides(ball, brick) {
    );
  }
- 
+
 +// Deflects the ball off a brick it just collided with and pushes it back out.
 +// Determines which face was hit by comparing how far the ball's center sits
 +// past each face; bounces the dominant axis (treating a corner, equal on both
@@ -48,16 +48,16 @@ index 6b4a133..ef80842 100644
 +}
 +
  // --- Score & combo (NOT covered by tests — debt #5) ------------------------
- 
+
  // Combo multiplier. UNBOUNDED today: a long combo makes the score blow up
 @@ -216,6 +257,7 @@ export function frame(ctx, state) {
    ctx.fillRect(0, 0, WIDTH, HEIGHT);
- 
+
    // Bricks: collision + bounce + score + drawing, all in one place.
 +  let bounced = false; // bounce at most once per frame (debt #1: neighbours)
    for (const brick of state.bricks) {
      if (!brick.alive) continue;
- 
+
 @@ -223,11 +265,14 @@ export function frame(ctx, state) {
        brick.alive = false;
        state.combo += 1;
@@ -76,5 +76,5 @@ index 6b4a133..ef80842 100644
 +        bounced = true;
 +      }
      }
- 
+
      ctx.fillStyle = brickColor(brick.row);

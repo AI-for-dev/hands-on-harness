@@ -3,9 +3,9 @@ index 87396ac..80a42e4 100644
 --- a/ISSUES.md
 +++ b/ISSUES.md
 @@ -16,6 +16,9 @@ bug to fix, debt to pay down, or a feature to add.
- 
+
  ## #1 — bug: the ball plows through bricks instead of bouncing
- 
+
 +**Status: fixed** (pure `brickHit()` in `game/neon.js`, covered by tests in
 +`game/neon.test.js`).
 +
@@ -15,13 +15,13 @@ index 87396ac..80a42e4 100644
 @@ -47,6 +50,10 @@ every frame.
  - **Expected**: extract a **pure**, testable function `brickHit(ball, bricks)`,
    **without changing the public API** (the already-exported functions).
- 
+
 +> The pure function extraction anticipated here landed with the #1 fix
 +> (`brickHit()` + `bounceOffBrick()` in `game/neon.js`). Remaining scope:
 +> the per-frame scan of every brick (spatial indexing is still TODO).
 +
  ## #3 — feature: night mode
- 
+
  Add a **night mode** (a darker / higher-contrast palette variant), toggleable.
 diff --git a/game/neon.js b/game/neon.js
 index 6b4a133..b3e5613 100644
@@ -40,10 +40,10 @@ index 6b4a133..b3e5613 100644
 @@ -99,12 +95,11 @@ export function createState(level = 1) {
    };
  }
- 
+
 -// --- Collision (tested primitive) ------------------------------------------
 +// --- Collision (tested primitives) -----------------------------------------
- 
+
  // True if the ball (circle approximated by its box) overlaps the brick.
  // Simple AABB test: it only says WHETHER the ball and the brick overlap, not
 -// WHICH face was hit. The missing bounce in frame() is what lets the ball plow
@@ -55,7 +55,7 @@ index 6b4a133..b3e5613 100644
 @@ -114,6 +109,104 @@ export function collides(ball, brick) {
    );
  }
- 
+
 +// Bounces the ball off ONE brick and pushes it back out (ISSUES.md #1).
 +//
 +// - per face: the axis with the SMALLER penetration is the face that was hit;
@@ -155,11 +155,11 @@ index 6b4a133..b3e5613 100644
 +}
 +
  // --- Score & combo (NOT covered by tests — debt #5) ------------------------
- 
+
  // Combo multiplier. UNBOUNDED today: a long combo makes the score blow up
 @@ -159,12 +252,16 @@ export function saveBest(storage, score) {
  // --- Physics (movement + wall/paddle bounces) ------------------------------
- 
+
  // Advances the ball by a time step `dt` (in seconds) and handles bounces off
 -// the walls and the paddle. Does NOT handle bricks: that responsibility still
 -// lives in the render loop `frame()` (debt #2).
@@ -168,21 +168,21 @@ index 6b4a133..b3e5613 100644
  // Returns `true` if the ball is lost (exits through the bottom).
  export function step(state, dt) {
    const { ball, paddle } = state;
- 
+
 +  // Record where the move started so `brickHit` can sweep the whole path and
 +  // catch a fast ball that would otherwise tunnel through a brick.
 +  ball.px = ball.x;
 +  ball.py = ball.y;
    ball.x += ball.vx * dt;
    ball.y += ball.vy * dt;
- 
+
 @@ -206,30 +303,25 @@ export function step(state, dt) {
    return false;
  }
- 
+
 -// --- Rendering (DOM): brick collision logic STILL mixed in here ------------
 +// --- Rendering (DOM) -------------------------------------------------------
- 
+
 -// Main render loop. For each live brick we test collision AND draw in the same
 -// pass: this is where logic and rendering are entangled.
 +// Main render loop. Brick collision is pure logic (`brickHit`); the loop only
@@ -191,7 +191,7 @@ index 6b4a133..b3e5613 100644
    // Background
    ctx.fillStyle = palette.background;
    ctx.fillRect(0, 0, WIDTH, HEIGHT);
- 
+
 -  // Bricks: collision + bounce + score + drawing, all in one place.
 +  // Brick collision: swept detection, one bounce per frame (see `brickHit`).
 +  const hit = brickHit(state.ball, state.bricks);
@@ -234,7 +234,7 @@ index 250d6a9..df44bbf 100644
 @@ -59,6 +61,75 @@ test('makeBricks: full, all-alive grid at start', () => {
    assert.ok(bricks.every((b) => b.x >= 0 && b.x + b.w <= WIDTH));
  });
- 
+
 +// --- Brick bounce (ISSUES.md #1) -------------------------------------------
 +
 +// Red tests for the missing brick bounce, one per case from the issue:

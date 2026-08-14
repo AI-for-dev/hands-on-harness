@@ -46,7 +46,7 @@ index 0000000..12685d0
 +  const state = createState(10); // High speed level
 +  state.ball.x = state.bricks[0].x + 10;
 +  // Position ball just below the brick
-+  state.ball.y = state.bricks[0].y + state.bricks[0].h + state.ball.r + 1; 
++  state.ball.y = state.bricks[0].y + state.bricks[0].h + state.ball.r + 1;
 +  state.ball.vy = -ballSpeed(10); // Moving UP fast
 +
 +  const mockCtx = {
@@ -78,10 +78,10 @@ index 0000000..aeabd88
 +test('D3: Ball should not stick to brick', () => {
 +  const state = createState(1);
 +  const brick = state.bricks[0];
-+  
++
 +  // Position ball deeply inside the brick
 +  state.ball.x = brick.x + 10;
-+  state.ball.y = brick.y + 10; 
++  state.ball.y = brick.y + 10;
 +  state.ball.vy = -260;
 +
 +  const mockCtx = {
@@ -155,7 +155,7 @@ index 0000000..c723e90
 +test('D5: Ball should bounce on both axes when hitting a corner', () => {
 +  const state = createState(1);
 +  const brick = state.bricks[0];
-+  
++
 +  // Position ball at the bottom-right corner of the brick
 +  state.ball.x = brick.x + brick.w - 2;
 +  state.ball.y = brick.y + brick.h - 2;
@@ -266,7 +266,7 @@ index 6b4a133..95fc141 100644
 @@ -215,6 +215,9 @@ export function frame(ctx, state) {
    ctx.fillStyle = palette.background;
    ctx.fillRect(0, 0, WIDTH, HEIGHT);
- 
+
 +  let bouncedX = false;
 +  let bouncedY = false;
 +
@@ -309,5 +309,5 @@ index 6b4a133..95fc141 100644
 +        }
 +      }
      }
- 
+
      ctx.fillStyle = brickColor(brick.row);

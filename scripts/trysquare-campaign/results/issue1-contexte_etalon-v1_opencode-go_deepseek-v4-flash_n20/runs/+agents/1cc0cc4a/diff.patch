@@ -3,7 +3,7 @@ index 6b4a133..72cc2b2 100644
 --- a/game/neon.js
 +++ b/game/neon.js
 @@ -103,8 +103,8 @@ export function createState(level = 1) {
- 
+
  // True if the ball (circle approximated by its box) overlaps the brick.
  // Simple AABB test: it only says WHETHER the ball and the brick overlap, not
 -// WHICH face was hit. The missing bounce in frame() is what lets the ball plow
@@ -41,5 +41,5 @@ index 6b4a133..72cc2b2 100644
 +          min === overlapL ? brick.x - ball.r : brick.x + brick.w + ball.r;
 +      }
      }
- 
+
      ctx.fillStyle = brickColor(brick.row);

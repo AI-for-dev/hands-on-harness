@@ -17,7 +17,7 @@ index 6b4a133..adc12a7 100644
  // The module runs nothing on import: only `boot()` touches the DOM. Pure
  // logic can therefore be imported from the tests (`node --test`) without a
 @@ -103,8 +105,7 @@ export function createState(level = 1) {
- 
+
  // True if the ball (circle approximated by its box) overlaps the brick.
  // Simple AABB test: it only says WHETHER the ball and the brick overlap, not
 -// WHICH face was hit. The missing bounce in frame() is what lets the ball plow
@@ -29,7 +29,7 @@ index 6b4a133..adc12a7 100644
 @@ -114,6 +115,163 @@ export function collides(ball, brick) {
    );
  }
- 
+
 +// --- Brick bounce (tested primitive — see ISSUES.md #1) --------------------
 +
 +// Two penetrations this close count as a diagonal (corner) hit.
@@ -188,24 +188,24 @@ index 6b4a133..adc12a7 100644
 +}
 +
  // --- Score & combo (NOT covered by tests — debt #5) ------------------------
- 
+
  // Combo multiplier. UNBOUNDED today: a long combo makes the score blow up
 @@ -157,6 +315,11 @@ export function saveBest(storage, score) {
  }
- 
+
  // --- Physics (movement + wall/paddle bounces) ------------------------------
 +//
 +// `step()` moves the ball and bounces it off the walls and the paddle. Brick
 +// bounces are handled by `brickHit()` (called from `frame()`), which sweeps
 +// the segment between the ball's previous and current position — so `step()`
 +// records `ball.prevX`/`ball.prevY` before each move (see #1).
- 
+
  // Advances the ball by a time step `dt` (in seconds) and handles bounces off
  // the walls and the paddle. Does NOT handle bricks: that responsibility still
 @@ -165,6 +328,11 @@ export function saveBest(storage, score) {
  export function step(state, dt) {
    const { ball, paddle } = state;
- 
+
 +  // Remember where the ball was before this move: brick collision sweeps the
 +  // segment between the two positions to catch tunnelling (see #1).
 +  ball.prevX = ball.x;
@@ -213,11 +213,11 @@ index 6b4a133..adc12a7 100644
 +
    ball.x += ball.vx * dt;
    ball.y += ball.vy * dt;
- 
+
 @@ -206,30 +374,31 @@ export function step(state, dt) {
    return false;
  }
- 
+
 -// --- Rendering (DOM): brick collision logic STILL mixed in here ------------
 -
 -// Main render loop. For each live brick we test collision AND draw in the same
@@ -231,7 +231,7 @@ index 6b4a133..adc12a7 100644
    // Background
    ctx.fillStyle = palette.background;
    ctx.fillRect(0, 0, WIDTH, HEIGHT);
- 
+
 -  // Bricks: collision + bounce + score + drawing, all in one place.
 +  // Brick collision: bounce the ball (per-face flip, push-out, sweep vs
 +  // tunnelling), resolved at most once per frame so a seam between two bricks
@@ -247,7 +247,7 @@ index 6b4a133..adc12a7 100644
 +  // Bricks: drawing only (collision logic lives in `brickHit`).
    for (const brick of state.bricks) {
      if (!brick.alive) continue;
- 
+
 -    if (collides(state.ball, brick)) {
 -      brick.alive = false;
 -      state.combo += 1;
@@ -277,7 +277,7 @@ index 250d6a9..6fd8e35 100644
 @@ -59,6 +60,107 @@ test('makeBricks: full, all-alive grid at start', () => {
    assert.ok(bricks.every((b) => b.x >= 0 && b.x + b.w <= WIDTH));
  });
- 
+
 +// --- #1: brick bounce ------------------------------------------------------
 +// Each case from ISSUES.md #1: per-face bounce, corner, push-out, neighbours
 +// (bounce exactly once) and tunnelling (sweep between two positions).

@@ -3,7 +3,7 @@ index 6b4a133..1258614 100644
 --- a/game/neon.js
 +++ b/game/neon.js
 @@ -103,8 +103,7 @@ export function createState(level = 1) {
- 
+
  // True if the ball (circle approximated by its box) overlaps the brick.
  // Simple AABB test: it only says WHETHER the ball and the brick overlap, not
 -// WHICH face was hit. The missing bounce in frame() is what lets the ball plow
@@ -15,7 +15,7 @@ index 6b4a133..1258614 100644
 @@ -114,6 +113,138 @@ export function collides(ball, brick) {
    );
  }
- 
+
 +// Which axis of `rect` the ball overlaps, by smallest penetration. Equal
 +// penetration on both axes means we are exactly on a corner: both velocities
 +// flip (face-vs-corner rule). Returns 'x', 'y' or 'both'.
@@ -149,11 +149,11 @@ index 6b4a133..1258614 100644
 +}
 +
  // --- Score & combo (NOT covered by tests — debt #5) ------------------------
- 
+
  // Combo multiplier. UNBOUNDED today: a long combo makes the score blow up
 @@ -159,12 +290,17 @@ export function saveBest(storage, score) {
  // --- Physics (movement + wall/paddle bounces) ------------------------------
- 
+
  // Advances the ball by a time step `dt` (in seconds) and handles bounces off
 -// the walls and the paddle. Does NOT handle bricks: that responsibility still
 -// lives in the render loop `frame()` (debt #2).
@@ -162,7 +162,7 @@ index 6b4a133..1258614 100644
  // Returns `true` if the ball is lost (exits through the bottom).
  export function step(state, dt) {
    const { ball, paddle } = state;
- 
+
 +  // Keep the pre-step position: the paddle and brick passes sweep the segment
 +  // (px,py)->(x,y), so no obstacle is jumped whatever the step length.
 +  ball.px = ball.x;
@@ -170,11 +170,11 @@ index 6b4a133..1258614 100644
 +
    ball.x += ball.vx * dt;
    ball.y += ball.vy * dt;
- 
+
 @@ -183,19 +319,21 @@ export function step(state, dt) {
      ball.vy = Math.abs(ball.vy);
    }
- 
+
 -  // Paddle
 -  if (
 -    ball.vy > 0 &&
@@ -204,11 +204,11 @@ index 6b4a133..1258614 100644
 +    ball.vy = -speed * Math.sqrt(1 - (0.6 * hit) ** 2);
      state.combo = 0; // touching the paddle resets the combo
    }
- 
+
 @@ -208,28 +346,20 @@ export function step(state, dt) {
- 
+
  // --- Rendering (DOM): brick collision logic STILL mixed in here ------------
- 
+
 -// Main render loop. For each live brick we test collision AND draw in the same
 -// pass: this is where logic and rendering are entangled.
 +// Main render loop. Brick collision is pure logic (collideBricks), fully
@@ -217,7 +217,7 @@ index 6b4a133..1258614 100644
    // Background
    ctx.fillStyle = palette.background;
    ctx.fillRect(0, 0, WIDTH, HEIGHT);
- 
+
 -  // Bricks: collision + bounce + score + drawing, all in one place.
 +  // Brick collisions: bounce + score, separated from rendering. The ball now
 +  // deflects off every brick it crosses instead of plowing through (see #1).
@@ -259,7 +259,7 @@ index 250d6a9..db365b0 100644
 +// NOT covered yet: score and combo (see ISSUES.md #5), nor level progression.
  //
  // Run: `node --test "game/**/*.test.js"`  (or `npm test`)
- 
+
 @@ -15,11 +15,14 @@ import {
    step,
    makeBricks,
@@ -279,7 +279,7 @@ index 250d6a9..db365b0 100644
 @@ -59,6 +62,157 @@ test('makeBricks: full, all-alive grid at start', () => {
    assert.ok(bricks.every((b) => b.x >= 0 && b.x + b.w <= WIDTH));
  });
- 
+
 +// --- Brick bounce: defects D1-D5 (see .scratch/to_fix.md) ------------------
 +
 +// makeBricks pushes row-major: index = row*BRICK_COLS + col.

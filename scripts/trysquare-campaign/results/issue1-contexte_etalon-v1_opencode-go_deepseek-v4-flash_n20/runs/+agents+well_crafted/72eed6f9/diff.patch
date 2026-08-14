@@ -16,7 +16,7 @@ index 6b4a133..77ac62a 100644
 @@ -114,6 +116,130 @@ export function collides(ball, brick) {
    );
  }
- 
+
 +// Resolves the ball against every brick in ONE pass (issue #1).
 +//
 +// Detection is discrete (positions before/after the move) and the ball is
@@ -142,11 +142,11 @@ index 6b4a133..77ac62a 100644
 +}
 +
  // --- Score & combo (NOT covered by tests — debt #5) ------------------------
- 
+
  // Combo multiplier. UNBOUNDED today: a long combo makes the score blow up
 @@ -159,12 +285,16 @@ export function saveBest(storage, score) {
  // --- Physics (movement + wall/paddle bounces) ------------------------------
- 
+
  // Advances the ball by a time step `dt` (in seconds) and handles bounces off
 -// the walls and the paddle. Does NOT handle bricks: that responsibility still
 -// lives in the render loop `frame()` (debt #2).
@@ -155,18 +155,18 @@ index 6b4a133..77ac62a 100644
  // Returns `true` if the ball is lost (exits through the bottom).
  export function step(state, dt) {
    const { ball, paddle } = state;
- 
+
 +  // Remember where the step started so brickHit() can sweep the segment and
 +  // catch a ball that jumps over a brick between two frames (tunnelling, #1).
 +  ball.prevX = ball.x;
 +  ball.prevY = ball.y;
    ball.x += ball.vx * dt;
    ball.y += ball.vy * dt;
- 
+
 @@ -208,28 +338,23 @@ export function step(state, dt) {
- 
+
  // --- Rendering (DOM): brick collision logic STILL mixed in here ------------
- 
+
 -// Main render loop. For each live brick we test collision AND draw in the same
 -// pass: this is where logic and rendering are entangled.
 +// Main render loop. Brick collision is resolved BEFORE drawing, in one pass,
@@ -176,7 +176,7 @@ index 6b4a133..77ac62a 100644
    // Background
    ctx.fillStyle = palette.background;
    ctx.fillRect(0, 0, WIDTH, HEIGHT);
- 
+
 -  // Bricks: collision + bounce + score + drawing, all in one place.
 +  // Collision + bounce + score: logic first, rendering after.
 +  const hits = brickHit(state.ball, state.bricks);
@@ -217,12 +217,12 @@ index 250d6a9..e311b25 100644
    WIDTH,
 +  BALL_R,
  } from './neon.js';
- 
+
  test('collides: clear overlap detected', () => {
 @@ -59,6 +62,169 @@ test('makeBricks: full, all-alive grid at start', () => {
    assert.ok(bricks.every((b) => b.x >= 0 && b.x + b.w <= WIDTH));
  });
- 
+
 +// --- Issue #1: brick bounce -------------------------------------------------
 +//
 +// Brick grid geometry used below (makeBricks(1)): col 3 = x 244, col 4 = x 324,

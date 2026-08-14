@@ -22,16 +22,16 @@ index 6b4a133..0e04a2a 100644
 @@ -165,6 +173,8 @@ export function saveBest(storage, score) {
  export function step(state, dt) {
    const { ball, paddle } = state;
- 
+
 +  ball.prevX = ball.x;
 +  ball.prevY = ball.y;
    ball.x += ball.vx * dt;
    ball.y += ball.vy * dt;
- 
+
 @@ -208,6 +218,66 @@ export function step(state, dt) {
- 
+
  // --- Rendering (DOM): brick collision logic STILL mixed in here ------------
- 
+
 +// Resolves a ball-brick collision: flips velocity based on hit face and pushes the ball out.
 +function resolveBrickCollision(ball, brick) {
 +  const ballLeft = ball.x - ball.r;
@@ -97,12 +97,12 @@ index 6b4a133..0e04a2a 100644
  export function frame(ctx, state) {
 @@ -216,23 +286,50 @@ export function frame(ctx, state) {
    ctx.fillRect(0, 0, WIDTH, HEIGHT);
- 
+
    // Bricks: collision + bounce + score + drawing, all in one place.
 +  let hasBounced = false;
    for (const brick of state.bricks) {
      if (!brick.alive) continue;
- 
+
 -    if (collides(state.ball, brick)) {
 +    const isColliding = collides(state.ball, brick);
 +    const isTunnelling = !isColliding && sweepCollides(state.ball, brick);
@@ -116,7 +116,7 @@ index 6b4a133..0e04a2a 100644
 -      // straight through a column head-on AND straight through the side of a
 -      // row. Fix = a real per-face bounce (flip vy on a top/bottom hit, vx on a
 -      // side hit) plus pushing the ball back out of the brick.
-+      
++
 +      if (!hasBounced) {
 +        if (isColliding) {
 +          resolveBrickCollision(state.ball, brick);
@@ -144,12 +144,12 @@ index 6b4a133..0e04a2a 100644
 +        hasBounced = true;
 +      }
      }
- 
+
      ctx.fillStyle = brickColor(brick.row);
      ctx.fillRect(brick.x, brick.y, brick.w, brick.h);
    }
 +  // ...
- 
+
    // Paddle — color hard-coded instead of using the palette (inconsistency #6).
    ctx.fillStyle = '#00e5ff';
 diff --git a/game/neon.test.js b/game/neon.test.js
@@ -169,10 +169,10 @@ index 250d6a9..7461137 100644
 +  LEFT,
 +  RIGHT,
  } from './neon.js';
- 
+
  test('collides: clear overlap detected', () => {
 @@ -67,3 +72,125 @@ function belowField() {
- 
+
  // TODO (#5): test comboMultiplier / scoreForBrick.
  // TODO      : test level progression and loadBest/saveBest persistence.
 +
@@ -193,9 +193,9 @@ index 250d6a9..7461137 100644
 +  brick.alive = true;
 +  brick.x = 100; brick.y = 100; brick.w = 50; brick.h = 20;
 +  state.ball = { x: 125, y: 120, r: 7, vx: 0, vy: UP, prevX: 125, prevY: 127 }; // ball is just hitting the bottom edge
-+  
++
 +  frame(mockCtx(), state);
-+  
++
 +  assert.equal(state.ball.vy, Math.abs(state.ball.vy), 'vy should flip to DOWN');
 +});
 +
@@ -206,9 +206,9 @@ index 250d6a9..7461137 100644
 +  brick.alive = true;
 +  brick.x = 100; brick.y = 100; brick.w = 50; brick.h = 20;
 +  state.ball = { x: 125, y: 93, r: 7, vx: 0, vy: DOWN, prevX: 125, prevY: 86 }; // ball is just hitting the top edge
-+  
++
 +  frame(mockCtx(), state);
-+  
++
 +  assert.equal(state.ball.vy, -Math.abs(state.ball.vy), 'vy should flip to UP');
 +});
 +
@@ -219,9 +219,9 @@ index 250d6a9..7461137 100644
 +  brick.alive = true;
 +  brick.x = 100; brick.y = 100; brick.w = 50; brick.h = 20;
 +  state.ball = { x: 157, y: 110, r: 7, vx: LEFT, vy: 0, prevX: 164, prevY: 110 }; // ball is just hitting the right edge
-+  
++
 +  frame(mockCtx(), state);
-+  
++
 +  assert.equal(state.ball.vx, Math.abs(state.ball.vx), 'vx should flip to RIGHT');
 +});
 +
@@ -232,9 +232,9 @@ index 250d6a9..7461137 100644
 +  brick.alive = true;
 +  brick.x = 100; brick.y = 100; brick.w = 50; brick.h = 20;
 +  state.ball = { x: 93, y: 110, r: 7, vx: RIGHT, vy: 0, prevX: 86, prevY: 110 }; // ball is just hitting the left edge
-+  
++
 +  frame(mockCtx(), state);
-+  
++
 +  assert.equal(state.ball.vx, -Math.abs(state.ball.vx), 'vx should flip to LEFT');
 +});
 +
@@ -245,10 +245,10 @@ index 250d6a9..7461137 100644
 +  brick.alive = true;
 +  brick.x = 100; brick.y = 100; brick.w = 50; brick.h = 20;
 +  // overlapX = 7, overlapY = 7
-+  state.ball = { x: 150, y: 120, r: 7, vx: RIGHT, vy: UP, prevX: 157, prevY: 127 }; 
-+  
++  state.ball = { x: 150, y: 120, r: 7, vx: RIGHT, vy: UP, prevX: 157, prevY: 127 };
++
 +  frame(mockCtx(), state);
-+  
++
 +  assert.ok(state.ball.vx < 0 && state.ball.vy > 0, 'both vx and vy should flip');
 +});
 +
@@ -259,9 +259,9 @@ index 250d6a9..7461137 100644
 +  brick.alive = true;
 +  brick.x = 100; brick.y = 100; brick.w = 50; brick.h = 20;
 +  state.ball = { x: 125, y: 115, r: 7, vx: 0, vy: UP, prevX: 125, prevY: 122 }; // deep inside the brick
-+  
++
 +  frame(mockCtx(), state);
-+  
++
 +  assert.ok(!collides(state.ball, brick), 'ball should be pushed outside the brick');
 +});
 +
@@ -273,12 +273,12 @@ index 250d6a9..7461137 100644
 +  b1.alive = true; b2.alive = true;
 +  b1.x = 100; b1.y = 100; b1.w = 50; b1.h = 20;
 +  b2.x = 150; b2.y = 100; b2.w = 50; b2.h = 20;
-+  
++
 +  // ball is on the seam between b1 and b2
 +  state.ball = { x: 150, y: 120, r: 7, vx: 0, vy: UP, prevX: 150, prevY: 127 };
-+  
++
 +  frame(mockCtx(), state);
-+  
++
 +  assert.equal(state.ball.vy, Math.abs(state.ball.vy), 'vy should flip exactly once');
 +});
 +
@@ -288,12 +288,12 @@ index 250d6a9..7461137 100644
 +  const brick = state.bricks[0];
 +  brick.alive = true;
 +  brick.x = 100; brick.y = 100; brick.w = 50; brick.h = 20;
-+  
++
 +  // Ball is moving so fast it jumps over the brick in one frame.
 +  // Path: from (125, 80) to (125, 140). Brick is from y=100 to 120.
-+  state.ball = { x: 125, y: 140, r: 7, vx: 0, vy: 1000, prevX: 125, prevY: 80 }; 
-+  
++  state.ball = { x: 125, y: 140, r: 7, vx: 0, vy: 1000, prevX: 125, prevY: 80 };
++
 +  frame(mockCtx(), state);
-+  
++
 +  assert.equal(state.ball.vy, -1000, 'ball should have bounced even with high speed');
 +});

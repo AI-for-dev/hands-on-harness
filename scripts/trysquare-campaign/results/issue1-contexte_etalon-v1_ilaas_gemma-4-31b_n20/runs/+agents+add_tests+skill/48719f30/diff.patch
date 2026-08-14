@@ -4,7 +4,7 @@ index 6b4a133..0398f46 100644
 +++ b/game/neon.js
 @@ -102,9 +102,6 @@ export function createState(level = 1) {
  // --- Collision (tested primitive) ------------------------------------------
- 
+
  // True if the ball (circle approximated by its box) overlaps the brick.
 -// Simple AABB test: it only says WHETHER the ball and the brick overlap, not
 -// WHICH face was hit. The missing bounce in frame() is what lets the ball plow
@@ -15,7 +15,7 @@ index 6b4a133..0398f46 100644
 @@ -114,6 +111,30 @@ export function collides(ball, brick) {
    );
  }
- 
+
 +// Resolves a collision between a ball and a brick.
 +// Returns true if a collision occurred.
 +export function resolveBrickCollision(ball, brick) {
@@ -41,7 +41,7 @@ index 6b4a133..0398f46 100644
 +}
 +
  // --- Score & combo (NOT covered by tests — debt #5) ------------------------
- 
+
  // Combo multiplier. UNBOUNDED today: a long combo makes the score blow up
 @@ -163,40 +184,54 @@ export function saveBest(storage, score) {
  // lives in the render loop `frame()` (debt #2).
@@ -78,7 +78,7 @@ index 6b4a133..0398f46 100644
 +        state.score += scoreForBrick(brick, state.combo);
 +      }
 +    }
- 
+
 -  // Ceiling
 -  if (ball.y - ball.r < 0) {
 -    ball.y = ball.r;
@@ -98,7 +98,7 @@ index 6b4a133..0398f46 100644
 +      ball.y = ball.r;
 +      ball.vy = Math.abs(ball.vy);
 +    }
- 
+
 -  // Paddle
 -  if (
 -    ball.vy > 0 &&
@@ -128,17 +128,17 @@ index 6b4a133..0398f46 100644
 +      state.combo = 0;
 +    }
    }
- 
+
    // Exit through the bottom: ball lost
 @@ -215,21 +250,10 @@ export function frame(ctx, state) {
    ctx.fillStyle = palette.background;
    ctx.fillRect(0, 0, WIDTH, HEIGHT);
- 
+
 -  // Bricks: collision + bounce + score + drawing, all in one place.
 +  // Bricks: only drawing.
    for (const brick of state.bricks) {
      if (!brick.alive) continue;
- 
+
 -    if (collides(state.ball, brick)) {
 -      brick.alive = false;
 -      state.combo += 1;

@@ -5,7 +5,7 @@ index 6b4a133..5d87698 100644
 @@ -215,6 +215,9 @@ export function frame(ctx, state) {
    ctx.fillStyle = palette.background;
    ctx.fillRect(0, 0, WIDTH, HEIGHT);
- 
+
 +  let bouncedX = false;
 +  let bouncedY = false;
 +
@@ -44,7 +44,7 @@ index 6b4a133..5d87698 100644
 +        }
 +      }
      }
- 
+
      ctx.fillStyle = brickColor(brick.row);
 diff --git a/game/neon.test.js b/game/neon.test.js
 index 250d6a9..b01ecbd 100644
@@ -57,12 +57,12 @@ index 250d6a9..b01ecbd 100644
 +  frame,
 +  BRICK_GAP,
  } from './neon.js';
- 
+
  test('collides: clear overlap detected', () => {
 @@ -59,8 +61,65 @@ test('makeBricks: full, all-alive grid at start', () => {
    assert.ok(bricks.every((b) => b.x >= 0 && b.x + b.w <= WIDTH));
  });
- 
+
 -// Small local helper: place the ball below the field without importing the
 -// height (coverage intentionally light).
 +test('frame: ball bounce off the top of a brick', () => {
@@ -70,7 +70,7 @@ index 250d6a9..b01ecbd 100644
 +  // Position ball so it hits the top of the first brick
 +  const brick = state.bricks[0];
 +  state.ball = { x: brick.x + brick.w / 2, y: brick.y - 1, r: 7, vx: 0, vy: 100 };
-+  
++
 +  const dummyCtx = {
 +    fillStyle: '',
 +    fillRect: () => {},
@@ -80,9 +80,9 @@ index 250d6a9..b01ecbd 100644
 +    font: '',
 +    fillText: () => {},
 +  };
-+  
++
 +  frame(dummyCtx, state);
-+  
++
 +  assert.ok(state.ball.vy < 0, 'ball should bounce UP after hitting the top of a brick');
 +});
 +
@@ -92,20 +92,20 @@ index 250d6a9..b01ecbd 100644
 +  // Find two adjacent bricks
 +  const brick1 = bricks[0];
 +  const brick2 = bricks[1]; // adjacent horizontally
-+  
++
 +  // Position ball so it overlaps both bricks
 +  // brick1.x + brick1.w = brick2.x (approximately, given the gap)
-+  // The gap is BRICK_GAP. 
++  // The gap is BRICK_GAP.
 +  // brick1: x=offsetX, w=BRICK_W
 +  // brick2: x=offsetX + BRICK_W + BRICK_GAP, w=BRICK_W
-+  state.ball = { 
-+    x: brick1.x + brick1.w + (BRICK_GAP / 2), 
-+    y: brick1.y + brick1.h / 2, 
-+    r: 7, 
-+    vx: 100, 
-+    vy: 0 
++  state.ball = {
++    x: brick1.x + brick1.w + (BRICK_GAP / 2),
++    y: brick1.y + brick1.h / 2,
++    r: 7,
++    vx: 100,
++    vy: 0
 +  };
-+  
++
 +  const dummyCtx = {
 +    fillStyle: '',
 +    fillRect: () => {},
@@ -117,7 +117,7 @@ index 250d6a9..b01ecbd 100644
 +  };
 +
 +  frame(dummyCtx, state);
-+  
++
 +  // It should have hit both bricks (since they are both alive and it overlaps both)
 +  // vx should have been flipped twice, which means it's still positive.
 +  // But it SHOULD have been flipped only once (or handled so it bounces).

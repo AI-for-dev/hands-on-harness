@@ -3,9 +3,9 @@ index 6b4a133..5168df8 100644
 --- a/game/neon.js
 +++ b/game/neon.js
 @@ -208,6 +208,40 @@ export function step(state, dt) {
- 
+
  // --- Rendering (DOM): brick collision logic STILL mixed in here ------------
- 
+
 +// Ejects the ball out of a brick it just hit and flips the velocity component
 +// for the face that was struck (top/bottom -> vy, sides -> vx). Which face was
 +// hit is decided by comparing how far the ball penetrated the brick along each
@@ -45,7 +45,7 @@ index 6b4a133..5168df8 100644
  export function frame(ctx, state) {
 @@ -220,14 +254,10 @@ export function frame(ctx, state) {
      if (!brick.alive) continue;
- 
+
      if (collides(state.ball, brick)) {
 +      bounceOffBrick(state.ball, brick);
        brick.alive = false;
@@ -57,5 +57,5 @@ index 6b4a133..5168df8 100644
 -      // row. Fix = a real per-face bounce (flip vy on a top/bottom hit, vx on a
 -      // side hit) plus pushing the ball back out of the brick.
      }
- 
+
      ctx.fillStyle = brickColor(brick.row);

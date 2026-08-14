@@ -113,7 +113,7 @@ En plus de la correction du bug, nous souhaitons commencer à définir un cadre 
 - L'agent ne peut modifier que `game/neon.js` et `game/neon.test.js` et rien d'autre.
 - L'agent doit lancer les tests pour vérifier qu'il n'a rien cassé.
 - L'agent doit ajouter des tests si la couverture n'est pas bonne. C'est notre cas ici : il n'y a pas de tests qui vérifient le comportement de la balle avec la brique.
- 
+
 Voici ce que nous proposons de mesurer sur chaque exécution :
 
 | métrique             | ce qu'elle dit                                                                                |
@@ -145,7 +145,7 @@ Lancez la même demande sur deux modèles de tailles différentes, celui que vou
 
 <<<@/../scripts/trysquare-campaign/briques/issue1-simple-prompt.md
 
-Vous prendrez bien soin de faire deux clones séparés au préalable en utilisant la commande 
+Vous prendrez bien soin de faire deux clones séparés au préalable en utilisant la commande
 
 ```bash
 git clone --branch etalon-v1 git@github.com:AI-for-dev/neon.git neon-model-xxx
@@ -185,7 +185,7 @@ L'`AGENTS.md` de NÉON ne dépassera jamais 40 lignes, du début à la fin de la
 Cette contrainte vous oblige à faire le travail de refactoring continu décrit plus haut : chaque règle doit mériter sa place, et un fichier court a beaucoup plus de chances d'être réellement suivi qu'un long guide de style.
 :::
 
-Mais nous pouvons également nous appuyer sur d'autres fichiers et le dire dans `AGENTS.md` pour qu'il aille le lire si besoin. Par exemple, nous pouvons lui indiquer que les conventions sont dans `CONTRIBUTING.md`, l'architecture dans le `README.md` et l'historique dans git. 
+Mais nous pouvons également nous appuyer sur d'autres fichiers et le dire dans `AGENTS.md` pour qu'il aille le lire si besoin. Par exemple, nous pouvons lui indiquer que les conventions sont dans `CONTRIBUTING.md`, l'architecture dans le `README.md` et l'historique dans git.
 
 Sur nos vingt exécutions de l'issue #1 avec la demande négligée, **aucune n'a lancé la suite de tests** et **aucune n'a ajouté un cas**.
 
@@ -328,13 +328,13 @@ Afin de juger de la qualité des résultats, nous devons définir un certain nom
 
 #### Les traces
 
-Durant le déroulé de l'expérience, nous sauvegardons un certain nombre de traces afin d'analyser un peu plus finement ce qui s'est passé lors du post-traitement. 
+Durant le déroulé de l'expérience, nous sauvegardons un certain nombre de traces afin d'analyser un peu plus finement ce qui s'est passé lors du post-traitement.
 
-Pour chaque run, vous avez accès à 
+Pour chaque run, vous avez accès à
 
 - un export de la session Pi au format JSONL qu'il est possible de repasser au format html (nous en parlerons un peu plus tard)
 - un répertoire `validation` qui mentionne l'état des tests de validation
-- un fichier `configuration.json` qui vous rappelle le cadre du run (modèle, harnais, tests...) 
+- un fichier `configuration.json` qui vous rappelle le cadre du run (modèle, harnais, tests...)
 - un patch (`diff.patch`) qui vous dit ce qui a été modifié dans le code NEON durant ce run
 
 A la fin de l'expérience, vous avez accès à une synthèse au format html et markdown qui vous donne les réussites des validations pour chacune des configurations ainsi que des moyennes sur les coûts en token et la durée des runs.

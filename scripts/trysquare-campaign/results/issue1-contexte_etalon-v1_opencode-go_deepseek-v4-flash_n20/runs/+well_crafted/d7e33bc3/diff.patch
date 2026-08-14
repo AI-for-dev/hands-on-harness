@@ -5,7 +5,7 @@ index 6b4a133..4102eb4 100644
 @@ -156,18 +156,200 @@ export function saveBest(storage, score) {
    return best;
  }
- 
+
 -// --- Physics (movement + wall/paddle bounces) ------------------------------
 +// --- Physics (movement + wall/paddle/brick bounces) -------------------------
 +
@@ -184,7 +184,7 @@ index 6b4a133..4102eb4 100644
 +    resolveSweep(state, prevX, prevY);
 +  }
 +}
- 
+
  // Advances the ball by a time step `dt` (in seconds) and handles bounces off
 -// the walls and the paddle. Does NOT handle bricks: that responsibility still
 -// lives in the render loop `frame()` (debt #2).
@@ -192,14 +192,14 @@ index 6b4a133..4102eb4 100644
  // Returns `true` if the ball is lost (exits through the bottom).
  export function step(state, dt) {
    const { ball, paddle } = state;
- 
+
 +  // Capture the position before moving so brick collisions can be swept.
 +  const prevX = ball.x;
 +  const prevY = ball.y;
 +
    ball.x += ball.vx * dt;
    ball.y += ball.vy * dt;
- 
+
 +  // Bricks: bounce (per-face), push out and score (see #1).
 +  resolveBrickCollisions(state, prevX, prevY);
 +
@@ -209,10 +209,10 @@ index 6b4a133..4102eb4 100644
 @@ -206,30 +388,18 @@ export function step(state, dt) {
    return false;
  }
- 
+
 -// --- Rendering (DOM): brick collision logic STILL mixed in here ------------
 +// --- Rendering (DOM) -------------------------------------------------------
- 
+
 -// Main render loop. For each live brick we test collision AND draw in the same
 -// pass: this is where logic and rendering are entangled.
 +// Main render loop. Rendering only: the brick collision and bounce now live in
@@ -221,7 +221,7 @@ index 6b4a133..4102eb4 100644
    // Background
    ctx.fillStyle = palette.background;
    ctx.fillRect(0, 0, WIDTH, HEIGHT);
- 
+
 -  // Bricks: collision + bounce + score + drawing, all in one place.
 +  // Bricks: just draw the survivors.
    for (const brick of state.bricks) {
@@ -248,7 +248,7 @@ index 250d6a9..d25ad6a 100644
 @@ -52,6 +52,74 @@ test('step: ball exiting through the bottom => lost', () => {
    assert.equal(lost, true);
  });
- 
+
 +// --- Issue #1: the ball bounces off bricks instead of plowing through ---------
 +
 +// Build a bare state with a single brick at the given box, so each bounce case

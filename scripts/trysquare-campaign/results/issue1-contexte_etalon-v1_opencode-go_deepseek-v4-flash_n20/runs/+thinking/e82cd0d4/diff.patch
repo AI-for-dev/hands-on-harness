@@ -3,7 +3,7 @@ index 87396ac..4a5377e 100644
 --- a/ISSUES.md
 +++ b/ISSUES.md
 @@ -5,7 +5,7 @@ bug to fix, debt to pay down, or a feature to add.
- 
+
  | #   | Type         | Title                                                                        |
  | --- | ------------ | ---------------------------------------------------------------------------- |
 -| 1   | bug          | The ball **plows through** bricks instead of bouncing (no brick bounce)      |
@@ -12,17 +12,17 @@ index 87396ac..4a5377e 100644
  | 3   | feature      | **Night mode**                                                               |
  | 4   | feature      | **CSV import** of a score table, compatible with the current local save      |
 @@ -14,38 +14,36 @@ bug to fix, debt to pay down, or a feature to add.
- 
+
  ---
- 
+
 -## #1 — bug: the ball plows through bricks instead of bouncing
 +## #1 — ✅ DONE: the ball plows through bricks instead of bouncing
- 
+
 -`frame()` (in `game/neon.js`) destroys the brick it hits but never touches the
 -ball's velocity: only the walls and the paddle bounce (`step()`). The whole
 -collision resolution has to be fixed, not just the visible symptom.
 +Fixed by extracting a pure, tested `brickHit(ball, bricks)` (see #2):
- 
+
 -- **per face**: the axis with the *smaller* penetration is the face that was hit -
 -  flip `vy` on a top/bottom hit, `vx` on a side hit, and leave the other
 -  component exactly as it was;
@@ -50,15 +50,15 @@ index 87396ac..4a5377e 100644
 +  ball radius, fed by the previous position recorded in `step()`) catches the
 +  level-6 case where 35.5 px per capped 50 ms frame would otherwise jump over
 +  the 34 px a brick + diameter spans.
- 
+
 -**Reproduce**: send the ball into a group of bricks; a near-horizontal shot (hit
 -the paddle near its edge) makes the side case obvious. **Expected**: each case
 -above added **first as a red test**, then green.
 +Each case above was added **first as a red test**, then green (see
 +`game/neon.test.js`).
- 
+
  ## #2 — perf/quality: collision entangled with rendering
- 
+
 -Brick collision detection lives inside the draw loop (`frame()` in
 -`game/neon.js`): logic and rendering are mixed, and we scan every brick on
 -every frame.
@@ -70,9 +70,9 @@ index 87396ac..4a5377e 100644
 +and `frame()` no longer mutates game state. Remaining debt: the function still
 +scans **all** bricks on every frame (no spatial index), and the score/combo
 +update still lives in the game loop.
- 
+
  ## #3 — feature: night mode
- 
+
 diff --git a/game/neon.js b/game/neon.js
 index 6b4a133..d7bde02 100644
 --- a/game/neon.js
@@ -90,16 +90,16 @@ index 6b4a133..d7bde02 100644
 @@ -35,6 +31,10 @@ export const DOWN = 1;
  export const LEFT = -1;
  export const RIGHT = 1;
- 
+
 +// Two slab-crossing times are considered the same instant (a corner hit) if
 +// they differ by less than this.
 +const EPS = 1e-9;
 +
  // --- Field constants -------------------------------------------------------
- 
+
  export const WIDTH = 640;
 @@ -103,8 +103,7 @@ export function createState(level = 1) {
- 
+
  // True if the ball (circle approximated by its box) overlaps the brick.
  // Simple AABB test: it only says WHETHER the ball and the brick overlap, not
 -// WHICH face was hit. The missing bounce in frame() is what lets the ball plow
@@ -111,7 +111,7 @@ index 6b4a133..d7bde02 100644
 @@ -114,6 +113,155 @@ export function collides(ball, brick) {
    );
  }
- 
+
 +// --- Brick collision resolution (pure, tested) ------------------------------
 +
 +// Penetration-based face guess: which face of `brick` the ball overlaps most
@@ -262,11 +262,11 @@ index 6b4a133..d7bde02 100644
 +}
 +
  // --- Score & combo (NOT covered by tests — debt #5) ------------------------
- 
+
  // Combo multiplier. UNBOUNDED today: a long combo makes the score blow up
 @@ -159,12 +307,17 @@ export function saveBest(storage, score) {
  // --- Physics (movement + wall/paddle bounces) ------------------------------
- 
+
  // Advances the ball by a time step `dt` (in seconds) and handles bounces off
 -// the walls and the paddle. Does NOT handle bricks: that responsibility still
 -// lives in the render loop `frame()` (debt #2).
@@ -275,7 +275,7 @@ index 6b4a133..d7bde02 100644
  // Returns `true` if the ball is lost (exits through the bottom).
  export function step(state, dt) {
    const { ball, paddle } = state;
- 
+
 +  // Remember where this move started: brickHit() sweeps between the two
 +  // positions so a fast ball cannot tunnel through a brick (see #1).
 +  ball.px = ball.x;
@@ -283,14 +283,14 @@ index 6b4a133..d7bde02 100644
 +
    ball.x += ball.vx * dt;
    ball.y += ball.vy * dt;
- 
+
 @@ -206,30 +359,18 @@ export function step(state, dt) {
    return false;
  }
- 
+
 -// --- Rendering (DOM): brick collision logic STILL mixed in here ------------
 +// --- Rendering (DOM) -------------------------------------------------------
- 
+
 -// Main render loop. For each live brick we test collision AND draw in the same
 -// pass: this is where logic and rendering are entangled.
 +// Pure rendering, no game logic (see ISSUES.md #2): brick collisions are
@@ -299,7 +299,7 @@ index 6b4a133..d7bde02 100644
    // Background
    ctx.fillStyle = palette.background;
    ctx.fillRect(0, 0, WIDTH, HEIGHT);
- 
+
 -  // Bricks: collision + bounce + score + drawing, all in one place.
 +  // Bricks: draw the survivors.
    for (const brick of state.bricks) {
@@ -332,7 +332,7 @@ index 6b4a133..d7bde02 100644
 +          state.score += scoreForBrick(brick, state.combo);
 +        }
        }
- 
+
        // Level cleared: all bricks broken
 diff --git a/game/neon.test.js b/game/neon.test.js
 index 250d6a9..0beafb0 100644
@@ -349,7 +349,7 @@ index 250d6a9..0beafb0 100644
 @@ -59,6 +60,103 @@ test('makeBricks: full, all-alive grid at start', () => {
    assert.ok(bricks.every((b) => b.x >= 0 && b.x + b.w <= WIDTH));
  });
- 
+
 +// --- brickHit: ball bounces off bricks (ISSUES.md #1) ----------------------
 +
 +// A ball moving DOWN that reaches the top face of a brick must be deflected

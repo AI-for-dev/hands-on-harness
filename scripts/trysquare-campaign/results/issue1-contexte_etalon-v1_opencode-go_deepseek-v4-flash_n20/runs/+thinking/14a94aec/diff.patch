@@ -25,7 +25,7 @@ index 6b4a133..2c1d531 100644
    };
  }
 @@ -103,8 +104,7 @@ export function createState(level = 1) {
- 
+
  // True if the ball (circle approximated by its box) overlaps the brick.
  // Simple AABB test: it only says WHETHER the ball and the brick overlap, not
 -// WHICH face was hit. The missing bounce in frame() is what lets the ball plow
@@ -37,7 +37,7 @@ index 6b4a133..2c1d531 100644
 @@ -156,15 +156,171 @@ export function saveBest(storage, score) {
    return best;
  }
- 
+
 +// --- Brick collision (swept path, per-face bounce) ------------------------
 +
 +// Margin used when pushing the ball out of a brick: the ball stops just short
@@ -190,7 +190,7 @@ index 6b4a133..2c1d531 100644
 +}
 +
  // --- Physics (movement + wall/paddle bounces) ------------------------------
- 
+
  // Advances the ball by a time step `dt` (in seconds) and handles bounces off
 -// the walls and the paddle. Does NOT handle bricks: that responsibility still
 -// lives in the render loop `frame()` (debt #2).
@@ -199,7 +199,7 @@ index 6b4a133..2c1d531 100644
  // Returns `true` if the ball is lost (exits through the bottom).
  export function step(state, dt) {
    const { ball, paddle } = state;
- 
+
 +  // Remember where the ball was before this move: brickHit() sweeps between
 +  // the two positions, so a fast ball cannot tunnel through a brick.
 +  ball.prevX = ball.x;
@@ -207,14 +207,14 @@ index 6b4a133..2c1d531 100644
 +
    ball.x += ball.vx * dt;
    ball.y += ball.vy * dt;
- 
+
 @@ -206,30 +362,26 @@ export function step(state, dt) {
    return false;
  }
- 
+
 -// --- Rendering (DOM): brick collision logic STILL mixed in here ------------
 +// --- Rendering (DOM): brick collision is pure, scoring stays here ----------
- 
+
 -// Main render loop. For each live brick we test collision AND draw in the same
 -// pass: this is where logic and rendering are entangled.
 +// Main render loop. Brick collision resolution is delegated to the pure
@@ -224,7 +224,7 @@ index 6b4a133..2c1d531 100644
    // Background
    ctx.fillStyle = palette.background;
    ctx.fillRect(0, 0, WIDTH, HEIGHT);
- 
+
 -  // Bricks: collision + bounce + score + drawing, all in one place.
 +  // Bricks: resolve collisions first (destroys hit bricks and bounces the
 +  // ball), then award the points for everything that was broken.
@@ -266,7 +266,7 @@ index 250d6a9..e395f66 100644
 @@ -45,6 +46,106 @@ test('step: bounce off the left wall', () => {
    assert.ok(state.ball.vx > 0, 'horizontal velocity should flip to the right');
  });
- 
+
 +test('step: records the previous position for the brick sweep', () => {
 +  const state = createState(1);
 +  state.ball.x = 200;

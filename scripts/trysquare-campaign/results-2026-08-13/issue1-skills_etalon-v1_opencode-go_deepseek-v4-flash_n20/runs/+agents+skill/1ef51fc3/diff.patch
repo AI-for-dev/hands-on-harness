@@ -16,11 +16,11 @@ index 6b4a133..c8b5a8d 100644
 +// calls; only `boot()` and `frame()` touch the DOM. The module runs nothing on
 +// import, so the pure logic can be imported from the tests (`node --test`)
 +// without a browser.
- 
+
  import { palette, brickColor } from './theme.js';
  import { createGlowMap, drawGlow, GLOW_W, GLOW_H } from './bloom.js';
 @@ -103,8 +100,7 @@ export function createState(level = 1) {
- 
+
  // True if the ball (circle approximated by its box) overlaps the brick.
  // Simple AABB test: it only says WHETHER the ball and the brick overlap, not
 -// WHICH face was hit. The missing bounce in frame() is what lets the ball plow
@@ -32,10 +32,10 @@ index 6b4a133..c8b5a8d 100644
 @@ -156,49 +152,68 @@ export function saveBest(storage, score) {
    return best;
  }
- 
+
 -// --- Physics (movement + wall/paddle bounces) ------------------------------
 +// --- Physics (movement + wall/paddle/brick bounces) ------------------------
- 
+
  // Advances the ball by a time step `dt` (in seconds) and handles bounces off
 -// the walls and the paddle. Does NOT handle bricks: that responsibility still
 -// lives in the render loop `frame()` (debt #2).
@@ -48,11 +48,11 @@ index 6b4a133..c8b5a8d 100644
    const { ball, paddle } = state;
 +  const prev = { x: ball.x, y: ball.y };
 +  const path = [prev];
- 
+
    ball.x += ball.vx * dt;
    ball.y += ball.vy * dt;
 +  path.push({ x: ball.x, y: ball.y });
- 
+
    // Side walls
    if (ball.x - ball.r < 0) {
      ball.x = ball.r;
@@ -63,14 +63,14 @@ index 6b4a133..c8b5a8d 100644
      ball.vx = -Math.abs(ball.vx);
 +    path.push({ x: ball.x, y: ball.y });
    }
- 
+
    // Ceiling
    if (ball.y - ball.r < 0) {
      ball.y = ball.r;
      ball.vy = Math.abs(ball.vy);
 +    path.push({ x: ball.x, y: ball.y });
    }
- 
+
 -  // Paddle
 -  if (
 -    ball.vy > 0 &&
@@ -106,7 +106,7 @@ index 6b4a133..c8b5a8d 100644
 +    ball.vy = -Math.sqrt(speed * speed - ball.vx * ball.vx);
      state.combo = 0; // touching the paddle resets the combo
    }
- 
+
 +  // Bricks: swept circle-vs-AABB along the ball's actual path.
 +  resolveBricks(state, path);
 +
@@ -116,7 +116,7 @@ index 6b4a133..c8b5a8d 100644
 @@ -206,30 +221,159 @@ export function step(state, dt) {
    return false;
  }
- 
+
 -// --- Rendering (DOM): brick collision logic STILL mixed in here ------------
 +// --- Brick collision resolution (pure, swept) ------------------------------
 +
@@ -145,7 +145,7 @@ index 6b4a133..c8b5a8d 100644
 +  }
 +  return { t0, t1 };
 +}
- 
+
 -// Main render loop. For each live brick we test collision AND draw in the same
 -// pass: this is where logic and rendering are entangled.
 +// Swept circle (radius r) vs brick AABB along the segment p0→p1.
@@ -269,7 +269,7 @@ index 6b4a133..c8b5a8d 100644
    // Background
    ctx.fillStyle = palette.background;
    ctx.fillRect(0, 0, WIDTH, HEIGHT);
- 
+
 -  // Bricks: collision + bounce + score + drawing, all in one place.
 +  // Bricks: drawn only — collision + bounce + score live in step().
    for (const brick of state.bricks) {
@@ -307,7 +307,7 @@ index 250d6a9..43aa3ef 100644
 +// #5), as does level progression.
  //
  // Run: `node --test "game/**/*.test.js"`  (or `npm test`)
- 
+
 @@ -15,6 +15,7 @@ import {
    step,
    makeBricks,
@@ -319,7 +319,7 @@ index 250d6a9..43aa3ef 100644
 @@ -52,6 +53,102 @@ test('step: ball exiting through the bottom => lost', () => {
    assert.equal(lost, true);
  });
- 
+
 +test('D1: ball bounces off the top face of a brick (push-out, kill, score once)', () => {
 +  const state = createState(1);
 +  state.ball = { x: 136, y: 91, r: 7, vx: 0, vy: 260 };

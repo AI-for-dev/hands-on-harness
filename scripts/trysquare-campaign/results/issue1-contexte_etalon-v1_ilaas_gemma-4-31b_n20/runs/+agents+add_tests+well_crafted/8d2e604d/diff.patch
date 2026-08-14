@@ -14,7 +14,7 @@ index 6b4a133..1e29572 100644
 @@ -114,6 +114,31 @@ export function collides(ball, brick) {
    );
  }
- 
+
 +function checkTunnelling(ball, brick) {
 +  const r = ball.r;
 +  const b = { x: brick.x - r, y: brick.y - r, w: brick.w + 2 * r, h: brick.h + 2 * r };
@@ -41,20 +41,20 @@ index 6b4a133..1e29572 100644
 +}
 +
  // --- Score & combo (NOT covered by tests — debt #5) ------------------------
- 
+
  // Combo multiplier. UNBOUNDED today: a long combo makes the score blow up
 @@ -165,6 +190,8 @@ export function saveBest(storage, score) {
  export function step(state, dt) {
    const { ball, paddle } = state;
- 
+
 +  ball.prevX = ball.x;
 +  ball.prevY = ball.y;
    ball.x += ball.vx * dt;
    ball.y += ball.vy * dt;
- 
+
 @@ -216,20 +243,86 @@ export function frame(ctx, state) {
    ctx.fillRect(0, 0, WIDTH, HEIGHT);
- 
+
    // Bricks: collision + bounce + score + drawing, all in one place.
 +  let firstBrick = null;
 +  let minT = Infinity;
@@ -90,7 +90,7 @@ index 6b4a133..1e29572 100644
 +      }
 +    }
 +  }
- 
+
 -    if (collides(state.ball, brick)) {
 -      brick.alive = false;
 -      state.combo += 1;
@@ -142,7 +142,7 @@ index 6b4a133..1e29572 100644
 +      }
      }
 +  }
- 
+
 +  for (const brick of state.bricks) {
 +    if (!brick.alive) continue;
      ctx.fillStyle = brickColor(brick.row);
@@ -162,7 +162,7 @@ index 250d6a9..03bfed2 100644
 +  LEFT,
 +  RIGHT,
  } from './neon.js';
- 
+
 +const mockCtx = {
 +  fillRect: () => {},
 +  beginPath: () => {},
@@ -177,7 +177,7 @@ index 250d6a9..03bfed2 100644
 @@ -65,5 +78,100 @@ function belowField() {
    return 500;
  }
- 
+
 -// TODO (#5): test comboMultiplier / scoreForBrick.
 -// TODO      : test level progression and loadBest/saveBest persistence.
 +// --- Brick Bounce Tests (#1) --------------------------------------------
@@ -240,7 +240,7 @@ index 250d6a9..03bfed2 100644
 +  state.bricks = [brick];
 +  // Hit top-left corner: ball moving DOWN-RIGHT, enters from top-left
 +  state.ball = { x: 98, y: 98, r: 7, vx: RIGHT, vy: DOWN };
-+  // Penetration: 
++  // Penetration:
 +  // x: ball.x + r = 105, brick.x = 100. pen_x = 5.
 +  // y: ball.y + r = 105, brick.y = 100. pen_y = 5.
 +  // Equal penetration -> corner hit.
@@ -254,26 +254,26 @@ index 250d6a9..03bfed2 100644
 +  const brick = { x: 100, y: 100, w: 50, h: 20, alive: true };
 +  state.bricks = [brick];
 +  // Ball is far above the brick, and moving very fast DOWN
-+  state.ball = { x: 125, y: 50, r: 7, vx: 0, vy: 2000 }; 
++  state.ball = { x: 125, y: 50, r: 7, vx: 0, vy: 2000 };
 +  // In a normal frame, it would jump from y=50 to y=50 + 2000 * 0.016 = 82 (approx)
 +  // But let's assume the frame is longer or the speed is higher.
 +  // The issue says at level 6, speed is 710 px/s. 50ms frame = 35.5 px.
 +  // Brick H + diameter = 20 + 14 = 34.
 +  // So it can jump over.
-+  
++
 +  // Since frame() doesn't take dt, it only checks collides(state.ball, brick).
 +  // Wait, frame() doesn't move the ball, step() does.
 +  // The tunnelling happens because step() moves the ball and THEN frame() checks for collision.
 +  // If step() moves the ball from y=80 to y=130, and the brick is at y=100-120,
 +  // then collides(ball, brick) will be false at both times.
-+  
++
 +  // To test this, we need to simulate a step and a frame.
 +  const dt = 0.05; // 50ms
 +  state.ball = { x: 125, y: 70, r: 7, vx: 0, vy: 2000 };
 +  step(state, dt); // ball.y becomes 70 + 2000 * 0.05 = 170.
 +  // Brick is at 100-120. Ball jumped over it.
 +  frame(mockCtx, state);
-+  
++
 +  // If tunnelling is fixed, the brick should be dead.
 +  assert.equal(brick.alive, false, 'brick should be hit even if ball jumped over it');
 +});

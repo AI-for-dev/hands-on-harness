@@ -13,7 +13,7 @@ index 6b4a133..20d5a14 100644
  // logic can therefore be imported from the tests (`node --test`) without a
  // browser.
 @@ -103,8 +99,7 @@ export function createState(level = 1) {
- 
+
  // True if the ball (circle approximated by its box) overlaps the brick.
  // Simple AABB test: it only says WHETHER the ball and the brick overlap, not
 -// WHICH face was hit. The missing bounce in frame() is what lets the ball plow
@@ -25,7 +25,7 @@ index 6b4a133..20d5a14 100644
 @@ -114,6 +109,149 @@ export function collides(ball, brick) {
    );
  }
- 
+
 +// --- Brick collision (swept, per-face) -------------------------------------
 +
 +// Swept test: does the ball path (px,py) → (cx,cy) cross the brick? The ball
@@ -170,11 +170,11 @@ index 6b4a133..20d5a14 100644
 +}
 +
  // --- Score & combo (NOT covered by tests — debt #5) ------------------------
- 
+
  // Combo multiplier. UNBOUNDED today: a long combo makes the score blow up
 @@ -159,12 +297,14 @@ export function saveBest(storage, score) {
  // --- Physics (movement + wall/paddle bounces) ------------------------------
- 
+
  // Advances the ball by a time step `dt` (in seconds) and handles bounces off
 -// the walls and the paddle. Does NOT handle bricks: that responsibility still
 -// lives in the render loop `frame()` (debt #2).
@@ -183,16 +183,16 @@ index 6b4a133..20d5a14 100644
  // Returns `true` if the ball is lost (exits through the bottom).
  export function step(state, dt) {
    const { ball, paddle } = state;
- 
+
 +  const prevY = ball.y; // pre-move position, for the swept paddle test below
 +
    ball.x += ball.vx * dt;
    ball.y += ball.vy * dt;
- 
+
 @@ -183,13 +323,18 @@ export function step(state, dt) {
      ball.vy = Math.abs(ball.vy);
    }
- 
+
 -  // Paddle
 +  // Paddle — swept so that a fast ball cannot jump over it (traversal). The
 +  // ball is caught when its bottom edge (a) lands inside the paddle band, or
@@ -216,10 +216,10 @@ index 6b4a133..20d5a14 100644
 @@ -206,30 +351,18 @@ export function step(state, dt) {
    return false;
  }
- 
+
 -// --- Rendering (DOM): brick collision logic STILL mixed in here ------------
 +// --- Rendering (DOM) -------------------------------------------------------
- 
+
 -// Main render loop. For each live brick we test collision AND draw in the same
 -// pass: this is where logic and rendering are entangled.
 +// Main render loop: draws the field. Brick collisions are resolved by
@@ -228,7 +228,7 @@ index 6b4a133..20d5a14 100644
    // Background
    ctx.fillStyle = palette.background;
    ctx.fillRect(0, 0, WIDTH, HEIGHT);
- 
+
 -  // Bricks: collision + bounce + score + drawing, all in one place.
 +  // Bricks: draw only — collision + bounce + score happen in bounceOffBricks().
    for (const brick of state.bricks) {
@@ -250,7 +250,7 @@ index 6b4a133..20d5a14 100644
    }
 @@ -288,6 +421,8 @@ export function boot(doc = document) {
      last = now;
- 
+
      if (state.running) {
 +      const prevX = state.ball.x;
 +      const prevY = state.ball.y;
@@ -266,7 +266,7 @@ index 6b4a133..20d5a14 100644
 +        // the face it crossed (swept, per-face) and the brick is destroyed.
 +        bounceOffBricks(state, prevX, prevY);
        }
- 
+
        // Level cleared: all bricks broken
 diff --git a/game/neon.test.js b/game/neon.test.js
 index 250d6a9..47c6bd6 100644
@@ -283,7 +283,7 @@ index 250d6a9..47c6bd6 100644
 +// swept brick/paddle resolution (bounceOffBricks, step). Pure logic, no DOM.
  //
  // Run: `node --test "game/**/*.test.js"`  (or `npm test`)
- 
+
 @@ -13,13 +9,22 @@ import assert from 'node:assert/strict';
  import {
    collides,
@@ -301,7 +301,7 @@ index 250d6a9..47c6bd6 100644
 +  BALL_R,
    WIDTH,
  } from './neon.js';
- 
+
 +// --- Static collision primitive --------------------------------------------
 +
  test('collides: clear overlap detected', () => {
@@ -310,7 +310,7 @@ index 250d6a9..47c6bd6 100644
 @@ -38,6 +43,8 @@ test('collides: edge contact (radius) detected', () => {
    assert.equal(collides(ball, brick), true);
  });
- 
+
 +// --- step(): walls, bottom loss, paddle ------------------------------------
 +
  test('step: bounce off the left wall', () => {
@@ -319,7 +319,7 @@ index 250d6a9..47c6bd6 100644
 @@ -52,6 +59,172 @@ test('step: ball exiting through the bottom => lost', () => {
    assert.equal(lost, true);
  });
- 
+
 +test('step: fast descending ball is caught by the paddle (no tunneling)', () => {
 +  // Level 6 speed × dt(50 ms) = 710 × 0.05 = 35.5 px > PADDLE_H + 2·BALL_R
 +  // (12 + 14 = 26 px): the ball would jump over the paddle in one step.
@@ -492,7 +492,7 @@ index 250d6a9..47c6bd6 100644
 @@ -59,11 +232,16 @@ test('makeBricks: full, all-alive grid at start', () => {
    assert.ok(bricks.every((b) => b.x >= 0 && b.x + b.w <= WIDTH));
  });
- 
+
 -// Small local helper: place the ball below the field without importing the
 -// height (coverage intentionally light).
 +// Small local helpers: place the ball below the field without importing the
@@ -502,7 +502,7 @@ index 250d6a9..47c6bd6 100644
  function belowField() {
    return 500;
  }
- 
+
 -// TODO (#5): test comboMultiplier / scoreForBrick.
 -// TODO      : test level progression and loadBest/saveBest persistence.
 +function clearColumnBelow(state, brick) {

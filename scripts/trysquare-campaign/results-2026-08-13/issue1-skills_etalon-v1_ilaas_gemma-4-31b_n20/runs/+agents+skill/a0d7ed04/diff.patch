@@ -14,7 +14,7 @@ index 6b4a133..c45ad1f 100644
 @@ -114,6 +114,20 @@ export function collides(ball, brick) {
    );
  }
- 
+
 +export function sweptCollides(ball, brick) {
 +  const minX = Math.min(ball.prevX, ball.x) - ball.r;
 +  const maxX = Math.max(ball.prevX, ball.x) + ball.r;
@@ -30,21 +30,21 @@ index 6b4a133..c45ad1f 100644
 +}
 +
  // --- Score & combo (NOT covered by tests — debt #5) ------------------------
- 
+
  // Combo multiplier. UNBOUNDED today: a long combo makes the score blow up
 @@ -165,6 +179,8 @@ export function saveBest(storage, score) {
  export function step(state, dt) {
    const { ball, paddle } = state;
- 
+
 +  ball.prevX = ball.x;
 +  ball.prevY = ball.y;
    ball.x += ball.vx * dt;
    ball.y += ball.vy * dt;
- 
+
 @@ -219,15 +235,55 @@ export function frame(ctx, state) {
    for (const brick of state.bricks) {
      if (!brick.alive) continue;
- 
+
 -    if (collides(state.ball, brick)) {
 +    if (sweptCollides(state.ball, brick)) {
        brick.alive = false;
@@ -90,18 +90,18 @@ index 6b4a133..c45ad1f 100644
 +        // Corner hit: flip both
 +        state.ball.vx = (minX === overlapLeft) ? -Math.abs(state.ball.vx) : Math.abs(state.ball.vx);
 +        state.ball.vy = (minY === overlapTop) ? -Math.abs(state.ball.vy) : Math.abs(state.ball.vy);
-+        
++
 +        if (minX === overlapLeft) state.ball.x = brick.x - state.ball.r;
 +        else state.ball.x = brick.x + brick.w + state.ball.r;
-+        
++
 +        if (minY === overlapTop) state.ball.y = brick.y - state.ball.r;
 +        else state.ball.y = brick.y + brick.h + state.ball.r;
 +      }
-+      
++
 +      // Prevent ghost collisions by stopping further checks this frame
-+      break; 
++      break;
      }
- 
+
      ctx.fillStyle = brickColor(brick.row);
 diff --git a/game/neon.test.js b/game/neon.test.js
 index 250d6a9..9866dfe 100644
@@ -118,7 +118,7 @@ index 250d6a9..9866dfe 100644
 @@ -20,6 +21,14 @@ import {
    WIDTH,
  } from './neon.js';
- 
+
 +const dummyCtx = {
 +  fillRect: () => {},
 +  beginPath: () => {},
@@ -131,7 +131,7 @@ index 250d6a9..9866dfe 100644
    const ball = { x: 100, y: 100, r: 8 };
    const brick = { x: 90, y: 90, w: 40, h: 20 };
 @@ -47,11 +56,28 @@ test('step: bounce off the left wall', () => {
- 
+
  test('step: ball exiting through the bottom => lost', () => {
    const state = createState(1);
 -  state.ball = { x: 320, y: belowField(), r: 7, vx: 0, vy: 400 };
@@ -139,21 +139,21 @@ index 250d6a9..9866dfe 100644
    const lost = step(state, 1 / 60);
    assert.equal(lost, true);
  });
- 
+
 +test('frame: detects tunneling', () => {
 +  const state = createState(1);
 +  const brick = state.bricks[0];
-+  
++
 +  // Setup: ball is just above the brick, moving very fast
 +  state.ball.x = brick.x + brick.w / 2;
-+  state.ball.y = brick.y - 10; 
-+  state.ball.vy = 1000; 
-+  
++  state.ball.y = brick.y - 10;
++  state.ball.vy = 1000;
++
 +  // Use step to update position AND prevPosition
 +  step(state, 0.05);
-+  
++
 +  frame(dummyCtx, state);
-+  
++
 +  assert.strictEqual(brick.alive, false, 'Brick should be destroyed even if ball tunneled through');
 +});
 +
@@ -163,7 +163,7 @@ index 250d6a9..9866dfe 100644
 @@ -59,11 +85,48 @@ test('makeBricks: full, all-alive grid at start', () => {
    assert.ok(bricks.every((b) => b.x >= 0 && b.x + b.w <= WIDTH));
  });
- 
+
 -// Small local helper: place the ball below the field without importing the
 -// height (coverage intentionally light).
 -function belowField() {
@@ -175,44 +175,44 @@ index 250d6a9..9866dfe 100644
 +  state.ball.x = brick.x + brick.w / 2;
 +  state.ball.y = brick.y - 2; // Just above the brick
 +  state.ball.vy = 100; // Moving down
-+  
++
 +  frame(dummyCtx, state);
-+  
++
 +  assert.ok(state.ball.vy < 0, 'Ball should have bounced UP');
 +});
- 
+
 -// TODO (#5): test comboMultiplier / scoreForBrick.
 -// TODO      : test level progression and loadBest/saveBest persistence.
 +test('frame: avoids ghost collisions on seams', () => {
 +  const state = createState(1);
 +  const brick1 = state.bricks[0];
 +  const brick2 = state.bricks[1];
-+  
++
 +  // Position ball so it collides with two bricks on their top faces
-+  state.ball.x = brick1.x + brick1.w + 4; 
++  state.ball.x = brick1.x + brick1.w + 4;
 +  state.ball.y = brick1.y - 6; // Close to the top edge
 +  state.ball.vy = 100;
-+  
++
 +  frame(dummyCtx, state);
-+  
++
 +  assert.ok(state.ball.vy < 0, 'Ball should have bounced UP');
 +});
 +
 +test('frame: handles corner hits', () => {
 +  const state = createState(1);
 +  const brick = state.bricks[0];
-+  
++
 +  // Position ball to hit the top-left corner
 +  state.ball.x = brick.x - 2;
 +  state.ball.y = brick.y - 2;
 +  state.ball.vx = 10;
 +  state.ball.vy = 10;
-+  
++
 +  // Move slightly into the corner
 +  state.ball.x += 4;
 +  state.ball.y += 4;
-+  
++
 +  frame(dummyCtx, state);
-+  
++
 +  assert.ok(state.ball.vx < 0 && state.ball.vy < 0, 'Ball should bounce on both axes when hitting a corner');
 +});

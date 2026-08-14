@@ -16,7 +16,7 @@ index 6b4a133..13477e2 100644
 @@ -114,6 +118,155 @@ export function collides(ball, brick) {
    );
  }
- 
+
 +// --- Brick bounce (issue #1) ---------------------------------------------
 +
 +// Liang–Barsky clipped segment test: does the segment (x0,y0)-(x1,y1) touch
@@ -167,23 +167,23 @@ index 6b4a133..13477e2 100644
 +}
 +
  // --- Score & combo (NOT covered by tests — debt #5) ------------------------
- 
+
  // Combo multiplier. UNBOUNDED today: a long combo makes the score blow up
 @@ -165,6 +318,10 @@ export function saveBest(storage, score) {
  export function step(state, dt) {
    const { ball, paddle } = state;
- 
+
 +  // Remember where the ball was before this move: the swept collision check in
 +  // brickBounce needs it to catch fast balls that tunnel through bricks.
 +  state.ballPrev = { x: ball.x, y: ball.y };
 +
    ball.x += ball.vx * dt;
    ball.y += ball.vy * dt;
- 
+
 @@ -215,21 +372,21 @@ export function frame(ctx, state) {
    ctx.fillStyle = palette.background;
    ctx.fillRect(0, 0, WIDTH, HEIGHT);
- 
+
 -  // Bricks: collision + bounce + score + drawing, all in one place.
 +  // Bricks: bounce the ball off the live bricks, then award points.
 +  // brickBounce mutates the ball (per-face flip + push out) and returns the
@@ -199,7 +199,7 @@ index 6b4a133..13477e2 100644
 +  // Draw the remaining bricks.
    for (const brick of state.bricks) {
      if (!brick.alive) continue;
- 
+
 -    if (collides(state.ball, brick)) {
 -      brick.alive = false;
 -      state.combo += 1;
@@ -221,7 +221,7 @@ index 6b4a133..13477e2 100644
 +        // fresh ball → no previous position to sweep against
 +        state.ballPrev = null;
        }
- 
+
        // Level cleared: all bricks broken
 @@ -307,6 +466,7 @@ export function boot(doc = document) {
          state.level += 1;
@@ -230,7 +230,7 @@ index 6b4a133..13477e2 100644
 +        state.ballPrev = null;
        }
      }
- 
+
 diff --git a/game/neon.test.js b/game/neon.test.js
 index 250d6a9..f3ed0fd 100644
 --- a/game/neon.test.js
@@ -246,7 +246,7 @@ index 250d6a9..f3ed0fd 100644
 @@ -65,5 +66,93 @@ function belowField() {
    return 500;
  }
- 
+
 +// --- Brick bounce (issue #1) ----------------------------------------------
 +
 +// Build a minimal live brick for collision tests.

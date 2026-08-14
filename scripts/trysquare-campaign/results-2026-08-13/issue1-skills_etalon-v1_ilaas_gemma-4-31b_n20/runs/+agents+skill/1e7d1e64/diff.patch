@@ -5,12 +5,12 @@ index 6b4a133..7a997d1 100644
 @@ -206,33 +206,66 @@ export function step(state, dt) {
    return false;
  }
- 
+
 -// --- Rendering (DOM): brick collision logic STILL mixed in here ------------
 +// Handles brick collisions: updates score, combo, and ball velocity.
 +export function handleBrickCollisions(state) {
 +  const { ball } = state;
- 
+
 -// Main render loop. For each live brick we test collision AND draw in the same
 -// pass: this is where logic and rendering are entangled.
 -export function frame(ctx, state) {
@@ -21,7 +21,7 @@ index 6b4a133..7a997d1 100644
 -  // Bricks: collision + bounce + score + drawing, all in one place.
    for (const brick of state.bricks) {
      if (!brick.alive) continue;
- 
+
 -    if (collides(state.ball, brick)) {
 +    if (collides(ball, brick)) {
 +      // Determine the axis of least penetration to find the hit face.
@@ -64,7 +64,7 @@ index 6b4a133..7a997d1 100644
 +}
 +
 +// --- Rendering (DOM): brick collision logic NOW extracted ------------------
- 
+
 +// Main render loop.
 +export function frame(ctx, state) {
 +  // Background
@@ -81,6 +81,6 @@ index 6b4a133..7a997d1 100644
    }
 +  // ...
 +
- 
+
    // Paddle — color hard-coded instead of using the palette (inconsistency #6).
    ctx.fillStyle = '#00e5ff';

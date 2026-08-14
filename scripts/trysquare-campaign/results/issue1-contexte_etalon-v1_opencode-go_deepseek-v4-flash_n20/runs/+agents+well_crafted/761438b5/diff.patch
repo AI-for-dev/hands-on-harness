@@ -15,7 +15,7 @@ index 6b4a133..fef20eb 100644
  // The module runs nothing on import: only `boot()` touches the DOM. Pure
  // logic can therefore be imported from the tests (`node --test`) without a
 @@ -103,8 +103,7 @@ export function createState(level = 1) {
- 
+
  // True if the ball (circle approximated by its box) overlaps the brick.
  // Simple AABB test: it only says WHETHER the ball and the brick overlap, not
 -// WHICH face was hit. The missing bounce in frame() is what lets the ball plow
@@ -26,7 +26,7 @@ index 6b4a133..fef20eb 100644
      ball.x + ball.r > brick.x &&
 @@ -159,12 +158,17 @@ export function saveBest(storage, score) {
  // --- Physics (movement + wall/paddle bounces) ------------------------------
- 
+
  // Advances the ball by a time step `dt` (in seconds) and handles bounces off
 -// the walls and the paddle. Does NOT handle bricks: that responsibility still
 -// lives in the render loop `frame()` (debt #2).
@@ -38,16 +38,16 @@ index 6b4a133..fef20eb 100644
  // Returns `true` if the ball is lost (exits through the bottom).
  export function step(state, dt) {
    const { ball, paddle } = state;
- 
+
 +  ball.px = ball.x;
 +  ball.py = ball.y;
    ball.x += ball.vx * dt;
    ball.y += ball.vy * dt;
- 
+
 @@ -206,30 +210,148 @@ export function step(state, dt) {
    return false;
  }
- 
+
 -// --- Rendering (DOM): brick collision logic STILL mixed in here ------------
 +// --- Brick collision (issue #1) -------------------------------------------
 +
@@ -124,7 +124,7 @@ index 6b4a133..fef20eb 100644
 +  if (Math.abs(penX - penY) < 1e-9) return { x: true, y: true };
 +  return penX < penY ? { x: true, y: false } : { x: false, y: true };
 +}
- 
+
 -// Main render loop. For each live brick we test collision AND draw in the same
 -// pass: this is where logic and rendering are entangled.
 +// Resolves every brick the ball touched during the last step: flips the
@@ -186,14 +186,14 @@ index 6b4a133..fef20eb 100644
    // Background
    ctx.fillStyle = palette.background;
    ctx.fillRect(0, 0, WIDTH, HEIGHT);
- 
+
 -  // Bricks: collision + bounce + score + drawing, all in one place.
 +  // Bricks: bounce + score handled by resolveBricks (see #1), then draw what
 +  // is left standing.
 +  resolveBricks(state);
    for (const brick of state.bricks) {
      if (!brick.alive) continue;
- 
+
 -    if (collides(state.ball, brick)) {
 -      brick.alive = false;
 -      state.combo += 1;
@@ -224,7 +224,7 @@ index 250d6a9..bd3cd66 100644
 @@ -65,5 +67,130 @@ function belowField() {
    return 500;
  }
- 
+
 +// --- #1: the ball bounces off bricks --------------------------------------
 +
 +// A ball with an explicit previous position (px, py): resolveBricks sweeps

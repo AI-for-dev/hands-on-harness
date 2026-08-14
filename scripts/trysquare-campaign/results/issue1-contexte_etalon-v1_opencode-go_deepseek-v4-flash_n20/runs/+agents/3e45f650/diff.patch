@@ -38,7 +38,7 @@ index 6b4a133..7608f69 100644
 +        state.ball.vx = Math.abs(state.ball.vx) * (fromLeft ? -1 : 1);
 +      }
      }
- 
+
      ctx.fillStyle = brickColor(brick.row);
 diff --git a/game/neon.test.js b/game/neon.test.js
 index 250d6a9..ceadd32 100644
@@ -59,11 +59,11 @@ index 250d6a9..ceadd32 100644
 +  PADDLE_Y,
    WIDTH,
  } from './neon.js';
- 
+
 @@ -59,6 +64,74 @@ test('makeBricks: full, all-alive grid at start', () => {
    assert.ok(bricks.every((b) => b.x >= 0 && b.x + b.w <= WIDTH));
  });
- 
+
 +test('frame: ball hitting the bottom of a brick head-on bounces down, brick breaks', () => {
 +  const state = isolatedState({ x: 200, y: 100, w: 72, h: 20 });
 +  const brick = state.bricks[0];

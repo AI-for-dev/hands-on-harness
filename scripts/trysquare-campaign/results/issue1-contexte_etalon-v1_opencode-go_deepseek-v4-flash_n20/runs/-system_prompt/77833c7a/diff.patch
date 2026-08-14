@@ -4,7 +4,7 @@ index 6b4a133..88c47be 100644
 +++ b/game/neon.js
 @@ -220,14 +220,45 @@ export function frame(ctx, state) {
      if (!brick.alive) continue;
- 
+
      if (collides(state.ball, brick)) {
 +      const { ball } = state;
 +
@@ -51,5 +51,5 @@ index 6b4a133..88c47be 100644
 -      // row. Fix = a real per-face bounce (flip vy on a top/bottom hit, vx on a
 -      // side hit) plus pushing the ball back out of the brick.
      }
- 
+
      ctx.fillStyle = brickColor(brick.row);

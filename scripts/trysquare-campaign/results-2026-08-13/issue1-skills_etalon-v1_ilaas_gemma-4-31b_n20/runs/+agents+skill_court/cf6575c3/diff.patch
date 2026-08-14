@@ -4,7 +4,7 @@ index 6b4a133..c40b637 100644
 +++ b/game/neon.js
 @@ -102,9 +102,6 @@ export function createState(level = 1) {
  // --- Collision (tested primitive) ------------------------------------------
- 
+
  // True if the ball (circle approximated by its box) overlaps the brick.
 -// Simple AABB test: it only says WHETHER the ball and the brick overlap, not
 -// WHICH face was hit. The missing bounce in frame() is what lets the ball plow
@@ -15,7 +15,7 @@ index 6b4a133..c40b637 100644
 @@ -114,6 +111,33 @@ export function collides(ball, brick) {
    );
  }
- 
+
 +// Resolves the collision between the ball and a brick: flips velocity,
 +// repositions the ball to prevent sticking, and destroys the brick.
 +export function resolveBrickCollision(state, brick) {
@@ -44,11 +44,11 @@ index 6b4a133..c40b637 100644
 +}
 +
  // --- Score & combo (NOT covered by tests — debt #5) ------------------------
- 
+
  // Combo multiplier. UNBOUNDED today: a long combo makes the score blow up
 @@ -159,44 +183,58 @@ export function saveBest(storage, score) {
  // --- Physics (movement + wall/paddle bounces) ------------------------------
- 
+
  // Advances the ball by a time step `dt` (in seconds) and handles bounces off
 -// the walls and the paddle. Does NOT handle bricks: that responsibility still
 -// lives in the render loop `frame()` (debt #2).
@@ -72,7 +72,7 @@ index 6b4a133..c40b637 100644
 +      ball.x = WIDTH - ball.r;
 +      ball.vx = -Math.abs(ball.vx);
 +    }
- 
+
 -  ball.x += ball.vx * dt;
 -  ball.y += ball.vy * dt;
 -
@@ -89,7 +89,7 @@ index 6b4a133..c40b637 100644
 +      ball.y = ball.r;
 +      ball.vy = Math.abs(ball.vy);
 +    }
- 
+
 -  // Ceiling
 -  if (ball.y - ball.r < 0) {
 -    ball.y = ball.r;
@@ -109,7 +109,7 @@ index 6b4a133..c40b637 100644
 +      ball.vx = ballSpeed(state.level) * 0.6 * hit;
 +      state.combo = 0;
 +    }
- 
+
 -  // Paddle
 -  if (
 -    ball.vy > 0 &&
@@ -130,22 +130,22 @@ index 6b4a133..c40b637 100644
 +        if (brick.alive && collides(ball, brick)) {
 +          resolveBrickCollision(state, brick);
 +          hasBounced = true;
-+          break; 
++          break;
 +        }
 +      }
 +    }
    }
- 
+
    // Exit through the bottom: ball lost
 @@ -215,21 +253,10 @@ export function frame(ctx, state) {
    ctx.fillStyle = palette.background;
    ctx.fillRect(0, 0, WIDTH, HEIGHT);
- 
+
 -  // Bricks: collision + bounce + score + drawing, all in one place.
 +  // Bricks: drawing only.
    for (const brick of state.bricks) {
      if (!brick.alive) continue;
- 
+
 -    if (collides(state.ball, brick)) {
 -      brick.alive = false;
 -      state.combo += 1;
@@ -170,12 +170,12 @@ index 250d6a9..0110bb4 100644
    WIDTH,
 +  frame,
  } from './neon.js';
- 
+
  test('collides: clear overlap detected', () => {
 @@ -65,5 +66,39 @@ function belowField() {
    return 500;
  }
- 
+
 -// TODO (#5): test comboMultiplier / scoreForBrick.
 -// TODO      : test level progression and loadBest/saveBest persistence.
 +test('step: ball hits two bricks at a seam => bounces only once', () => {
@@ -196,9 +196,9 @@ index 250d6a9..0110bb4 100644
 +  const state = createState(6);
 +  const brick = { x: 100, y: 100, w: 50, h: 20, alive: true, points: 10 };
 +  state.bricks = [brick];
-+  
++
 +  state.ball = { x: 125, y: 92, r: 7, vx: 0, vy: 710 };
-+  
++
 +  const ctx = {
 +    fillRect: () => {},
 +    beginPath: () => {},
@@ -206,10 +206,10 @@ index 250d6a9..0110bb4 100644
 +    fill: () => {},
 +    fillText: () => {},
 +  };
-+  
++
 +  step(state, 0.05);
 +  frame(ctx, state);
-+  
++
 +  assert.equal(brick.alive, false, 'Brick should have been destroyed');
 +  assert.ok(state.ball.vy < 0, 'Ball should have bounced UP');
 +});

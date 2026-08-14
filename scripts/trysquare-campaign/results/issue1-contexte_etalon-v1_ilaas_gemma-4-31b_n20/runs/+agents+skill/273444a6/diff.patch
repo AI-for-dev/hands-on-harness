@@ -43,8 +43,8 @@ index 0000000..24f9d4a
 +  const state = createState(1);
 +  const b0 = state.bricks[0];
 +  const b1 = state.bricks[1];
-+  state.ball.x = b0.x + b0.w + 4; 
-+  state.ball.y = b0.y + b0.h + 2; 
++  state.ball.x = b0.x + b0.w + 4;
++  state.ball.y = b0.y + b0.h + 2;
 +  state.ball.vy = -100;
 +  state.ball.vx = 0;
 +  step(state, 0.01);
@@ -60,9 +60,9 @@ index 0000000..24f9d4a
 +  state.ball.y = brick.y - 8; // bottom = -1.
 +  state.ball.vy = 710;
 +  state.ball.vx = 0;
-+  
++
 +  step(state, 0.05);
-+  
++
 +  // With sub-stepping, it should have been caught.
 +  assert.ok(state.ball.vy < 0, 'Ball should have rebounded from top of brick');
 +});
@@ -95,18 +95,18 @@ index 0000000..098c5b5
 +test('Ball should bounce off brick', () => {
 +  const state = createState(1);
 +  const brick = state.bricks[0]; // Row 0, Col 0
-+  
++
 +  // Position ball so it's about to hit the bottom of the brick from above (vy > 0)
 +  // Actually, let's hit the top face (ball coming from below, vy < 0)
 +  // Brick 0 is at y: BRICK_TOP (48), h: 20. Top is 48, Bottom is 68.
 +  // Ball: r=7. Bottom of ball is y+7.
 +  // To hit the bottom face: ball is at y=70, vy = -100. Next frame it's at y=65.
-+  
++
 +  state.ball.x = brick.x + brick.w / 2;
 +  state.ball.y = brick.y + brick.h + 2; // Just below the brick
 +  state.ball.vy = -100; // Moving UP
 +  state.ball.vx = 0;
-+  
++
 +  const mockCtx = {
 +    fillRect: () => {},
 +    arc: () => {},
@@ -209,8 +209,8 @@ index 0000000..1e1882c
 +    const state = createState(1);
 +    const b0 = state.bricks[0];
 +    const b1 = state.bricks[1];
-+    state.ball.x = b0.x + b0.w - 2; 
-+    state.ball.y = b0.y + b0.h + 2; 
++    state.ball.x = b0.x + b0.w - 2;
++    state.ball.y = b0.y + b0.h + 2;
 +    state.ball.vy = -100;
 +    state.ball.vx = 0;
 +    frame(mockCtx, state);
@@ -229,11 +229,11 @@ index 0000000..1e1882c
 +- **Déclencheur** : Level 6+, $dt=0.05$, $\text{vy} \approx 710$ px/s.
 +- **Attendu** : Détection de la collision malgré le pas.
 +- **Référence** : https://www.emanueleferonato.com/physics-continuous-collision-detection-using-swept-aabb-method-and-minkowski-sum/ — Continuous Collision Detection (CCD).
-+- **Cas test** : 
++- **Cas test** :
 +  ```js
 +  // Test setup: Ball moves from above to below brick in one frame
-+  state.ball.y = brick.y - 8; 
-+  state.ball.y += 35.5; 
++  state.ball.y = brick.y - 8;
++  state.ball.y += 35.5;
 +  frame(mockCtx, state);
 +  assert.ok(!state.ball.vy < 0, 'Ball should have rebounded');
 +  ```
@@ -246,7 +246,7 @@ index 6b4a133..d47d78b 100644
 +++ b/game/neon.js
 @@ -102,9 +102,6 @@ export function createState(level = 1) {
  // --- Collision (tested primitive) ------------------------------------------
- 
+
  // True if the ball (circle approximated by its box) overlaps the brick.
 -// Simple AABB test: it only says WHETHER the ball and the brick overlap, not
 -// WHICH face was hit. The missing bounce in frame() is what lets the ball plow
@@ -257,7 +257,7 @@ index 6b4a133..d47d78b 100644
 @@ -114,6 +111,33 @@ export function collides(ball, brick) {
    );
  }
- 
+
 +export function resolveBrickCollision(ball, brick) {
 +  const overlapX = Math.min(
 +    ball.x + ball.r - brick.x,
@@ -286,7 +286,7 @@ index 6b4a133..d47d78b 100644
 +}
 +
  // --- Score & combo (NOT covered by tests — debt #5) ------------------------
- 
+
  // Combo multiplier. UNBOUNDED today: a long combo makes the score blow up
 @@ -164,39 +188,53 @@ export function saveBest(storage, score) {
  // Returns `true` if the ball is lost (exits through the bottom).
@@ -307,7 +307,7 @@ index 6b4a133..d47d78b 100644
 +      ball.x = WIDTH - ball.r;
 +      ball.vx = -Math.abs(ball.vx);
 +    }
- 
+
 -  ball.x += ball.vx * dt;
 -  ball.y += ball.vy * dt;
 -
@@ -324,7 +324,7 @@ index 6b4a133..d47d78b 100644
 +      ball.y = ball.r;
 +      ball.vy = Math.abs(ball.vy);
 +    }
- 
+
 -  // Ceiling
 -  if (ball.y - ball.r < 0) {
 -    ball.y = ball.r;
@@ -344,7 +344,7 @@ index 6b4a133..d47d78b 100644
 +      ball.vx = ballSpeed(state.level) * 0.6 * hit;
 +      state.combo = 0;
 +    }
- 
+
 -  // Paddle
 -  if (
 -    ball.vy > 0 &&
@@ -370,12 +370,12 @@ index 6b4a133..d47d78b 100644
 +      }
 +    }
    }
- 
+
    // Exit through the bottom: ball lost
 @@ -215,21 +253,9 @@ export function frame(ctx, state) {
    ctx.fillStyle = palette.background;
    ctx.fillRect(0, 0, WIDTH, HEIGHT);
- 
+
 -  // Bricks: collision + bounce + score + drawing, all in one place.
 +  // Bricks: drawing only. Collision is now handled in step().
    for (const brick of state.bricks) {

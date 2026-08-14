@@ -34,7 +34,7 @@ index 6b4a133..5348b08 100644
 +      }
 +      break;
      }
- 
+
 +
      ctx.fillStyle = brickColor(brick.row);
      ctx.fillRect(brick.x, brick.y, brick.w, brick.h);
@@ -49,7 +49,7 @@ index 250d6a9..d1f0d05 100644
    WIDTH,
 +  frame,
  } from './neon.js';
- 
+
 +
  test('collides: clear overlap detected', () => {
    const ball = { x: 100, y: 100, r: 8 };
@@ -57,7 +57,7 @@ index 250d6a9..d1f0d05 100644
 @@ -65,5 +67,60 @@ function belowField() {
    return 500;
  }
- 
+
 -// TODO (#5): test comboMultiplier / scoreForBrick.
 -// TODO      : test level progression and loadBest/saveBest persistence.
 +test('frame: bounce off the bottom of a brick', () => {
@@ -94,12 +94,12 @@ index 250d6a9..d1f0d05 100644
 +    fillText: () => {},
 +  };
 +  const brick = state.bricks[0];
-+  
++
 +  // Position the ball so that in the next step it will jump over the brick
-+  // Brick is at y=[48, 68]. 
++  // Brick is at y=[48, 68].
 +  // Ball starts at y=40, vy=1000.
 +  // After step(state, 0.05), ball.y = 40 + 1000 * 0.05 = 90.
-+  // Ball at 90 with r=7 is [83, 97]. 
++  // Ball at 90 with r=7 is [83, 97].
 +  // It has completely jumped over the brick [48, 68].
 +  state.ball = {
 +    x: brick.x + brick.w / 2,
@@ -111,7 +111,7 @@ index 250d6a9..d1f0d05 100644
 +
 +  // The physics step happens first
 +  step(state, 0.05);
-+  
++
 +  // Then the frame check
 +  frame(mockCtx, state);
 +

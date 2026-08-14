@@ -5,7 +5,7 @@ index 6b4a133..495d44d 100644
 @@ -114,6 +114,70 @@ export function collides(ball, brick) {
    );
  }
- 
+
 +// Penetration of the ball's box into a brick along each axis, as two positive
 +// numbers. Larger number = deeper overlap on that axis.
 +function penetration(ball, brick) {
@@ -71,12 +71,12 @@ index 6b4a133..495d44d 100644
 +}
 +
  // --- Score & combo (NOT covered by tests — debt #5) ------------------------
- 
+
  // Combo multiplier. UNBOUNDED today: a long combo makes the score blow up
 @@ -165,6 +229,11 @@ export function saveBest(storage, score) {
  export function step(state, dt) {
    const { ball, paddle } = state;
- 
+
 +  // Remember where the ball was BEFORE this step: `frame()` sweeps between the
 +  // two positions so a fast ball cannot tunnel through a brick row (see #1).
 +  ball.prevX = ball.x;
@@ -84,10 +84,10 @@ index 6b4a133..495d44d 100644
 +
    ball.x += ball.vx * dt;
    ball.y += ball.vy * dt;
- 
+
 @@ -216,20 +285,33 @@ export function frame(ctx, state) {
    ctx.fillRect(0, 0, WIDTH, HEIGHT);
- 
+
    // Bricks: collision + bounce + score + drawing, all in one place.
 -  for (const brick of state.bricks) {
 -    if (!brick.alive) continue;
@@ -124,7 +124,7 @@ index 6b4a133..495d44d 100644
      }
 +    if (hits.length > 0) bounced = true;
 +  }
- 
+
 +  for (const brick of state.bricks) {
      ctx.fillStyle = brickColor(brick.row);
      ctx.fillRect(brick.x, brick.y, brick.w, brick.h);
@@ -144,7 +144,7 @@ index 250d6a9..3eafe48 100644
 @@ -45,6 +46,62 @@ test('step: bounce off the left wall', () => {
    assert.ok(state.ball.vx > 0, 'horizontal velocity should flip to the right');
  });
- 
+
 +test('brickBounce: no overlap => no hit, velocity untouched', () => {
 +  const ball = { x: 320, y: 300, r: 7, vx: -200, vy: 0 };
 +  const bricks = [{ x: 100, y: 100, w: 40, h: 20, alive: true }];

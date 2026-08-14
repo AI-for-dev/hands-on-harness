@@ -5,7 +5,7 @@ index 6b4a133..ae30063 100644
 @@ -114,6 +114,71 @@ export function collides(ball, brick) {
    );
  }
- 
+
 +// Depth with which the ball overlaps the brick, on the axis that is being hit.
 +// Used to pick the single brick to bounce off when several overlap at a seam
 +// (the grid gap is 8 px but the ball is 14 px across, so seams are common).
@@ -72,12 +72,12 @@ index 6b4a133..ae30063 100644
 +}
 +
  // --- Score & combo (NOT covered by tests — debt #5) ------------------------
- 
+
  // Combo multiplier. UNBOUNDED today: a long combo makes the score blow up
 @@ -215,21 +280,36 @@ export function frame(ctx, state) {
    ctx.fillStyle = palette.background;
    ctx.fillRect(0, 0, WIDTH, HEIGHT);
- 
+
 -  // Bricks: collision + bounce + score + drawing, all in one place.
 +  // Bricks: collision + bounce + score, then drawing.
 +  const hit = [];
@@ -113,7 +113,7 @@ index 6b4a133..ae30063 100644
 +    }
 +    bounceOffBrick(state.ball, deepest);
 +  }
- 
+
 +  for (const brick of state.bricks) {
 +    if (!brick.alive) continue;
      ctx.fillStyle = brickColor(brick.row);

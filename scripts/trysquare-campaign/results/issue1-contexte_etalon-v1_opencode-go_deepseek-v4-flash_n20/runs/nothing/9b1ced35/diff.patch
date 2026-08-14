@@ -5,7 +5,7 @@ index 6b4a133..0560040 100644
 @@ -165,6 +165,12 @@ export function saveBest(storage, score) {
  export function step(state, dt) {
    const { ball, paddle } = state;
- 
+
 +  // Remember where the ball started this step so brick collision can sweep
 +  // the travelled segment and catch the ball travelling FAST enough to jump
 +  // clean over a brick between two frames (tunnelling, see #1).
@@ -14,11 +14,11 @@ index 6b4a133..0560040 100644
 +
    ball.x += ball.vx * dt;
    ball.y += ball.vy * dt;
- 
+
 @@ -206,6 +212,102 @@ export function step(state, dt) {
    return false;
  }
- 
+
 +// Earliest time t in [0,1] at which the segment from (x0,y0) to (x1,y1) first
 +// enters `box` (an AABB), or null if it never does. Standard slab method.
 +function segmentBoxEntry(x0, y0, x1, y1, box) {
@@ -116,16 +116,16 @@ index 6b4a133..0560040 100644
 +}
 +
  // --- Rendering (DOM): brick collision logic STILL mixed in here ------------
- 
+
  // Main render loop. For each live brick we test collision AND draw in the same
 @@ -216,18 +318,22 @@ export function frame(ctx, state) {
    ctx.fillRect(0, 0, WIDTH, HEIGHT);
- 
+
    // Bricks: collision + bounce + score + drawing, all in one place.
 +  let bounced = false;
    for (const brick of state.bricks) {
      if (!brick.alive) continue;
- 
+
 -    if (collides(state.ball, brick)) {
 +    if (brickContact(state.ball, brick)) {
        brick.alive = false;
@@ -145,7 +145,7 @@ index 6b4a133..0560040 100644
 +        bounced = true;
 +      }
      }
- 
+
      ctx.fillStyle = brickColor(brick.row);
 diff --git a/game/neon.test.js b/game/neon.test.js
 index 250d6a9..5006189 100644
@@ -163,7 +163,7 @@ index 250d6a9..5006189 100644
 @@ -59,6 +61,59 @@ test('makeBricks: full, all-alive grid at start', () => {
    assert.ok(bricks.every((b) => b.x >= 0 && b.x + b.w <= WIDTH));
  });
- 
+
 +// --- Brick bounce (#1) ------------------------------------------------------
 +
 +// A brick takes a fixed position in the top-left corner of the field.

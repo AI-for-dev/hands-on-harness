@@ -5,27 +5,27 @@ index 6b4a133..db9393b 100644
 @@ -165,6 +165,9 @@ export function saveBest(storage, score) {
  export function step(state, dt) {
    const { ball, paddle } = state;
- 
+
 +  ball.px = ball.x;
 +  ball.py = ball.y;
 +
    ball.x += ball.vx * dt;
    ball.y += ball.vy * dt;
- 
+
 @@ -219,15 +222,120 @@ export function frame(ctx, state) {
    for (const brick of state.bricks) {
      if (!brick.alive) continue;
- 
+
 -    if (collides(state.ball, brick)) {
 +    let collided = collides(state.ball, brick);
-+    
++
 +    // Swept AABB check for tunneling (D3)
 +    if (!collided && state.ball.px !== undefined) {
 +      const minX = Math.min(state.ball.px - state.ball.r, state.ball.x - state.ball.r);
 +      const maxX = Math.max(state.ball.px + state.ball.r, state.ball.x + state.ball.r);
 +      const minY = Math.min(state.ball.py - state.ball.r, state.ball.y - state.ball.r);
 +      const maxY = Math.max(state.ball.py + state.ball.r, state.ball.y + state.ball.r);
-+      
++
 +      if (maxX > brick.x && minX < brick.x + brick.w && maxY > brick.y && minY < brick.y + brick.h) {
 +        // Potential tunnel. Check if it actually crossed the brick's boundaries.
 +        // Since we're in a 2D game and bricks are axis-aligned, we can just check
@@ -108,7 +108,7 @@ index 6b4a133..db9393b 100644
 +        const isLeft = x - r >= brick.x + brick.w; // Wait, this is wrong.
 +        const wasRight = state.ball.px - r >= brick.x + brick.w;
 +        const isRight = x + r <= brick.x;
-+        
++
 +        // Simplified tunneling: just check the primary axis of movement
 +        if (Math.abs(vy) > Math.abs(vx)) {
 +          if (wasBelow && isAbove) {
@@ -137,7 +137,7 @@ index 6b4a133..db9393b 100644
 +      state.ball.vx = vx;
 +      state.ball.vy = vy;
      }
- 
+
      ctx.fillStyle = brickColor(brick.row);
 diff --git a/game/neon.test.js b/game/neon.test.js
 index 250d6a9..3a6b8aa 100644
@@ -154,7 +154,7 @@ index 250d6a9..3a6b8aa 100644
 @@ -20,6 +21,15 @@ import {
    WIDTH,
  } from './neon.js';
- 
+
 +const dummyCtx = {
 +  fillStyle: '',
 +  fillRect: () => {},
@@ -168,7 +168,7 @@ index 250d6a9..3a6b8aa 100644
    const ball = { x: 100, y: 100, r: 8 };
    const brick = { x: 90, y: 90, w: 40, h: 20 };
 @@ -67,3 +77,13 @@ function belowField() {
- 
+
  // TODO (#5): test comboMultiplier / scoreForBrick.
  // TODO      : test level progression and loadBest/saveBest persistence.
 +
@@ -176,7 +176,7 @@ index 250d6a9..3a6b8aa 100644
 +  const state = createState(1);
 +  const brick = state.bricks[0];
 +  state.ball.x = brick.x + brick.w / 2;
-+  state.ball.y = brick.y - 2; 
++  state.ball.y = brick.y - 2;
 +  state.ball.vy = 100;
 +  frame(dummyCtx, state);
 +  assert.equal(state.ball.vy, -100, 'Ball vy should be inverted after hitting brick');

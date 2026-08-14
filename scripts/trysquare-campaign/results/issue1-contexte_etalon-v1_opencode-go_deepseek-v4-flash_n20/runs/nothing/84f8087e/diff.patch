@@ -3,7 +3,7 @@ index 6b4a133..08f7a67 100644
 --- a/game/neon.js
 +++ b/game/neon.js
 @@ -103,8 +103,8 @@ export function createState(level = 1) {
- 
+
  // True if the ball (circle approximated by its box) overlaps the brick.
  // Simple AABB test: it only says WHETHER the ball and the brick overlap, not
 -// WHICH face was hit. The missing bounce in frame() is what lets the ball plow
@@ -16,7 +16,7 @@ index 6b4a133..08f7a67 100644
 @@ -114,6 +114,152 @@ export function collides(ball, brick) {
    );
  }
- 
+
 +// --- Brick bounce (issue #1) ----------------------------------------------
 +
 +// Bounces a ball that currently OVERLAPS a brick and pushes it back out of the
@@ -164,12 +164,12 @@ index 6b4a133..08f7a67 100644
 +}
 +
  // --- Score & combo (NOT covered by tests — debt #5) ------------------------
- 
+
  // Combo multiplier. UNBOUNDED today: a long combo makes the score blow up
 @@ -165,6 +311,13 @@ export function saveBest(storage, score) {
  export function step(state, dt) {
    const { ball, paddle } = state;
- 
+
 +  // Remember where the ball was before this step so the brick sweep can test
 +  // the whole segment (prev → current) instead of a single point (tunnelling,
 +  // issue #1). `frame()` reads these; a ball built by hand simply defaults them
@@ -179,11 +179,11 @@ index 6b4a133..08f7a67 100644
 +
    ball.x += ball.vx * dt;
    ball.y += ball.vy * dt;
- 
+
 @@ -215,19 +368,32 @@ export function frame(ctx, state) {
    ctx.fillStyle = palette.background;
    ctx.fillRect(0, 0, WIDTH, HEIGHT);
- 
+
 +  // The segment the ball travelled this step (set by step()). For a hand-built
 +  // ball (no prev) we fall back to the current position: the discrete bounce
 +  // still works, only the tunnelling sweep is skipped.
@@ -195,7 +195,7 @@ index 6b4a133..08f7a67 100644
    // Bricks: collision + bounce + score + drawing, all in one place.
    for (const brick of state.bricks) {
      if (!brick.alive) continue;
- 
+
 +    // Detect the hit. Discrete overlap first; if the ball jumped the brick in
 +    // a single stuttered step, fall back to a swept test of the segment. The
 +    // bounce is resolved per-face and pushes the ball OUT of the brick, which
@@ -216,7 +216,7 @@ index 6b4a133..08f7a67 100644
 -      // row. Fix = a real per-face bounce (flip vy on a top/bottom hit, vx on a
 -      // side hit) plus pushing the ball back out of the brick.
      }
- 
+
      ctx.fillStyle = brickColor(brick.row);
 diff --git a/game/neon.test.js b/game/neon.test.js
 index 250d6a9..2349a9a 100644
@@ -234,7 +234,7 @@ index 250d6a9..2349a9a 100644
 @@ -52,6 +54,100 @@ test('step: ball exiting through the bottom => lost', () => {
    assert.equal(lost, true);
  });
- 
+
 +// --- #1 bug: the ball plows through bricks instead of bouncing --------------
 +// The tests below drive the documented cases from ISSUES.md #1. The brick
 +// occupies x:[40,120] × y:[80,120] (w=80, h=40) so the assertions read well.

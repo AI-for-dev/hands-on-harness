@@ -18,7 +18,7 @@ index 6b4a133..6bec494 100644
 @@ -114,6 +115,139 @@ export function collides(ball, brick) {
    );
  }
- 
+
 +// --- Brick bounce resolution (#1) ------------------------------------------
 +
 +// Slab-method test: does the segment (px,py)->(cx,cy) cross the rect
@@ -153,12 +153,12 @@ index 6b4a133..6bec494 100644
 +}
 +
  // --- Score & combo (NOT covered by tests — debt #5) ------------------------
- 
+
  // Combo multiplier. UNBOUNDED today: a long combo makes the score blow up
 @@ -165,6 +299,11 @@ export function saveBest(storage, score) {
  export function step(state, dt) {
    const { ball, paddle } = state;
- 
+
 +  // Record where the ball was BEFORE this step: frame() sweeps the brick
 +  // collision along that segment so fast balls cannot tunnel through bricks.
 +  ball.prevX = ball.x;
@@ -166,11 +166,11 @@ index 6b4a133..6bec494 100644
 +
    ball.x += ball.vx * dt;
    ball.y += ball.vy * dt;
- 
+
 @@ -215,21 +354,17 @@ export function frame(ctx, state) {
    ctx.fillStyle = palette.background;
    ctx.fillRect(0, 0, WIDTH, HEIGHT);
- 
+
 -  // Bricks: collision + bounce + score + drawing, all in one place.
 +  // Bricks: one collision pass (bounce + push-out + kills, see #1), then the
 +  // score for every brick the ball touched, then the drawing pass.
@@ -182,7 +182,7 @@ index 6b4a133..6bec494 100644
 +
    for (const brick of state.bricks) {
      if (!brick.alive) continue;
- 
+
 -    if (collides(state.ball, brick)) {
 -      brick.alive = false;
 -      state.combo += 1;
@@ -214,11 +214,11 @@ index 250d6a9..a15bc3a 100644
 +  BALL_R,
    WIDTH,
  } from './neon.js';
- 
+
 @@ -65,5 +68,165 @@ function belowField() {
    return 500;
  }
- 
+
 +// --- Issue #1: brick bounce -------------------------------------------------
 +// Each case from ISSUES.md #1 is covered below: per-face bounce, corner,
 +// push-out, neighbours (seam) and tunnelling.

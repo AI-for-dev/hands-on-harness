@@ -4,7 +4,7 @@ index 6b4a133..28f2882 100644
 +++ b/game/neon.js
 @@ -102,9 +102,6 @@ export function createState(level = 1) {
  // --- Collision (tested primitive) ------------------------------------------
- 
+
  // True if the ball (circle approximated by its box) overlaps the brick.
 -// Simple AABB test: it only says WHETHER the ball and the brick overlap, not
 -// WHICH face was hit. The missing bounce in frame() is what lets the ball plow
@@ -15,7 +15,7 @@ index 6b4a133..28f2882 100644
 @@ -114,6 +111,48 @@ export function collides(ball, brick) {
    );
  }
- 
+
 +/**
 + * Resolves collision between ball and brick.
 + * Returns true if a collision occurred and was handled.
@@ -59,12 +59,12 @@ index 6b4a133..28f2882 100644
 +
 +
  // --- Score & combo (NOT covered by tests — debt #5) ------------------------
- 
+
  // Combo multiplier. UNBOUNDED today: a long combo makes the score blow up
 @@ -219,21 +258,17 @@ export function frame(ctx, state) {
    for (const brick of state.bricks) {
      if (!brick.alive) continue;
- 
+
 -    if (collides(state.ball, brick)) {
 +    if (resolveBrickCollision(state.ball, brick)) {
        brick.alive = false;
@@ -76,11 +76,11 @@ index 6b4a133..28f2882 100644
 -      // row. Fix = a real per-face bounce (flip vy on a top/bottom hit, vx on a
 -      // side hit) plus pushing the ball back out of the brick.
      }
- 
+
      ctx.fillStyle = brickColor(brick.row);
      ctx.fillRect(brick.x, brick.y, brick.w, brick.h);
    }
- 
+
 +
    // Paddle — color hard-coded instead of using the palette (inconsistency #6).
    ctx.fillStyle = '#00e5ff';
@@ -101,7 +101,7 @@ index 250d6a9..8b0f06b 100644
 -
  import { test } from 'node:test';
  import assert from 'node:assert/strict';
- 
+
 @@ -18,8 +9,14 @@ import {
    BRICK_ROWS,
    BRICK_COLS,
@@ -112,13 +112,13 @@ index 250d6a9..8b0f06b 100644
 +  RIGHT,
 +  resolveBrickCollision,
  } from './neon.js';
- 
+
 +
  test('collides: clear overlap detected', () => {
    const ball = { x: 100, y: 100, r: 8 };
    const brick = { x: 90, y: 90, w: 40, h: 20 };
 @@ -47,7 +44,7 @@ test('step: bounce off the left wall', () => {
- 
+
  test('step: ball exiting through the bottom => lost', () => {
    const state = createState(1);
 -  state.ball = { x: 320, y: belowField(), r: 7, vx: 0, vy: 400 };
@@ -129,7 +129,7 @@ index 250d6a9..8b0f06b 100644
 @@ -59,11 +56,51 @@ test('makeBricks: full, all-alive grid at start', () => {
    assert.ok(bricks.every((b) => b.x >= 0 && b.x + b.w <= WIDTH));
  });
- 
+
 -// Small local helper: place the ball below the field without importing the
 -// height (coverage intentionally light).
 -function belowField() {
@@ -137,16 +137,16 @@ index 250d6a9..8b0f06b 100644
 -}
 +// --- ISSUE #1 Tests ---
 +
-+// Note: we need a way to test brick collisions. 
++// Note: we need a way to test brick collisions.
 +// Since collision logic is currently in frame(), we might need to move it first.
 +// For now, these tests describe the EXPECTED behavior once logic is moved/fixed.
 +
 +test('brick bounce: top face hit flips vy', () => {
 +  const ball = { x: 100, y: 85, r: 7, vx: 100, vy: -100 }; // moving UP
 +  const brick = { x: 80, y: 90, w: 40, h: 20, alive: true };
-+  
++
 +  const hit = resolveBrickCollision(ball, brick);
-+  
++
 +  assert.equal(hit, true);
 +  assert.equal(ball.vy, 100, 'vy should be flipped to positive (DOWN)');
 +  assert.equal(ball.vx, 100, 'vx should remain unchanged');
@@ -156,9 +156,9 @@ index 250d6a9..8b0f06b 100644
 +test('brick bounce: left face hit flips vx', () => {
 +  const ball = { x: 75, y: 100, r: 7, vx: 100, vy: 0 }; // moving RIGHT
 +  const brick = { x: 80, y: 90, w: 40, h: 20, alive: true };
-+  
++
 +  const hit = resolveBrickCollision(ball, brick);
-+  
++
 +  assert.equal(hit, true);
 +  assert.equal(ball.vx, -100, 'vx should be flipped to negative (LEFT)');
 +  assert.equal(ball.vy, 0, 'vy should remain unchanged');
@@ -168,20 +168,20 @@ index 250d6a9..8b0f06b 100644
 +test('brick bounce: corner hit flips both', () => {
 +  const ball = { x: 75, y: 85, r: 7, vx: 100, vy: -100 }; // moving RIGHT and UP
 +  const brick = { x: 80, y: 90, w: 40, h: 20, alive: true };
-+  
++
 +  // To force a corner hit, we can make overlapX == overlapY
 +  // Ball is at 75,75 (r=7). Brick at 80,90.
 +  // Ball right edge: 82. Ball bottom edge: 92.
 +  // Brick left edge: 80. Brick top edge: 90.
 +  // overlapX = 82 - 80 = 2.
 +  // overlapY = 92 - 90 = 2.
-+  
++
 +  const hit = resolveBrickCollision(ball, brick);
-+  
++
 +  assert.equal(hit, true);
 +  assert.equal(ball.vx, -100);
 +  assert.equal(ball.vy, 100);
 +});
- 
+
 -// TODO (#5): test comboMultiplier / scoreForBrick.
 -// TODO      : test level progression and loadBest/saveBest persistence.

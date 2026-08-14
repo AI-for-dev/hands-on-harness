@@ -8,12 +8,12 @@ index 250d6a9..b581d41 100644
    WIDTH,
 +  brickHit,
  } from './neon.js';
- 
+
  test('collides: clear overlap detected', () => {
 @@ -65,5 +66,80 @@ function belowField() {
    return 500;
  }
- 
+
 -// TODO (#5): test comboMultiplier / scoreForBrick.
 -// TODO      : test level progression and loadBest/saveBest persistence.
 +// --- Issue #1: Brick Bounces ---
@@ -22,14 +22,14 @@ index 250d6a9..b581d41 100644
 +  const ball = { x: 100, y: 85, r: 7, vx: 0, vy: -200 };
 +  const bricks = [{ x: 80, y: 90, w: 40, h: 20, alive: true }];
 +  // Ball is moving UP, but its current position is already slightly overlapping (85+7=92 > 90)
-+  // Wait, if vy is -200, it's moving towards the ceiling. 
++  // Wait, if vy is -200, it's moving towards the ceiling.
 +  // A top face hit means the ball hit the BOTTOM edge of the brick.
 +  // Let's reposition: ball is below brick, moving UP.
-+  ball.y = 112; // bottom of ball is 119, top is 105. 
++  ball.y = 112; // bottom of ball is 119, top is 105.
 +  // Brick is at y=90, h=20 -> bottom is 110.
 +  // Ball top (105) is already inside brick bottom (110).
 +  ball.vy = -200;
-+  
++
 +  const hit = brickHit(ball, bricks, 1/60);
 +  assert.ok(hit, 'Should detect collision');
 +  assert.equal(ball.vy, 200, 'vy should flip to DOWN');
@@ -72,7 +72,7 @@ index 250d6a9..b581d41 100644
 +test('brickHit: corner bounce (diagonal)', () => {
 +  const ball = { x: 75, y: 85, r: 7, vx: 200, vy: 200 };
 +  const bricks = [{ x: 80, y: 90, w: 40, h: 20, alive: true }];
-+  // Ball right: 82, Ball bottom: 92. 
++  // Ball right: 82, Ball bottom: 92.
 +  // Brick left: 80, Brick top: 90.
 +  // overlapX = 82 - 80 = 2
 +  // overlapY = 92 - 90 = 2

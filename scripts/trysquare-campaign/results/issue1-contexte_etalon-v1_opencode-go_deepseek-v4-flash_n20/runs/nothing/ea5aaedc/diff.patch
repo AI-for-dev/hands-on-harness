@@ -13,7 +13,7 @@ index 6b4a133..218a49d 100644
  // logic can therefore be imported from the tests (`node --test`) without a
  // browser.
 @@ -103,8 +99,8 @@ export function createState(level = 1) {
- 
+
  // True if the ball (circle approximated by its box) overlaps the brick.
  // Simple AABB test: it only says WHETHER the ball and the brick overlap, not
 -// WHICH face was hit. The missing bounce in frame() is what lets the ball plow
@@ -26,7 +26,7 @@ index 6b4a133..218a49d 100644
 @@ -114,6 +110,148 @@ export function collides(ball, brick) {
    );
  }
- 
+
 +// --- Brick collision resolution (fix for #1) -------------------------------
 +
 +// Returns the first point along the segment (x1,y1)->(x2,y2) at which the
@@ -170,11 +170,11 @@ index 6b4a133..218a49d 100644
 +}
 +
  // --- Score & combo (NOT covered by tests — debt #5) ------------------------
- 
+
  // Combo multiplier. UNBOUNDED today: a long combo makes the score blow up
 @@ -159,12 +297,17 @@ export function saveBest(storage, score) {
  // --- Physics (movement + wall/paddle bounces) ------------------------------
- 
+
  // Advances the ball by a time step `dt` (in seconds) and handles bounces off
 -// the walls and the paddle. Does NOT handle bricks: that responsibility still
 -// lives in the render loop `frame()` (debt #2).
@@ -183,7 +183,7 @@ index 6b4a133..218a49d 100644
  // Returns `true` if the ball is lost (exits through the bottom).
  export function step(state, dt) {
    const { ball, paddle } = state;
- 
+
 +  // Remember where the ball was before this step: needed to sweep for bricks
 +  // a fast ball would otherwise jump clean over (tunnelling, see #1).
 +  ball.prevX = ball.x;
@@ -191,11 +191,11 @@ index 6b4a133..218a49d 100644
 +
    ball.x += ball.vx * dt;
    ball.y += ball.vy * dt;
- 
+
 @@ -208,28 +351,23 @@ export function step(state, dt) {
- 
+
  // --- Rendering (DOM): brick collision logic STILL mixed in here ------------
- 
+
 -// Main render loop. For each live brick we test collision AND draw in the same
 -// pass: this is where logic and rendering are entangled.
 +// Main render loop. Brick collisions are resolved by `resolveBrickHit` (which
@@ -205,7 +205,7 @@ index 6b4a133..218a49d 100644
    // Background
    ctx.fillStyle = palette.background;
    ctx.fillRect(0, 0, WIDTH, HEIGHT);
- 
+
 -  // Bricks: collision + bounce + score + drawing, all in one place.
 +  // Bricks: resolve collisions (destroy + single bounce + score) first...
 +  resolveBrickHit(state.ball, state.bricks, (brick) => {
@@ -246,7 +246,7 @@ index 250d6a9..0b8e0cd 100644
 @@ -59,6 +60,78 @@ test('makeBricks: full, all-alive grid at start', () => {
    assert.ok(bricks.every((b) => b.x >= 0 && b.x + b.w <= WIDTH));
  });
- 
+
 +test('resolveBrickHit: brick removed and ball destroyed bricks => brick dead', () => {
 +  const brick = { x: 90, y: 90, w: 40, h: 20, alive: true };
 +  const ball = { x: 100, y: 100, r: 7, vx: 0, vy: 0 };

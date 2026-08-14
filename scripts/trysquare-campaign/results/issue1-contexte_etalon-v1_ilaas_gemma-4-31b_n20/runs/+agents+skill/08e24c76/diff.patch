@@ -43,5 +43,5 @@ index 6b4a133..098e083 100644
 +      }
 +      break; // Prevent double-collision in the same frame
      }
- 
+
      ctx.fillStyle = brickColor(brick.row);

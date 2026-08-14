@@ -21,32 +21,32 @@ index 0000000..4d3602f
 +test('D1: Ball should bounce when hitting brick top', () => {
 +  const state = createState(1);
 +  const brick = state.bricks[0];
-+  state.ball = { 
-+    x: brick.x + brick.w / 2, 
-+    y: brick.y - 2, 
-+    r: 7, 
-+    vx: 0, 
-+    vy: 100 
++  state.ball = {
++    x: brick.x + brick.w / 2,
++    y: brick.y - 2,
++    r: 7,
++    vx: 0,
++    vy: 100
 +  };
-+  
++
 +  frame(mockCtx, state);
-+  
++
 +  assert.ok(state.ball.vy < 0, 'Ball should have bounced UP');
 +});
 +
 +test('D3: Ball should bounce horizontally when hitting brick side', () => {
 +  const state = createState(1);
 +  const brick = state.bricks[0];
-+  state.ball = { 
-+    x: brick.x - 2, 
-+    y: brick.y + brick.h / 2, 
-+    r: 7, 
-+    vx: 100, 
-+    vy: 0 
++  state.ball = {
++    x: brick.x - 2,
++    y: brick.y + brick.h / 2,
++    r: 7,
++    vx: 100,
++    vy: 0
 +  };
-+  
++
 +  frame(mockCtx, state);
-+  
++
 +  assert.ok(state.ball.vx < 0, 'Ball should have bounced LEFT');
 +});
 diff --git a/.scratch/probe_direct.test.js b/.scratch/probe_direct.test.js
@@ -64,7 +64,7 @@ index 0000000..2ee6a01
 +  const state = createState(1);
 +  const brick = state.bricks[0];
 +  const ball = { x: brick.x - 2, y: brick.y + brick.h / 2, r: 7, vx: 100, vy: 0 };
-+  
++
 +  const result = resolveBrickCollision(ball, brick);
 +  console.log('Result:', result, 'vx:', ball.vx, 'x:', ball.x);
 +  assert.ok(result, 'Should have collided');
@@ -96,18 +96,18 @@ index 0000000..8a9ceab
 +  // Place ball exactly on the seam between brick 0 and brick 1
 +  const b0 = state.bricks[0];
 +  const b1 = state.bricks[1];
-+  
++
 +  // Ball is overlapping both b0 and b1 horizontally
-+  state.ball = { 
++  state.ball = {
 +    x: b0.x + b0.w, // exactly on the line
-+    y: b0.y + b0.h / 2, 
-+    r: 7, 
-+    vx: 100, 
-+    vy: 0 
++    y: b0.y + b0.h / 2,
++    r: 7,
++    vx: 100,
++    vy: 0
 +  };
-+  
++
 +  frame(mockCtx, state);
-+  
++
 +  // If it hit both and flipped vx twice, vx will still be 100.
 +  // It should have flipped once and be moving LEFT.
 +  assert.ok(state.ball.vx < 0, 'Ball should have bounced LEFT, not flipped twice');
@@ -135,24 +135,24 @@ index 0000000..bb89b19
 +test('D5: Tunneling at high speed', () => {
 +  const state = createState(5); // Speed = 620
 +  const brick = state.bricks[0];
-+  
++
 +  // Place ball just above the brick
-+  state.ball = { 
-+    x: brick.x + brick.w / 2, 
-+    y: brick.y - 1, 
-+    r: 7, 
-+    vx: 0, 
-+    vy: 620 
++  state.ball = {
++    x: brick.x + brick.w / 2,
++    y: brick.y - 1,
++    r: 7,
++    vx: 0,
++    vy: 620
 +  };
-+  
++
 +  // Move the ball by one max-dt step
-+  step(state, 0.05); 
++  step(state, 0.05);
 +  // ball.y = BRICK_TOP - 1 + 31 = BRICK_TOP + 30
 +  // brick.y + brick.h = BRICK_TOP + 20
 +  // ball.y - ball.r = BRICK_TOP + 23 > brick.y + brick.h
-+  
++
 +  frame(mockCtx, state);
-+  
++
 +  assert.ok(!brick.alive, 'Ball should have hit the brick even at high speed');
 +});
 diff --git a/.scratch/to_fix.md b/.scratch/to_fix.md
@@ -260,7 +260,7 @@ index 6b4a133..9e462cf 100644
 --- a/game/neon.js
 +++ b/game/neon.js
 @@ -103,8 +103,7 @@ export function createState(level = 1) {
- 
+
  // True if the ball (circle approximated by its box) overlaps the brick.
  // Simple AABB test: it only says WHETHER the ball and the brick overlap, not
 -// WHICH face was hit. The missing bounce in frame() is what lets the ball plow
@@ -272,7 +272,7 @@ index 6b4a133..9e462cf 100644
 @@ -114,6 +113,35 @@ export function collides(ball, brick) {
    );
  }
- 
+
 +// Resolves a collision between a ball and a brick.
 +// Returns true if a collision occurred and was handled.
 +export function resolveBrickCollision(ball, brick) {
@@ -303,11 +303,11 @@ index 6b4a133..9e462cf 100644
 +}
 +
  // --- Score & combo (NOT covered by tests — debt #5) ------------------------
- 
+
  // Combo multiplier. UNBOUNDED today: a long combo makes the score blow up
 @@ -159,44 +187,57 @@ export function saveBest(storage, score) {
  // --- Physics (movement + wall/paddle bounces) ------------------------------
- 
+
  // Advances the ball by a time step `dt` (in seconds) and handles bounces off
 -// the walls and the paddle. Does NOT handle bricks: that responsibility still
 -// lives in the render loop `frame()` (debt #2).
@@ -343,7 +343,7 @@ index 6b4a133..9e462cf 100644
 +      ball.x = WIDTH - ball.r;
 +      ball.vx = -Math.abs(ball.vx);
 +    }
- 
+
 -  // Ceiling
 -  if (ball.y - ball.r < 0) {
 -    ball.y = ball.r;
@@ -369,7 +369,7 @@ index 6b4a133..9e462cf 100644
 +      ball.vx = ballSpeed(state.level) * 0.6 * hit;
 +      state.combo = 0;
 +    }
- 
+
 -  // Paddle
 -  if (
 -    ball.vy > 0 &&
@@ -395,12 +395,12 @@ index 6b4a133..9e462cf 100644
 +      }
 +    }
    }
- 
+
    // Exit through the bottom: ball lost
 @@ -215,21 +256,9 @@ export function frame(ctx, state) {
    ctx.fillStyle = palette.background;
    ctx.fillRect(0, 0, WIDTH, HEIGHT);
- 
+
 -  // Bricks: collision + bounce + score + drawing, all in one place.
 +  // Bricks: drawing only.
    for (const brick of state.bricks) {
@@ -430,12 +430,12 @@ index 250d6a9..6878fba 100644
    WIDTH,
 +  frame,
  } from './neon.js';
- 
+
  test('collides: clear overlap detected', () => {
 @@ -65,5 +66,45 @@ function belowField() {
    return 500;
  }
- 
+
 -// TODO (#5): test comboMultiplier / scoreForBrick.
 -// TODO      : test level progression and loadBest/saveBest persistence.
 +
@@ -477,6 +477,6 @@ index 250d6a9..6878fba 100644
 +  const state = createState(5); // Speed = 620
 +  const brick = state.bricks[0];
 +  state.ball = { x: brick.x + brick.w / 2, y: brick.y - 1, r: 7, vx: 0, vy: 620 };
-+  step(state, 0.05); 
++  step(state, 0.05);
 +  assert.ok(!brick.alive, 'Ball should have hit the brick even at high speed');
 +});

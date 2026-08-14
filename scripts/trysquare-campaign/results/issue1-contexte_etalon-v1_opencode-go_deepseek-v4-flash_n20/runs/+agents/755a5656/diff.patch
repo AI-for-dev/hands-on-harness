@@ -22,7 +22,7 @@ index 6b4a133..c6f12f9 100644
 @@ -114,6 +122,166 @@ export function collides(ball, brick) {
    );
  }
- 
+
 +// --- Brick bounce (tested, #1) ---------------------------------------------
 +
 +// How far the ball's box would have to move to fully exit the brick on each
@@ -184,12 +184,12 @@ index 6b4a133..c6f12f9 100644
 +}
 +
  // --- Score & combo (NOT covered by tests — debt #5) ------------------------
- 
+
  // Combo multiplier. UNBOUNDED today: a long combo makes the score blow up
 @@ -165,6 +333,11 @@ export function saveBest(storage, score) {
  export function step(state, dt) {
    const { ball, paddle } = state;
- 
+
 +  // Remember where the ball started this step, so the brick sweep in
 +  // `tunnelHit` can test the whole segment (see #1 tunnelling).
 +  ball.prevX = ball.x;
@@ -197,11 +197,11 @@ index 6b4a133..c6f12f9 100644
 +
    ball.x += ball.vx * dt;
    ball.y += ball.vy * dt;
- 
+
 @@ -215,21 +388,11 @@ export function frame(ctx, state) {
    ctx.fillStyle = palette.background;
    ctx.fillRect(0, 0, WIDTH, HEIGHT);
- 
+
 -  // Bricks: collision + bounce + score + drawing, all in one place.
 +  // Bricks: resolve every collision (destroy + score) and apply exactly ONE
 +  // bounce with push-out (#1). The sweep catches fast tunnelling shots.
@@ -240,11 +240,11 @@ index 250d6a9..4c48d59 100644
 +  BALL_R,
    WIDTH,
  } from './neon.js';
- 
+
 @@ -59,6 +64,84 @@ test('makeBricks: full, all-alive grid at start', () => {
    assert.ok(bricks.every((b) => b.x >= 0 && b.x + b.w <= WIDTH));
  });
- 
+
 +// --- #1 brick bounce -------------------------------------------------------
 +
 +const BRICK = { x: 200, y: 100, w: 72, h: 20 };

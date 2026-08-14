@@ -23,5 +23,5 @@ index 6b4a133..22388b7 100644
 +        state.ball.y = state.ball.y < brick.y + brick.h / 2 ? brick.y - state.ball.r : brick.y + brick.h + state.ball.r;
 +      }
      }
- 
+
      ctx.fillStyle = brickColor(brick.row);

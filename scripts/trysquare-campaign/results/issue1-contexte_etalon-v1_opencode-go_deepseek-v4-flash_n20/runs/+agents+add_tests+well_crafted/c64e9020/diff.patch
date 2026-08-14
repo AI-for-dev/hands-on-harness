@@ -5,18 +5,18 @@ index 6b4a133..05870f2 100644
 @@ -165,6 +165,10 @@ export function saveBest(storage, score) {
  export function step(state, dt) {
    const { ball, paddle } = state;
- 
+
 +  // Remember where the ball was before this step: the brick sweep in frame()
 +  // needs a path segment to detect tunnelling (see #1).
 +  ball.px = ball.x;
 +  ball.py = ball.y;
    ball.x += ball.vx * dt;
    ball.y += ball.vy * dt;
- 
+
 @@ -206,30 +210,125 @@ export function step(state, dt) {
    return false;
  }
- 
+
 +// --- Brick collision resolution (#1) ---------------------------------------
 +
 +// The gap between bricks is 8 px and the ball is 14 px across, so a ball
@@ -122,7 +122,7 @@ index 6b4a133..05870f2 100644
 +}
 +
  // --- Rendering (DOM): brick collision logic STILL mixed in here ------------
- 
+
  // Main render loop. For each live brick we test collision AND draw in the same
 -// pass: this is where logic and rendering are entangled.
 +// pass: this is where logic and rendering are entangled (debt #2, untouched).
@@ -130,7 +130,7 @@ index 6b4a133..05870f2 100644
    // Background
    ctx.fillStyle = palette.background;
    ctx.fillRect(0, 0, WIDTH, HEIGHT);
- 
+
 -  // Bricks: collision + bounce + score + drawing, all in one place.
 +  // Bricks: resolve collisions before drawing, so the bounce applies once and
 +  // the ball is pushed out before the draw pass.

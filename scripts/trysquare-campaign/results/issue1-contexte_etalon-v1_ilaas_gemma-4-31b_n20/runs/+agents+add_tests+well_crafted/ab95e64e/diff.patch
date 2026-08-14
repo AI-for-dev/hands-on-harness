@@ -3,9 +3,9 @@ index 6b4a133..006bd23 100644
 --- a/game/neon.js
 +++ b/game/neon.js
 @@ -101,6 +101,40 @@ export function createState(level = 1) {
- 
+
  // --- Collision (tested primitive) ------------------------------------------
- 
+
 +// Resolves a collision between the ball and a brick.
 +// Returns true if a collision occurred and the ball was deflected.
 +export function handleBrickCollision(ball, brick, force = false) {
@@ -46,7 +46,7 @@ index 6b4a133..006bd23 100644
 @@ -156,14 +190,38 @@ export function saveBest(storage, score) {
    return best;
  }
- 
+
 +function intersectSegmentAABB(p0, p1, aabb) {
 +  let tmin = -Infinity, tmax = Infinity;
 +  const dx = p1.x - p0.x;
@@ -71,7 +71,7 @@ index 6b4a133..006bd23 100644
 +}
 +
  // --- Physics (movement + wall/paddle bounces) ------------------------------
- 
+
  // Advances the ball by a time step `dt` (in seconds) and handles bounces off
 -// the walls and the paddle. Does NOT handle bricks: that responsibility still
 -// lives in the render loop `frame()` (debt #2).
@@ -81,7 +81,7 @@ index 6b4a133..006bd23 100644
    const { ball, paddle } = state;
 +  const oldX = ball.x;
 +  const oldY = ball.y;
- 
+
    ball.x += ball.vx * dt;
    ball.y += ball.vy * dt;
 @@ -193,10 +251,26 @@ export function step(state, dt) {
@@ -98,10 +98,10 @@ index 6b4a133..006bd23 100644
 +  // Tunnelling detection (collision during movement)
 +  for (const brick of state.bricks) {
 +    if (!brick.alive) continue;
-+    const isTunnelling = (ball.vx !== 0 || ball.vy !== 0) && 
-+      intersectSegmentAABB({x: oldX, y: oldY}, {x: ball.x, y: ball.y}, 
++    const isTunnelling = (ball.vx !== 0 || ball.vy !== 0) &&
++      intersectSegmentAABB({x: oldX, y: oldY}, {x: ball.x, y: ball.y},
 +      {x: brick.x - ball.r, y: brick.y - ball.r, w: brick.w + 2 * ball.r, h: brick.h + 2 * ball.r});
-+    
++
 +    if (isTunnelling) {
 +      if (handleBrickCollision(ball, brick, true)) {
 +        brick.alive = false;
@@ -111,12 +111,12 @@ index 6b4a133..006bd23 100644
 +      }
 +    }
    }
- 
+
    // Exit through the bottom: ball lost
 @@ -219,15 +293,10 @@ export function frame(ctx, state) {
    for (const brick of state.bricks) {
      if (!brick.alive) continue;
- 
+
 -    if (collides(state.ball, brick)) {
 +    if (handleBrickCollision(state.ball, brick)) {
        brick.alive = false;
@@ -128,7 +128,7 @@ index 6b4a133..006bd23 100644
 -      // row. Fix = a real per-face bounce (flip vy on a top/bottom hit, vx on a
 -      // side hit) plus pushing the ball back out of the brick.
      }
- 
+
      ctx.fillStyle = brickColor(brick.row);
 diff --git a/game/neon.test.js b/game/neon.test.js
 index 250d6a9..d0050c8 100644
@@ -140,19 +140,19 @@ index 250d6a9..d0050c8 100644
    WIDTH,
 +  handleBrickCollision,
  } from './neon.js';
- 
+
  test('collides: clear overlap detected', () => {
 @@ -65,5 +66,39 @@ function belowField() {
    return 500;
  }
- 
+
 +test('handleBrickCollision: top face hit flips vy', () => {
 +  const ball = { x: 100, y: 89, r: 10, vx: 0, vy: 100 };
 +  const brick = { x: 90, y: 90, w: 20, h: 20 };
 +  // Ball is at 89, radius 10 -> bottom is at 99. Overlaps by 9 px.
 +  handleBrickCollision(ball, brick);
 +  assert.equal(ball.vy, -100, 'vy should be flipped');
-+  assert.equal(ball.y, 80, 'ball should be pushed out to top of brick'); 
++  assert.equal(ball.y, 80, 'ball should be pushed out to top of brick');
 +});
 +
 +test('handleBrickCollision: side face hit flips vx', () => {

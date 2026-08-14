@@ -131,9 +131,9 @@ index 0000000..8a8499d
 +  const state = createState(1);
 +  state.ball = { x: 100, y: 54, r: BALL_R, vx: 0, vy: 100 };
 +  state.bricks = [{ x: 80, y: 60, w: 72, h: BRICK_H, alive: true }];
-+  
++
 +  step(state, 0);
-+  
++
 +  assert.ok(state.ball.vy < 0, 'Ball should have bounced upward');
 +});
 +
@@ -141,11 +141,11 @@ index 0000000..8a8499d
 +  const state = createState(1);
 +  state.ball = { x: 100, y: 65, r: BALL_R, vx: 0, vy: 100 };
 +  state.bricks = [{ x: 80, y: 60, w: 72, h: BRICK_H, alive: true }];
-+  
++
 +  step(state, 0);
 +  const vyAfterFirstHit = state.ball.vy;
 +  assert.ok(vyAfterFirstHit < 0, 'First bounce failed');
-+  
++
 +  step(state, 0);
 +  assert.ok(state.ball.vy < 0, 'Ball should not have re-inverted its velocity (stuck)');
 +});
@@ -154,23 +154,23 @@ index 0000000..8a8499d
 +  const state = createState(1);
 +  state.ball = { x: 75, y: 65, r: BALL_R, vx: 100, vy: 0 };
 +  state.bricks = [{ x: 80, y: 60, w: 72, h: BRICK_H, alive: true }];
-+  
++
 +  step(state, 0);
-+  
++
 +  assert.ok(state.ball.vx < 0, 'Ball should have bounced leftward');
 +});
 +
 +test('D3: Ball should not double-invert when hitting two bricks at once', () => {
 +  const state = createState(1);
 +  state.ball = { x: 100, y: 54, r: BALL_R, vx: 0, vy: 100 };
-+  
++
 +  state.bricks = [
 +    { x: 80, y: 60, w: 72, h: BRICK_H, alive: true },
 +    { x: 80, y: 60, w: 72, h: BRICK_H, alive: true },
 +  ];
-+  
++
 +  step(state, 0);
-+  
++
 +  assert.ok(state.ball.vy < 0, 'Ball should have bounced upward once');
 +});
 diff --git a/game/neon.js b/game/neon.js
@@ -180,7 +180,7 @@ index 6b4a133..7292986 100644
 @@ -99,12 +99,44 @@ export function createState(level = 1) {
    };
  }
- 
+
 -// --- Collision (tested primitive) ------------------------------------------
 +// Handles brick collisions and bounces.
 +export function resolveBricks(state) {
@@ -191,7 +191,7 @@ index 6b4a133..7292986 100644
 +      brick.alive = false;
 +      state.combo += 1;
 +      state.score += scoreForBrick(brick, state.combo);
- 
+
 -// True if the ball (circle approximated by its box) overlaps the brick.
 -// Simple AABB test: it only says WHETHER the ball and the brick overlap, not
 -// WHICH face was hit. The missing bounce in frame() is what lets the ball plow
@@ -229,7 +229,7 @@ index 6b4a133..7292986 100644
      ball.x + ball.r > brick.x &&
 @@ -159,44 +191,48 @@ export function saveBest(storage, score) {
  // --- Physics (movement + wall/paddle bounces) ------------------------------
- 
+
  // Advances the ball by a time step `dt` (in seconds) and handles bounces off
 -// the walls and the paddle. Does NOT handle bricks: that responsibility still
 -// lives in the render loop `frame()` (debt #2).
@@ -252,7 +252,7 @@ index 6b4a133..7292986 100644
 +      ball.x = WIDTH - ball.r;
 +      ball.vx = -Math.abs(ball.vx);
 +    }
- 
+
 -  ball.x += ball.vx * dt;
 -  ball.y += ball.vy * dt;
 -
@@ -269,7 +269,7 @@ index 6b4a133..7292986 100644
 +      ball.y = ball.r;
 +      ball.vy = Math.abs(ball.vy);
 +    }
- 
+
 -  // Ceiling
 -  if (ball.y - ball.r < 0) {
 -    ball.y = ball.r;
@@ -289,7 +289,7 @@ index 6b4a133..7292986 100644
 +      ball.vx = ballSpeed(state.level) * 0.6 * hit;
 +      state.combo = 0;
 +    }
- 
+
 -  // Paddle
 -  if (
 -    ball.vy > 0 &&
@@ -306,17 +306,17 @@ index 6b4a133..7292986 100644
 -    state.combo = 0; // touching the paddle resets the combo
 +    resolveBricks(state);
    }
- 
+
    // Exit through the bottom: ball lost
 @@ -215,21 +251,10 @@ export function frame(ctx, state) {
    ctx.fillStyle = palette.background;
    ctx.fillRect(0, 0, WIDTH, HEIGHT);
- 
+
 -  // Bricks: collision + bounce + score + drawing, all in one place.
 +  // Bricks: drawing only.
    for (const brick of state.bricks) {
      if (!brick.alive) continue;
- 
+
 -    if (collides(state.ball, brick)) {
 -      brick.alive = false;
 -      state.combo += 1;

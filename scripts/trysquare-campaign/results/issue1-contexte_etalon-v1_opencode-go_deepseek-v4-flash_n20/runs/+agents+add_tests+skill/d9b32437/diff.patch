@@ -494,7 +494,7 @@ index 6b4a133..ead9ce3 100644
 @@ -53,6 +53,12 @@ export const BRICK_H = 20;
  export const BRICK_GAP = 8;
  export const BRICK_TOP = 48;
- 
+
 +// Paddle bounce: the exit angle is bounded away from the vertical dead zone
 +// (a center hit must never give vx = 0) and from the horizontal extreme, and
 +// the level speed is conserved exactly by re-deriving vx/vy from the angle.
@@ -502,10 +502,10 @@ index 6b4a133..ead9ce3 100644
 +const PADDLE_MIN_ANGLE = Math.PI / 12; // 15° — never leaves vertical
 +
  const STORAGE_KEY = 'neon.best';
- 
+
  // --- State construction ----------------------------------------------------
 @@ -103,8 +109,8 @@ export function createState(level = 1) {
- 
+
  // True if the ball (circle approximated by its box) overlaps the brick.
  // Simple AABB test: it only says WHETHER the ball and the brick overlap, not
 -// WHICH face was hit. The missing bounce in frame() is what lets the ball plow
@@ -518,7 +518,7 @@ index 6b4a133..ead9ce3 100644
 @@ -114,6 +120,150 @@ export function collides(ball, brick) {
    );
  }
- 
+
 +function clamp(value, min, max) {
 +  return value < min ? min : value > max ? max : value;
 +}
@@ -664,11 +664,11 @@ index 6b4a133..ead9ce3 100644
 +}
 +
  // --- Score & combo (NOT covered by tests — debt #5) ------------------------
- 
+
  // Combo multiplier. UNBOUNDED today: a long combo makes the score blow up
 @@ -159,11 +309,15 @@ export function saveBest(storage, score) {
  // --- Physics (movement + wall/paddle bounces) ------------------------------
- 
+
  // Advances the ball by a time step `dt` (in seconds) and handles bounces off
 -// the walls and the paddle. Does NOT handle bricks: that responsibility still
 -// lives in the render loop `frame()` (debt #2).
@@ -681,13 +681,13 @@ index 6b4a133..ead9ce3 100644
    const { ball, paddle } = state;
 +  const prevX = ball.x;
 +  const prevY = ball.y;
- 
+
    ball.x += ball.vx * dt;
    ball.y += ball.vy * dt;
 @@ -183,20 +337,37 @@ export function step(state, dt) {
      ball.vy = Math.abs(ball.vy);
    }
- 
+
 -  // Paddle
 -  if (
 -    ball.vy > 0 &&
@@ -734,22 +734,22 @@ index 6b4a133..ead9ce3 100644
 +  if (resolveBricks(state) === 0) {
 +    resolveBricksSwept(state, prevX, prevY);
    }
- 
+
    // Exit through the bottom: ball lost
 @@ -206,7 +377,8 @@ export function step(state, dt) {
    return false;
  }
- 
+
 -// --- Rendering (DOM): brick collision logic STILL mixed in here ------------
 +// --- Rendering (DOM): brick collision resolution is pure logic above; the
 +// render loop only draws ----------------------------------------------------
- 
+
  // Main render loop. For each live brick we test collision AND draw in the same
  // pass: this is where logic and rendering are entangled.
 @@ -215,21 +387,12 @@ export function frame(ctx, state) {
    ctx.fillStyle = palette.background;
    ctx.fillRect(0, 0, WIDTH, HEIGHT);
- 
+
 -  // Bricks: collision + bounce + score + drawing, all in one place.
 +  // Bricks: collision resolution (bounce + score) is pure logic, kept out of
 +  // the draw loop; the loop only draws what is still alive. If step() already
@@ -791,7 +791,7 @@ index 250d6a9..dd52aa4 100644
 @@ -65,5 +70,105 @@ function belowField() {
    return 500;
  }
- 
+
 +// --- Playtest defects (see .scratch/to_fix.md, D7-D10) ----------------------
 +
 +// D7 — the fast ball jumps over the discrete paddle band check and falls

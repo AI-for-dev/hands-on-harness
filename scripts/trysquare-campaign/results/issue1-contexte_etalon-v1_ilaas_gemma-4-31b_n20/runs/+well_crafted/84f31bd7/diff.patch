@@ -5,7 +5,7 @@ index 6b4a133..15fe6b2 100644
 @@ -114,6 +114,52 @@ export function collides(ball, brick) {
    );
  }
- 
+
 +// Handles collision between the ball and a brick: flips velocity and repositions the ball.
 +function resolveBrickCollision(ball, brick) {
 +  const overlapX = Math.min(
@@ -53,22 +53,22 @@ index 6b4a133..15fe6b2 100644
 +
 +
  // --- Score & combo (NOT covered by tests — debt #5) ------------------------
- 
+
  // Combo multiplier. UNBOUNDED today: a long combo makes the score blow up
 @@ -165,6 +211,9 @@ export function saveBest(storage, score) {
  export function step(state, dt) {
    const { ball, paddle } = state;
- 
+
 +  const oldX = ball.x;
 +  const oldY = ball.y;
 +
    ball.x += ball.vx * dt;
    ball.y += ball.vy * dt;
- 
+
 @@ -199,6 +248,8 @@ export function step(state, dt) {
      state.combo = 0; // touching the paddle resets the combo
    }
- 
+
 +  handleTunneling(state, dt);
 +
    // Exit through the bottom: ball lost
@@ -77,27 +77,27 @@ index 6b4a133..15fe6b2 100644
 @@ -206,6 +257,43 @@ export function step(state, dt) {
    return false;
  }
- 
+
 +
 +// Handles tunneling by checking for collisions along the movement segment.
 +function handleTunneling(state, dt) {
 +  const { ball, bricks } = state;
-+  
-+  // We'll use a simple sampling approach for tunneling: 
++
++  // We'll use a simple sampling approach for tunneling:
 +  // split the move into smaller steps if the distance is too large.
 +  // A better way would be true swept AABB, but this is usually enough for arcade games.
 +  const stepSize = 4; // px
 +  const dx = ball.vx * dt;
 +  const dy = ball.vy * dt;
 +  const dist = Math.sqrt(dx * dx + dy * dy);
-+  
++
 +  if (dist > stepSize) {
 +    const numSteps = Math.ceil(dist / stepSize);
 +    for (let i = 1; i <= numSteps; i++) {
 +      const checkX = ball.x - dx + (dx * i) / numSteps;
 +      const checkY = ball.y - dy + (dy * i) / numSteps;
 +      const checkBall = { ...ball, x: checkX, y: checkY };
-+      
++
 +      for (const brick of bricks) {
 +        if (brick.alive && collides(checkBall, brick)) {
 +          // To prevent multiple hits in one frame for the same brick,
@@ -116,7 +116,7 @@ index 6b4a133..15fe6b2 100644
 +
 +
  // --- Rendering (DOM): brick collision logic STILL mixed in here ------------
- 
+
  // Main render loop. For each live brick we test collision AND draw in the same
 @@ -223,13 +311,10 @@ export function frame(ctx, state) {
        brick.alive = false;
@@ -129,7 +129,7 @@ index 6b4a133..15fe6b2 100644
 -      // side hit) plus pushing the ball back out of the brick.
 +      resolveBrickCollision(state.ball, brick);
      }
- 
+
 +
      ctx.fillStyle = brickColor(brick.row);
      ctx.fillRect(brick.x, brick.y, brick.w, brick.h);
@@ -150,7 +150,7 @@ index 250d6a9..f570562 100644
 -
  import { test } from 'node:test';
  import assert from 'node:assert/strict';
- 
+
 @@ -18,6 +9,11 @@ import {
    BRICK_ROWS,
    BRICK_COLS,
@@ -161,10 +161,10 @@ index 250d6a9..f570562 100644
 +  RIGHT,
 +  frame,
  } from './neon.js';
- 
+
  test('collides: clear overlap detected', () => {
 @@ -47,7 +43,7 @@ test('step: bounce off the left wall', () => {
- 
+
  test('step: ball exiting through the bottom => lost', () => {
    const state = createState(1);
 -  state.ball = { x: 320, y: belowField(), r: 7, vx: 0, vy: 400 };
@@ -175,7 +175,7 @@ index 250d6a9..f570562 100644
 @@ -59,11 +55,90 @@ test('makeBricks: full, all-alive grid at start', () => {
    assert.ok(bricks.every((b) => b.x >= 0 && b.x + b.w <= WIDTH));
  });
- 
+
 -// Small local helper: place the ball below the field without importing the
 -// height (coverage intentionally light).
 -function belowField() {
@@ -195,7 +195,7 @@ index 250d6a9..f570562 100644
 +test('brick bounce: top face hit flips vy', () => {
 +  const state = createState(1);
 +  // Ball is moving UP, hits the bottom edge of a brick
-+  state.ball = { x: 100, y: 110, r: 7, vx: 0, vy: 200 * UP }; 
++  state.ball = { x: 100, y: 110, r: 7, vx: 0, vy: 200 * UP };
 +  const brick = { x: 80, y: 100, w: 40, h: 20, alive: true, points: 10 };
 +  state.bricks = [brick];
 +
@@ -208,7 +208,7 @@ index 250d6a9..f570562 100644
 +test('brick bounce: bottom face hit flips vy', () => {
 +  const state = createState(1);
 +  // Ball is moving DOWN, hits the top edge of a brick
-+  state.ball = { x: 100, y: 95, r: 7, vx: 0, vy: 200 * DOWN }; 
++  state.ball = { x: 100, y: 95, r: 7, vx: 0, vy: 200 * DOWN };
 +  const brick = { x: 80, y: 100, w: 40, h: 20, alive: true, points: 10 };
 +  state.bricks = [brick];
 +
@@ -217,13 +217,13 @@ index 250d6a9..f570562 100644
 +  assert.equal(Math.sign(state.ball.vy), UP, 'Ball should bounce UP');
 +  assert.ok(state.ball.y < 100, 'Ball should be pushed out of the brick');
 +});
- 
+
 -// TODO (#5): test comboMultiplier / scoreForBrick.
 -// TODO      : test level progression and loadBest/saveBest persistence.
 +test('brick bounce: left face hit flips vx', () => {
 +  const state = createState(1);
 +  // Ball moving RIGHT, hits left edge of brick
-+  state.ball = { x: 75, y: 110, r: 7, vx: 200 * RIGHT, vy: 0 }; 
++  state.ball = { x: 75, y: 110, r: 7, vx: 200 * RIGHT, vy: 0 };
 +  const brick = { x: 80, y: 100, w: 40, h: 20, alive: true, points: 10 };
 +  state.bricks = [brick];
 +
@@ -236,7 +236,7 @@ index 250d6a9..f570562 100644
 +test('brick bounce: right face hit flips vx', () => {
 +  const state = createState(1);
 +  // Ball moving LEFT, hits right edge of brick
-+  state.ball = { x: 125, y: 110, r: 7, vx: 200 * LEFT, vy: 0 }; 
++  state.ball = { x: 125, y: 110, r: 7, vx: 200 * LEFT, vy: 0 };
 +  const brick = { x: 80, y: 100, w: 40, h: 20, alive: true, points: 10 };
 +  state.bricks = [brick];
 +
@@ -249,7 +249,7 @@ index 250d6a9..f570562 100644
 +test('brick bounce: corner hit flips both', () => {
 +  const state = createState(1);
 +  // Diagonal hit
-+  state.ball = { x: 75, y: 95, r: 7, vx: 200 * RIGHT, vy: 200 * UP }; 
++  state.ball = { x: 75, y: 95, r: 7, vx: 200 * RIGHT, vy: 200 * UP };
 +  const brick = { x: 80, y: 100, w: 40, h: 20, alive: true, points: 10 };
 +  state.bricks = [brick];
 +

@@ -14,17 +14,17 @@ index 0000000..1d94b45
 +  // Brick: x: offsetX + col * (BRICK_W + BRICK_GAP), y: BRICK_TOP + row * (BRICK_H + BRICK_GAP)
 +  // Let's use a brick from makeBricks(1)
 +  const brick = state.bricks[0]; // top-left brick
-+  
++
 +  // Ball moving towards the bottom-right corner of this brick
 +  // Brick bottom: brick.y + brick.h, Brick right: brick.x + brick.w
-+  state.ball = { 
-+    x: brick.x + brick.w + 2, 
-+    y: brick.y + brick.h + 2, 
-+    r: 7, 
-+    vx: -200, 
-+    vy: -200 
++  state.ball = {
++    x: brick.x + brick.w + 2,
++    y: brick.y + brick.h + 2,
++    r: 7,
++    vx: -200,
++    vy: -200
 +  };
-+  
++
 +  const ctx = {
 +    fillRect: () => {},
 +    arc: () => {},
@@ -33,9 +33,9 @@ index 0000000..1d94b45
 +    fillText: () => {},
 +    fillStyle: '',
 +  };
-+  
++
 +  frame(ctx, state);
-+  
++
 +  assert.ok(state.ball.vx > 0, 'Ball should bounce right');
 +  assert.ok(state.ball.vy > 0, 'Ball should bounce down');
 +});
@@ -54,9 +54,9 @@ index 0000000..0e53328
 +  // Position ball so it's about to hit the bottom of the first brick
 +  // BRICK_TOP = 48, BRICK_H = 20. Bottom is 68.
 +  // Ball r = 7.
-+  state.ball = { x: 100, y: 70, r: 7, vx: 0, vy: -200 }; 
++  state.ball = { x: 100, y: 70, r: 7, vx: 0, vy: -200 };
 +  // It's already overlapping: 70-7 = 63 < 68.
-+  
++
 +  const ctx = {
 +    fillRect: () => {},
 +    arc: () => {},
@@ -65,9 +65,9 @@ index 0000000..0e53328
 +    fillText: () => {},
 +    fillStyle: '',
 +  };
-+  
++
 +  frame(ctx, state);
-+  
++
 +  // In a correct implementation, vy should have flipped to positive
 +  assert.ok(state.ball.vy > 0, 'Ball should bounce back down');
 +});
@@ -84,8 +84,8 @@ index 0000000..e093342
 +test('ball should be pushed out of brick after collision', () => {
 +  const state = createState(1);
 +  // Ball is overlapping the brick
-+  state.ball = { x: 100, y: 70, r: 7, vx: 0, vy: -200 }; 
-+  
++  state.ball = { x: 100, y: 70, r: 7, vx: 0, vy: -200 };
++
 +  const ctx = {
 +    fillRect: () => {},
 +    arc: () => {},
@@ -94,9 +94,9 @@ index 0000000..e093342
 +    fillText: () => {},
 +    fillStyle: '',
 +  };
-+  
++
 +  frame(ctx, state);
-+  
++
 +  // The ball should no longer collide with the broken brick (or any brick)
 +  // This is a bit tricky because the brick is now dead.
 +  // Let's check if it still overlaps the area where the brick was.
@@ -104,8 +104,8 @@ index 0000000..e093342
 +  // Actually, let's just check if it's still within the brick's original bounds.
 +  // If the ball is at y=70 and the brick bottom is 68, and it's moving UP,
 +  // it should be pushed DOWN to y=68+7=75.
-+  
-+  assert.ok(state.ball.y - state.ball.r >= 68 || state.ball.y + state.ball.r <= 48, 
++
++  assert.ok(state.ball.y - state.ball.r >= 68 || state.ball.y + state.ball.r <= 48,
 +    'Ball should be positioned outside the brick bounds after collision');
 +});
 diff --git a/.scratch/to_fix.md b/.scratch/to_fix.md
@@ -128,7 +128,7 @@ index 0000000..47050d8
 +  ```js
 +  test('ball should bounce off brick', () => {
 +    const state = createState(1);
-+    state.ball = { x: 100, y: 70, r: 7, vx: 0, vy: -200 }; 
++    state.ball = { x: 100, y: 70, r: 7, vx: 0, vy: -200 };
 +    const ctx = { fillRect: () => {}, arc: () => {}, beginPath: () => {}, fill: () => {}, fillText: () => {}, fillStyle: '' };
 +    frame(ctx, state);
 +    assert.ok(state.ball.vy > 0, 'Ball should bounce back down');
@@ -177,7 +177,7 @@ index 0000000..47050d8
 +  ```js
 +  test('ball should be pushed out of brick after collision', () => {
 +    const state = createState(1);
-+    state.ball = { x: 100, y: 70, r: 7, vx: 0, vy: -200 }; 
++    state.ball = { x: 100, y: 70, r: 7, vx: 0, vy: -200 };
 +    const ctx = { fillRect: () => {}, arc: () => {}, beginPath: () => {}, fill: () => {}, fillText: () => {}, fillStyle: '' };
 +    frame(ctx, state);
 +    assert.ok(state.ball.y - state.ball.r >= 68 || state.ball.y + state.ball.r <= 48, 'Ball should be positioned outside the brick bounds');
@@ -225,15 +225,15 @@ index 0000000..02485bb
 +  const level = 6;
 +  const state = createState(level);
 +  const speed = ballSpeed(level);
-+  
++
 +  // Position ball just below the brick in one frame
 +  // Brick bottom is at 68.
 +  // Ball r = 7. Bottom of ball is at y+7. Top is at y-7.
 +  // We want ball.y - 7 > 68 (no collision)
 +  // And in next frame, ball.y + 7 < 68 (no collision)
-+  
++
 +  state.ball = { x: 100, y: 68 + 7 + 1, r: 7, vx: 0, vy: -speed };
-+  
++
 +  const ctx = {
 +    fillRect: () => {},
 +    arc: () => {},
@@ -247,14 +247,14 @@ index 0000000..02485bb
 +  // ball.y += ball.vy * dt;
 +  const dt = 0.05;
 +  state.ball.y += state.ball.vy * dt;
-+  
++
 +  // Check if it's now above the brick
 +  // Brick top is at 48. Bottom is 68.
 +  // Ball's bottom is state.ball.y + 7.
 +  // If ball.y + 7 < 48, it has tunneled through.
-+  
++
 +  frame(ctx, state);
-+  
++
 +  // If the brick is still alive, it tunneled.
 +  const brick = state.bricks.find(b => b.x <= 100 && b.x + b.w >= 100 && b.y <= 48 && b.y + b.h >= 68);
 +  assert.ok(!brick.alive, 'Brick should be broken even if ball tunneled through');

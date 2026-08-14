@@ -24,7 +24,7 @@ index 6b4a133..f993b38 100644
    };
  }
 @@ -103,8 +108,7 @@ export function createState(level = 1) {
- 
+
  // True if the ball (circle approximated by its box) overlaps the brick.
  // Simple AABB test: it only says WHETHER the ball and the brick overlap, not
 -// WHICH face was hit. The missing bounce in frame() is what lets the ball plow
@@ -36,7 +36,7 @@ index 6b4a133..f993b38 100644
 @@ -114,6 +118,119 @@ export function collides(ball, brick) {
    );
  }
- 
+
 +// First point along the swept path (px,py)->(ball.x,ball.y) that overlaps the
 +// brick, or null if the path clears it. Sampling every `ball.r` pixels keeps
 +// the worst stuttered step (35.5 px at level 6) well under the 34 px needed to
@@ -151,23 +151,23 @@ index 6b4a133..f993b38 100644
 +}
 +
  // --- Score & combo (NOT covered by tests — debt #5) ------------------------
- 
+
  // Combo multiplier. UNBOUNDED today: a long combo makes the score blow up
 @@ -165,6 +282,10 @@ export function saveBest(storage, score) {
  export function step(state, dt) {
    const { ball, paddle } = state;
- 
+
 +  // Remember the pre-move position: brickHit() sweeps from here.
 +  ball.px = ball.x;
 +  ball.py = ball.y;
 +
    ball.x += ball.vx * dt;
    ball.y += ball.vy * dt;
- 
+
 @@ -215,21 +336,16 @@ export function frame(ctx, state) {
    ctx.fillStyle = palette.background;
    ctx.fillRect(0, 0, WIDTH, HEIGHT);
- 
+
 -  // Bricks: collision + bounce + score + drawing, all in one place.
 +  // Bricks: collision resolution is now a pure function (issue #1 fixed); the
 +  // scoring loop here is the only remaining entanglement (debt #2).
@@ -209,7 +209,7 @@ index 250d6a9..7c5144a 100644
 @@ -52,6 +53,82 @@ test('step: ball exiting through the bottom => lost', () => {
    assert.equal(lost, true);
  });
- 
+
 +// --- brickHit: the missing brick bounce (issue #1) -------------------------
 +// Each case from ISSUES.md #1: per-face, corner, push-out, neighbours, sweep.
 +

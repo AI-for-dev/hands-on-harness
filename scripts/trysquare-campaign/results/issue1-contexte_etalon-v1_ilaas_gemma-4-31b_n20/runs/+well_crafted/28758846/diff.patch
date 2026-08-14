@@ -5,7 +5,7 @@ index 6b4a133..04364df 100644
 @@ -114,6 +114,58 @@ export function collides(ball, brick) {
    );
  }
- 
+
 +/**
 + * Resolves collision between a ball and a brick.
 + * Updates ball velocity and position to prevent sticking.
@@ -59,12 +59,12 @@ index 6b4a133..04364df 100644
 +}
 +
  // --- Score & combo (NOT covered by tests — debt #5) ------------------------
- 
+
  // Combo multiplier. UNBOUNDED today: a long combo makes the score blow up
 @@ -219,15 +271,10 @@ export function frame(ctx, state) {
    for (const brick of state.bricks) {
      if (!brick.alive) continue;
- 
+
 -    if (collides(state.ball, brick)) {
 +    if (resolveBrickCollision(state.ball, brick)) {
        brick.alive = false;
@@ -76,7 +76,7 @@ index 6b4a133..04364df 100644
 -      // row. Fix = a real per-face bounce (flip vy on a top/bottom hit, vx on a
 -      // side hit) plus pushing the ball back out of the brick.
      }
- 
+
      ctx.fillStyle = brickColor(brick.row);
 diff --git a/game/neon.test.js b/game/neon.test.js
 index 250d6a9..a3c5a7d 100644
@@ -91,10 +91,10 @@ index 250d6a9..a3c5a7d 100644
 +  LEFT,
 +  RIGHT,
  } from './neon.js';
- 
+
  test('collides: clear overlap detected', () => {
 @@ -67,3 +71,14 @@ function belowField() {
- 
+
  // TODO (#5): test comboMultiplier / scoreForBrick.
  // TODO      : test level progression and loadBest/saveBest persistence.
 +
@@ -103,7 +103,7 @@ index 250d6a9..a3c5a7d 100644
 +  // Ball moving UP, hitting the bottom edge of a brick
 +  state.ball = { x: 100, y: 117, r: 7, vx: 0, vy: UP * 200 };
 +  const brick = { x: 80, y: 100, w: 40, h: 20, alive: true };
-+  
++
 +  // We simulate the collision logic that should be in frame/brickHit
 +  // For now we just test the expected outcome of the logic we will implement
 +  // since frame() needs a canvas context. We'll need a way to test the collision resolution.

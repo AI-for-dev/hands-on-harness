@@ -3,7 +3,7 @@ index 6b4a133..f56f427 100644
 --- a/game/neon.js
 +++ b/game/neon.js
 @@ -103,8 +103,7 @@ export function createState(level = 1) {
- 
+
  // True if the ball (circle approximated by its box) overlaps the brick.
  // Simple AABB test: it only says WHETHER the ball and the brick overlap, not
 -// WHICH face was hit. The missing bounce in frame() is what lets the ball plow
@@ -15,7 +15,7 @@ index 6b4a133..f56f427 100644
 @@ -114,6 +113,113 @@ export function collides(ball, brick) {
    );
  }
- 
+
 +// --- Brick bounce (issue #1) -----------------------------------------------
 +
 +// Comparison epsilon for "equal penetrations" (a diagonal/corner hit).
@@ -124,11 +124,11 @@ index 6b4a133..f56f427 100644
 +}
 +
  // --- Score & combo (NOT covered by tests — debt #5) ------------------------
- 
+
  // Combo multiplier. UNBOUNDED today: a long combo makes the score blow up
 @@ -159,12 +265,16 @@ export function saveBest(storage, score) {
  // --- Physics (movement + wall/paddle bounces) ------------------------------
- 
+
  // Advances the ball by a time step `dt` (in seconds) and handles bounces off
 -// the walls and the paddle. Does NOT handle bricks: that responsibility still
 -// lives in the render loop `frame()` (debt #2).
@@ -138,17 +138,17 @@ index 6b4a133..f56f427 100644
  // Returns `true` if the ball is lost (exits through the bottom).
  export function step(state, dt) {
    const { ball, paddle } = state;
- 
+
 +  const fromX = ball.x;
 +  const fromY = ball.y;
 +
    ball.x += ball.vx * dt;
    ball.y += ball.vy * dt;
- 
+
 @@ -199,6 +309,10 @@ export function step(state, dt) {
      state.combo = 0; // touching the paddle resets the combo
    }
- 
+
 +  // Bricks: re-sample the segment travelled this frame so a fast ball cannot
 +  // tunnel through a brick between two discrete samples (issue #1).
 +  sweepBricks(state, fromX, fromY);
@@ -159,7 +159,7 @@ index 6b4a133..f56f427 100644
 @@ -215,21 +329,13 @@ export function frame(ctx, state) {
    ctx.fillStyle = palette.background;
    ctx.fillRect(0, 0, WIDTH, HEIGHT);
- 
+
 -  // Bricks: collision + bounce + score + drawing, all in one place.
 +  // Bricks: bounce + score are resolved in a single event (bounceBricks), then
 +  // the survivors are drawn. Logic and rendering remain entangled here — that
@@ -203,11 +203,11 @@ index 250d6a9..f3302c7 100644
 +  BRICK_GAP,
    WIDTH,
  } from './neon.js';
- 
+
 @@ -65,5 +71,93 @@ function belowField() {
    return 500;
  }
- 
+
 +// --- Issue #1: the ball bounces off bricks (per-face, corner, push-out, ---
 +// --- seams, tunnelling) instead of plowing through.                    ---
 +

@@ -16,11 +16,11 @@ index 6b4a133..acc8c68 100644
 +// step()); frame() only renders. The module runs nothing on import: only
 +// `boot()` touches the DOM. Pure logic can therefore be imported from the
 +// tests (`node --test`) without a browser.
- 
+
  import { palette, brickColor } from './theme.js';
  import { createGlowMap, drawGlow, GLOW_W, GLOW_H } from './bloom.js';
 @@ -103,8 +100,7 @@ export function createState(level = 1) {
- 
+
  // True if the ball (circle approximated by its box) overlaps the brick.
  // Simple AABB test: it only says WHETHER the ball and the brick overlap, not
 -// WHICH face was hit. The missing bounce in frame() is what lets the ball plow
@@ -32,7 +32,7 @@ index 6b4a133..acc8c68 100644
 @@ -156,6 +152,188 @@ export function saveBest(storage, score) {
    return best;
  }
- 
+
 +// --- Brick collision resolution (pure) --------------------------------------
 +
 +// The ball must never pass through a brick, whatever the step length. From
@@ -216,7 +216,7 @@ index 6b4a133..acc8c68 100644
 +}
 +
  // --- Physics (movement + wall/paddle bounces) ------------------------------
- 
+
  // Advances the ball by a time step `dt` (in seconds) and handles bounces off
 @@ -164,6 +342,8 @@ export function saveBest(storage, score) {
  // Returns `true` if the ball is lost (exits through the bottom).
@@ -224,13 +224,13 @@ index 6b4a133..acc8c68 100644
    const { ball, paddle } = state;
 +  const prevX = ball.x;
 +  const prevY = ball.y;
- 
+
    ball.x += ball.vx * dt;
    ball.y += ball.vy * dt;
 @@ -199,6 +379,11 @@ export function step(state, dt) {
      state.combo = 0; // touching the paddle resets the combo
    }
- 
+
 +  // Bricks: sweep the segment travelled this step and bounce off the earliest
 +  // contact (see resolveBricks). Runs after the walls so the paddle and the
 +  // side walls keep their exact previous behaviour.
@@ -240,9 +240,9 @@ index 6b4a133..acc8c68 100644
    if (ball.y - ball.r > HEIGHT) {
      return true;
 @@ -208,28 +393,16 @@ export function step(state, dt) {
- 
+
  // --- Rendering (DOM): brick collision logic STILL mixed in here ------------
- 
+
 -// Main render loop. For each live brick we test collision AND draw in the same
 -// pass: this is where logic and rendering are entangled.
 +// Main render loop. Collision, bounce and scoring happen in step() →
@@ -251,7 +251,7 @@ index 6b4a133..acc8c68 100644
    // Background
    ctx.fillStyle = palette.background;
    ctx.fillRect(0, 0, WIDTH, HEIGHT);
- 
+
 -  // Bricks: collision + bounce + score + drawing, all in one place.
 +  // Bricks: drawing only.
    for (const brick of state.bricks) {
@@ -289,11 +289,11 @@ index 250d6a9..4fdeedf 100644
 +  BALL_R,
    WIDTH,
  } from './neon.js';
- 
+
 @@ -65,5 +71,101 @@ function belowField() {
    return 500;
  }
- 
+
 +// --- Brick bounce: the ball must NEVER go through a brick -------------------
 +
 +// Brick grid geometry, derived from the same constants as makeBricks().

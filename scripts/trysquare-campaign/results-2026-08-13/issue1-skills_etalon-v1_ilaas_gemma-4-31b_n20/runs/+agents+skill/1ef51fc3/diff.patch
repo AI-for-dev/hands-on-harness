@@ -20,47 +20,47 @@ index 0000000..c0cae6f
 +test('D1: Basic Vertical Bounce (Bottom Face)', () => {
 +  const state = createState(1);
 +  const brick = state.bricks[0];
-+  
++
 +  // Ball moving UP, hitting the bottom face
 +  state.ball.x = brick.x + brick.w / 2;
 +  state.ball.y = brick.y + brick.h - 1; // overlap
-+  state.ball.vy = -100; 
-+  
++  state.ball.vy = -100;
++
 +  frame(ctx, state);
-+  
++
 +  assert.ok(state.ball.vy > 0, `Ball should bounce DOWN (vy > 0), but got ${state.ball.vy}`);
 +});
 +
 +test('D1: Basic Horizontal Bounce (Left Face)', () => {
 +  const state = createState(1);
 +  const brick = state.bricks[0];
-+  
++
 +  // Ball moving RIGHT, hitting the left face
 +  state.ball.x = brick.x - 1; // overlap
 +  state.ball.y = brick.y + brick.h / 2;
 +  state.ball.vx = 100;
-+  
++
 +  frame(ctx, state);
-+  
++
 +  assert.ok(state.ball.vx < 0, `Ball should bounce LEFT (vx < 0), but got ${state.ball.vx}`);
 +});
 +
 +test('D2: Tunneling at Level 6', () => {
 +  const state = createState(6);
 +  const brick = state.bricks[0];
-+  
++
 +  // Ball is just below the brick
 +  state.ball.x = brick.x + brick.w / 2;
-+  state.ball.y = brick.y + brick.h + 1; 
++  state.ball.y = brick.y + brick.h + 1;
 +  state.ball.vy = -ballSpeed(6); // -710 px/s
-+  
++
 +  // Simulate one frame with max dt (0.05s)
 +  const dt = 0.05;
-+  const nextY = state.ball.y + state.ball.vy * dt; 
-+  
++  const nextY = state.ball.y + state.ball.vy * dt;
++
 +  state.ball.y = nextY;
 +  frame(ctx, state);
-+  
++
 +  assert.ok(brick.alive === false, 'Ball should have hit the brick even when tunneling');
 +});
 diff --git a/.scratch/to_fix.md b/.scratch/to_fix.md
@@ -86,8 +86,8 @@ index 0000000..33968ad
 +    const state = createState(1);
 +    const brick = state.bricks[0];
 +    state.ball.x = brick.x + brick.w / 2;
-+    state.ball.y = brick.y + brick.h - 1; 
-+    state.ball.vy = -100; 
++    state.ball.y = brick.y + brick.h - 1;
++    state.ball.vy = -100;
 +    frame(ctx, state);
 +    assert.ok(state.ball.vy > 0);
 +  });
@@ -112,7 +112,7 @@ index 0000000..33968ad
 +    const state = createState(6);
 +    const brick = state.bricks[0];
 +    state.ball.x = brick.x + brick.w / 2;
-+    state.ball.y = brick.y + brick.h + 1; 
++    state.ball.y = brick.y + brick.h + 1;
 +    state.ball.vy = -ballSpeed(6);
 +    state.ball.y += state.ball.vy * 0.05;
 +    frame(ctx, state);
@@ -145,7 +145,7 @@ index 250d6a9..052a090 100644
 @@ -65,5 +65,28 @@ function belowField() {
    return 500;
  }
- 
+
 -// TODO (#5): test comboMultiplier / scoreForBrick.
 -// TODO      : test level progression and loadBest/saveBest persistence.
 +test('step: bounce off brick bottom face', () => {

@@ -35,5 +35,5 @@ index 6b4a133..778773b 100644
 +        ball.x += ball.vx * (1 / 60); // Small nudge to prevent sticking
 +      }
      }
- 
+
      ctx.fillStyle = brickColor(brick.row);

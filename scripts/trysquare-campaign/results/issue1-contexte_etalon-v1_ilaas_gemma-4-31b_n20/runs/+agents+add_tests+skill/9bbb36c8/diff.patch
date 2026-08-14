@@ -4,7 +4,7 @@ index 6b4a133..b8c9b6e 100644
 +++ b/game/neon.js
 @@ -159,44 +159,104 @@ export function saveBest(storage, score) {
  // --- Physics (movement + wall/paddle bounces) ------------------------------
- 
+
  // Advances the ball by a time step `dt` (in seconds) and handles bounces off
 -// the walls and the paddle. Does NOT handle bricks: that responsibility still
 -// lives in the render loop `frame()` (debt #2).
@@ -49,7 +49,7 @@ index 6b4a133..b8c9b6e 100644
 +      ball.vx = -Math.abs(ball.vx);
 +      bouncedX = true;
 +    }
- 
+
 -  // Ceiling
 -  if (ball.y - ball.r < 0) {
 -    ball.y = ball.r;
@@ -77,7 +77,7 @@ index 6b4a133..b8c9b6e 100644
 +      state.combo = 0;
 +      bouncedY = true;
 +    }
- 
+
 -  // Paddle
 -  if (
 -    ball.vy > 0 &&
@@ -99,7 +99,7 @@ index 6b4a133..b8c9b6e 100644
 +        brick.alive = false;
 +        state.combo += 1;
 +        state.score += scoreForBrick(brick, state.combo);
-+        
++
 +        const overlapX = Math.min(
 +          ball.x + ball.r - brick.x,
 +          brick.x + brick.w - (ball.x - ball.r)
@@ -139,12 +139,12 @@ index 6b4a133..b8c9b6e 100644
 +      }
 +    }
    }
- 
+
    // Exit through the bottom: ball lost
 @@ -208,28 +268,16 @@ export function step(state, dt) {
- 
+
  // --- Rendering (DOM): brick collision logic STILL mixed in here ------------
- 
+
 -// Main render loop. For each live brick we test collision AND draw in the same
 -// pass: this is where logic and rendering are entangled.
 +// Main render loop. Now only responsible for drawing.
@@ -152,12 +152,12 @@ index 6b4a133..b8c9b6e 100644
    // Background
    ctx.fillStyle = palette.background;
    ctx.fillRect(0, 0, WIDTH, HEIGHT);
- 
+
 -  // Bricks: collision + bounce + score + drawing, all in one place.
 +  // Bricks: only drawing now. Collision moved to step().
    for (const brick of state.bricks) {
      if (!brick.alive) continue;
- 
+
 -    if (collides(state.ball, brick)) {
 -      brick.alive = false;
 -      state.combo += 1;

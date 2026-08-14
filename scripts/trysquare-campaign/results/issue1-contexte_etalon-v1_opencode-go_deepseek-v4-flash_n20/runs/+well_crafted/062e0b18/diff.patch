@@ -22,7 +22,7 @@ index 6b4a133..998aed3 100644
 @@ -114,6 +122,129 @@ export function collides(ball, brick) {
    );
  }
- 
+
 +// Reflects the ball off the brick face it actually struck and pushes it just
 +// outside the brick so it cannot overlap it on the next step/frame (a leftover
 +// overlap would trigger the bounce again forever — the sticky bounce).
@@ -147,12 +147,12 @@ index 6b4a133..998aed3 100644
 +}
 +
  // --- Score & combo (NOT covered by tests — debt #5) ------------------------
- 
+
  // Combo multiplier. UNBOUNDED today: a long combo makes the score blow up
 @@ -165,6 +296,11 @@ export function saveBest(storage, score) {
  export function step(state, dt) {
    const { ball, paddle } = state;
- 
+
 +  // Remember where the ball started so `frame()` can sweep its path for bricks
 +  // (see resolveBricks: a discrete single step can otherwise jump over a brick).
 +  ball.prevX = ball.x;
@@ -160,11 +160,11 @@ index 6b4a133..998aed3 100644
 +
    ball.x += ball.vx * dt;
    ball.y += ball.vy * dt;
- 
+
 @@ -215,21 +351,14 @@ export function frame(ctx, state) {
    ctx.fillStyle = palette.background;
    ctx.fillRect(0, 0, WIDTH, HEIGHT);
- 
+
 -  // Bricks: collision + bounce + score + drawing, all in one place.
 +  // Brick collisions: sweep + bounce + score, all in one place (debt #2: this
 +  // logic still lives inside the render loop). It sweeps from the position the
@@ -202,7 +202,7 @@ index 250d6a9..50dd49c 100644
    BRICK_COLS,
    WIDTH,
  } from './neon.js';
- 
+
 +// Minimal stand-in for a canvas 2D context: `frame()` draws, so a plain object
 +// with no-op drawing methods is enough to exercise the collision logic.
 +function mockCtx() {
@@ -244,7 +244,7 @@ index 250d6a9..50dd49c 100644
 @@ -59,6 +95,108 @@ test('makeBricks: full, all-alive grid at start', () => {
    assert.ok(bricks.every((b) => b.x >= 0 && b.x + b.w <= WIDTH));
  });
- 
+
 +// --- #1: brick bounce ------------------------------------------------------
 +
 +const BRICK = { x: 100, y: 100, w: 72, h: 20, row: 1, points: 100 };

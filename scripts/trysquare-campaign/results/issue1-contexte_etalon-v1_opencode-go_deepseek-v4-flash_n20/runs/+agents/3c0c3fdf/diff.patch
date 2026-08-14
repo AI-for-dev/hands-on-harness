@@ -4,7 +4,7 @@ index 6b4a133..7f58b17 100644
 +++ b/game/neon.js
 @@ -102,9 +102,6 @@ export function createState(level = 1) {
  // --- Collision (tested primitive) ------------------------------------------
- 
+
  // True if the ball (circle approximated by its box) overlaps the brick.
 -// Simple AABB test: it only says WHETHER the ball and the brick overlap, not
 -// WHICH face was hit. The missing bounce in frame() is what lets the ball plow
@@ -15,7 +15,7 @@ index 6b4a133..7f58b17 100644
 @@ -114,6 +111,40 @@ export function collides(ball, brick) {
    );
  }
- 
+
 +// True if the ball overlaps the brick on the horizontal (side) axis only, i.e.
 +// the ball's vertical centre is inside the brick's vertical extent. Used to
 +// decide between a left/right bounce (flip vx) and a top/bottom bounce
@@ -51,7 +51,7 @@ index 6b4a133..7f58b17 100644
 +}
 +
  // --- Score & combo (NOT covered by tests — debt #5) ------------------------
- 
+
  // Combo multiplier. UNBOUNDED today: a long combo makes the score blow up
 @@ -223,11 +254,9 @@ export function frame(ctx, state) {
        brick.alive = false;
@@ -66,7 +66,7 @@ index 6b4a133..7f58b17 100644
 +      // the ball back out so it can't tunnel through the brick.
 +      bounceOffBrick(state.ball, brick);
      }
- 
+
      ctx.fillStyle = brickColor(brick.row);
 diff --git a/game/neon.test.js b/game/neon.test.js
 index 250d6a9..6c10481 100644
@@ -83,7 +83,7 @@ index 250d6a9..6c10481 100644
 @@ -52,6 +53,34 @@ test('step: ball exiting through the bottom => lost', () => {
    assert.equal(lost, true);
  });
- 
+
 +test('bounceOffBrick: top face hit flips vy and pushes ball up out', () => {
 +  const brick = { x: 90, y: 90, w: 40, h: 20 };
 +  // Ball rests on the brick's top: overlaps it bottom edge, moving down.

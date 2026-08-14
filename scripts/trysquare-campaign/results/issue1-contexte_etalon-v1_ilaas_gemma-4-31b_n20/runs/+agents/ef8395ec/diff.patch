@@ -28,5 +28,5 @@ index 6b4a133..98d07da 100644
 +        ball.y += (ball.vy > 0) ? (brick.y - (ball.y - ball.r)) : (brick.y + brick.h - (ball.y + ball.r));
 +      }
      }
- 
+
      ctx.fillStyle = brickColor(brick.row);

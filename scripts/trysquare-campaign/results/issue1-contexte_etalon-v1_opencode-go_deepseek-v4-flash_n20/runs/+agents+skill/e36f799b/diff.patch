@@ -323,15 +323,15 @@ index 6b4a133..2b17e0e 100644
 @@ -114,7 +114,7 @@ export function collides(ball, brick) {
    );
  }
- 
+
 -// --- Score & combo (NOT covered by tests — debt #5) ------------------------
 +// --- Score & combo (comboMultiplier still unbounded — debt #5) -------------
- 
+
  // Combo multiplier. UNBOUNDED today: a long combo makes the score blow up
  // uncontrollably (see #5, expected improvement = clamp it).
 @@ -159,8 +159,8 @@ export function saveBest(storage, score) {
  // --- Physics (movement + wall/paddle bounces) ------------------------------
- 
+
  // Advances the ball by a time step `dt` (in seconds) and handles bounces off
 -// the walls and the paddle. Does NOT handle bricks: that responsibility still
 -// lives in the render loop `frame()` (debt #2).
@@ -343,10 +343,10 @@ index 6b4a133..2b17e0e 100644
 @@ -206,30 +206,129 @@ export function step(state, dt) {
    return false;
  }
- 
+
 -// --- Rendering (DOM): brick collision logic STILL mixed in here ------------
 +// --- Brick collision (pure, tested) ----------------------------------------
- 
+
 -// Main render loop. For each live brick we test collision AND draw in the same
 -// pass: this is where logic and rendering are entangled.
 +// Resolves the ball against every live brick it overlaps. Destroys each
@@ -466,7 +466,7 @@ index 6b4a133..2b17e0e 100644
    // Background
    ctx.fillStyle = palette.background;
    ctx.fillRect(0, 0, WIDTH, HEIGHT);
- 
+
 -  // Bricks: collision + bounce + score + drawing, all in one place.
 +  // Bricks
    for (const brick of state.bricks) {
@@ -488,7 +488,7 @@ index 6b4a133..2b17e0e 100644
    }
 @@ -288,7 +387,7 @@ export function boot(doc = document) {
      last = now;
- 
+
      if (state.running) {
 -      const lost = step(state, dt);
 +      const lost = advance(state, dt);
@@ -513,7 +513,7 @@ index 250d6a9..f2290ef 100644
 +// progression.
  //
  // Run: `node --test "game/**/*.test.js"`  (or `npm test`)
- 
+
 @@ -13,6 +13,8 @@ import assert from 'node:assert/strict';
  import {
    collides,
@@ -526,7 +526,7 @@ index 250d6a9..f2290ef 100644
 @@ -52,6 +54,67 @@ test('step: ball exiting through the bottom => lost', () => {
    assert.equal(lost, true);
  });
- 
+
 +test('D1: top-face hit bounces the ball out and scores', () => {
 +  const state = createState(1);
 +  const brick = state.bricks.find((b) => b.row === 0 && b.x === 244);

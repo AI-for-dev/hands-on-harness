@@ -45,10 +45,10 @@ index 0000000..74183b8
 +test('D2 - Ball sticks to brick when resolution is missing', () => {
 +  const state = createState(1);
 +  const brick = state.bricks[0];
-+  
++
 +  // Position ball so it's already overlapping the brick
 +  state.ball.x = brick.x + brick.w / 2;
-+  state.ball.y = brick.y + 2; 
++  state.ball.y = brick.y + 2;
 +  state.ball.vy = 100;
 +  state.ball.vx = 0;
 +
@@ -59,15 +59,15 @@ index 0000000..74183b8
 +
 +  // First frame: collision detected, vy flipped to -100
 +  frame(ctx, state);
-+  
++
 +  // Simulate a small time step manually as if in the loop
 +  // Normally step() is called first, then frame().
 +  // But if we only change vy in frame(), let's see.
-+  
-+  // This test is more about how we CORRECT it. 
++
++  // This test is more about how we CORRECT it.
 +  // If the fix is just vy = -vy, the ball might stay inside.
 +  // For now, we just want to see that the current code doesn't resolve position.
-+  
++
 +  assert.notStrictEqual(state.ball.y, brick.y - state.ball.r, 'Ball should be pushed out of the brick');
 +});
 diff --git a/.scratch/to_fix.md b/.scratch/to_fix.md
@@ -93,7 +93,7 @@ index 0000000..b299a9c
 +    const state = createState(1);
 +    const brick = state.bricks[0];
 +    state.ball.x = brick.x + brick.w / 2;
-+    state.ball.y = brick.y - 2; 
++    state.ball.y = brick.y - 2;
 +    state.ball.vy = 100;
 +    state.ball.vx = 0;
 +    const ctx = { fillRect: ()=>{}, arc: ()=>{}, fill: ()=>{}, fillText: ()=>{}, beginPath: ()=>{} };
@@ -125,7 +125,7 @@ index 0000000..b299a9c
 +    const state = createState(1);
 +    const brick = state.bricks[0];
 +    state.ball.x = brick.x + brick.w / 2;
-+    state.ball.y = brick.y + 2; 
++    state.ball.y = brick.y + 2;
 +    state.ball.vy = 100;
 +    const ctx = { fillRect: ()=>{}, arc: ()=>{}, fill: ()=>{}, fillText: ()=>{}, beginPath: ()=>{} };
 +    frame(ctx, state);
@@ -221,8 +221,8 @@ index 0000000..b299a9c
 +    const brick = state.bricks[0];
 +    state.ball.x = brick.x + brick.w / 2;
 +    state.ball.y = brick.y - 10;
-+    state.ball.vy = 710; 
-+    // In one frame (dt=0.05), ball moves 35.5px. 
++    state.ball.vy = 710;
++    // In one frame (dt=0.05), ball moves 35.5px.
 +    // y becomes brick.y + 25.5 (passed through the 20px brick).
 +    // But it should have collided.
 +    const ctx = { fillRect: ()=>{}, arc: ()=>{}, fill: ()=>{}, fillText: ()=>{}, beginPath: ()=>{} };
@@ -243,7 +243,7 @@ index 6b4a133..77101d1 100644
 +++ b/game/neon.js
 @@ -102,9 +102,6 @@ export function createState(level = 1) {
  // --- Collision (tested primitive) ------------------------------------------
- 
+
  // True if the ball (circle approximated by its box) overlaps the brick.
 -// Simple AABB test: it only says WHETHER the ball and the brick overlap, not
 -// WHICH face was hit. The missing bounce in frame() is what lets the ball plow
@@ -254,7 +254,7 @@ index 6b4a133..77101d1 100644
 @@ -114,6 +111,83 @@ export function collides(ball, brick) {
    );
  }
- 
+
 +// Resolves collisions between the ball and all live bricks.
 +function resolveBricks(state, dt) {
 +  const { ball } = state;
@@ -270,12 +270,12 @@ index 6b4a133..77101d1 100644
 +    const isOverlapping = collides(ball, brick);
 +    const wasAbove = prevY + ball.r < brick.y;
 +    const isBelow = ball.y - ball.r > brick.y + brick.h;
-+    const tunnelY = wasAbove && isBelow && 
++    const tunnelY = wasAbove && isBelow &&
 +                   ball.x + ball.r > brick.x && ball.x - ball.r < brick.x + brick.w;
 +
 +    const wasLeft = prevX + ball.r < brick.x;
 +    const isRight = ball.x - ball.r > brick.x + brick.w;
-+    const tunnelX = wasLeft && isRight && 
++    const tunnelX = wasLeft && isRight &&
 +                   ball.y + ball.r > brick.y && ball.y - ball.r < brick.y + brick.h;
 +
 +    if (isOverlapping || tunnelY || tunnelX) {
@@ -300,7 +300,7 @@ index 6b4a133..77101d1 100644
 +        const dx2 = (brick.x + brick.w) - (ball.x - ball.r);
 +        const dy1 = (ball.y + ball.r) - brick.y;
 +        const dy2 = (brick.y + brick.h) - (ball.y - ball.r);
-+        
++
 +        const minX = Math.min(dx1, dx2);
 +        const minY = Math.min(dy1, dy2);
 +
@@ -333,11 +333,11 @@ index 6b4a133..77101d1 100644
 +}
 +
  // --- Score & combo (NOT covered by tests — debt #5) ------------------------
- 
+
  // Combo multiplier. UNBOUNDED today: a long combo makes the score blow up
 @@ -159,8 +233,7 @@ export function saveBest(storage, score) {
  // --- Physics (movement + wall/paddle bounces) ------------------------------
- 
+
  // Advances the ball by a time step `dt` (in seconds) and handles bounces off
 -// the walls and the paddle. Does NOT handle bricks: that responsibility still
 -// lives in the render loop `frame()` (debt #2).
@@ -348,7 +348,7 @@ index 6b4a133..77101d1 100644
 @@ -199,6 +272,9 @@ export function step(state, dt) {
      state.combo = 0; // touching the paddle resets the combo
    }
- 
+
 +  // Brick collisions
 +  resolveBricks(state, dt);
 +
@@ -358,7 +358,7 @@ index 6b4a133..77101d1 100644
 @@ -219,17 +295,6 @@ export function frame(ctx, state) {
    for (const brick of state.bricks) {
      if (!brick.alive) continue;
- 
+
 -    if (collides(state.ball, brick)) {
 -      brick.alive = false;
 -      state.combo += 1;
@@ -383,7 +383,7 @@ index 250d6a9..122c9d2 100644
  // a complete suite.
 -//
 -// Run: `node --test "game/**/*.test.js"`  (or `npm test`)
- 
+
  import { test } from 'node:test';
  import assert from 'node:assert/strict';
 @@ -18,6 +16,7 @@ import {
@@ -392,19 +392,19 @@ index 250d6a9..122c9d2 100644
    WIDTH,
 +  frame,
  } from './neon.js';
- 
+
  test('collides: clear overlap detected', () => {
 @@ -59,11 +58,63 @@ test('makeBricks: full, all-alive grid at start', () => {
    assert.ok(bricks.every((b) => b.x >= 0 && b.x + b.w <= WIDTH));
  });
- 
+
 -// Small local helper: place the ball below the field without importing the
 -// height (coverage intentionally light).
 +test('D1 - Ball bounces off bricks', () => {
 +  const state = createState(1);
 +  const brick = state.bricks[0];
 +  state.ball.x = brick.x + brick.w / 2;
-+  state.ball.y = brick.y - 2; 
++  state.ball.y = brick.y - 2;
 +  state.ball.vy = 100;
 +  state.ball.vx = 0;
 +  step(state, 0.01);
@@ -415,7 +415,7 @@ index 250d6a9..122c9d2 100644
 +  const state = createState(1);
 +  const brick = state.bricks[0];
 +  state.ball.x = brick.x + brick.w / 2;
-+  state.ball.y = brick.y + 2; 
++  state.ball.y = brick.y + 2;
 +  state.ball.vy = 100;
 +  step(state, 0.01);
 +  assert.ok(state.ball.y <= brick.y - state.ball.r || state.ball.y >= brick.y + brick.h + state.ball.r, 'Ball should be pushed out of the brick');
@@ -449,8 +449,8 @@ index 250d6a9..122c9d2 100644
 +  const brick = state.bricks[0];
 +  state.ball.x = brick.x + brick.w / 2;
 +  state.ball.y = brick.y - 10;
-+  state.ball.vy = 710; 
-+  // In one frame (dt=0.05), ball moves 35.5px. 
++  state.ball.vy = 710;
++  // In one frame (dt=0.05), ball moves 35.5px.
 +  // y becomes brick.y - 10 + 710 * 0.05 = brick.y + 25.5 (passed through the 20px brick).
 +  // But it should have collided.
 +  step(state, 0.05);

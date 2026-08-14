@@ -5,7 +5,7 @@ index 6b4a133..45879e8 100644
 @@ -114,6 +114,155 @@ export function collides(ball, brick) {
    );
  }
- 
+
 +// Anti-tunnelling sweep (#1): true if the ball swept from its previous position
 +// (recorded by `step` as `prevX`/`prevY`) to its current one crosses the brick
 +// at any point. Detection is discrete by default, so a fast ball can jump over
@@ -156,12 +156,12 @@ index 6b4a133..45879e8 100644
 +}
 +
  // --- Score & combo (NOT covered by tests — debt #5) ------------------------
- 
+
  // Combo multiplier. UNBOUNDED today: a long combo makes the score blow up
 @@ -165,6 +314,11 @@ export function saveBest(storage, score) {
  export function step(state, dt) {
    const { ball, paddle } = state;
- 
+
 +  // Record the pre-move position so `frame()` can sweep the travelled segment
 +  // against the bricks (anti-tunnelling, see #1).
 +  ball.prevX = ball.x;
@@ -169,10 +169,10 @@ index 6b4a133..45879e8 100644
 +
    ball.x += ball.vx * dt;
    ball.y += ball.vy * dt;
- 
+
 @@ -216,18 +370,25 @@ export function frame(ctx, state) {
    ctx.fillRect(0, 0, WIDTH, HEIGHT);
- 
+
    // Bricks: collision + bounce + score + drawing, all in one place.
 +  // `bounced` guards the neighbour rule (#1): marking the brick dead and
 +  // resolving the bounce exactly once per pass, so two overlapping bricks the
@@ -180,7 +180,7 @@ index 6b4a133..45879e8 100644
 +  let bounced = false;
    for (const brick of state.bricks) {
      if (!brick.alive) continue;
- 
+
 -    if (collides(state.ball, brick)) {
 +    if (sweptCollides(state.ball, brick)) {
        brick.alive = false;
@@ -200,14 +200,14 @@ index 6b4a133..45879e8 100644
 +        bounced = true;
 +      }
      }
- 
+
      ctx.fillStyle = brickColor(brick.row);
 diff --git a/game/neon.test.js b/game/neon.test.js
 index 250d6a9..8986a49 100644
 --- a/game/neon.test.js
 +++ b/game/neon.test.js
 @@ -12,6 +12,9 @@ import assert from 'node:assert/strict';
- 
+
  import {
    collides,
 +  resolveBrickHit,
@@ -219,7 +219,7 @@ index 250d6a9..8986a49 100644
 @@ -52,6 +55,66 @@ test('step: ball exiting through the bottom => lost', () => {
    assert.equal(lost, true);
  });
- 
+
 +test('resolveBrickHit: top hit flips vy up and pushes ball above the brick', () => {
 +  const brick = { x: 100, y: 100, w: 40, h: 20 };
 +  const ball = { x: 120, y: 104, r: 8, vx: 0, vy: 300 }; // descending into the top

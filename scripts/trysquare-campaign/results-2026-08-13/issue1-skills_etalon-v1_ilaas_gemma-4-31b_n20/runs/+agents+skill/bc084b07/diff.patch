@@ -4,7 +4,7 @@ index 6b4a133..2a17bfe 100644
 +++ b/game/neon.js
 @@ -159,12 +159,14 @@ export function saveBest(storage, score) {
  // --- Physics (movement + wall/paddle bounces) ------------------------------
- 
+
  // Advances the ball by a time step `dt` (in seconds) and handles bounces off
 -// the walls and the paddle. Does NOT handle bricks: that responsibility still
 -// lives in the render loop `frame()` (debt #2).
@@ -12,13 +12,13 @@ index 6b4a133..2a17bfe 100644
  // Returns `true` if the ball is lost (exits through the bottom).
  export function step(state, dt) {
    const { ball, paddle } = state;
- 
+
 +  const oldX = ball.x;
 +  const oldY = ball.y;
 +
    ball.x += ball.vx * dt;
    ball.y += ball.vy * dt;
- 
+
 @@ -193,10 +195,49 @@ export function step(state, dt) {
    ) {
      ball.y = paddle.y - ball.r;
@@ -66,15 +66,15 @@ index 6b4a133..2a17bfe 100644
 +        ball.vy = Math.abs(ball.vy);
 +        ball.y = brick.y + brick.h + ball.r;
 +      }
-+      break; 
++      break;
 +    }
    }
- 
+
    // Exit through the bottom: ball lost
 @@ -219,17 +260,6 @@ export function frame(ctx, state) {
    for (const brick of state.bricks) {
      if (!brick.alive) continue;
- 
+
 -    if (collides(state.ball, brick)) {
 -      brick.alive = false;
 -      state.combo += 1;

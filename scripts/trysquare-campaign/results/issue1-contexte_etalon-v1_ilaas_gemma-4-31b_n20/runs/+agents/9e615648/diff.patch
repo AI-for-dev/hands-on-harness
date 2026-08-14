@@ -40,5 +40,5 @@ index 6b4a133..faf4388 100644
 +        ball.vx = -Math.abs(ball.vx); // Bounce LEFT
 +      }
      }
- 
+
      ctx.fillStyle = brickColor(brick.row);

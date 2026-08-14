@@ -3,7 +3,7 @@ index 6b4a133..c1ce20d 100644
 --- a/game/neon.js
 +++ b/game/neon.js
 @@ -103,8 +103,7 @@ export function createState(level = 1) {
- 
+
  // True if the ball (circle approximated by its box) overlaps the brick.
  // Simple AABB test: it only says WHETHER the ball and the brick overlap, not
 -// WHICH face was hit. The missing bounce in frame() is what lets the ball plow
@@ -15,7 +15,7 @@ index 6b4a133..c1ce20d 100644
 @@ -114,6 +113,48 @@ export function collides(ball, brick) {
    );
  }
- 
+
 +// Reflects the ball off the face of the brick it overlapped and pushes it back
 +// out so it can never tunnel through. Returns `true` when a bounce happened.
 +// Which face was hit is decided by the axis of least penetration: a top/bottom
@@ -59,7 +59,7 @@ index 6b4a133..c1ce20d 100644
 +}
 +
  // --- Score & combo (NOT covered by tests — debt #5) ------------------------
- 
+
  // Combo multiplier. UNBOUNDED today: a long combo makes the score blow up
 @@ -223,11 +264,9 @@ export function frame(ctx, state) {
        brick.alive = false;
@@ -74,14 +74,14 @@ index 6b4a133..c1ce20d 100644
 +      // instead of tunneling through the brick (#1).
 +      bounceBall(state.ball, brick);
      }
- 
+
      ctx.fillStyle = brickColor(brick.row);
 diff --git a/game/neon.test.js b/game/neon.test.js
 index 250d6a9..a3feef2 100644
 --- a/game/neon.test.js
 +++ b/game/neon.test.js
 @@ -12,6 +12,7 @@ import assert from 'node:assert/strict';
- 
+
  import {
    collides,
 +  bounceBall,
@@ -91,7 +91,7 @@ index 250d6a9..a3feef2 100644
 @@ -45,6 +46,22 @@ test('step: bounce off the left wall', () => {
    assert.ok(state.ball.vx > 0, 'horizontal velocity should flip to the right');
  });
- 
+
 +test('bounceBall: top-face hit flips vy up and pushes ball out', () => {
 +  const brick = { x: 100, y: 100, w: 40, h: 20 };
 +  const ball = { x: 110, y: 95, r: 7, vx: 0, vy: 50 }; // bottom edge dips just into the top

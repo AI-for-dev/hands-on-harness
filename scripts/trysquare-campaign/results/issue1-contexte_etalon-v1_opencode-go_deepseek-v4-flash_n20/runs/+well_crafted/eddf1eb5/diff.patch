@@ -22,7 +22,7 @@ index 6b4a133..8d4a574 100644
 @@ -114,6 +122,100 @@ export function collides(ball, brick) {
    );
  }
- 
+
 +// --- Brick bounce (issue #1) ----------------------------------------------
 +
 +// Earliest parameter t in [0, 1] at which the ball-centre segment
@@ -118,12 +118,12 @@ index 6b4a133..8d4a574 100644
 +}
 +
  // --- Score & combo (NOT covered by tests — debt #5) ------------------------
- 
+
  // Combo multiplier. UNBOUNDED today: a long combo makes the score blow up
 @@ -165,6 +267,11 @@ export function saveBest(storage, score) {
  export function step(state, dt) {
    const { ball, paddle } = state;
- 
+
 +  // Remember where the ball started so brick collision can sweep the path
 +  // between the previous and the new position (see #1: tunnelling).
 +  ball.px = ball.x;
@@ -131,11 +131,11 @@ index 6b4a133..8d4a574 100644
 +
    ball.x += ball.vx * dt;
    ball.y += ball.vy * dt;
- 
+
 @@ -215,21 +322,22 @@ export function frame(ctx, state) {
    ctx.fillStyle = palette.background;
    ctx.fillRect(0, 0, WIDTH, HEIGHT);
- 
+
 -  // Bricks: collision + bounce + score + drawing, all in one place.
 -  for (const brick of state.bricks) {
 -    if (!brick.alive) continue;
@@ -164,7 +164,7 @@ index 6b4a133..8d4a574 100644
 +    state.combo += 1;
 +    state.score += scoreForBrick(hit, state.combo);
 +  }
- 
+
 +  for (const brick of state.bricks) {
      ctx.fillStyle = brickColor(brick.row);
      ctx.fillRect(brick.x, brick.y, brick.w, brick.h);
@@ -185,7 +185,7 @@ index 250d6a9..f456290 100644
 @@ -52,6 +54,76 @@ test('step: ball exiting through the bottom => lost', () => {
    assert.equal(lost, true);
  });
- 
+
 +// --- Issue #1: brick bounce -----------------------------------------------
 +
 +const brickRect = (x = 100, y = 100, w = 40, h = 20) => ({ x, y, w, h, alive: true });

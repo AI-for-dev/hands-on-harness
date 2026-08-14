@@ -35,7 +35,7 @@ index 6b4a133..2b8abed 100644
 @@ -114,6 +123,152 @@ export function collides(ball, brick) {
    );
  }
- 
+
 +// Whichever face the ball has penetrated least is the one it hit. Used only as
 +// a static-position fallback (a corner contact). Drives the per-face bounce.
 +function penetrationFace(ball, brick) {
@@ -183,12 +183,12 @@ index 6b4a133..2b8abed 100644
 +}
 +
  // --- Score & combo (NOT covered by tests — debt #5) ------------------------
- 
+
  // Combo multiplier. UNBOUNDED today: a long combo makes the score blow up
 @@ -165,6 +320,11 @@ export function saveBest(storage, score) {
  export function step(state, dt) {
    const { ball, paddle } = state;
- 
+
 +  // Record where the ball was this step, so the brick sweep (#1) can detect a
 +  // tunnelled crossing between the two positions.
 +  ball.px = ball.x;
@@ -196,11 +196,11 @@ index 6b4a133..2b8abed 100644
 +
    ball.x += ball.vx * dt;
    ball.y += ball.vy * dt;
- 
+
 @@ -215,21 +375,19 @@ export function frame(ctx, state) {
    ctx.fillStyle = palette.background;
    ctx.fillRect(0, 0, WIDTH, HEIGHT);
- 
+
 -  // Bricks: collision + bounce + score + drawing, all in one place.
 +  // Bricks: collision + bounce + score + drawing.
 +  // Collision is now resolved outside the draw loop (see brickCollision /
@@ -246,7 +246,7 @@ index 250d6a9..e673893 100644
 @@ -65,5 +67,72 @@ function belowField() {
    return 500;
  }
- 
+
 +// --- Issue #1: brick bounce -------------------------------------------------
 +// Each case from ISSUES.md #1 is covered: per-face bounce, corner, push-out
 +// (no sticky re-flip), neighbours (bounce exactly once) and tunnelling.

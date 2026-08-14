@@ -320,16 +320,16 @@ index 6b4a133..494f6ba 100644
 @@ -44,6 +44,10 @@ export const PADDLE_W = 96;
  export const PADDLE_H = 12;
  export const PADDLE_Y = HEIGHT - 32;
- 
+
 +// Minimum |hit| ratio kept at the paddle: a dead-centre contact must still
 +// give the ball a playable angle (|vx| >= PADDLE_HIT_MIN * 0.6 * ballSpeed).
 +const PADDLE_HIT_MIN = 0.15;
 +
  export const BALL_R = 7;
- 
+
  export const BRICK_ROWS = 5;
 @@ -103,8 +107,8 @@ export function createState(level = 1) {
- 
+
  // True if the ball (circle approximated by its box) overlaps the brick.
  // Simple AABB test: it only says WHETHER the ball and the brick overlap, not
 -// WHICH face was hit. The missing bounce in frame() is what lets the ball plow
@@ -342,7 +342,7 @@ index 6b4a133..494f6ba 100644
 @@ -114,6 +118,153 @@ export function collides(ball, brick) {
    );
  }
- 
+
 +// --- Brick collision (swept, pure logic) ----------------------------------
 +
 +// Tests the segment travelled by the ball during one step against a brick
@@ -491,11 +491,11 @@ index 6b4a133..494f6ba 100644
 +}
 +
  // --- Score & combo (NOT covered by tests — debt #5) ------------------------
- 
+
  // Combo multiplier. UNBOUNDED today: a long combo makes the score blow up
 @@ -159,11 +310,13 @@ export function saveBest(storage, score) {
  // --- Physics (movement + wall/paddle bounces) ------------------------------
- 
+
  // Advances the ball by a time step `dt` (in seconds) and handles bounces off
 -// the walls and the paddle. Does NOT handle bricks: that responsibility still
 -// lives in the render loop `frame()` (debt #2).
@@ -506,13 +506,13 @@ index 6b4a133..494f6ba 100644
    const { ball, paddle } = state;
 +  const x0 = ball.x;
 +  const y0 = ball.y;
- 
+
    ball.x += ball.vx * dt;
    ball.y += ball.vy * dt;
 @@ -183,19 +336,29 @@ export function step(state, dt) {
      ball.vy = Math.abs(ball.vy);
    }
- 
+
 -  // Paddle
 +  // Bricks: swept collision, one rebound per pass (score and combo live here).
 +  bounceBricks(state, x0, y0);
@@ -542,14 +542,14 @@ index 6b4a133..494f6ba 100644
 +    ball.vx = ballSpeed(state.level) * 0.6 * hitMin;
      state.combo = 0; // touching the paddle resets the combo
    }
- 
+
 @@ -206,30 +369,18 @@ export function step(state, dt) {
    return false;
  }
- 
+
 -// --- Rendering (DOM): brick collision logic STILL mixed in here ------------
 +// --- Rendering (DOM) -------------------------------------------------------
- 
+
 -// Main render loop. For each live brick we test collision AND draw in the same
 -// pass: this is where logic and rendering are entangled.
 +// Main render loop. Draws the field only: brick collision, bounce and score
@@ -558,7 +558,7 @@ index 6b4a133..494f6ba 100644
    // Background
    ctx.fillStyle = palette.background;
    ctx.fillRect(0, 0, WIDTH, HEIGHT);
- 
+
 -  // Bricks: collision + bounce + score + drawing, all in one place.
 +  // Bricks: drawing only — collision, bounce and score live in step().
    for (const brick of state.bricks) {

@@ -4,7 +4,7 @@ index 6b4a133..2b5e49e 100644
 +++ b/game/neon.js
 @@ -102,9 +102,6 @@ export function createState(level = 1) {
  // --- Collision (tested primitive) ------------------------------------------
- 
+
  // True if the ball (circle approximated by its box) overlaps the brick.
 -// Simple AABB test: it only says WHETHER the ball and the brick overlap, not
 -// WHICH face was hit. The missing bounce in frame() is what lets the ball plow
@@ -15,7 +15,7 @@ index 6b4a133..2b5e49e 100644
 @@ -114,6 +111,58 @@ export function collides(ball, brick) {
    );
  }
- 
+
 +/**
 + * Resolves collision between a ball and a brick.
 + * Returns true if a collision occurred.
@@ -69,12 +69,12 @@ index 6b4a133..2b5e49e 100644
 +
 +
  // --- Score & combo (NOT covered by tests — debt #5) ------------------------
- 
+
  // Combo multiplier. UNBOUNDED today: a long combo makes the score blow up
 @@ -219,15 +268,10 @@ export function frame(ctx, state) {
    for (const brick of state.bricks) {
      if (!brick.alive) continue;
- 
+
 -    if (collides(state.ball, brick)) {
 +    if (resolveBrickCollision(state.ball, brick)) {
        brick.alive = false;
@@ -86,7 +86,7 @@ index 6b4a133..2b5e49e 100644
 -      // row. Fix = a real per-face bounce (flip vy on a top/bottom hit, vx on a
 -      // side hit) plus pushing the ball back out of the brick.
      }
- 
+
      ctx.fillStyle = brickColor(brick.row);
 diff --git a/game/neon.test.js b/game/neon.test.js
 index 250d6a9..e1ac056 100644
@@ -104,7 +104,7 @@ index 250d6a9..e1ac056 100644
 -
  import { test } from 'node:test';
  import assert from 'node:assert/strict';
- 
+
 @@ -18,8 +9,30 @@ import {
    BRICK_ROWS,
    BRICK_COLS,
@@ -117,7 +117,7 @@ index 250d6a9..e1ac056 100644
 +  BRICK_W,
 +  resolveBrickCollision,
  } from './neon.js';
- 
+
 +// Helper to create a brick and ball setup
 +function setupCollision(ballPos, ballVel, brickPos) {
 +  const state = createState(1);
@@ -137,7 +137,7 @@ index 250d6a9..e1ac056 100644
    const ball = { x: 100, y: 100, r: 8 };
    const brick = { x: 90, y: 90, w: 40, h: 20 };
 @@ -47,7 +60,7 @@ test('step: bounce off the left wall', () => {
- 
+
  test('step: ball exiting through the bottom => lost', () => {
    const state = createState(1);
 -  state.ball = { x: 320, y: belowField(), r: 7, vx: 0, vy: 400 };
@@ -148,7 +148,7 @@ index 250d6a9..e1ac056 100644
 @@ -59,11 +72,48 @@ test('makeBricks: full, all-alive grid at start', () => {
    assert.ok(bricks.every((b) => b.x >= 0 && b.x + b.w <= WIDTH));
  });
- 
+
 -// Small local helper: place the ball below the field without importing the
 -// height (coverage intentionally light).
 -function belowField() {
@@ -164,7 +164,7 @@ index 250d6a9..e1ac056 100644
 +  assert.equal(Math.sign(ball.vy), DOWN, 'velocity should flip to DOWN');
 +  assert.ok(ball.y > 80, 'ball should be pushed out to the bottom');
 +});
- 
+
 -// TODO (#5): test comboMultiplier / scoreForBrick.
 -// TODO      : test level progression and loadBest/saveBest persistence.
 +test('resolveBrickCollision: bounce from top (hit top face)', () => {

@@ -26,7 +26,7 @@ index 6b4a133..b2b9ebb 100644
 +        // Hit side face
 +        state.ball.vx = -state.ball.vx;
 +        // Push ball out of brick to prevent sticking
-+        state.ball.x += state.ball.vx * 0.01; 
++        state.ball.x += state.ball.vx * 0.01;
 +      } else {
 +        // Hit top/bottom face
 +        state.ball.vy = -state.ball.vy;
@@ -34,5 +34,5 @@ index 6b4a133..b2b9ebb 100644
 +        state.ball.y += state.ball.vy * 0.01;
 +      }
      }
- 
+
      ctx.fillStyle = brickColor(brick.row);

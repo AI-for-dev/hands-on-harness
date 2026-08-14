@@ -33,5 +33,5 @@ index 6b4a133..4604809 100644
 +        ball.y = dyTop < dyBottom ? brick.y - ball.r : brick.y + brick.h + ball.r;
 +      }
      }
- 
+
      ctx.fillStyle = brickColor(brick.row);

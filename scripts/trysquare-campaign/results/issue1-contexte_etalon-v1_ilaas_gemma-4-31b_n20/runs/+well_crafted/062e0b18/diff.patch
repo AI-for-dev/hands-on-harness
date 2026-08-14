@@ -5,23 +5,23 @@ index 6b4a133..e46f3c5 100644
 @@ -165,6 +165,10 @@ export function saveBest(storage, score) {
  export function step(state, dt) {
    const { ball, paddle } = state;
- 
+
 +  // Store previous position for tunneling detection
 +  state.ball.prevX = ball.x;
 +  state.ball.prevY = ball.y;
 +
    ball.x += ball.vx * dt;
    ball.y += ball.vy * dt;
- 
+
 @@ -219,15 +223,50 @@ export function frame(ctx, state) {
    for (const brick of state.bricks) {
      if (!brick.alive) continue;
- 
+
 -    if (collides(state.ball, brick)) {
 +    // Sweep collision: check if the ball's path since last frame intersects the brick.
 +    const prevX = state.ball.prevX ?? state.ball.x;
 +    const prevY = state.ball.prevY ?? state.ball.y;
-+    
++
 +    const tunneled = (
 +      (prevY + state.ball.r <= brick.y + brick.h && state.ball.y - state.ball.r >= brick.y) ||
 +      (prevY - state.ball.r >= brick.y && state.ball.y + state.ball.r <= brick.y + brick.h)
@@ -68,7 +68,7 @@ index 6b4a133..e46f3c5 100644
 -      // row. Fix = a real per-face bounce (flip vy on a top/bottom hit, vx on a
 -      // side hit) plus pushing the ball back out of the brick.
      }
- 
+
      ctx.fillStyle = brickColor(brick.row);
 diff --git a/game/neon.test.js b/game/neon.test.js
 index 250d6a9..08f2261 100644
@@ -86,20 +86,20 @@ index 250d6a9..08f2261 100644
 -
  import { test } from 'node:test';
  import assert from 'node:assert/strict';
- 
+
 @@ -18,8 +9,24 @@ import {
    BRICK_ROWS,
    BRICK_COLS,
    WIDTH,
-+  // We will need the internal collision logic for these tests, 
++  // We will need the internal collision logic for these tests,
 +  // but since the requirement says only modify neon.js and neon.test.js,
-+  // and current neon.js doesn't export brickHit, we'll test via frame() 
++  // and current neon.js doesn't export brickHit, we'll test via frame()
 +  // or by adding it to the exports of neon.js.
-+  // Actually, the requirement says "do not change public API", but 
-+  // adding an export for testing purposes is usually okay if we don't 
++  // Actually, the requirement says "do not change public API", but
++  // adding an export for testing purposes is usually okay if we don't
 +  // change existing ones. However, I can just use the state.
  } from './neon.js';
- 
+
 +// Mock canvas for frame()
 +const mockCtx = {
 +  fillRect: () => {},
@@ -113,7 +113,7 @@ index 250d6a9..08f2261 100644
    const ball = { x: 100, y: 100, r: 8 };
    const brick = { x: 90, y: 90, w: 40, h: 20 };
 @@ -47,7 +54,7 @@ test('step: bounce off the left wall', () => {
- 
+
  test('step: ball exiting through the bottom => lost', () => {
    const state = createState(1);
 -  state.ball = { x: 320, y: belowField(), r: 7, vx: 0, vy: 400 };
@@ -124,7 +124,7 @@ index 250d6a9..08f2261 100644
 @@ -59,11 +66,105 @@ test('makeBricks: full, all-alive grid at start', () => {
    assert.ok(bricks.every((b) => b.x >= 0 && b.x + b.w <= WIDTH));
  });
- 
+
 -// Small local helper: place the ball below the field without importing the
 -// height (coverage intentionally light).
 -function belowField() {
@@ -139,10 +139,10 @@ index 250d6a9..08f2261 100644
 +  const brick = { x: 100, y: 100, w: 100, h: 20, alive: true, points: 10 };
 +  state.bricks = [brick];
 +  // Ball moving UP, hitting the BOTTOM face of the brick
-+  state.ball = { x: 150, y: 121, r: 7, vx: 0, vy: -200 }; 
-+  
++  state.ball = { x: 150, y: 121, r: 7, vx: 0, vy: -200 };
++
 +  frame(mockCtx, state);
-+  
++
 +  assert.equal(brick.alive, false, 'brick should be destroyed');
 +  assert.ok(state.ball.vy > 0, 'vy should be flipped to DOWN');
 +  assert.ok(state.ball.y >= 120 + 7, 'ball should be pushed out of the brick');
@@ -154,9 +154,9 @@ index 250d6a9..08f2261 100644
 +  state.bricks = [brick];
 +  // Ball moving DOWN, hitting the TOP face of the brick
 +  state.ball = { x: 150, y: 99, r: 7, vx: 0, vy: 200 };
-+  
++
 +  frame(mockCtx, state);
-+  
++
 +  assert.equal(brick.alive, false);
 +  assert.ok(state.ball.vy < 0, 'vy should be flipped to UP');
 +  assert.ok(state.ball.y <= 100 - 7, 'ball should be pushed out of the brick');
@@ -168,9 +168,9 @@ index 250d6a9..08f2261 100644
 +  state.bricks = [brick];
 +  // Ball moving RIGHT, hitting the LEFT face of the brick
 +  state.ball = { x: 99, y: 110, r: 7, vx: 200, vy: 0 };
-+  
++
 +  frame(mockCtx, state);
-+  
++
 +  assert.equal(brick.alive, false);
 +  assert.ok(state.ball.vx < 0, 'vx should be flipped to LEFT');
 +  assert.ok(state.ball.x <= 100 - 7, 'ball should be pushed out of the brick');
@@ -182,14 +182,14 @@ index 250d6a9..08f2261 100644
 +  state.bricks = [brick];
 +  // Ball moving LEFT, hitting the RIGHT face of the brick
 +  state.ball = { x: 201, y: 110, r: 7, vx: -200, vy: 0 };
-+  
++
 +  frame(mockCtx, state);
-+  
++
 +  assert.equal(brick.alive, false);
 +  assert.ok(state.ball.vx > 0, 'vx should be flipped to RIGHT');
 +  assert.ok(state.ball.x >= 200 + 7, 'ball should be pushed out of the brick');
 +});
- 
+
 -// TODO (#5): test comboMultiplier / scoreForBrick.
 -// TODO      : test level progression and loadBest/saveBest persistence.
 +test('brick bounce: corner hit (flip both)', () => {
@@ -200,9 +200,9 @@ index 250d6a9..08f2261 100644
 +  // x = 100 - 7 = 93, y = 120 + 7 = 127.
 +  // We place it exactly such that penetration is equal on both axes.
 +  state.ball = { x: 99, y: 121, r: 7, vx: 200, vy: -200 };
-+  
++
 +  frame(mockCtx, state);
-+  
++
 +  assert.equal(brick.alive, false);
 +  assert.ok(state.ball.vx < 0, 'vx should be flipped to LEFT');
 +  assert.ok(state.ball.vy > 0, 'vy should be flipped to DOWN');
@@ -212,25 +212,25 @@ index 250d6a9..08f2261 100644
 +  const state = createState(1);
 +  const brick = { x: 100, y: 100, w: 100, h: 20, alive: true, points: 10 };
 +  state.bricks = [brick];
-+  
-+  // Ball is moving very fast. 
++
++  // Ball is moving very fast.
 +  // In one step it jumps from y=80 to y=130, skipping the brick (100-120).
 +  state.ball = { x: 150, y: 80, r: 7, vx: 0, vy: 1000 };
-+  
++
 +  // Since brick collision is currently in frame(), and frame() doesn't know about the previous position,
 +  // this test will currently FAIL unless we move collision to step() or implement sweeping.
-+  // The issue says "Sweep between the two positions". 
++  // The issue says "Sweep between the two positions".
 +  // This means we need the position BEFORE the step.
-+  
++
 +  // For now, let's see if frame() handles it. It won't because it's discrete.
 +  // I will implement the fix and then this test should pass.
-+  
++
 +  // To properly test tunneling, I need to call step(state, dt) then frame(ctx, state).
 +  const dt = 0.05; // 50ms
 +  const oldY = state.ball.y;
 +  step(state, dt); // ball.y becomes 80 + 1000*0.05 = 130
 +  frame(mockCtx, state);
-+  
++
 +  assert.equal(brick.alive, false, 'brick should be destroyed even if ball tunneled through');
 +  assert.ok(state.ball.vy < 0, 'ball should have bounced back');
 +});

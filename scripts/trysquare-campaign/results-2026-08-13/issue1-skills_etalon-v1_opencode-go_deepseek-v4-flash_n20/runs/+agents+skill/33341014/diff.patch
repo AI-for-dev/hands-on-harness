@@ -17,23 +17,23 @@ index 6b4a133..5b52888 100644
 +// only draws. The module runs nothing on import: only `boot()` touches the
 +// DOM. Pure logic can therefore be imported from the tests (`node --test`)
 +// without a browser.
- 
+
  import { palette, brickColor } from './theme.js';
  import { createGlowMap, drawGlow, GLOW_W, GLOW_H } from './bloom.js';
 @@ -53,6 +51,11 @@ export const BRICK_H = 20;
  export const BRICK_GAP = 8;
  export const BRICK_TOP = 48;
- 
+
 +// Minimum paddle hit (fraction of the paddle half-width) kept after a bounce:
 +// a dead-center hit (hit = 0) must still give the ball a horizontal drift, or
 +// the ball loops vertically forever (defect D8, dead angle).
 +export const MIN_PADDLE_HIT = 0.1;
 +
  const STORAGE_KEY = 'neon.best';
- 
+
  // --- State construction ----------------------------------------------------
 @@ -103,8 +106,7 @@ export function createState(level = 1) {
- 
+
  // True if the ball (circle approximated by its box) overlaps the brick.
  // Simple AABB test: it only says WHETHER the ball and the brick overlap, not
 -// WHICH face was hit. The missing bounce in frame() is what lets the ball plow
@@ -45,7 +45,7 @@ index 6b4a133..5b52888 100644
 @@ -114,6 +116,150 @@ export function collides(ball, brick) {
    );
  }
- 
+
 +// --- Brick collision (swept resolution, tested) ----------------------------
 +
 +// How far past the contact point the ball is nudged, so it never starts the
@@ -191,11 +191,11 @@ index 6b4a133..5b52888 100644
 +}
 +
  // --- Score & combo (NOT covered by tests — debt #5) ------------------------
- 
+
  // Combo multiplier. UNBOUNDED today: a long combo makes the score blow up
 @@ -159,11 +305,14 @@ export function saveBest(storage, score) {
  // --- Physics (movement + wall/paddle bounces) ------------------------------
- 
+
  // Advances the ball by a time step `dt` (in seconds) and handles bounces off
 -// the walls and the paddle. Does NOT handle bricks: that responsibility still
 -// lives in the render loop `frame()` (debt #2).
@@ -207,13 +207,13 @@ index 6b4a133..5b52888 100644
  export function step(state, dt) {
    const { ball, paddle } = state;
 +  const prev = { x: ball.x, y: ball.y };
- 
+
    ball.x += ball.vx * dt;
    ball.y += ball.vy * dt;
 @@ -183,22 +332,39 @@ export function step(state, dt) {
      ball.vy = Math.abs(ball.vy);
    }
- 
+
 -  // Paddle
 -  if (
 -    ball.vy > 0 &&
@@ -257,7 +257,7 @@ index 6b4a133..5b52888 100644
 +      state.combo = 0; // touching the paddle resets the combo
 +    }
    }
- 
+
 +  // Bricks: swept resolution (bounce + break + score).
 +  resolveBricks(state, prev);
 +
@@ -267,10 +267,10 @@ index 6b4a133..5b52888 100644
 @@ -206,30 +372,18 @@ export function step(state, dt) {
    return false;
  }
- 
+
 -// --- Rendering (DOM): brick collision logic STILL mixed in here ------------
 +// --- Rendering (DOM) -------------------------------------------------------
- 
+
 -// Main render loop. For each live brick we test collision AND draw in the same
 -// pass: this is where logic and rendering are entangled.
 +// Main render loop. Collision logic now lives in `step()`/`resolveBricks()`;
@@ -279,7 +279,7 @@ index 6b4a133..5b52888 100644
    // Background
    ctx.fillStyle = palette.background;
    ctx.fillRect(0, 0, WIDTH, HEIGHT);
- 
+
 -  // Bricks: collision + bounce + score + drawing, all in one place.
 +  // Bricks: draw the live ones only.
    for (const brick of state.bricks) {
@@ -314,7 +314,7 @@ index 250d6a9..50210c1 100644
 @@ -59,11 +60,122 @@ test('makeBricks: full, all-alive grid at start', () => {
    assert.ok(bricks.every((b) => b.x >= 0 && b.x + b.w <= WIDTH));
  });
- 
+
 +// D1: a ball inside a brick gets deflected and pushed out
 +// (defect D1, .scratch/to_fix.md: no bounce at all on bricks)
 +test('D1: a ball inside a brick gets deflected and pushed out', () => {
@@ -426,7 +426,7 @@ index 250d6a9..50210c1 100644
  function belowField() {
    return 500;
  }
- 
+
 +// Row-major brick lookup: brick(row, col).
 +function brick(state, row, col) {
 +  return state.bricks[row * BRICK_COLS + col];

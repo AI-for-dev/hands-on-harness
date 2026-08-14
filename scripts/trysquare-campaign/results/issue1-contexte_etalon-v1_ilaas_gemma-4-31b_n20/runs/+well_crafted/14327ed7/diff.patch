@@ -4,7 +4,7 @@ index 6b4a133..939dc06 100644
 +++ b/game/neon.js
 @@ -102,9 +102,6 @@ export function createState(level = 1) {
  // --- Collision (tested primitive) ------------------------------------------
- 
+
  // True if the ball (circle approximated by its box) overlaps the brick.
 -// Simple AABB test: it only says WHETHER the ball and the brick overlap, not
 -// WHICH face was hit. The missing bounce in frame() is what lets the ball plow
@@ -15,7 +15,7 @@ index 6b4a133..939dc06 100644
 @@ -114,6 +111,53 @@ export function collides(ball, brick) {
    );
  }
- 
+
 +/**
 + * Resolves collision between ball and brick.
 + * Implements the physics required by ISSUE.md #1.
@@ -64,12 +64,12 @@ index 6b4a133..939dc06 100644
 +
 +
  // --- Score & combo (NOT covered by tests — debt #5) ------------------------
- 
+
  // Combo multiplier. UNBOUNDED today: a long combo makes the score blow up
 @@ -165,9 +209,21 @@ export function saveBest(storage, score) {
  export function step(state, dt) {
    const { ball, paddle } = state;
- 
+
 +  // Sweep collision detection for bricks to prevent tunneling (#1)
 +  // We check if the ball crossed any brick during this time step.
 +  const prevX = ball.x;
@@ -77,12 +77,12 @@ index 6b4a133..939dc06 100644
 +
    ball.x += ball.vx * dt;
    ball.y += ball.vy * dt;
- 
+
 +  // To handle tunneling, we could use a more robust sweep, but a simple
-+  // approach for this arcade game is to check if the ball was "inside" 
++  // approach for this arcade game is to check if the ball was "inside"
 +  // a brick at the start of the step or if it's inside now.
 +  // However, the current architecture handles brick collisions in frame().
-+  // Let's move the brick collision logic from frame() to step() to allow 
++  // Let's move the brick collision logic from frame() to step() to allow
 +  // better physics control and potential sub-stepping.
 +
    // Side walls
@@ -108,12 +108,12 @@ index 6b4a133..939dc06 100644
 +      state.score += scoreForBrick(brick, state.combo);
 +    }
    }
- 
+
    // Exit through the bottom: ball lost
 @@ -215,21 +280,9 @@ export function frame(ctx, state) {
    ctx.fillStyle = palette.background;
    ctx.fillRect(0, 0, WIDTH, HEIGHT);
- 
+
 -  // Bricks: collision + bounce + score + drawing, all in one place.
 +  // Bricks: drawing only.
    for (const brick of state.bricks) {
@@ -149,7 +149,7 @@ index 250d6a9..6cefedc 100644
 -
  import { test } from 'node:test';
  import assert from 'node:assert/strict';
- 
+
 @@ -18,6 +9,14 @@ import {
    BRICK_ROWS,
    BRICK_COLS,
@@ -163,10 +163,10 @@ index 250d6a9..6cefedc 100644
 +  BRICK_W,
 +  resolveBrickCollision,
  } from './neon.js';
- 
+
  test('collides: clear overlap detected', () => {
 @@ -47,7 +46,7 @@ test('step: bounce off the left wall', () => {
- 
+
  test('step: ball exiting through the bottom => lost', () => {
    const state = createState(1);
 -  state.ball = { x: 320, y: belowField(), r: 7, vx: 0, vy: 400 };
@@ -177,7 +177,7 @@ index 250d6a9..6cefedc 100644
 @@ -59,11 +58,45 @@ test('makeBricks: full, all-alive grid at start', () => {
    assert.ok(bricks.every((b) => b.x >= 0 && b.x + b.w <= WIDTH));
  });
- 
+
 -// Small local helper: place the ball below the field without importing the
 -// height (coverage intentionally light).
 -function belowField() {
@@ -208,7 +208,7 @@ index 250d6a9..6cefedc 100644
 +  assert.equal(ball.vx, -100, 'vx should flip when hitting left face');
 +  assert.equal(ball.x, 80 - 7, 'ball should be pushed out to left');
 +});
- 
+
 -// TODO (#5): test comboMultiplier / scoreForBrick.
 -// TODO      : test level progression and loadBest/saveBest persistence.
 +test('brick bounce: hit right face', () => {

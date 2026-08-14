@@ -3,9 +3,9 @@ index 6b4a133..e6951f6 100644
 --- a/game/neon.js
 +++ b/game/neon.js
 @@ -158,16 +158,51 @@ export function saveBest(storage, score) {
- 
+
  // --- Physics (movement + wall/paddle bounces) ------------------------------
- 
+
 +// Handles collisions between the ball and the bricks.
 +export function handleBrickCollisions(state) {
 +  const { ball } = state;
@@ -48,10 +48,10 @@ index 6b4a133..e6951f6 100644
 +// the walls and the paddle.
  export function step(state, dt) {
    const { ball, paddle } = state;
- 
+
    ball.x += ball.vx * dt;
    ball.y += ball.vy * dt;
- 
+
 +  handleBrickCollisions(state);
 +
    // Side walls
@@ -60,12 +60,12 @@ index 6b4a133..e6951f6 100644
 @@ -215,21 +250,10 @@ export function frame(ctx, state) {
    ctx.fillStyle = palette.background;
    ctx.fillRect(0, 0, WIDTH, HEIGHT);
- 
+
 -  // Bricks: collision + bounce + score + drawing, all in one place.
 +  // Bricks: only drawing now. Collision is handled in step() via handleBrickCollisions().
    for (const brick of state.bricks) {
      if (!brick.alive) continue;
- 
+
 -    if (collides(state.ball, brick)) {
 -      brick.alive = false;
 -      state.combo += 1;
@@ -87,7 +87,7 @@ index 250d6a9..0406742 100644
 @@ -65,5 +65,37 @@ function belowField() {
    return 500;
  }
- 
+
 -// TODO (#5): test comboMultiplier / scoreForBrick.
 -// TODO      : test level progression and loadBest/saveBest persistence.
 +// ... (after the existing tests)
@@ -97,12 +97,12 @@ index 250d6a9..0406742 100644
 +  const brick = state.bricks[0];
 +  // Ball is moving DOWN, hits the top of the brick
 +  state.ball = { x: brick.x + brick.w / 2, y: brick.y - 8, r: 7, vx: 0, vy: 100 };
-+  
++
 +  // We simulate a few steps. We expect the ball to bounce UP.
 +  // Note: brick collision is currently in frame(), so step() won't trigger it.
 +  // This test is EXPECTED to fail until the logic is moved to step().
 +  for(let i=0; i<10; i++) step(state, 1/60);
-+  
++
 +  assert.ok(state.ball.vy < 0, 'ball should bounce UP after hitting the top of a brick');
 +  assert.ok(!brick.alive, 'brick should be destroyed');
 +});
@@ -112,14 +112,14 @@ index 250d6a9..0406742 100644
 +  const brick = state.bricks[0];
 +  // Ball is moving RIGHT, starts just before the brick
 +  state.ball = { x: brick.x - 8, y: brick.y + brick.h / 2, r: 7, vx: 200, vy: 0 };
-+  
++
 +  for(let i=0; i<10; i++) {
 +    step(state, 1/60);
 +    if (collides(state.ball, brick)) {
 +      console.log(`Step ${i}: Collided! vx=${state.ball.vx}, alive=${brick.alive}`);
 +    }
 +  }
-+  
++
 +  console.log(`Final Ball vx: ${state.ball.vx}`);
 +  assert.ok(state.ball.vx < 0, 'ball should bounce LEFT after hitting the side of a brick');
 +  assert.ok(!brick.alive, 'brick should be destroyed');

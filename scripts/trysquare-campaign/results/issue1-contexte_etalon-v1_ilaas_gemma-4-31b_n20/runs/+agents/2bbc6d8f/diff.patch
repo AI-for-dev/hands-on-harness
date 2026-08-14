@@ -28,5 +28,5 @@ index 6b4a133..d487636 100644
 +        state.ball.y += Math.sign(dy) * (absY - brick.h / 2 + state.ball.r);
 +      }
      }
- 
+
      ctx.fillStyle = brickColor(brick.row);

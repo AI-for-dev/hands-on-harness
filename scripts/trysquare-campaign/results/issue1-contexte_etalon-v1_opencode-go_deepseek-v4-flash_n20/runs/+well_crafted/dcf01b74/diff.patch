@@ -5,7 +5,7 @@ index 6b4a133..d036e64 100644
 @@ -114,6 +114,107 @@ export function collides(ball, brick) {
    );
  }
- 
+
 +// Same AABB overlap test as collides(), but evaluated with the ball CENTERED at
 +// an arbitrary (x, y) instead of its stored position. Used by brickHit() while
 +// sweeping along the ball's path (see tunnelling, ISSUES.md #1).
@@ -108,12 +108,12 @@ index 6b4a133..d036e64 100644
 +}
 +
  // --- Score & combo (NOT covered by tests — debt #5) ------------------------
- 
+
  // Combo multiplier. UNBOUNDED today: a long combo makes the score blow up
 @@ -165,6 +266,11 @@ export function saveBest(storage, score) {
  export function step(state, dt) {
    const { ball, paddle } = state;
- 
+
 +  // Remember where the ball came from so brickHit() can sweep its path and
 +  // catch tunnelling (see ISSUES.md #1).
 +  ball.px = ball.x;
@@ -121,11 +121,11 @@ index 6b4a133..d036e64 100644
 +
    ball.x += ball.vx * dt;
    ball.y += ball.vy * dt;
- 
+
 @@ -215,21 +321,19 @@ export function frame(ctx, state) {
    ctx.fillStyle = palette.background;
    ctx.fillRect(0, 0, WIDTH, HEIGHT);
- 
+
 -  // Bricks: collision + bounce + score + drawing, all in one place.
 +  // Bricks: bounce + scoring resolved first (pure, tested — see brickHit), then
 +  // drawn. Rendering no longer encodes any collision logic.
@@ -160,7 +160,7 @@ index 250d6a9..60b88cb 100644
 --- a/game/neon.test.js
 +++ b/game/neon.test.js
 @@ -12,6 +12,7 @@ import assert from 'node:assert/strict';
- 
+
  import {
    collides,
 +  brickHit,
@@ -170,7 +170,7 @@ index 250d6a9..60b88cb 100644
 @@ -59,6 +60,130 @@ test('makeBricks: full, all-alive grid at start', () => {
    assert.ok(bricks.every((b) => b.x >= 0 && b.x + b.w <= WIDTH));
  });
- 
+
 +// --- Brick bounce (#1) ------------------------------------------------------
 +
 +// A single 40x20 brick sitting at (100,100), plus a helper that builds a ball.

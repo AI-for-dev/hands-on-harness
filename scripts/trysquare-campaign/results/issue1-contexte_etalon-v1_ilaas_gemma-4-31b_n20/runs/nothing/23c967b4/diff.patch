@@ -38,5 +38,5 @@ index 6b4a133..7a591b2 100644
 +        else state.ball.y = brickBottom + state.ball.r;
 +      }
      }
- 
+
      ctx.fillStyle = brickColor(brick.row);

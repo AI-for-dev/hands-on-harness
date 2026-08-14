@@ -5,7 +5,7 @@ index 6b4a133..a7cbd75 100644
 @@ -215,6 +215,9 @@ export function frame(ctx, state) {
    ctx.fillStyle = palette.background;
    ctx.fillRect(0, 0, WIDTH, HEIGHT);
- 
+
 +  let bouncedX = false;
 +  let bouncedY = false;
 +
@@ -49,7 +49,7 @@ index 6b4a133..a7cbd75 100644
 +        bouncedY = true;
 +      }
      }
- 
+
      ctx.fillStyle = brickColor(brick.row);
 diff --git a/game/neon.test.js b/game/neon.test.js
 index 250d6a9..d000113 100644
@@ -67,11 +67,11 @@ index 250d6a9..d000113 100644
 +  BALL_R,
    WIDTH,
  } from './neon.js';
- 
+
 @@ -65,5 +67,65 @@ function belowField() {
    return 500;
  }
- 
+
 -// TODO (#5): test comboMultiplier / scoreForBrick.
 -// TODO      : test level progression and loadBest/saveBest persistence.
 +test('frame: ball bounces off top face of brick', () => {
@@ -85,30 +85,30 @@ index 250d6a9..d000113 100644
 +  };
 +  const brick = state.bricks[0];
 +  state.ball = { x: brick.x + brick.w / 2, y: brick.y - BALL_R + 1, r: BALL_R, vx: 0, vy: 300 };
-+  
++
 +  frame(ctx, state);
-+  
++
 +  assert.equal(state.ball.vy, -300, 'Ball should bounce UP');
 +});
 +
 +test('frame: ball does not double-bounce at brick seam', () => {
 +  const state = createState(1);
 +  const ctx = { fillRect: () => {}, arc: () => {}, fill: () => {}, beginPath: () => {}, fillText: () => {} };
-+  
++
 +  const bricks = state.bricks;
 +  const offsetX = bricks[0].x;
-+  
++
 +  // Ball overlapping both, moving LEFT
-+  state.ball = { 
-+    x: offsetX + 76, 
-+    y: bricks[0].y + bricks[0].h / 2, 
-+    r: BALL_R, 
-+    vx: -300, 
-+    vy: 0 
++  state.ball = {
++    x: offsetX + 76,
++    y: bricks[0].y + bricks[0].h / 2,
++    r: BALL_R,
++    vx: -300,
++    vy: 0
 +  };
-+  
++
 +  frame(ctx, state);
-+  
++
 +  assert.ok(state.ball.vx > 0, 'Ball should have bounced once and be moving RIGHT');
 +});
 +
@@ -116,23 +116,23 @@ index 250d6a9..d000113 100644
 +  const state = createState(1);
 +  const ctx = { fillRect: () => {}, arc: () => {}, fill: () => {}, beginPath: () => {}, fillText: () => {} };
 +  const brick = state.bricks[0];
-+  
++
 +  // Position ball at the top-left corner of the brick
 +  // Brick is at (brick.x, brick.y)
 +  // We want overlapL and overlapT to be equal and smallest.
 +  // Let's set overlapL = 1 and overlapT = 1.
 +  // overlapL = (x + r) - brick.x => x + 7 - brick.x = 1 => x = brick.x - 6
 +  // overlapT = (y + r) - brick.y => y + 7 - brick.y = 1 => y = brick.y - 6
-+  state.ball = { 
-+    x: brick.x - 6, 
-+    y: brick.y - 6, 
-+    r: BALL_R, 
-+    vx: 300, 
-+    vy: 300 
++  state.ball = {
++    x: brick.x - 6,
++    y: brick.y - 6,
++    r: BALL_R,
++    vx: 300,
++    vy: 300
 +  };
-+  
++
 +  frame(ctx, state);
-+  
++
 +  assert.ok(state.ball.vx < 0, 'Should flip vx');
 +  assert.ok(state.ball.vy < 0, 'Should flip vy');
 +});

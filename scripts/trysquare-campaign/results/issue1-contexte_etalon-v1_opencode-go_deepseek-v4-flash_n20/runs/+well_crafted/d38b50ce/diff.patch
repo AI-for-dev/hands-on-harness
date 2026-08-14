@@ -5,7 +5,7 @@ index 6b4a133..84705cd 100644
 @@ -114,6 +114,106 @@ export function collides(ball, brick) {
    );
  }
- 
+
 +// --- Brick bounce & swept collision (issue #1) ------------------------------
 +
 +// Pushes the ball out of `brick` and flips the velocity component(s) for the
@@ -107,12 +107,12 @@ index 6b4a133..84705cd 100644
 +}
 +
  // --- Score & combo (NOT covered by tests — debt #5) ------------------------
- 
+
  // Combo multiplier. UNBOUNDED today: a long combo makes the score blow up
 @@ -165,6 +265,11 @@ export function saveBest(storage, score) {
  export function step(state, dt) {
    const { ball, paddle } = state;
- 
+
 +  // Remember where the ball came from so the brick pass (`brickHit`) can sweep
 +  // this segment and not tunnel through a brick on a fast/stuttered step (#1).
 +  ball.prevX = ball.x;
@@ -120,11 +120,11 @@ index 6b4a133..84705cd 100644
 +
    ball.x += ball.vx * dt;
    ball.y += ball.vy * dt;
- 
+
 @@ -215,21 +320,17 @@ export function frame(ctx, state) {
    ctx.fillStyle = palette.background;
    ctx.fillRect(0, 0, WIDTH, HEIGHT);
- 
+
 -  // Bricks: collision + bounce + score + drawing, all in one place.
 +  // Bricks: bounce + score + drawing. The collision itself is the pure swept
 +  // check `brickHit` (#1): it destroys every brick the ball crosses, applies
@@ -167,7 +167,7 @@ index 250d6a9..7eb2842 100644
 @@ -65,5 +66,93 @@ function belowField() {
    return 500;
  }
- 
+
 +// --- Issue #1: the ball bounces off bricks ---------------------------------
 +
 +// A single live brick centred at (0,0) --- convenient geometry for tests.

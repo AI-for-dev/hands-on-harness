@@ -14,7 +14,7 @@ index 6b4a133..af82165 100644
 @@ -114,6 +114,57 @@ export function collides(ball, brick) {
    );
  }
- 
+
 +function resolveBrickCollision(ball, brick) {
 +  // 1. Tunneling check
 +  const jumpedOver = (ball.prevY - ball.r <= brick.y && ball.y + ball.r >= brick.y + brick.h) ||
@@ -40,23 +40,23 @@ index 6b4a133..af82165 100644
 +
 +  if (overlapX < overlapY) {
 +    // X-axis hit: only flip if moving towards the brick
-+    if ((ball.vx > 0 && ball.x + ball.r > brick.x && ball.x - ball.r < brick.x) || 
++    if ((ball.vx > 0 && ball.x + ball.r > brick.x && ball.x - ball.r < brick.x) ||
 +        (ball.vx < 0 && ball.x - ball.r < brick.x + brick.w && ball.x + ball.r > brick.x + brick.w)) {
 +        ball.vx = -ball.vx;
 +        ball.x = ball.x < brick.x + brick.w / 2 ? brick.x - ball.r : brick.x + brick.w + ball.r;
 +    }
 +  } else if (overlapY < overlapX) {
 +    // Y-axis hit: only flip if moving towards the brick
-+    if ((ball.vy > 0 && ball.y + ball.r > brick.y && ball.y - ball.r < brick.y) || 
++    if ((ball.vy > 0 && ball.y + ball.r > brick.y && ball.y - ball.r < brick.y) ||
 +        (ball.vy < 0 && ball.y - ball.r < brick.y + brick.h && ball.y + ball.r > brick.y + brick.h)) {
 +        ball.vy = -ball.vy;
 +        ball.y = ball.y < brick.y + brick.h / 2 ? brick.y - ball.r : brick.y + brick.h + ball.r;
 +    }
 +  } else {
 +    // Corner hit: flip both, but only if moving towards the brick
-+    const vxTowards = (ball.vx > 0 && ball.x + ball.r > brick.x && ball.x - ball.r < brick.x) || 
++    const vxTowards = (ball.vx > 0 && ball.x + ball.r > brick.x && ball.x - ball.r < brick.x) ||
 +                       (ball.vx < 0 && ball.x - ball.r < brick.x + brick.w && ball.x + ball.r > brick.x + brick.w);
-+    const vyTowards = (ball.vy > 0 && ball.y + ball.r > brick.y && ball.y - ball.r < brick.y) || 
++    const vyTowards = (ball.vy > 0 && ball.y + ball.r > brick.y && ball.y - ball.r < brick.y) ||
 +                       (ball.vy < 0 && ball.y - ball.r < brick.y + brick.h && ball.y + ball.r > brick.y + brick.h);
 +    if (vxTowards) ball.vx = -ball.vx;
 +    if (vyTowards) ball.vy = -ball.vy;
@@ -67,22 +67,22 @@ index 6b4a133..af82165 100644
 +}
 +
  // --- Score & combo (NOT covered by tests — debt #5) ------------------------
- 
+
  // Combo multiplier. UNBOUNDED today: a long combo makes the score blow up
 @@ -165,6 +216,9 @@ export function saveBest(storage, score) {
  export function step(state, dt) {
    const { ball, paddle } = state;
- 
+
 +  ball.prevX = ball.x;
 +  ball.prevY = ball.y;
 +
    ball.x += ball.vx * dt;
    ball.y += ball.vy * dt;
- 
+
 @@ -219,15 +273,10 @@ export function frame(ctx, state) {
    for (const brick of state.bricks) {
      if (!brick.alive) continue;
- 
+
 -    if (collides(state.ball, brick)) {
 +    if (resolveBrickCollision(state.ball, brick)) {
        brick.alive = false;
@@ -94,7 +94,7 @@ index 6b4a133..af82165 100644
 -      // row. Fix = a real per-face bounce (flip vy on a top/bottom hit, vx on a
 -      // side hit) plus pushing the ball back out of the brick.
      }
- 
+
      ctx.fillStyle = brickColor(brick.row);
 diff --git a/game/neon.test.js b/game/neon.test.js
 index 250d6a9..96478e8 100644
@@ -114,14 +114,14 @@ index 250d6a9..96478e8 100644
 @@ -65,5 +67,26 @@ function belowField() {
    return 500;
  }
- 
+
 -// TODO (#5): test comboMultiplier / scoreForBrick.
 -// TODO      : test level progression and loadBest/saveBest persistence.
 +// ... existing tests ...
 +
 +test('frame: ball bounces off brick bottom', () => {
 +  const state = createState();
-+  const brick = state.bricks[0]; 
++  const brick = state.bricks[0];
 +  const ctx = {
 +    fillStyle: '',
 +    fillRect: () => {},
@@ -130,7 +130,7 @@ index 250d6a9..96478e8 100644
 +    fill: () => {},
 +    fillText: () => {},
 +  };
-+  
++
 +  state.ball.x = brick.x + brick.w / 2;
 +  state.ball.y = brick.y + brick.h + BALL_R + 1;
 +  state.ball.vy = -100; // UP

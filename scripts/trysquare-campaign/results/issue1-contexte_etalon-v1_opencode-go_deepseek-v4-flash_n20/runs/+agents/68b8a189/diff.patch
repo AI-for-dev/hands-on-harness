@@ -29,5 +29,5 @@ index 6b4a133..9a2cab8 100644
 +        ball.x += ball.vx > 0 ? overlapX + 0.01 : -(overlapX + 0.01);
 +      }
      }
- 
+
      ctx.fillStyle = brickColor(brick.row);

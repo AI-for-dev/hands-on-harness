@@ -261,7 +261,7 @@ index 6b4a133..5e0d023 100644
  // The module runs nothing on import: only `boot()` touches the DOM. Pure
  // logic can therefore be imported from the tests (`node --test`) without a
 @@ -103,8 +103,7 @@ export function createState(level = 1) {
- 
+
  // True if the ball (circle approximated by its box) overlaps the brick.
  // Simple AABB test: it only says WHETHER the ball and the brick overlap, not
 -// WHICH face was hit. The missing bounce in frame() is what lets the ball plow
@@ -273,7 +273,7 @@ index 6b4a133..5e0d023 100644
 @@ -114,6 +113,114 @@ export function collides(ball, brick) {
    );
  }
- 
+
 +// Resolves ball-vs-brick collisions for one pass: destroys the brick(s) hit,
 +// bounces the ball off the touched face and pushes it back out of the
 +// rectangle. Pure logic, no DOM — called by frame() (see debt #2).
@@ -383,11 +383,11 @@ index 6b4a133..5e0d023 100644
 +}
 +
  // --- Score & combo (NOT covered by tests — debt #5) ------------------------
- 
+
  // Combo multiplier. UNBOUNDED today: a long combo makes the score blow up
 @@ -159,12 +266,16 @@ export function saveBest(storage, score) {
  // --- Physics (movement + wall/paddle bounces) ------------------------------
- 
+
  // Advances the ball by a time step `dt` (in seconds) and handles bounces off
 -// the walls and the paddle. Does NOT handle bricks: that responsibility still
 -// lives in the render loop `frame()` (debt #2).
@@ -396,18 +396,18 @@ index 6b4a133..5e0d023 100644
  // Returns `true` if the ball is lost (exits through the bottom).
  export function step(state, dt) {
    const { ball, paddle } = state;
- 
+
 +  // Remember the position before the move: brick collision resolution sweeps
 +  // the segment prevBall -> ball, which is what makes it dt-independent.
 +  state.prevBall = { x: ball.x, y: ball.y };
 +
    ball.x += ball.vx * dt;
    ball.y += ball.vy * dt;
- 
+
 @@ -183,20 +294,35 @@ export function step(state, dt) {
      ball.vy = Math.abs(ball.vy);
    }
- 
+
 -  // Paddle
 -  if (
 -    ball.vy > 0 &&
@@ -452,12 +452,12 @@ index 6b4a133..5e0d023 100644
 +      state.combo = 0; // touching the paddle resets the combo
 +    }
    }
- 
+
    // Exit through the bottom: ball lost
 @@ -215,21 +341,15 @@ export function frame(ctx, state) {
    ctx.fillStyle = palette.background;
    ctx.fillRect(0, 0, WIDTH, HEIGHT);
- 
+
 -  // Bricks: collision + bounce + score + drawing, all in one place.
 +  // Bricks: resolve the collisions (pure logic — see resolveBrickCollisions),
 +  // score the destroyed ones, then draw the survivors.
@@ -467,7 +467,7 @@ index 6b4a133..5e0d023 100644
 +  }
    for (const brick of state.bricks) {
      if (!brick.alive) continue;
- 
+
 -    if (collides(state.ball, brick)) {
 -      brick.alive = false;
 -      state.combo += 1;
@@ -503,7 +503,7 @@ index 250d6a9..f3c5ea7 100644
 @@ -59,6 +66,103 @@ test('makeBricks: full, all-alive grid at start', () => {
    assert.ok(bricks.every((b) => b.x >= 0 && b.x + b.w <= WIDTH));
  });
- 
+
 +// D1 — bricks must bounce the ball back, pushed out of the rectangle
 +test('D1: top-face hit destroys the brick, bounces the ball up and pushes it out', () => {
 +  const state = createState(1);

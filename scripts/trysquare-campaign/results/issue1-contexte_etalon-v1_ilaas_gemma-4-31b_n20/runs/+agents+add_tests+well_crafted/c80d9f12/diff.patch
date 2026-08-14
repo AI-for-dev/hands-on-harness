@@ -14,7 +14,7 @@ index 6b4a133..0287eac 100644
 @@ -114,6 +114,43 @@ export function collides(ball, brick) {
    );
  }
- 
+
 +// Checks if the line segment from (px, py) to (x, y) intersects the AABB [bx, by, bw, bh].
 +function lineRectIntersect(px, py, x, y, bx, by, bw, bh) {
 +  const left = bx;
@@ -53,26 +53,26 @@ index 6b4a133..0287eac 100644
 +
 +
  // --- Score & combo (NOT covered by tests — debt #5) ------------------------
- 
+
  // Combo multiplier. UNBOUNDED today: a long combo makes the score blow up
 @@ -165,6 +202,9 @@ export function saveBest(storage, score) {
  export function step(state, dt) {
    const { ball, paddle } = state;
- 
+
 +  ball.prevX = ball.x;
 +  ball.prevY = ball.y;
 +
    ball.x += ball.vx * dt;
    ball.y += ball.vy * dt;
- 
+
 @@ -216,18 +256,60 @@ export function frame(ctx, state) {
    ctx.fillRect(0, 0, WIDTH, HEIGHT);
- 
+
    // Bricks: collision + bounce + score + drawing, all in one place.
 +  let bounced = false;
    for (const brick of state.bricks) {
      if (!brick.alive) continue;
- 
+
 -    if (collides(state.ball, brick)) {
 +    let hit = collides(state.ball, brick);
 +    if (!hit && !bounced) {
@@ -130,7 +130,7 @@ index 6b4a133..0287eac 100644
 +      }
 +      bounced = true;
      }
- 
+
      ctx.fillStyle = brickColor(brick.row);
 diff --git a/game/neon.test.js b/game/neon.test.js
 index 250d6a9..fe196cb 100644
@@ -149,12 +149,12 @@ index 250d6a9..fe196cb 100644
 +  LEFT,
 +  RIGHT,
  } from './neon.js';
- 
+
  test('collides: clear overlap detected', () => {
 @@ -65,5 +70,113 @@ function belowField() {
    return 500;
  }
- 
+
 -// TODO (#5): test comboMultiplier / scoreForBrick.
 -// TODO      : test level progression and loadBest/saveBest persistence.
 +
@@ -248,7 +248,7 @@ index 250d6a9..fe196cb 100644
 +    level: 1,
 +    paddle: { x: 0, y: 0, w: 0, h: 0 },
 +  };
-+  // Ball is overlapping two bricks vertically. 
++  // Ball is overlapping two bricks vertically.
 +  // If we bounce off both, vx = -100 then vx = 100 (back to normal).
 +  frame(mockCtx, state);
 +  assert.equal(state.ball.vx, -100, 'Ball should only bounce once');

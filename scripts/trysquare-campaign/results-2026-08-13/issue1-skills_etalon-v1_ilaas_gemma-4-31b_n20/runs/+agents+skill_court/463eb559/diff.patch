@@ -28,7 +28,7 @@ index 6b4a133..45c443b 100644
 +        state.ball.x = minOverlap === overlapL ? brick.x - state.ball.r : brick.x + brick.w + state.ball.r;
 +      }
      }
- 
+
      ctx.fillStyle = brickColor(brick.row);
 diff --git a/game/neon.test.js b/game/neon.test.js
 index 250d6a9..3866a28 100644
@@ -41,12 +41,12 @@ index 250d6a9..3866a28 100644
 +  frame,
 +  BALL_R,
  } from './neon.js';
- 
+
  test('collides: clear overlap detected', () => {
 @@ -65,5 +67,145 @@ function belowField() {
    return 500;
  }
- 
+
 -// TODO (#5): test comboMultiplier / scoreForBrick.
 -// TODO      : test level progression and loadBest/saveBest persistence.
 +

@@ -5,7 +5,7 @@ index 6b4a133..f9a4e1c 100644
 @@ -156,47 +156,99 @@ export function saveBest(storage, score) {
    return best;
  }
- 
+
 +// Simple AABB bounce resolution: flips velocity and pushes ball out of the brick.
 +function resolveBrickCollision(ball, brick) {
 +  const dx = (ball.x + ball.r) - brick.x;
@@ -41,7 +41,7 @@ index 6b4a133..f9a4e1c 100644
 +}
 +
  // --- Physics (movement + wall/paddle bounces) ------------------------------
- 
+
  // Advances the ball by a time step `dt` (in seconds) and handles bounces off
 -// the walls and the paddle. Does NOT handle bricks: that responsibility still
 -// lives in the render loop `frame()` (debt #2).
@@ -49,7 +49,7 @@ index 6b4a133..f9a4e1c 100644
  // Returns `true` if the ball is lost (exits through the bottom).
  export function step(state, dt) {
    const { ball, paddle } = state;
- 
+
 -  ball.x += ball.vx * dt;
 -  ball.y += ball.vy * dt;
 +  // Tunnelling prevention: subdivide the step if the ball moves more than its radius.
@@ -69,7 +69,7 @@ index 6b4a133..f9a4e1c 100644
 +      ball.x = WIDTH - ball.r;
 +      ball.vx = -Math.abs(ball.vx);
 +    }
- 
+
 -  // Side walls
 -  if (ball.x - ball.r < 0) {
 -    ball.x = ball.r;
@@ -83,7 +83,7 @@ index 6b4a133..f9a4e1c 100644
 +      ball.y = ball.r;
 +      ball.vy = Math.abs(ball.vy);
 +    }
- 
+
 -  // Ceiling
 -  if (ball.y - ball.r < 0) {
 -    ball.y = ball.r;
@@ -103,7 +103,7 @@ index 6b4a133..f9a4e1c 100644
 +      ball.vx = ballSpeed(state.level) * 0.6 * hit;
 +      state.combo = 0;
 +    }
- 
+
 -  // Paddle
 -  if (
 -    ball.vy > 0 &&
@@ -131,17 +131,17 @@ index 6b4a133..f9a4e1c 100644
 +      }
 +    }
    }
- 
+
    // Exit through the bottom: ball lost
 @@ -215,21 +267,10 @@ export function frame(ctx, state) {
    ctx.fillStyle = palette.background;
    ctx.fillRect(0, 0, WIDTH, HEIGHT);
- 
+
 -  // Bricks: collision + bounce + score + drawing, all in one place.
 +  // Bricks: drawing only (collision moved to step() to fix #1).
    for (const brick of state.bricks) {
      if (!brick.alive) continue;
- 
+
 -    if (collides(state.ball, brick)) {
 -      brick.alive = false;
 -      state.combo += 1;
@@ -166,7 +166,7 @@ index 250d6a9..f2729cc 100644
    WIDTH,
 +  HEIGHT,
  } from './neon.js';
- 
+
 +
  test('collides: clear overlap detected', () => {
    const ball = { x: 100, y: 100, r: 8 };
@@ -174,7 +174,7 @@ index 250d6a9..f2729cc 100644
 @@ -65,5 +67,73 @@ function belowField() {
    return 500;
  }
- 
+
 -// TODO (#5): test comboMultiplier / scoreForBrick.
 -// TODO      : test level progression and loadBest/saveBest persistence.
 +test('step: bounce off brick top face', () => {
@@ -238,7 +238,7 @@ index 250d6a9..f2729cc 100644
 +test('step: tunnelling detection (fast ball)', () => {
 +  const state = createState(1);
 +  const speed = 2000; // very fast
-+  state.ball = { x: 100, y: 80, r: 7, vx: 0, vy: speed }; 
++  state.ball = { x: 100, y: 80, r: 7, vx: 0, vy: speed };
 +  state.bricks[0] = { x: 80, y: 100, w: 40, h: 20, alive: true };
 +  // In one step (1/60s), the ball moves ~33px.
 +  // Initial pos: 80. Next pos: 80 + 33 = 113.

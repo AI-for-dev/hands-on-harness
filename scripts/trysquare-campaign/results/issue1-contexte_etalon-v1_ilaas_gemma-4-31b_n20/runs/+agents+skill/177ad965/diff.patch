@@ -20,12 +20,12 @@ index 0000000..2fd2235
 +  const state = createState(1);
 +  const brick = state.bricks[0];
 +  state.ball.x = brick.x + brick.w / 2;
-+  state.ball.y = brick.y - 2; 
-+  state.ball.vy = 100; 
++  state.ball.y = brick.y - 2;
++  state.ball.vy = 100;
 +  state.ball.vx = 0;
 +
 +  const dt = 0.016;
-+  step(state, dt); 
++  step(state, dt);
 +  resolveBrickCollision(state, brick);
 +
 +  assert.strictEqual(state.ball.vy, -100, 'Ball should have bounced UP');
@@ -35,13 +35,13 @@ index 0000000..2fd2235
 +  const state = createState(1);
 +  const brick = state.bricks[0];
 +  state.ball.x = brick.x + brick.w / 2;
-+  state.ball.y = brick.y - 2; 
-+  state.ball.vy = 100; 
++  state.ball.y = brick.y - 2;
++  state.ball.vy = 100;
 +  state.ball.vx = 0;
 +
 +  const dt = 0.016;
-+  step(state, dt); 
-+  
++  step(state, dt);
++
 +  // Simulate a "naive fix" that only flips vy
 +  if (collides(state.ball, brick)) {
 +    state.ball.vy = -state.ball.vy;
@@ -60,8 +60,8 @@ index 0000000..2fd2235
 +  state.ball.vy = 0;
 +
 +  const dt = 0.016;
-+  step(state, dt); 
-+  
++  step(state, dt);
++
 +  // Simulate a "naive fix" that only flips vy
 +  if (collides(state.ball, brick)) {
 +    state.ball.vy = -state.ball.vy;
@@ -78,7 +78,7 @@ index 0000000..2fd2235
 +  const speed = 710;
 +  const dt = 0.05; // Max dt
 +  const distancePerFrame = speed * dt; // 35.5 pixels
-+  
++
 +  // Brick is 20px high. Ball radius 7.
 +  // Position ball just above the brick
 +  state.ball.x = brick.x + brick.w / 2;
@@ -87,11 +87,11 @@ index 0000000..2fd2235
 +  state.ball.vx = 0;
 +
 +  step(state, dt); // y = brick.y - 2 + 35.5 = brick.y + 33.5.
-+  // Ball.y = brick.y + 33.5. 
++  // Ball.y = brick.y + 33.5.
 +  // Ball.y - ball.r = brick.y + 33.5 - 7 = brick.y + 26.5.
 +  // Brick bounds: [brick.y, brick.y + 20].
 +  // Ball is entirely BELOW the brick now. No overlap.
-+  
++
 +  assert.strictEqual(collides(state.ball, brick), true, 'Ball should have collided with brick despite high speed (tunneling)');
 +});
 diff --git a/.scratch/to_fix.md b/.scratch/to_fix.md
@@ -119,10 +119,10 @@ index 0000000..e1cdfa1
 +    const state = createState(1);
 +    const brick = state.bricks[0];
 +    state.ball.x = brick.x + brick.w / 2;
-+    state.ball.y = brick.y - 2; 
-+    state.ball.vy = 100; 
++    state.ball.y = brick.y - 2;
++    state.ball.vy = 100;
 +    state.ball.vx = 0;
-+    step(state, 0.016); 
++    step(state, 0.016);
 +    resolveBrickCollision(state, brick); // simulate frame()
 +    assert.strictEqual(state.ball.vy, -100, 'Ball should have bounced UP');
 +  });
@@ -146,9 +146,9 @@ index 0000000..e1cdfa1
 +    const state = createState(1);
 +    const brick = state.bricks[0];
 +    state.ball.x = brick.x + brick.w / 2;
-+    state.ball.y = brick.y - 2; 
-+    state.ball.vy = 100; 
-+    step(state, 0.016); 
++    state.ball.y = brick.y - 2;
++    state.ball.vy = 100;
++    step(state, 0.016);
 +    // Naive fix: vy = -vy
 +    if (collides(state.ball, brick)) state.ball.vy = -state.ball.vy;
 +    assert.strictEqual(collides(state.ball, brick), false, 'Ball should be pushed out');
@@ -175,7 +175,7 @@ index 0000000..e1cdfa1
 +    state.ball.x = brick.x - 5;
 +    state.ball.y = brick.y + brick.h / 2;
 +    state.ball.vx = 100;
-+    step(state, 0.016); 
++    step(state, 0.016);
 +    // Naive fix: vy = -vy
 +    if (collides(state.ball, brick)) state.ball.vy = -state.ball.vy;
 +    assert.strictEqual(state.ball.vx, -100, 'Ball should have bounced LEFT');
@@ -202,7 +202,7 @@ index 0000000..e1cdfa1
 +    state.ball.x = brick.x + brick.w / 2;
 +    state.ball.y = brick.y - 2;
 +    state.ball.vy = 710;
-+    step(state, 0.05); 
++    step(state, 0.05);
 +    assert.strictEqual(collides(state.ball, brick), true, 'Ball should have collided');
 +  });
 +  ```
@@ -215,9 +215,9 @@ index 6b4a133..987af31 100644
 --- a/game/neon.js
 +++ b/game/neon.js
 @@ -158,9 +158,55 @@ export function saveBest(storage, score) {
- 
+
  // --- Physics (movement + wall/paddle bounces) ------------------------------
- 
+
 +// Handles collisions between the ball and all live bricks.
 +// Returns true if any brick was destroyed.
 +export function resolveBricks(state) {
@@ -246,7 +246,7 @@ index 6b4a133..987af31 100644
 +
 +      // 3. Collision Normal
 +      const distance = Math.sqrt(distanceSq);
-+      
++
 +      // Avoid division by zero if ball center is exactly on the closest point
 +      const nx = distance === 0 ? 0 : dx / distance;
 +      const ny = distance === 0 ? -1 : dy / distance; // default to UP if centered
@@ -282,7 +282,7 @@ index 6b4a133..987af31 100644
 -    state.combo = 0; // touching the paddle resets the combo
 +    state.combo = 0;
    }
- 
+
 +  resolveBricks(state);
 +
    // Exit through the bottom: ball lost
@@ -294,12 +294,12 @@ index 6b4a133..987af31 100644
 @@ -215,21 +262,10 @@ export function frame(ctx, state) {
    ctx.fillStyle = palette.background;
    ctx.fillRect(0, 0, WIDTH, HEIGHT);
- 
+
 -  // Bricks: collision + bounce + score + drawing, all in one place.
 +  // Bricks: drawing only. Collision is now handled in step().
    for (const brick of state.bricks) {
      if (!brick.alive) continue;
- 
+
 -    if (collides(state.ball, brick)) {
 -      brick.alive = false;
 -      state.combo += 1;
@@ -330,9 +330,9 @@ index 250d6a9..a64f797 100644
 -
  import { test } from 'node:test';
  import assert from 'node:assert/strict';
- 
+
 @@ -47,7 +38,7 @@ test('step: bounce off the left wall', () => {
- 
+
  test('step: ball exiting through the bottom => lost', () => {
    const state = createState(1);
 -  state.ball = { x: 320, y: belowField(), r: 7, vx: 0, vy: 400 };
@@ -343,7 +343,7 @@ index 250d6a9..a64f797 100644
 @@ -59,11 +50,56 @@ test('makeBricks: full, all-alive grid at start', () => {
    assert.ok(bricks.every((b) => b.x >= 0 && b.x + b.w <= WIDTH));
  });
- 
+
 -// Small local helper: place the ball below the field without importing the
 -// height (coverage intentionally light).
 -function belowField() {
@@ -355,11 +355,11 @@ index 250d6a9..a64f797 100644
 +  const state = createState(1);
 +  const brick = state.bricks[0];
 +  state.ball.x = brick.x + brick.w / 2;
-+  state.ball.y = brick.y - 2; 
-+  state.ball.vy = 100; 
++  state.ball.y = brick.y - 2;
++  state.ball.vy = 100;
 +  state.ball.vx = 0;
 +
-+  step(state, 0.016); 
++  step(state, 0.016);
 +  assert.strictEqual(state.ball.vy, -100, 'Ball should have bounced UP');
 +});
 +
@@ -367,13 +367,13 @@ index 250d6a9..a64f797 100644
 +  const state = createState(1);
 +  const brick = state.bricks[0];
 +  state.ball.x = brick.x + brick.w / 2;
-+  state.ball.y = brick.y - 2; 
-+  state.ball.vy = 100; 
++  state.ball.y = brick.y - 2;
++  state.ball.vy = 100;
 +  state.ball.vx = 0;
- 
+
 -// TODO (#5): test comboMultiplier / scoreForBrick.
 -// TODO      : test level progression and loadBest/saveBest persistence.
-+  step(state, 0.016); 
++  step(state, 0.016);
 +  assert.strictEqual(collides(state.ball, brick), false, 'Ball should not overlap brick after resolution');
 +});
 +
@@ -385,7 +385,7 @@ index 250d6a9..a64f797 100644
 +  state.ball.vx = -100;
 +  state.ball.vy = 0;
 +
-+  step(state, 0.016); 
++  step(state, 0.016);
 +  assert.strictEqual(state.ball.vx, 100, 'Ball should have bounced RIGHT');
 +  assert.strictEqual(state.ball.vy, 0, 'Ball vy should remain 0');
 +});
@@ -399,7 +399,7 @@ index 250d6a9..a64f797 100644
 +  state.ball.vx = 0;
 +
 +  step(state, 0.05); // Max dt. Tunneling distance is 35.5px.
-+  
++
 +  // The ball should have bounced and NOT ended up on the other side.
 +  assert.ok(state.ball.vy < 0, 'Ball should have bounced UP instead of tunneling');
 +  assert.strictEqual(collides(state.ball, brick), false, 'Ball should have been resolved out of the brick');

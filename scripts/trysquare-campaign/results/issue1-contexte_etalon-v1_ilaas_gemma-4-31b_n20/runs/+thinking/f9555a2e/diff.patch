@@ -4,7 +4,7 @@ index 6b4a133..37ac9bf 100644
 +++ b/game/neon.js
 @@ -159,8 +159,7 @@ export function saveBest(storage, score) {
  // --- Physics (movement + wall/paddle bounces) ------------------------------
- 
+
  // Advances the ball by a time step `dt` (in seconds) and handles bounces off
 -// the walls and the paddle. Does NOT handle bricks: that responsibility still
 -// lives in the render loop `frame()` (debt #2).
@@ -15,7 +15,7 @@ index 6b4a133..37ac9bf 100644
 @@ -199,6 +198,38 @@ export function step(state, dt) {
      state.combo = 0; // touching the paddle resets the combo
    }
- 
+
 +  // Bricks
 +  for (const brick of state.bricks) {
 +    if (!brick.alive) continue;
@@ -54,12 +54,12 @@ index 6b4a133..37ac9bf 100644
 @@ -215,21 +246,10 @@ export function frame(ctx, state) {
    ctx.fillStyle = palette.background;
    ctx.fillRect(0, 0, WIDTH, HEIGHT);
- 
+
 -  // Bricks: collision + bounce + score + drawing, all in one place.
 +  // Bricks: drawing only. Collision is handled in step().
    for (const brick of state.bricks) {
      if (!brick.alive) continue;
- 
+
 -    if (collides(state.ball, brick)) {
 -      brick.alive = false;
 -      state.combo += 1;
@@ -81,7 +81,7 @@ index 250d6a9..0856b27 100644
 @@ -65,5 +65,31 @@ function belowField() {
    return 500;
  }
- 
+
 -// TODO (#5): test comboMultiplier / scoreForBrick.
 -// TODO      : test level progression and loadBest/saveBest persistence.
 +test('step: bounce off a brick (top)', () => {
@@ -93,10 +93,10 @@ index 250d6a9..0856b27 100644
 +  // To hit the TOP of the brick, the ball must be moving UP (vy < 0) and then it should bounce DOWN (vy > 0).
 +  state.ball = { x: 100, y: 60, r: 7, vx: 0, vy: -300 };
 +  state.bricks = [{ x: 90, y: 50, w: 40, h: 20, alive: true }];
-+  
++
 +  // Step a bit to cause collision
 +  step(state, 1 / 60);
-+  
++
 +  assert.ok(state.ball.vy > 0, 'ball should bounce DOWN after hitting the top of a brick');
 +  assert.equal(state.bricks[0].alive, false, 'brick should be destroyed');
 +});
@@ -106,9 +106,9 @@ index 250d6a9..0856b27 100644
 +  // Ball moving RIGHT (vx > 0) and hits the left side of a brick.
 +  state.ball = { x: 80, y: 100, r: 7, vx: 300, vy: 0 };
 +  state.bricks = [{ x: 90, y: 90, w: 40, h: 20, alive: true }];
-+  
++
 +  step(state, 1 / 60);
-+  
++
 +  assert.ok(state.ball.vx < 0, 'ball should bounce LEFT after hitting the left side of a brick');
 +  assert.equal(state.bricks[0].alive, false, 'brick should be destroyed');
 +});

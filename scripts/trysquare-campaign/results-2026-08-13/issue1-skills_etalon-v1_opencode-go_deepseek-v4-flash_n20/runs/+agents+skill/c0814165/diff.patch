@@ -488,9 +488,9 @@ index 6b4a133..f195429 100644
 --- a/game/neon.js
 +++ b/game/neon.js
 @@ -55,6 +55,16 @@ export const BRICK_TOP = 48;
- 
+
  const STORAGE_KEY = 'neon.best';
- 
+
 +// Max distance the ball may travel between two collision checks. Smaller than
 +// the ball diameter (14), the paddle band (12) and the brick height (20), so a
 +// fast ball can never jump over an obstacle between two detections (D5:
@@ -502,10 +502,10 @@ index 6b4a133..f195429 100644
 +const MIN_PADDLE_HIT = 0.25;
 +
  // --- State construction ----------------------------------------------------
- 
+
  // Builds the brick grid for a given level.
 @@ -103,8 +113,8 @@ export function createState(level = 1) {
- 
+
  // True if the ball (circle approximated by its box) overlaps the brick.
  // Simple AABB test: it only says WHETHER the ball and the brick overlap, not
 -// WHICH face was hit. The missing bounce in frame() is what lets the ball plow
@@ -518,7 +518,7 @@ index 6b4a133..f195429 100644
 @@ -114,6 +124,63 @@ export function collides(ball, brick) {
    );
  }
- 
+
 +// --- Brick bounce resolution (pure logic, used by step) --------------------
 +
 +// Penetration depth of the ball into the brick on each axis, as the minimum of
@@ -577,15 +577,15 @@ index 6b4a133..f195429 100644
 +}
 +
  // --- Score & combo (NOT covered by tests — debt #5) ------------------------
- 
+
  // Combo multiplier. UNBOUNDED today: a long combo makes the score blow up
 @@ -156,80 +223,94 @@ export function saveBest(storage, score) {
    return best;
  }
- 
+
 -// --- Physics (movement + wall/paddle bounces) ------------------------------
 +// --- Physics (movement + wall/paddle/brick bounces) ------------------------
- 
+
  // Advances the ball by a time step `dt` (in seconds) and handles bounces off
 -// the walls and the paddle. Does NOT handle bricks: that responsibility still
 -// lives in the render loop `frame()` (debt #2).
@@ -596,7 +596,7 @@ index 6b4a133..f195429 100644
  // Returns `true` if the ball is lost (exits through the bottom).
  export function step(state, dt) {
    const { ball, paddle } = state;
- 
+
 -  ball.x += ball.vx * dt;
 -  ball.y += ball.vy * dt;
 +  const travel = Math.hypot(ball.vx, ball.vy) * dt;
@@ -617,7 +617,7 @@ index 6b4a133..f195429 100644
 +      ball.x = WIDTH - ball.r;
 +      ball.vx = -Math.abs(ball.vx);
 +    }
- 
+
 -  // Side walls
 -  if (ball.x - ball.r < 0) {
 -    ball.x = ball.r;
@@ -631,7 +631,7 @@ index 6b4a133..f195429 100644
 +      ball.y = ball.r;
 +      ball.vy = Math.abs(ball.vy);
 +    }
- 
+
 -  // Ceiling
 -  if (ball.y - ball.r < 0) {
 -    ball.y = ball.r;
@@ -658,7 +658,7 @@ index 6b4a133..f195429 100644
 +      ball.vy = -Math.sqrt(ballSpeed(state.level) ** 2 - ball.vx ** 2);
 +      state.combo = 0; // touching the paddle resets the combo
 +    }
- 
+
 -  // Paddle
 -  if (
 -    ball.vy > 0 &&
@@ -683,7 +683,7 @@ index 6b4a133..f195429 100644
 +        state.score += scoreForBrick(brick, state.combo);
 +      }
 +    }
- 
+
 -  // Exit through the bottom: ball lost
 -  if (ball.y - ball.r > HEIGHT) {
 -    return true;
@@ -694,10 +694,10 @@ index 6b4a133..f195429 100644
    }
    return false;
  }
- 
+
 -// --- Rendering (DOM): brick collision logic STILL mixed in here ------------
 +// --- Rendering -------------------------------------------------------------
- 
+
 -// Main render loop. For each live brick we test collision AND draw in the same
 -// pass: this is where logic and rendering are entangled.
 +// Main render loop. Bricks, paddle, ball and HUD are drawn here; all collision
@@ -706,7 +706,7 @@ index 6b4a133..f195429 100644
    // Background
    ctx.fillStyle = palette.background;
    ctx.fillRect(0, 0, WIDTH, HEIGHT);
- 
+
 -  // Bricks: collision + bounce + score + drawing, all in one place.
 +  // Bricks: draw the surviving ones only.
    for (const brick of state.bricks) {
@@ -741,11 +741,11 @@ index 250d6a9..234f6a3 100644
 +  ballSpeed,
    WIDTH,
  } from './neon.js';
- 
+
 @@ -59,6 +64,150 @@ test('makeBricks: full, all-alive grid at start', () => {
    assert.ok(bricks.every((b) => b.x >= 0 && b.x + b.w <= WIDTH));
  });
- 
+
 +// --- Helpers shared by the collision defect cases (playtest to_fix.md) -------
 +
 +// A single alive brick placed at (x, y), top-left origin, y grows down.

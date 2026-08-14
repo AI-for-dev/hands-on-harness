@@ -5,7 +5,7 @@ index 6b4a133..618ca6b 100644
 @@ -114,6 +114,39 @@ export function collides(ball, brick) {
    );
  }
- 
+
 +// Resolves the collision between the ball and a brick.
 +// Handles bounce direction (per-face), push-out, and avoids double-bounces.
 +export function resolveBrickCollision(ball, brick) {
@@ -40,11 +40,11 @@ index 6b4a133..618ca6b 100644
 +}
 +
  // --- Score & combo (NOT covered by tests — debt #5) ------------------------
- 
+
  // Combo multiplier. UNBOUNDED today: a long combo makes the score blow up
 @@ -159,44 +192,58 @@ export function saveBest(storage, score) {
  // --- Physics (movement + wall/paddle bounces) ------------------------------
- 
+
  // Advances the ball by a time step `dt` (in seconds) and handles bounces off
 -// the walls and the paddle. Does NOT handle bricks: that responsibility still
 -// lives in the render loop `frame()` (debt #2).
@@ -53,12 +53,12 @@ index 6b4a133..618ca6b 100644
  // Returns `true` if the ball is lost (exits through the bottom).
  export function step(state, dt) {
    const { ball, paddle } = state;
- 
+
 -  ball.x += ball.vx * dt;
 -  ball.y += ball.vy * dt;
 +  const SUBSTEPS = 4;
 +  const subDt = dt / SUBSTEPS;
- 
+
 -  // Side walls
 -  if (ball.x - ball.r < 0) {
 -    ball.x = ball.r;
@@ -70,7 +70,7 @@ index 6b4a133..618ca6b 100644
 +  for (let i = 0; i < SUBSTEPS; i++) {
 +    ball.x += ball.vx * subDt;
 +    ball.y += ball.vy * subDt;
- 
+
 -  // Ceiling
 -  if (ball.y - ball.r < 0) {
 -    ball.y = ball.r;
@@ -85,7 +85,7 @@ index 6b4a133..618ca6b 100644
 +        resolveBrickCollision(ball, brick);
 +      }
 +    }
- 
+
 -  // Paddle
 -  if (
 -    ball.vy > 0 &&
@@ -130,17 +130,17 @@ index 6b4a133..618ca6b 100644
 +      state.combo = 0;
 +    }
    }
- 
+
    // Exit through the bottom: ball lost
 @@ -215,21 +262,10 @@ export function frame(ctx, state) {
    ctx.fillStyle = palette.background;
    ctx.fillRect(0, 0, WIDTH, HEIGHT);
- 
+
 -  // Bricks: collision + bounce + score + drawing, all in one place.
 +  // Bricks: drawing only.
    for (const brick of state.bricks) {
      if (!brick.alive) continue;
- 
+
 -    if (collides(state.ball, brick)) {
 -      brick.alive = false;
 -      state.combo += 1;
@@ -172,12 +172,12 @@ index 250d6a9..22a4d21 100644
 +  LEFT,
 +  RIGHT,
  } from './neon.js';
- 
+
  test('collides: clear overlap detected', () => {
 @@ -65,5 +70,55 @@ function belowField() {
    return 500;
  }
- 
+
 -// TODO (#5): test comboMultiplier / scoreForBrick.
 -// TODO      : test level progression and loadBest/saveBest persistence.
 +test('resolveBrickCollision: top hit flips vy and pushes out', () => {

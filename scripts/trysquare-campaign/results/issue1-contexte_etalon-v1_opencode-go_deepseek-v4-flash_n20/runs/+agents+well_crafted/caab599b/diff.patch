@@ -15,7 +15,7 @@ index 6b4a133..3a18119 100644
  // logic can therefore be imported from the tests (`node --test`) without a
 @@ -159,12 +159,16 @@ export function saveBest(storage, score) {
  // --- Physics (movement + wall/paddle bounces) ------------------------------
- 
+
  // Advances the ball by a time step `dt` (in seconds) and handles bounces off
 -// the walls and the paddle. Does NOT handle bricks: that responsibility still
 -// lives in the render loop `frame()` (debt #2).
@@ -26,16 +26,16 @@ index 6b4a133..3a18119 100644
  // Returns `true` if the ball is lost (exits through the bottom).
  export function step(state, dt) {
    const { ball, paddle } = state;
- 
+
 +  ball.px = ball.x;
 +  ball.py = ball.y;
    ball.x += ball.vx * dt;
    ball.y += ball.vy * dt;
- 
+
 @@ -206,30 +210,196 @@ export function step(state, dt) {
    return false;
  }
- 
+
 -// --- Rendering (DOM): brick collision logic STILL mixed in here ------------
 +// --- Brick collision (issue #1): pure, testable resolution -----------------
 +
@@ -212,7 +212,7 @@ index 6b4a133..3a18119 100644
 +  clampToField(ball);
 +  return true;
 +}
- 
+
 -// Main render loop. For each live brick we test collision AND draw in the same
 -// pass: this is where logic and rendering are entangled.
 +// --- Rendering (DOM): brick collision triggered from here -------------------
@@ -224,7 +224,7 @@ index 6b4a133..3a18119 100644
    // Background
    ctx.fillStyle = palette.background;
    ctx.fillRect(0, 0, WIDTH, HEIGHT);
- 
+
 -  // Bricks: collision + bounce + score + drawing, all in one place.
 +  // Bricks: bounce + score handled by bounceBricks(), drawing here.
 +  bounceBricks(state);
@@ -260,7 +260,7 @@ index 250d6a9..332ac74 100644
 @@ -65,5 +66,123 @@ function belowField() {
    return 500;
  }
- 
+
 +// --- Issue #1: the ball bounces off bricks (per-face, once, no tunnelling) --
 +
 +// Minimal state around a ball and a brick grid. `px`/`py` default to the ball

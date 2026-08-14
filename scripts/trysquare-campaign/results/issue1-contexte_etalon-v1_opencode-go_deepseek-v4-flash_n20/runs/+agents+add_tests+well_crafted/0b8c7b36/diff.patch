@@ -15,7 +15,7 @@ index 6b4a133..98014b8 100644
  // The module runs nothing on import: only `boot()` touches the DOM. Pure
  // logic can therefore be imported from the tests (`node --test`) without a
 @@ -103,8 +103,7 @@ export function createState(level = 1) {
- 
+
  // True if the ball (circle approximated by its box) overlaps the brick.
  // Simple AABB test: it only says WHETHER the ball and the brick overlap, not
 -// WHICH face was hit. The missing bounce in frame() is what lets the ball plow
@@ -27,7 +27,7 @@ index 6b4a133..98014b8 100644
 @@ -114,6 +113,150 @@ export function collides(ball, brick) {
    );
  }
- 
+
 +// --- Brick bounce (issue #1) ----------------------------------------------
 +
 +// Tolerance used to decide that two entry times (or penetrations) are equal:
@@ -173,11 +173,11 @@ index 6b4a133..98014b8 100644
 +}
 +
  // --- Score & combo (NOT covered by tests — debt #5) ------------------------
- 
+
  // Combo multiplier. UNBOUNDED today: a long combo makes the score blow up
 @@ -159,12 +302,17 @@ export function saveBest(storage, score) {
  // --- Physics (movement + wall/paddle bounces) ------------------------------
- 
+
  // Advances the ball by a time step `dt` (in seconds) and handles bounces off
 -// the walls and the paddle. Does NOT handle bricks: that responsibility still
 -// lives in the render loop `frame()` (debt #2).
@@ -185,7 +185,7 @@ index 6b4a133..98014b8 100644
  // Returns `true` if the ball is lost (exits through the bottom).
  export function step(state, dt) {
    const { ball, paddle } = state;
- 
+
 +  // Where the ball was before this step: the brick collision below sweeps
 +  // between the two positions so that a fast ball cannot tunnel through a
 +  // brick within a single step (see ISSUES.md #1).
@@ -194,11 +194,11 @@ index 6b4a133..98014b8 100644
 +
    ball.x += ball.vx * dt;
    ball.y += ball.vy * dt;
- 
+
 @@ -199,6 +347,20 @@ export function step(state, dt) {
      state.combo = 0; // touching the paddle resets the combo
    }
- 
+
 +  // Bricks (issue #1): for each live brick the swept path is tested and, on a
 +  // hit, the brick dies and the ball bounces off the face with the smaller
 +  // penetration — flip vy on a top/bottom hit, vx on a side hit, both on a
@@ -219,10 +219,10 @@ index 6b4a133..98014b8 100644
 @@ -206,30 +368,18 @@ export function step(state, dt) {
    return false;
  }
- 
+
 -// --- Rendering (DOM): brick collision logic STILL mixed in here ------------
 +// --- Rendering (DOM) ------------------------------------------------------
- 
+
 -// Main render loop. For each live brick we test collision AND draw in the same
 -// pass: this is where logic and rendering are entangled.
 +// Main render loop. Collision, bounce, score and combo live in step()
@@ -231,7 +231,7 @@ index 6b4a133..98014b8 100644
    // Background
    ctx.fillStyle = palette.background;
    ctx.fillRect(0, 0, WIDTH, HEIGHT);
- 
+
 -  // Bricks: collision + bounce + score + drawing, all in one place.
 +  // Bricks: rendering only.
    for (const brick of state.bricks) {
@@ -268,11 +268,11 @@ index 250d6a9..9d58a75 100644
 +  BALL_R,
    WIDTH,
  } from './neon.js';
- 
+
 @@ -59,6 +64,125 @@ test('makeBricks: full, all-alive grid at start', () => {
    assert.ok(bricks.every((b) => b.x >= 0 && b.x + b.w <= WIDTH));
  });
- 
+
 +// --- Issue #1: the ball must bounce off bricks ------------------------------
 +//
 +// Each case mirrors one scenario from ISSUES.md #1: per-face bounce (the axis

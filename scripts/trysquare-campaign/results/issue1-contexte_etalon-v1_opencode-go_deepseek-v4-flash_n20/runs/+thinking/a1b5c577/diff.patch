@@ -18,7 +18,7 @@ index 6b4a133..9d1c8fa 100644
 @@ -206,30 +207,155 @@ export function step(state, dt) {
    return false;
  }
- 
+
 -// --- Rendering (DOM): brick collision logic STILL mixed in here ------------
 +// --- Brick collisions (swept, exactly-once bounce) -------------------------
 +
@@ -67,7 +67,7 @@ index 6b4a133..9d1c8fa 100644
 +  const axis = onX && onY ? 'corner' : onX ? 'x' : 'y';
 +  return { t, x: ax + dx * t, y: ay + dy * t, axis };
 +}
- 
+
 -// Main render loop. For each live brick we test collision AND draw in the same
 -// pass: this is where logic and rendering are entangled.
 +// Resolves the ball against the brick grid for one step. The ball moved from
@@ -167,7 +167,7 @@ index 6b4a133..9d1c8fa 100644
    // Background
    ctx.fillStyle = palette.background;
    ctx.fillRect(0, 0, WIDTH, HEIGHT);
- 
+
 -  // Bricks: collision + bounce + score + drawing, all in one place.
 +  // Bricks
    for (const brick of state.bricks) {
@@ -189,7 +189,7 @@ index 6b4a133..9d1c8fa 100644
    }
 @@ -288,7 +414,17 @@ export function boot(doc = document) {
      last = now;
- 
+
      if (state.running) {
 +      const prev = { x: state.ball.x, y: state.ball.y };
        const lost = step(state, dt);
@@ -220,7 +220,7 @@ index 250d6a9..96ab08b 100644
 @@ -65,5 +66,91 @@ function belowField() {
    return 500;
  }
- 
+
 +// --- Brick bounce (ISSUES.md #1) -------------------------------------------
 +
 +// A plain brick to hit (points/row are only used by scoring, not by the

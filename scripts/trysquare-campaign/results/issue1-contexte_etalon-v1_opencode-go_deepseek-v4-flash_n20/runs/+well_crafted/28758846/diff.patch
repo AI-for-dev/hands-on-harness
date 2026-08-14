@@ -22,7 +22,7 @@ index 6b4a133..58184ae 100644
 @@ -114,6 +122,126 @@ export function collides(ball, brick) {
    );
  }
- 
+
 +// --- Brick collision resolution (#1) --------------------------------------
 +
 +// A pure, testable collision-and-bounce step for the ball against a wall of
@@ -144,12 +144,12 @@ index 6b4a133..58184ae 100644
 +}
 +
  // --- Score & combo (NOT covered by tests — debt #5) ------------------------
- 
+
  // Combo multiplier. UNBOUNDED today: a long combo makes the score blow up
 @@ -165,6 +293,11 @@ export function saveBest(storage, score) {
  export function step(state, dt) {
    const { ball, paddle } = state;
- 
+
 +  // Record the pre-move position so brickHit() can sweep the ball's path and
 +  // catch fast balls that would otherwise tunnel straight through a brick.
 +  ball.prevX = ball.x;
@@ -157,11 +157,11 @@ index 6b4a133..58184ae 100644
 +
    ball.x += ball.vx * dt;
    ball.y += ball.vy * dt;
- 
+
 @@ -215,21 +348,16 @@ export function frame(ctx, state) {
    ctx.fillStyle = palette.background;
    ctx.fillRect(0, 0, WIDTH, HEIGHT);
- 
+
 -  // Bricks: collision + bounce + score + drawing, all in one place.
 +  // Bricks: collision + bounce + scoring now delegated to the pure brickHit()
 +  // (resolved once per pass), then we only render what remains alive.
@@ -203,7 +203,7 @@ index 250d6a9..fb136b3 100644
 @@ -52,6 +53,84 @@ test('step: ball exiting through the bottom => lost', () => {
    assert.equal(lost, true);
  });
- 
+
 +// --- brickHit (#1): the ball must bounce, not plow through ----------------
 +
 +// A brick fully covering a bottom-face hit. The ball comes from below, moving

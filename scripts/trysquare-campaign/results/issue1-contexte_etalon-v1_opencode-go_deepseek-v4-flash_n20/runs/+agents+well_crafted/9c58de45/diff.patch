@@ -3,7 +3,7 @@ index 6b4a133..2b7e2c9 100644
 --- a/game/neon.js
 +++ b/game/neon.js
 @@ -103,8 +103,8 @@ export function createState(level = 1) {
- 
+
  // True if the ball (circle approximated by its box) overlaps the brick.
  // Simple AABB test: it only says WHETHER the ball and the brick overlap, not
 -// WHICH face was hit. The missing bounce in frame() is what lets the ball plow
@@ -16,7 +16,7 @@ index 6b4a133..2b7e2c9 100644
 @@ -114,6 +114,134 @@ export function collides(ball, brick) {
    );
  }
- 
+
 +// --- Brick bounce (issue #1) -----------------------------------------------
 +
 +// Resolves a ball/brick overlap: the axis with the SMALLER penetration is the
@@ -146,12 +146,12 @@ index 6b4a133..2b7e2c9 100644
 +}
 +
  // --- Score & combo (NOT covered by tests — debt #5) ------------------------
- 
+
  // Combo multiplier. UNBOUNDED today: a long combo makes the score blow up
 @@ -165,6 +293,12 @@ export function saveBest(storage, score) {
  export function step(state, dt) {
    const { ball, paddle } = state;
- 
+
 +  // Record where the ball was BEFORE this move: `brickCollision` sweeps from
 +  // this position to the new one to catch fast moves that would otherwise
 +  // tunnel through a brick (see #1).
@@ -160,14 +160,14 @@ index 6b4a133..2b7e2c9 100644
 +
    ball.x += ball.vx * dt;
    ball.y += ball.vy * dt;
- 
+
 @@ -206,30 +340,21 @@ export function step(state, dt) {
    return false;
  }
- 
+
 -// --- Rendering (DOM): brick collision logic STILL mixed in here ------------
 +// --- Rendering (DOM) --------------------------------------------------------
- 
+
 -// Main render loop. For each live brick we test collision AND draw in the same
 -// pass: this is where logic and rendering are entangled.
 +// Main render loop. Brick collision is handled by the pure `brickCollision`
@@ -177,7 +177,7 @@ index 6b4a133..2b7e2c9 100644
    // Background
    ctx.fillStyle = palette.background;
    ctx.fillRect(0, 0, WIDTH, HEIGHT);
- 
+
 -  // Bricks: collision + bounce + score + drawing, all in one place.
 +  // Bricks: collision + bounce + score first (issue #1), drawing only here.
 +  brickCollision(state);
@@ -216,7 +216,7 @@ index 250d6a9..16b069b 100644
 @@ -65,5 +68,124 @@ function belowField() {
    return 500;
  }
- 
+
 +// --- Issue #1: the ball must bounce off bricks ------------------------------
 +
 +// A brick placed at a known spot, 72x20 like the real grid.

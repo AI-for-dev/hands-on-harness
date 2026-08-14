@@ -4,7 +4,7 @@ index 6b4a133..3063a7d 100644
 +++ b/game/neon.js
 @@ -102,9 +102,6 @@ export function createState(level = 1) {
  // --- Collision (tested primitive) ------------------------------------------
- 
+
  // True if the ball (circle approximated by its box) overlaps the brick.
 -// Simple AABB test: it only says WHETHER the ball and the brick overlap, not
 -// WHICH face was hit. The missing bounce in frame() is what lets the ball plow
@@ -15,7 +15,7 @@ index 6b4a133..3063a7d 100644
 @@ -114,6 +111,72 @@ export function collides(ball, brick) {
    );
  }
- 
+
 +function swept(x1, y1, x2, y2, r, brick) {
 +  const bX1 = brick.x - r;
 +  const bX2 = brick.x + brick.w + r;
@@ -83,11 +83,11 @@ index 6b4a133..3063a7d 100644
 +}
 +
  // --- Score & combo (NOT covered by tests — debt #5) ------------------------
- 
+
  // Combo multiplier. UNBOUNDED today: a long combo makes the score blow up
 @@ -159,11 +222,13 @@ export function saveBest(storage, score) {
  // --- Physics (movement + wall/paddle bounces) ------------------------------
- 
+
  // Advances the ball by a time step `dt` (in seconds) and handles bounces off
 -// the walls and the paddle. Does NOT handle bricks: that responsibility still
 -// lives in the render loop `frame()` (debt #2).
@@ -99,13 +99,13 @@ index 6b4a133..3063a7d 100644
 +
 +  const oldX = ball.x;
 +  const oldY = ball.y;
- 
+
    ball.x += ball.vx * dt;
    ball.y += ball.vy * dt;
 @@ -199,6 +264,19 @@ export function step(state, dt) {
      state.combo = 0; // touching the paddle resets the combo
    }
- 
+
 +  // Brick collisions
 +  for (const brick of bricks) {
 +    if (!brick.alive) continue;
@@ -125,12 +125,12 @@ index 6b4a133..3063a7d 100644
 @@ -215,21 +293,10 @@ export function frame(ctx, state) {
    ctx.fillStyle = palette.background;
    ctx.fillRect(0, 0, WIDTH, HEIGHT);
- 
+
 -  // Bricks: collision + bounce + score + drawing, all in one place.
 +  // Bricks: drawing only. Collision was moved to step() (fixed #1).
    for (const brick of state.bricks) {
      if (!brick.alive) continue;
- 
+
 -    if (collides(state.ball, brick)) {
 -      brick.alive = false;
 -      state.combo += 1;
@@ -152,7 +152,7 @@ index 250d6a9..3dbeb36 100644
 @@ -45,6 +45,76 @@ test('step: bounce off the left wall', () => {
    assert.ok(state.ball.vx > 0, 'horizontal velocity should flip to the right');
  });
- 
+
 +test('step: bounce off top of brick (flip vy)', () => {
 +  const state = createState(1);
 +  const brick = state.bricks[0];

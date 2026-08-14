@@ -16,9 +16,9 @@ index 6b4a133..4f4fce2 100644
  // The module runs nothing on import: only `boot()` touches the DOM. Pure
  // logic can therefore be imported from the tests (`node --test`) without a
 @@ -55,6 +56,17 @@ export const BRICK_TOP = 48;
- 
+
  const STORAGE_KEY = 'neon.best';
- 
+
 +// --- Brick-bounce tuning (ISSUES.md #1) ------------------------------------
 +
 +// Margin (px) used to push the ball just OUTSIDE a brick after a bounce:
@@ -31,10 +31,10 @@ index 6b4a133..4f4fce2 100644
 +const SEAM_EPS = 1e-6;
 +
  // --- State construction ----------------------------------------------------
- 
+
  // Builds the brick grid for a given level.
 @@ -103,8 +115,8 @@ export function createState(level = 1) {
- 
+
  // True if the ball (circle approximated by its box) overlaps the brick.
  // Simple AABB test: it only says WHETHER the ball and the brick overlap, not
 -// WHICH face was hit. The missing bounce in frame() is what lets the ball plow
@@ -47,7 +47,7 @@ index 6b4a133..4f4fce2 100644
 @@ -114,6 +126,133 @@ export function collides(ball, brick) {
    );
  }
- 
+
 +// --- Brick bounce (ISSUES.md #1) -------------------------------------------
 +
 +// Sweeps the ball's centre path (previous position → current position) against
@@ -176,15 +176,15 @@ index 6b4a133..4f4fce2 100644
 +}
 +
  // --- Score & combo (NOT covered by tests — debt #5) ------------------------
- 
+
  // Combo multiplier. UNBOUNDED today: a long combo makes the score blow up
 @@ -156,15 +295,23 @@ export function saveBest(storage, score) {
    return best;
  }
- 
+
 -// --- Physics (movement + wall/paddle bounces) ------------------------------
 +// --- Physics (movement + wall/paddle/brick bounces) ------------------------
- 
+
  // Advances the ball by a time step `dt` (in seconds) and handles bounces off
 -// the walls and the paddle. Does NOT handle bricks: that responsibility still
 -// lives in the render loop `frame()` (debt #2).
@@ -195,7 +195,7 @@ index 6b4a133..4f4fce2 100644
  // Returns `true` if the ball is lost (exits through the bottom).
  export function step(state, dt) {
    const { ball, paddle } = state;
- 
+
 +  // Remember where the move started: the brick sweep needs the whole segment
 +  // (position before AND after the move) to catch fast balls (#1 tunnelling).
 +  const px = ball.x;
@@ -204,11 +204,11 @@ index 6b4a133..4f4fce2 100644
 +
    ball.x += ball.vx * dt;
    ball.y += ball.vy * dt;
- 
+
 @@ -199,6 +346,11 @@ export function step(state, dt) {
      state.combo = 0; // touching the paddle resets the combo
    }
- 
+
 +  // Bricks: sweep the whole segment, bounce off the first face hit exactly
 +  // once, push the ball out, and score what breaks (see ISSUES.md #1).
 +  bounceBricks(state, px, py);
@@ -220,10 +220,10 @@ index 6b4a133..4f4fce2 100644
 @@ -206,30 +358,24 @@ export function step(state, dt) {
    return false;
  }
- 
+
 -// --- Rendering (DOM): brick collision logic STILL mixed in here ------------
 +// --- Rendering (DOM): bricks are drawn, collision lives in step() ----------
- 
+
 -// Main render loop. For each live brick we test collision AND draw in the same
 -// pass: this is where logic and rendering are entangled.
 +// Main render loop. Brick collision was historically resolved here, inside
@@ -235,7 +235,7 @@ index 6b4a133..4f4fce2 100644
    // Background
    ctx.fillStyle = palette.background;
    ctx.fillRect(0, 0, WIDTH, HEIGHT);
- 
+
 -  // Bricks: collision + bounce + score + drawing, all in one place.
 +  // Bricks: collision (if step() has not already run this frame), then draw.
 +  if (state.ball.resolved !== true) {
@@ -276,7 +276,7 @@ index 250d6a9..f0d8788 100644
 +// testing work ahead, not a complete suite.
  //
  // Run: `node --test "game/**/*.test.js"`  (or `npm test`)
- 
+
 @@ -15,6 +16,12 @@ import {
    step,
    makeBricks,
@@ -293,7 +293,7 @@ index 250d6a9..f0d8788 100644
 @@ -65,5 +72,150 @@ function belowField() {
    return 500;
  }
- 
+
 +// --- #1: brick bounce (ISSUES.md #1) ---------------------------------------
 +
 +// One brick at a known place, away from the walls, to isolate the interaction.

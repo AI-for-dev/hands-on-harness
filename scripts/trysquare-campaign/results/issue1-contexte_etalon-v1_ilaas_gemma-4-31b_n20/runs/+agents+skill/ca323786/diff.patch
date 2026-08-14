@@ -57,7 +57,7 @@ index 0000000..5e042d7
 +  // Ball r=7. If ball.x = offsetX + 72 + 4 = offsetX + 76.
 +  // Ball left = 76 - 7 = 69. (Overlaps Brick 0: 69 < 72+offsetX)
 +  // Ball right = 76 + 7 = 83. (Overlaps Brick 1: 83 > 80+offsetX)
-+  
++
 +  state.ball.x = (state.bricks[0].x + state.bricks[0].w) + 4;
 +  state.ball.y = state.bricks[0].y + state.bricks[0].h / 2;
 +  state.ball.vx = -100;
@@ -95,7 +95,7 @@ index 0000000..f09fc4e
 +test('D5: Ball should not tunnel through bricks at high speed', () => {
 +  const state = createState(10); // Level 10: speed = 1070
 +  const brick = state.bricks[0];
-+  
++
 +  // Position ball just above the brick, but moving fast enough to jump over it in one frame
 +  // brick.y = 48, brick.h = 20.
 +  // ball.r = 7.
@@ -106,7 +106,7 @@ index 0000000..f09fc4e
 +  // Brick bottom = 48 + 20 = 68.
 +  // Ball was at 40 (above) and is now at 93.5 (below).
 +  // It completely jumped over the brick.
-+  
++
 +  state.ball.x = brick.x + brick.w / 2;
 +  state.ball.y = brick.y - state.ball.r - 1;
 +  state.ball.vy = 1070; // speed at level 10
@@ -120,7 +120,7 @@ index 0000000..f09fc4e
 +
 +  // Now check if it collided. With discrete detection, it won't.
 +  const hit = collides(state.ball, brick);
-+  
++
 +  assert.strictEqual(hit, true, `Ball should have collided with brick despite high speed, but collides() returned ${hit}`);
 +});
 diff --git a/.scratch/to_fix.md b/.scratch/to_fix.md
@@ -278,7 +278,7 @@ index 6b4a133..fad249e 100644
 @@ -114,6 +114,25 @@ export function collides(ball, brick) {
    );
  }
- 
+
 +export function sweptCollides(ball, brick) {
 +  const prevX = ball.prevX;
 +  const prevY = ball.prevY;
@@ -299,22 +299,22 @@ index 6b4a133..fad249e 100644
 +}
 +
  // --- Score & combo (NOT covered by tests — debt #5) ------------------------
- 
+
  // Combo multiplier. UNBOUNDED today: a long combo makes the score blow up
 @@ -165,6 +184,9 @@ export function saveBest(storage, score) {
  export function step(state, dt) {
    const { ball, paddle } = state;
- 
+
 +  ball.prevX = ball.x;
 +  ball.prevY = ball.y;
 +
    ball.x += ball.vx * dt;
    ball.y += ball.vy * dt;
- 
+
 @@ -219,15 +241,43 @@ export function frame(ctx, state) {
    for (const brick of state.bricks) {
      if (!brick.alive) continue;
- 
+
 -    if (collides(state.ball, brick)) {
 +    if (collides(state.ball, brick) || sweptCollides(state.ball, brick)) {
        brick.alive = false;
@@ -359,11 +359,11 @@ index 6b4a133..fad249e 100644
 +      }
 +      break;
      }
- 
+
      ctx.fillStyle = brickColor(brick.row);
 @@ -288,6 +338,7 @@ export function boot(doc = document) {
      last = now;
- 
+
      if (state.running) {
 +      state.dt = dt;
        const lost = step(state, dt);
@@ -376,7 +376,7 @@ index 250d6a9..ca94598 100644
 @@ -10,6 +10,15 @@
  import { test } from 'node:test';
  import assert from 'node:assert/strict';
- 
+
 +// Mock Canvas 2D context
 +const mockCtx = {
 +  fillRect: () => {},
@@ -395,12 +395,12 @@ index 250d6a9..ca94598 100644
    WIDTH,
 +  frame,
  } from './neon.js';
- 
+
  test('collides: clear overlap detected', () => {
 @@ -65,5 +75,47 @@ function belowField() {
    return 500;
  }
- 
+
 -// TODO (#5): test comboMultiplier / scoreForBrick.
 -// TODO      : test level progression and loadBest/saveBest persistence.
 +test('D2: Ball should not stick to bricks', () => {
@@ -408,7 +408,7 @@ index 250d6a9..ca94598 100644
 +  const brick = state.bricks[0];
 +  // Position ball so it's slightly penetrating the top face
 +  state.ball.x = brick.x + brick.w / 2;
-+  state.ball.y = brick.y - state.ball.r + 1; 
++  state.ball.y = brick.y - state.ball.r + 1;
 +  state.ball.vy = 100;
 +
 +  frame(mockCtx, state);

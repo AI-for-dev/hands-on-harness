@@ -5,7 +5,7 @@ index 6b4a133..650cef4 100644
 @@ -114,6 +114,107 @@ export function collides(ball, brick) {
    );
  }
- 
+
 +// Bounce a ball off a single brick it currently overlaps (see #1).
 +//
 +// Decides WHICH face was hit from the two axis penetrations: the axis with the
@@ -108,12 +108,12 @@ index 6b4a133..650cef4 100644
 +}
 +
  // --- Score & combo (NOT covered by tests — debt #5) ------------------------
- 
+
  // Combo multiplier. UNBOUNDED today: a long combo makes the score blow up
 @@ -165,6 +266,11 @@ export function saveBest(storage, score) {
  export function step(state, dt) {
    const { ball, paddle } = state;
- 
+
 +  // Remember where we started this step so the brick resolver can sweep the
 +  // travelled segment and catch bricks the ball would otherwise jump over
 +  // (tunnelling, see #1).
@@ -121,11 +121,11 @@ index 6b4a133..650cef4 100644
 +  ball.py = ball.y;
    ball.x += ball.vx * dt;
    ball.y += ball.vy * dt;
- 
+
 @@ -215,21 +321,18 @@ export function frame(ctx, state) {
    ctx.fillStyle = palette.background;
    ctx.fillRect(0, 0, WIDTH, HEIGHT);
- 
+
 -  // Bricks: collision + bounce + score + drawing, all in one place.
 +  // Bricks: resolve collisions (bounce + sweep) before drawing, so logic is not
 +  // entangled with rendering (aligning with #2), then draw the survivors.
@@ -171,7 +171,7 @@ index 250d6a9..4d94ed5 100644
 @@ -59,6 +62,69 @@ test('makeBricks: full, all-alive grid at start', () => {
    assert.ok(bricks.every((b) => b.x >= 0 && b.x + b.w <= WIDTH));
  });
- 
+
 +// --- #1: brick bounce ------------------------------------------------------
 +
 +// A ball dropping onto the TOP of a brick (small vertical penetration) must

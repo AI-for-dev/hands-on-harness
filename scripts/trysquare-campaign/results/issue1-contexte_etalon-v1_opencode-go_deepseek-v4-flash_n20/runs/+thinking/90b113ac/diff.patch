@@ -14,7 +14,7 @@ index 6b4a133..3be67cc 100644
  // The module runs nothing on import: only `boot()` touches the DOM. Pure
  // logic can therefore be imported from the tests (`node --test`) without a
 @@ -103,8 +103,7 @@ export function createState(level = 1) {
- 
+
  // True if the ball (circle approximated by its box) overlaps the brick.
  // Simple AABB test: it only says WHETHER the ball and the brick overlap, not
 -// WHICH face was hit. The missing bounce in frame() is what lets the ball plow
@@ -26,7 +26,7 @@ index 6b4a133..3be67cc 100644
 @@ -114,6 +113,182 @@ export function collides(ball, brick) {
    );
  }
- 
+
 +// Swept intersection between the ball's path and one brick. The ball is a
 +// circle, so we test the segment from the previous position to the current
 +// one against the brick grown by the ball's radius. This catches fast balls
@@ -204,11 +204,11 @@ index 6b4a133..3be67cc 100644
 +}
 +
  // --- Score & combo (NOT covered by tests — debt #5) ------------------------
- 
+
  // Combo multiplier. UNBOUNDED today: a long combo makes the score blow up
 @@ -159,12 +334,17 @@ export function saveBest(storage, score) {
  // --- Physics (movement + wall/paddle bounces) ------------------------------
- 
+
  // Advances the ball by a time step `dt` (in seconds) and handles bounces off
 -// the walls and the paddle. Does NOT handle bricks: that responsibility still
 -// lives in the render loop `frame()` (debt #2).
@@ -217,7 +217,7 @@ index 6b4a133..3be67cc 100644
  // Returns `true` if the ball is lost (exits through the bottom).
  export function step(state, dt) {
    const { ball, paddle } = state;
- 
+
 +  // Keep the pre-move position so brickHit() can sweep between the two and a
 +  // fast ball cannot tunnel through a brick (issue #1).
 +  ball.prevX = ball.x;
@@ -225,14 +225,14 @@ index 6b4a133..3be67cc 100644
 +
    ball.x += ball.vx * dt;
    ball.y += ball.vy * dt;
- 
+
 @@ -206,30 +386,27 @@ export function step(state, dt) {
    return false;
  }
- 
+
 -// --- Rendering (DOM): brick collision logic STILL mixed in here ------------
 +// --- Rendering (DOM): brick collision resolution still called from here ----
- 
+
 -// Main render loop. For each live brick we test collision AND draw in the same
 -// pass: this is where logic and rendering are entangled.
 +// Main render loop. Brick collision + bounce now live in the pure `brickHit()`
@@ -242,7 +242,7 @@ index 6b4a133..3be67cc 100644
    // Background
    ctx.fillStyle = palette.background;
    ctx.fillRect(0, 0, WIDTH, HEIGHT);
- 
+
 -  // Bricks: collision + bounce + score + drawing, all in one place.
 +  // Bricks: bounce the ball off whatever it hit, then destroy + score them.
 +  const hits = brickHit(state.ball, state.bricks);
@@ -254,7 +254,7 @@ index 6b4a133..3be67cc 100644
 +
    for (const brick of state.bricks) {
      if (!brick.alive) continue;
- 
+
 -    if (collides(state.ball, brick)) {
 -      brick.alive = false;
 -      state.combo += 1;
@@ -274,7 +274,7 @@ index 250d6a9..c0efe52 100644
 --- a/game/neon.test.js
 +++ b/game/neon.test.js
 @@ -12,6 +12,7 @@ import assert from 'node:assert/strict';
- 
+
  import {
    collides,
 +  brickHit,
@@ -284,7 +284,7 @@ index 250d6a9..c0efe52 100644
 @@ -45,6 +46,106 @@ test('step: bounce off the left wall', () => {
    assert.ok(state.ball.vx > 0, 'horizontal velocity should flip to the right');
  });
- 
+
 +// --- Issue #1: brick bounce -------------------------------------------------
 +// The ball must bounce off bricks (per-face), be pushed out of the brick,
 +// bounce exactly once when it straddles a seam, and not tunnel through a

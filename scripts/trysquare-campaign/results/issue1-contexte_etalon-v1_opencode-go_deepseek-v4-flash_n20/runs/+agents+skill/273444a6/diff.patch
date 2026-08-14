@@ -14,11 +14,11 @@ index 6b4a133..a256a2b 100644
 -// browser.
 +// logic (movement, collision, score) can therefore be imported from the tests
 +// (`node --test`) without a browser.
- 
+
  import { palette, brickColor } from './theme.js';
  import { createGlowMap, drawGlow, GLOW_W, GLOW_H } from './bloom.js';
 @@ -103,8 +99,8 @@ export function createState(level = 1) {
- 
+
  // True if the ball (circle approximated by its box) overlaps the brick.
  // Simple AABB test: it only says WHETHER the ball and the brick overlap, not
 -// WHICH face was hit. The missing bounce in frame() is what lets the ball plow
@@ -31,7 +31,7 @@ index 6b4a133..a256a2b 100644
 @@ -156,47 +152,146 @@ export function saveBest(storage, score) {
    return best;
  }
- 
+
 -// --- Physics (movement + wall/paddle bounces) ------------------------------
 +// --- Physics (movement + wall/paddle/brick bounces) -----------------------
 +
@@ -116,7 +116,7 @@ index 6b4a133..a256a2b 100644
 +// the paddle band (PADDLE_H = 12) and the ball diameter (14): no obstacle can
 +// be skipped in one substep, whatever the speed (defect D5, tunneling).
 +const MAX_SUBSTEP = 10;
- 
+
  // Advances the ball by a time step `dt` (in seconds) and handles bounces off
 -// the walls and the paddle. Does NOT handle bricks: that responsibility still
 -// lives in the render loop `frame()` (debt #2).
@@ -124,7 +124,7 @@ index 6b4a133..a256a2b 100644
  // Returns `true` if the ball is lost (exits through the bottom).
  export function step(state, dt) {
    const { ball, paddle } = state;
- 
+
 -  ball.x += ball.vx * dt;
 -  ball.y += ball.vy * dt;
 +  // Split the move into substeps short enough that a fast ball cannot skip an
@@ -147,7 +147,7 @@ index 6b4a133..a256a2b 100644
 +      ball.x = WIDTH - ball.r;
 +      ball.vx = -Math.abs(ball.vx);
 +    }
- 
+
 -  // Side walls
 -  if (ball.x - ball.r < 0) {
 -    ball.x = ball.r;
@@ -161,7 +161,7 @@ index 6b4a133..a256a2b 100644
 +      ball.y = ball.r;
 +      ball.vy = Math.abs(ball.vy);
 +    }
- 
+
 -  // Ceiling
 -  if (ball.y - ball.r < 0) {
 -    ball.y = ball.r;
@@ -187,7 +187,7 @@ index 6b4a133..a256a2b 100644
 +      ball.vy = -Math.sqrt(speed * speed - ball.vx * ball.vx);
 +      state.combo = 0; // touching the paddle resets the combo
 +    }
- 
+
 -  // Paddle
 -  if (
 -    ball.vy > 0 &&
@@ -205,15 +205,15 @@ index 6b4a133..a256a2b 100644
 +    // Bricks: destroy, score and bounce in one pure pass.
 +    resolveBrickCollisions(state, prev);
    }
- 
+
    // Exit through the bottom: ball lost
 @@ -206,30 +301,20 @@ export function step(state, dt) {
    return false;
  }
- 
+
 -// --- Rendering (DOM): brick collision logic STILL mixed in here ------------
 +// --- Rendering (DOM only) ---------------------------------------------------
- 
+
 -// Main render loop. For each live brick we test collision AND draw in the same
 -// pass: this is where logic and rendering are entangled.
 +// Main render loop: draws the field, the live bricks, the paddle, the ball
@@ -223,7 +223,7 @@ index 6b4a133..a256a2b 100644
    // Background
    ctx.fillStyle = palette.background;
    ctx.fillRect(0, 0, WIDTH, HEIGHT);
- 
+
 -  // Bricks: collision + bounce + score + drawing, all in one place.
 +  // Bricks: rendering only. Collision detection, scoring and the bounce now
 +  // live in step()/resolveBrickCollisions() (pure logic, testable).
@@ -262,7 +262,7 @@ index 250d6a9..7f5701c 100644
 +// testing work ahead, not a complete suite.
  //
  // Run: `node --test "game/**/*.test.js"`  (or `npm test`)
- 
+
 @@ -15,11 +16,20 @@ import {
    step,
    makeBricks,
@@ -275,7 +275,7 @@ index 250d6a9..7f5701c 100644
 +  BRICK_TOP,
    WIDTH,
  } from './neon.js';
- 
+
 +// Small local helper: the live brick at a given row and column x.
 +function brickAt(state, row, x) {
 +  return state.bricks.find((b) => b.row === row && b.x === x);
@@ -287,7 +287,7 @@ index 250d6a9..7f5701c 100644
 @@ -65,5 +75,100 @@ function belowField() {
    return 500;
  }
- 
+
 +// --- Brick collision (defect D1: the ball never bounced off bricks) --------
 +
 +test('D1: ball hitting the bottom face of a brick bounces back down', () => {

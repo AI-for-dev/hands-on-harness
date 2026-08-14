@@ -17,7 +17,7 @@ index 6b4a133..002f553 100644
 @@ -114,6 +114,119 @@ export function collides(ball, brick) {
    );
  }
- 
+
 +// --- Brick collision & bounce (swept, per-face) -------------------------
 +
 +// Swept AABB test. The ball is treated as a moving point and the brick rect is
@@ -132,11 +132,11 @@ index 6b4a133..002f553 100644
 +}
 +
  // --- Score & combo (NOT covered by tests — debt #5) ------------------------
- 
+
  // Combo multiplier. UNBOUNDED today: a long combo makes the score blow up
 @@ -159,15 +272,26 @@ export function saveBest(storage, score) {
  // --- Physics (movement + wall/paddle bounces) ------------------------------
- 
+
  // Advances the ball by a time step `dt` (in seconds) and handles bounces off
 -// the walls and the paddle. Does NOT handle bricks: that responsibility still
 -// lives in the render loop `frame()` (debt #2).
@@ -144,7 +144,7 @@ index 6b4a133..002f553 100644
  // Returns `true` if the ball is lost (exits through the bottom).
  export function step(state, dt) {
    const { ball, paddle } = state;
- 
+
 +  // Pre-move position: brickHit sweeps the whole path between this frame and
 +  // the previous one, so a fast ball cannot tunnel through a brick (#1).
 +  ball.px = ball.x;
@@ -152,7 +152,7 @@ index 6b4a133..002f553 100644
 +
    ball.x += ball.vx * dt;
    ball.y += ball.vy * dt;
- 
+
 +  // Brick bounces (moved out of the render loop; see #1).
 +  const hitBricks = brickHit(ball, state.bricks);
 +  for (const brick of hitBricks) {
@@ -166,7 +166,7 @@ index 6b4a133..002f553 100644
 @@ -215,21 +339,10 @@ export function frame(ctx, state) {
    ctx.fillStyle = palette.background;
    ctx.fillRect(0, 0, WIDTH, HEIGHT);
- 
+
 -  // Bricks: collision + bounce + score + drawing, all in one place.
 +  // Bricks: pure rendering here — collision, bounce and scoring are handled in
 +  // step()/brickHit(), no longer entangled with the draw loop (#1).
@@ -203,11 +203,11 @@ index 250d6a9..4c78124 100644
 +  BRICK_GAP,
    WIDTH,
  } from './neon.js';
- 
+
 @@ -65,5 +67,106 @@ function belowField() {
    return 500;
  }
- 
+
 +// --- #1 brick bounce: per-face, corner, push-out, neighbours, tunnelling ----
 +
 +const BRICK = () => ({ x: 100, y: 100, w: 72, h: 20, points: 10, alive: true });

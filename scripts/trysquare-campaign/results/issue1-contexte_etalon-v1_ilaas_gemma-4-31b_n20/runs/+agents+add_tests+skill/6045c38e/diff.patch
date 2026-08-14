@@ -17,23 +17,23 @@ index 0000000..ede1e71
 +    fill: () => {},
 +    fillText: () => {},
 +  };
-+  
++
 +  // Position ball so it's about to hit the first brick (top-left)
 +  const brick = state.bricks[0];
 +  state.ball.x = brick.x + brick.w / 2;
 +  state.ball.y = brick.y - 1; // Just above
 +  state.ball.vy = 100; // Moving down
 +  state.ball.vx = 0;
-+  
++
 +  // Ensure it's not colliding yet
 +  assert.strictEqual(collides(state.ball, brick), false);
-+  
++
 +  // Manually move the ball into the brick (simulating a frame)
-+  state.ball.y += 2; 
++  state.ball.y += 2;
 +  assert.strictEqual(collides(state.ball, brick), true);
-+  
++
 +  const initialVy = state.ball.vy;
 +  frame(ctx, state);
-+  
++
 +  assert.notStrictEqual(state.ball.vy, initialVy, 'Ball vy should change after collision');
 +});

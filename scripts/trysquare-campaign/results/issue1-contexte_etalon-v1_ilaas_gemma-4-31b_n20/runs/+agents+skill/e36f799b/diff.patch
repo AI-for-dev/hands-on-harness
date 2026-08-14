@@ -12,10 +12,10 @@ index 0000000..6914afe
 +  const state = createState(1);
 +  const brick = state.bricks[0];
 +  state.ball.x = brick.x + brick.w / 2;
-+  state.ball.y = brick.y + 2; 
-+  state.ball.vy = 10; 
++  state.ball.y = brick.y + 2;
++  state.ball.vy = 10;
 +  const initialVy = state.ball.vy;
-+  step(state, 0.01); 
++  step(state, 0.01);
 +  assert.notStrictEqual(state.ball.vy, initialVy, 'Ball should have bounced');
 +});
 +
@@ -24,8 +24,8 @@ index 0000000..6914afe
 +  const brick = state.bricks[0];
 +  state.ball.x = brick.x + brick.w / 2;
 +  state.ball.y = brick.y - 10;
-+  state.ball.vy = 1000; 
-+  step(state, 0.05); 
++  state.ball.vy = 1000;
++  step(state, 0.05);
 +  assert.strictEqual(brick.alive, false, 'Brick should have been broken even if tunneled');
 +});
 +
@@ -33,10 +33,10 @@ index 0000000..6914afe
 +  const state = createState(1);
 +  const brick = state.bricks[0];
 +  state.ball.x = brick.x + brick.w / 2;
-+  state.ball.y = brick.y + 5; 
-+  state.ball.vy = 10; 
++  state.ball.y = brick.y + 5;
++  state.ball.vy = 10;
 +  step(state, 0.01);
-+  
++
 +  const coll = (function collides(ball, brick) {
 +    return (
 +      ball.x + ball.r > brick.x &&
@@ -55,7 +55,7 @@ index 0000000..6914afe
 +  state.ball.y = brick.y + 1;
 +  state.ball.vx = 100;
 +  state.ball.vy = 100;
-+  
++
 +  step(state, 0.01);
 +  assert.strictEqual(state.ball.vx, -100, 'vx should be inverted');
 +  assert.strictEqual(state.ball.vy, -100, 'vy should be inverted');
@@ -160,7 +160,7 @@ index 0000000..f45e637
 +  test('D4 - Corner bounce', () => {
 +    const state = createState(1);
 +    const brick = state.bricks[0];
-+    state.ball.x = brick.x - 2; 
++    state.ball.x = brick.x - 2;
 +    state.ball.y = brick.y - 2;
 +    state.ball.vx = 100;
 +    state.ball.vy = 100;
@@ -179,7 +179,7 @@ index 6b4a133..5488b65 100644
 +++ b/game/neon.js
 @@ -159,12 +159,14 @@ export function saveBest(storage, score) {
  // --- Physics (movement + wall/paddle bounces) ------------------------------
- 
+
  // Advances the ball by a time step `dt` (in seconds) and handles bounces off
 -// the walls and the paddle. Does NOT handle bricks: that responsibility still
 -// lives in the render loop `frame()` (debt #2).
@@ -187,17 +187,17 @@ index 6b4a133..5488b65 100644
  // Returns `true` if the ball is lost (exits through the bottom).
  export function step(state, dt) {
    const { ball, paddle } = state;
- 
+
 +  const oldX = ball.x;
 +  const oldY = ball.y;
 +
    ball.x += ball.vx * dt;
    ball.y += ball.vy * dt;
- 
+
 @@ -199,6 +201,63 @@ export function step(state, dt) {
      state.combo = 0; // touching the paddle resets the combo
    }
- 
+
 +  // Bricks collision (moved from frame)
 +  for (const brick of state.bricks) {
 +    if (!brick.alive) continue;
@@ -206,7 +206,7 @@ index 6b4a133..5488b65 100644
 +    // Simple version: check if the ball was on one side and is now on the other
 +    // Or more robust: check collision at the end and if the movement was too large, check mid-points.
 +    // For this game, we can use the- la- la "swept AABB" approach or just a few samples.
-+    
++
 +    // First, check current position
 +    if (collides(ball, brick)) {
 +      brick.alive = false;
@@ -231,19 +231,19 @@ index 6b4a133..5488b65 100644
 +    } else {
 +      // Check for tunneling: if the ball jumped over the brick
 +      // We check if the previous position and current position are on opposite sides of the brick
-+      const crossedX = (oldX + ball.r < brick.x && ball.x - ball.r > brick.x + brick.w) || 
++      const crossedX = (oldX + ball.r < brick.x && ball.x - ball.r > brick.x + brick.w) ||
 +                        (oldX - ball.r > brick.x + brick.w && ball.x + ball.r < brick.x);
-+      const crossedY = (oldY + ball.r < brick.y && ball.y - ball.r > brick.y + brick.h) || 
++      const crossedY = (oldY + ball.r < brick.y && ball.y - ball.r > brick.y + brick.h) ||
 +                        (oldY - ball.r > brick.y + brick.h && ball.y + ball.r < brick.y);
-+      
++
 +      // This is a very crude tunneling check. A real one requires checking if they passed through.
 +      // For now, let's implement a basic "if we jumped over it" logic.
 +      // If the ball's X range is within the brick's X range AND it jumped over the Y range...
-+      const withinX = (Math.max(oldX - ball.r, ball.x - ball.r) < brick.x + brick.w) && 
++      const withinX = (Math.max(oldX - ball.r, ball.x - ball.r) < brick.x + brick.w) &&
 +                       (Math.min(oldX + ball.r, ball.x + ball.r) > brick.x);
-+      const jumpedY = (oldY + ball.r < brick.y && ball.y - ball.r > brick.y + brick.h) || 
++      const jumpedY = (oldY + ball.r < brick.y && ball.y - ball.r > brick.y + brick.h) ||
 +                      (oldY - ball.r > brick.y + brick.h && ball.y + ball.r < brick.y);
-+      
++
 +      if (withinX && jumpedY) {
 +        brick.alive = false;
 +        state.combo += 1;
@@ -261,12 +261,12 @@ index 6b4a133..5488b65 100644
 @@ -215,21 +274,10 @@ export function frame(ctx, state) {
    ctx.fillStyle = palette.background;
    ctx.fillRect(0, 0, WIDTH, HEIGHT);
- 
+
 -  // Bricks: collision + bounce + score + drawing, all in one place.
 +  // Bricks: drawing only. Collision is now handled in step().
    for (const brick of state.bricks) {
      if (!brick.alive) continue;
- 
+
 -    if (collides(state.ball, brick)) {
 -      brick.alive = false;
 -      state.combo += 1;

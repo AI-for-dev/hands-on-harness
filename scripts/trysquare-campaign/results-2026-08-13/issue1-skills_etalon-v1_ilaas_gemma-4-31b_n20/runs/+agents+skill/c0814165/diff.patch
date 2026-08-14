@@ -17,7 +17,7 @@ index 0000000..a22c57e
 +  // Brick 0 is at BRICK_TOP, BRICK_W, BRICK_H
 +  // Ball is moving UP (vy < 0)
 +  state.ball.x = brick.x + brick.w / 2;
-+  state.ball.y = brick.y + brick.h + state.ball.r - 1; 
++  state.ball.y = brick.y + brick.h + state.ball.r - 1;
 +  state.ball.vy = -260; // Moving UP
 +
 +  // Mock canvas context

@@ -13,7 +13,7 @@ index 6b4a133..72adfe7 100644
  // logic can therefore be imported from the tests (`node --test`) without a
  // browser.
 @@ -103,8 +99,9 @@ export function createState(level = 1) {
- 
+
  // True if the ball (circle approximated by its box) overlaps the brick.
  // Simple AABB test: it only says WHETHER the ball and the brick overlap, not
 -// WHICH face was hit. The missing bounce in frame() is what lets the ball plow
@@ -27,7 +27,7 @@ index 6b4a133..72adfe7 100644
 @@ -114,6 +111,55 @@ export function collides(ball, brick) {
    );
  }
- 
+
 +// Penetration depth of the ball into the brick, per axis: the smallest
 +// overlap over the two faces of that axis. The face with the smallest
 +// penetration is the one that was hit; equal penetrations mean a corner.
@@ -78,12 +78,12 @@ index 6b4a133..72adfe7 100644
 +}
 +
  // --- Score & combo (NOT covered by tests — debt #5) ------------------------
- 
+
  // Combo multiplier. UNBOUNDED today: a long combo makes the score blow up
 @@ -165,6 +211,11 @@ export function saveBest(storage, score) {
  export function step(state, dt) {
    const { ball, paddle } = state;
- 
+
 +  // Position before the step: the swept brick test needs the travelled
 +  // segment, not just the arrival sample (tunneling).
 +  const prevX = ball.x;
@@ -91,11 +91,11 @@ index 6b4a133..72adfe7 100644
 +
    ball.x += ball.vx * dt;
    ball.y += ball.vy * dt;
- 
+
 @@ -199,6 +250,44 @@ export function step(state, dt) {
      state.combo = 0; // touching the paddle resets the combo
    }
- 
+
 +  // Bricks: swept detection between the previous and the current position,
 +  // then a per-face bounce on the least-penetration axis (both axes on a
 +  // corner), pushing the ball back out of the brick.
@@ -140,7 +140,7 @@ index 6b4a133..72adfe7 100644
 @@ -215,21 +304,11 @@ export function frame(ctx, state) {
    ctx.fillStyle = palette.background;
    ctx.fillRect(0, 0, WIDTH, HEIGHT);
- 
+
 -  // Bricks: collision + bounce + score + drawing, all in one place.
 +  // Bricks: drawing only. Collision, bounce and scoring now live in step()
 +  // (debt #2 paid off): the bounce needs the swept segment, which only the
@@ -176,11 +176,11 @@ index 250d6a9..6fb5b11 100644
 +  BALL_R,
    WIDTH,
  } from './neon.js';
- 
+
 @@ -52,6 +56,25 @@ test('step: ball exiting through the bottom => lost', () => {
    assert.equal(lost, true);
  });
- 
+
 +test('step: brick bounce on a seam flips vy exactly once', () => {
 +  const state = createState(1);
 +  // Two stacked bricks; the seam gap (8 px) is smaller than the ball diameter

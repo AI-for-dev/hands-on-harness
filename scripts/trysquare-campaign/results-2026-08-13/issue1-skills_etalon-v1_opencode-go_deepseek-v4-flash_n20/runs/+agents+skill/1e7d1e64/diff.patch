@@ -16,13 +16,13 @@ index 6b4a133..9740a76 100644
 +// `node --test`; rendering is kept isolated in `frame()`. The brick bounce
 +// resolution lives in the pure `resolveBricks()` so it is testable without a
 +// DOM. The module runs nothing on import: only `boot()` touches the DOM.
- 
+
  import { palette, brickColor } from './theme.js';
  import { createGlowMap, drawGlow, GLOW_W, GLOW_H } from './bloom.js';
 @@ -114,6 +111,89 @@ export function collides(ball, brick) {
    );
  }
- 
+
 +// --- Brick bounce resolution (pure, no DOM) --------------------------------
 +
 +// Maximum travel between two brick-overlap probes, in pixels. The resolver
@@ -107,11 +107,11 @@ index 6b4a133..9740a76 100644
 +}
 +
  // --- Score & combo (NOT covered by tests — debt #5) ------------------------
- 
+
  // Combo multiplier. UNBOUNDED today: a long combo makes the score blow up
 @@ -159,12 +239,16 @@ export function saveBest(storage, score) {
  // --- Physics (movement + wall/paddle bounces) ------------------------------
- 
+
  // Advances the ball by a time step `dt` (in seconds) and handles bounces off
 -// the walls and the paddle. Does NOT handle bricks: that responsibility still
 -// lives in the render loop `frame()` (debt #2).
@@ -122,19 +122,19 @@ index 6b4a133..9740a76 100644
  // Returns `true` if the ball is lost (exits through the bottom).
  export function step(state, dt) {
    const { ball, paddle } = state;
- 
+
 +  ball.px = ball.x;
 +  ball.py = ball.y;
    ball.x += ball.vx * dt;
    ball.y += ball.vy * dt;
- 
+
 @@ -206,30 +290,26 @@ export function step(state, dt) {
    return false;
  }
- 
+
 -// --- Rendering (DOM): brick collision logic STILL mixed in here ------------
 +// --- Rendering (DOM) --------------------------------------------------------
- 
+
 -// Main render loop. For each live brick we test collision AND draw in the same
 -// pass: this is where logic and rendering are entangled.
 +// Main render loop. Brick physics is handled by the pure `resolveBricks()`
@@ -144,7 +144,7 @@ index 6b4a133..9740a76 100644
    // Background
    ctx.fillStyle = palette.background;
    ctx.fillRect(0, 0, WIDTH, HEIGHT);
- 
+
 -  // Bricks: collision + bounce + score + drawing, all in one place.
 +  // Brick physics: pure bounce resolution (per-face, swept, seam-safe).
 +  const destroyed = resolveBricks(state);
@@ -184,7 +184,7 @@ index 250d6a9..091d204 100644
    BRICK_COLS,
    WIDTH,
 @@ -67,3 +68,77 @@ function belowField() {
- 
+
  // TODO (#5): test comboMultiplier / scoreForBrick.
  // TODO      : test level progression and loadBest/saveBest persistence.
 +

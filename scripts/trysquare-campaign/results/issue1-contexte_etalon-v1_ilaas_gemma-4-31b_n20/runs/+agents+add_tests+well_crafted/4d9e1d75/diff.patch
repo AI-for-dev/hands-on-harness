@@ -4,7 +4,7 @@ index 6b4a133..7b6b6f4 100644
 +++ b/game/neon.js
 @@ -159,49 +159,93 @@ export function saveBest(storage, score) {
  // --- Physics (movement + wall/paddle bounces) ------------------------------
- 
+
  // Advances the ball by a time step `dt` (in seconds) and handles bounces off
 -// the walls and the paddle. Does NOT handle bricks: that responsibility still
 -// lives in the render loop `frame()` (debt #2).
@@ -27,7 +27,7 @@ index 6b4a133..7b6b6f4 100644
 +      ball.x = WIDTH - ball.r;
 +      ball.vx = -Math.abs(ball.vx);
 +    }
- 
+
 -  ball.x += ball.vx * dt;
 -  ball.y += ball.vy * dt;
 +    // Ceiling
@@ -35,7 +35,7 @@ index 6b4a133..7b6b6f4 100644
 +      ball.y = ball.r;
 +      ball.vy = Math.abs(ball.vy);
 +    }
- 
+
 -  // Side walls
 -  if (ball.x - ball.r < 0) {
 -    ball.x = ball.r;
@@ -58,7 +58,7 @@ index 6b4a133..7b6b6f4 100644
 +      ball.vx = ballSpeed(state.level) * 0.6 * hit;
 +      state.combo = 0;
 +    }
- 
+
 -  // Ceiling
 -  if (ball.y - ball.r < 0) {
 -    ball.y = ball.r;
@@ -99,7 +99,7 @@ index 6b4a133..7b6b6f4 100644
 +          ball.x = ball.vx < 0 ? brick.x - ball.r : brick.x + brick.w + ball.r;
 +          ball.y = ball.vy < 0 ? brick.y - ball.r : brick.y + brick.h + ball.r;
 +        }
- 
+
 -  // Paddle
 -  if (
 -    ball.vy > 0 &&
@@ -120,7 +120,7 @@ index 6b4a133..7b6b6f4 100644
 +        state.score += scoreForBrick(brick, state.combo);
 +      }
 +    }
- 
+
 -  // Exit through the bottom: ball lost
 -  if (ball.y - ball.r > HEIGHT) {
 -    return true;
@@ -134,7 +134,7 @@ index 6b4a133..7b6b6f4 100644
 @@ -219,17 +263,6 @@ export function frame(ctx, state) {
    for (const brick of state.bricks) {
      if (!brick.alive) continue;
- 
+
 -    if (collides(state.ball, brick)) {
 -      brick.alive = false;
 -      state.combo += 1;
@@ -156,7 +156,7 @@ index 250d6a9..bdb6911 100644
 @@ -65,5 +65,91 @@ function belowField() {
    return 500;
  }
- 
+
 +
 +test('step: bounce off brick top face', () => {
 +  const state = createState(1);

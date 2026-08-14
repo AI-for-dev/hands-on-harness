@@ -5,12 +5,12 @@ index 6b4a133..e9d1108 100644
 @@ -215,7 +215,7 @@ export function frame(ctx, state) {
    ctx.fillStyle = palette.background;
    ctx.fillRect(0, 0, WIDTH, HEIGHT);
- 
+
 -  // Bricks: collision + bounce + score + drawing, all in one place.
 +  // Bricks: collision logic
    for (const brick of state.bricks) {
      if (!brick.alive) continue;
- 
+
 @@ -223,13 +223,29 @@ export function frame(ctx, state) {
        brick.alive = false;
        state.combo += 1;
@@ -39,7 +39,7 @@ index 6b4a133..e9d1108 100644
 +      break; // Only one collision per frame to avoid "seam" double-bounce
      }
 +  }
- 
+
 +  // Bricks: drawing
 +  for (const brick of state.bricks) {
 +    if (!brick.alive) continue;
@@ -56,7 +56,7 @@ index 250d6a9..4ea7148 100644
    WIDTH,
 +  frame,
  } from './neon.js';
- 
+
 +
  test('collides: clear overlap detected', () => {
    const ball = { x: 100, y: 100, r: 8 };
@@ -64,120 +64,120 @@ index 250d6a9..4ea7148 100644
 @@ -65,5 +67,117 @@ function belowField() {
    return 500;
  }
- 
+
 -// TODO (#5): test comboMultiplier / scoreForBrick.
 -// TODO      : test level progression and loadBest/saveBest persistence.
 +test('frame: ball bounces off the top of a brick', () => {
 +  const state = createState(1);
 +  const brick = state.bricks[0];
-+  state.ball = { 
-+    x: brick.x + brick.w / 2, 
-+    y: brick.y + 2, 
-+    r: 7, 
-+    vx: 0, 
-+    vy: 100 
++  state.ball = {
++    x: brick.x + brick.w / 2,
++    y: brick.y + 2,
++    r: 7,
++    vx: 0,
++    vy: 100
 +  };
-+  
-+  const mockCtx = { 
-+    fillRect: () => {}, 
-+    beginPath: () => {}, 
-+    arc: () => {}, 
-+    fill: () => {}, 
++
++  const mockCtx = {
++    fillRect: () => {},
++    beginPath: () => {},
++    arc: () => {},
++    fill: () => {},
 +    fillText: () => {},
 +    fillStyle: '',
 +    font: ''
 +  };
-+  
++
 +  frame(mockCtx, state);
-+  
++
 +  assert.ok(state.ball.vy < 0, 'Ball should bounce UP after hitting the top of a brick');
 +});
 +
 +test('frame: ball bounces off the left side of a brick', () => {
 +  const state = createState(1);
 +  const brick = state.bricks[0];
-+  state.ball = { 
-+    x: brick.x - 2, 
-+    y: brick.y + brick.h / 2, 
-+    r: 7, 
-+    vx: 100, 
-+    vy: 0 
++  state.ball = {
++    x: brick.x - 2,
++    y: brick.y + brick.h / 2,
++    r: 7,
++    vx: 100,
++    vy: 0
 +  };
-+  
-+  const mockCtx = { 
-+    fillRect: () => {}, beginPath: () => {}, arc: () => {}, fill: () => {}, 
-+    fillText: () => {}, fillStyle: '', font: '' 
++
++  const mockCtx = {
++    fillRect: () => {}, beginPath: () => {}, arc: () => {}, fill: () => {},
++    fillText: () => {}, fillStyle: '', font: ''
 +  };
-+  
++
 +  frame(mockCtx, state);
-+  
++
 +  assert.ok(state.ball.vx < 0, 'Ball should bounce LEFT after hitting the left side of a brick');
 +});
 +
 +test('frame: ball bounces off the right side of a brick', () => {
 +  const state = createState(1);
 +  const brick = state.bricks[0];
-+  state.ball = { 
-+    x: brick.x + brick.w + 2, 
-+    y: brick.y + brick.h / 2, 
-+    r: 7, 
-+    vx: -100, 
-+    vy: 0 
++  state.ball = {
++    x: brick.x + brick.w + 2,
++    y: brick.y + brick.h / 2,
++    r: 7,
++    vx: -100,
++    vy: 0
 +  };
-+  
-+  const mockCtx = { 
-+    fillRect: () => {}, beginPath: () => {}, arc: () => {}, fill: () => {}, 
-+    fillText: () => {}, fillStyle: '', font: '' 
++
++  const mockCtx = {
++    fillRect: () => {}, beginPath: () => {}, arc: () => {}, fill: () => {},
++    fillText: () => {}, fillStyle: '', font: ''
 +  };
-+  
++
 +  frame(mockCtx, state);
-+  
++
 +  assert.ok(state.ball.vx > 0, 'Ball should bounce RIGHT after hitting the right side of a brick');
 +});
 +
 +test('frame: ball bounces off the bottom of a brick', () => {
 +  const state = createState(1);
 +  const brick = state.bricks[0];
-+  state.ball = { 
-+    x: brick.x + brick.w / 2, 
-+    y: brick.y + brick.h + 2, 
-+    r: 7, 
-+    vx: 0, 
-+    vy: -100 
++  state.ball = {
++    x: brick.x + brick.w / 2,
++    y: brick.y + brick.h + 2,
++    r: 7,
++    vx: 0,
++    vy: -100
 +  };
-+  
-+  const mockCtx = { 
-+    fillRect: () => {}, beginPath: () => {}, arc: () => {}, fill: () => {}, 
-+    fillText: () => {}, fillStyle: '', font: '' 
++
++  const mockCtx = {
++    fillRect: () => {}, beginPath: () => {}, arc: () => {}, fill: () => {},
++    fillText: () => {}, fillStyle: '', font: ''
 +  };
-+  
++
 +  frame(mockCtx, state);
-+  
++
 +  assert.ok(state.ball.vy > 0, 'Ball should bounce DOWN after hitting the bottom of a brick');
 +});
 +
 +test('frame: ball tunnels through brick at high speed', () => {
 +  const state = createState(10); // High speed
 +  const brick = state.bricks[0];
-+  
++
 +  // Position ball just above the brick
-+  state.ball = { 
-+    x: brick.x + brick.w / 2, 
++  state.ball = {
++    x: brick.x + brick.w / 2,
 +    y: brick.y - 2, // Top edge just above
-+    r: 7, 
-+    vx: 0, 
++    r: 7,
++    vx: 0,
 +    vy: 1070 // ballSpeed(10)
 +  };
-+  
-+  const mockCtx = { 
-+    fillRect: () => {}, beginPath: () => {}, arc: () => {}, fill: () => {}, 
-+    fillText: () => {}, fillStyle: '', font: '' 
++
++  const mockCtx = {
++    fillRect: () => {}, beginPath: () => {}, arc: () => {}, fill: () => {},
++    fillText: () => {}, fillStyle: '', font: ''
 +  };
-+  
++
 +  // Simulate one step and one frame
 +  step(state, 0.05); // Moves ball by 1070 * 0.05 = 53.5px
 +  frame(mockCtx, state);
-+  
++
 +  assert.equal(brick.alive, false, 'Brick should have been broken');
 +});
 +

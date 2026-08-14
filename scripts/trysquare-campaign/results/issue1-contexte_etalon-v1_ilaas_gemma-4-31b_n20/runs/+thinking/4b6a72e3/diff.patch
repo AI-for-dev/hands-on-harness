@@ -5,7 +5,7 @@ index 6b4a133..a90f40f 100644
 @@ -183,6 +183,33 @@ export function step(state, dt) {
      ball.vy = Math.abs(ball.vy);
    }
- 
+
 +  // Bricks
 +  for (const brick of state.bricks) {
 +    if (!brick.alive) continue;
@@ -39,12 +39,12 @@ index 6b4a133..a90f40f 100644
 @@ -215,21 +242,10 @@ export function frame(ctx, state) {
    ctx.fillStyle = palette.background;
    ctx.fillRect(0, 0, WIDTH, HEIGHT);
- 
+
 -  // Bricks: collision + bounce + score + drawing, all in one place.
 +  // Bricks: drawing only. Collision handled in step().
    for (const brick of state.bricks) {
      if (!brick.alive) continue;
- 
+
 -    if (collides(state.ball, brick)) {
 -      brick.alive = false;
 -      state.combo += 1;
@@ -66,7 +66,7 @@ index 250d6a9..2d04826 100644
 @@ -38,6 +38,24 @@ test('collides: edge contact (radius) detected', () => {
    assert.equal(collides(ball, brick), true);
  });
- 
+
 +test('step: bounce off brick top', () => {
 +  const state = createState(1);
 +  state.bricks = [{ x: 100, y: 100, w: 50, h: 20, alive: true }];

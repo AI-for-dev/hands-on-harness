@@ -15,7 +15,7 @@ index 6b4a133..8886923 100644
  // The module runs nothing on import: only `boot()` touches the DOM. Pure
  // logic can therefore be imported from the tests (`node --test`) without a
 @@ -103,8 +103,7 @@ export function createState(level = 1) {
- 
+
  // True if the ball (circle approximated by its box) overlaps the brick.
  // Simple AABB test: it only says WHETHER the ball and the brick overlap, not
 -// WHICH face was hit. The missing bounce in frame() is what lets the ball plow
@@ -27,7 +27,7 @@ index 6b4a133..8886923 100644
 @@ -114,6 +113,83 @@ export function collides(ball, brick) {
    );
  }
- 
+
 +// Resolves the ball against every brick it currently overlaps (fixes #1): the
 +// colliding bricks are marked dead and the ball receives a single per-face
 +// bounce. Returns the list of bricks that were hit.
@@ -106,11 +106,11 @@ index 6b4a133..8886923 100644
 +}
 +
  // --- Score & combo (NOT covered by tests — debt #5) ------------------------
- 
+
  // Combo multiplier. UNBOUNDED today: a long combo makes the score blow up
 @@ -159,8 +235,8 @@ export function saveBest(storage, score) {
  // --- Physics (movement + wall/paddle bounces) ------------------------------
- 
+
  // Advances the ball by a time step `dt` (in seconds) and handles bounces off
 -// the walls and the paddle. Does NOT handle bricks: that responsibility still
 -// lives in the render loop `frame()` (debt #2).
@@ -122,10 +122,10 @@ index 6b4a133..8886923 100644
 @@ -206,30 +282,26 @@ export function step(state, dt) {
    return false;
  }
- 
+
 -// --- Rendering (DOM): brick collision logic STILL mixed in here ------------
 +// --- Rendering (DOM): still scans every brick per frame (debt #2) ----------
- 
+
 -// Main render loop. For each live brick we test collision AND draw in the same
 -// pass: this is where logic and rendering are entangled.
 +// Main render loop. Brick collision is resolved up front by the pure
@@ -135,7 +135,7 @@ index 6b4a133..8886923 100644
    // Background
    ctx.fillStyle = palette.background;
    ctx.fillRect(0, 0, WIDTH, HEIGHT);
- 
+
 -  // Bricks: collision + bounce + score + drawing, all in one place.
 +  // Bricks: resolve collisions + scoring first (brickHit bounces the ball and
 +  // destroys the bricks it touched), then draw the survivors.
@@ -167,7 +167,7 @@ index 250d6a9..1791641 100644
 --- a/game/neon.test.js
 +++ b/game/neon.test.js
 @@ -12,6 +12,7 @@ import assert from 'node:assert/strict';
- 
+
  import {
    collides,
 +  brickHit,
@@ -177,7 +177,7 @@ index 250d6a9..1791641 100644
 @@ -52,6 +53,57 @@ test('step: ball exiting through the bottom => lost', () => {
    assert.equal(lost, true);
  });
- 
+
 +test('brickHit: head-on from below flips vy and pushes the ball out', () => {
 +  const brick = { x: 100, y: 100, w: 40, h: 20, alive: true };
 +  // Ball moving UP (vy < 0) into the brick's bottom face.

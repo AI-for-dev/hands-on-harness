@@ -4,7 +4,7 @@ index 6b4a133..92b3584 100644
 +++ b/game/neon.js
 @@ -159,11 +159,12 @@ export function saveBest(storage, score) {
  // --- Physics (movement + wall/paddle bounces) ------------------------------
- 
+
  // Advances the ball by a time step `dt` (in seconds) and handles bounces off
 -// the walls and the paddle. Does NOT handle bricks: that responsibility still
 -// lives in the render loop `frame()` (debt #2).
@@ -14,7 +14,7 @@ index 6b4a133..92b3584 100644
  export function step(state, dt) {
    const { ball, paddle } = state;
 +  const prevBall = { ...ball };
- 
+
    ball.x += ball.vx * dt;
    ball.y += ball.vy * dt;
 @@ -193,58 +194,139 @@ export function step(state, dt) {
@@ -27,7 +27,7 @@ index 6b4a133..92b3584 100644
 -    state.combo = 0; // touching the paddle resets the combo
 +    state.combo = 0;
    }
- 
+
 -  // Exit through the bottom: ball lost
 -  if (ball.y - ball.r > HEIGHT) {
 -    return true;
@@ -60,7 +60,7 @@ index 6b4a133..92b3584 100644
 +
 +    if (bestHit) {
 +      const { brick, nx, ny } = bestHit;
-+      
++
 +      if (nx !== 0 && (nx === LEFT && ball.vx > 0 || nx === RIGHT && ball.vx < 0)) {
 +        ball.vx *= -1;
 +      }
@@ -74,7 +74,7 @@ index 6b4a133..92b3584 100644
 +      brick.alive = false;
 +      state.combo += 1;
 +      state.score += scoreForBrick(brick, state.combo);
-+      
++
 +      Object.assign(prevBall, ball);
 +    } else {
 +      resolved = true;
@@ -84,7 +84,7 @@ index 6b4a133..92b3584 100644
 +  if (ball.y - ball.r > HEIGHT) return true;
    return false;
  }
- 
+
 +function sweepBrick(ball, prevBall, brick) {
 +  const r = ball.r;
 +  const dx = ball.x - prevBall.x;
@@ -132,7 +132,7 @@ index 6b4a133..92b3584 100644
 +  let nx = 0, ny = 0;
 +  if (minOverlap === overlapL) nx = LEFT;
 +  else if (minOverlap === overlapR) nx = RIGHT;
-+  
++
 +  if (minOverlap === overlapT) ny = UP;
 +  else if (minOverlap === overlapB) ny = DOWN;
 +
@@ -140,14 +140,14 @@ index 6b4a133..92b3584 100644
 +}
 +
  // --- Rendering (DOM): brick collision logic STILL mixed in here ------------
- 
+
 -// Main render loop. For each live brick we test collision AND draw in the same
 -// pass: this is where logic and rendering are entangled.
  export function frame(ctx, state) {
 -  // Background
    ctx.fillStyle = palette.background;
    ctx.fillRect(0, 0, WIDTH, HEIGHT);
- 
+
 -  // Bricks: collision + bounce + score + drawing, all in one place.
    for (const brick of state.bricks) {
      if (!brick.alive) continue;
@@ -166,17 +166,17 @@ index 6b4a133..92b3584 100644
      ctx.fillStyle = brickColor(brick.row);
      ctx.fillRect(brick.x, brick.y, brick.w, brick.h);
    }
- 
+
 -  // Paddle — color hard-coded instead of using the palette (inconsistency #6).
    ctx.fillStyle = '#00e5ff';
    ctx.fillRect(state.paddle.x, state.paddle.y, state.paddle.w, state.paddle.h);
- 
+
 -  // Ball — also hard-coded (#6).
    ctx.fillStyle = '#39ff14';
    ctx.beginPath();
    ctx.arc(state.ball.x, state.ball.y, state.ball.r, 0, Math.PI * 2);
    ctx.fill();
- 
+
 -  // HUD
    ctx.fillStyle = palette.text;
    ctx.font = '16px monospace';
@@ -184,7 +184,7 @@ index 6b4a133..92b3584 100644
 @@ -252,10 +334,6 @@ export function frame(ctx, state) {
    ctx.fillText(`Lives ${state.lives}`, WIDTH / 2 - 30, 24);
  }
- 
+
 -// --- Boot (browser entry point) --------------------------------------------
 -
 -// Starts the game: wires up the canvas, the mouse and the animation loop.
@@ -195,7 +195,7 @@ index 6b4a133..92b3584 100644
 @@ -266,7 +344,6 @@ export function boot(doc = document) {
    state.best = loadBest(doc.defaultView?.localStorage ?? globalThis.localStorage);
    state.running = true;
- 
+
 -  // Glow pass: a coarse offscreen light map, stretched over the field.
    const offscreen = doc.createElement('canvas');
    offscreen.width = GLOW_W;
@@ -203,7 +203,7 @@ index 6b4a133..92b3584 100644
 @@ -275,7 +352,6 @@ export function boot(doc = document) {
      image: offscreen.getContext('2d').createImageData(GLOW_W, GLOW_H),
    };
- 
+
 -  // Move the paddle with the mouse.
    canvas.addEventListener('mousemove', (e) => {
      const rect = canvas.getBoundingClientRect();
@@ -216,7 +216,7 @@ index 6b4a133..92b3584 100644
            state.ball = createState(state.level).ball;
          }
        }
- 
+
 -      // Level cleared: all bricks broken
        if (state.bricks.every((b) => !b.alive)) {
          state.level += 1;
@@ -234,12 +234,12 @@ index 250d6a9..62287d1 100644
 +  UP,
 +  DOWN,
  } from './neon.js';
- 
+
  test('collides: clear overlap detected', () => {
 @@ -65,5 +69,52 @@ function belowField() {
    return 500;
  }
- 
+
 -// TODO (#5): test comboMultiplier / scoreForBrick.
 -// TODO      : test level progression and loadBest/saveBest persistence.
 +test('step: bounce off the bottom of a brick (hits while going UP)', () => {

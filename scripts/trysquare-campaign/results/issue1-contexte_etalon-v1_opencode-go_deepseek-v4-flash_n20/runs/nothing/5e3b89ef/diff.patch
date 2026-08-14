@@ -14,7 +14,7 @@ index 6b4a133..28871b4 100644
 @@ -114,6 +116,79 @@ export function collides(ball, brick) {
    );
  }
- 
+
 +// Sweeps the ball along the segment from (prevX, prevY) to (ball.x, ball.y)
 +// and returns the FIRST contact with the brick, or null when there is none.
 +// The brick gap is 8 px and the ball 14 px across, so a fast shot at high
@@ -89,23 +89,23 @@ index 6b4a133..28871b4 100644
 +}
 +
  // --- Score & combo (NOT covered by tests — debt #5) ------------------------
- 
+
  // Combo multiplier. UNBOUNDED today: a long combo makes the score blow up
 @@ -165,6 +240,10 @@ export function saveBest(storage, score) {
  export function step(state, dt) {
    const { ball, paddle } = state;
- 
+
 +  // Remember where we came from so the brick pass can sweep collision.
 +  state.prevX = ball.x;
 +  state.prevY = ball.y;
 +
    ball.x += ball.vx * dt;
    ball.y += ball.vy * dt;
- 
+
 @@ -215,19 +294,29 @@ export function frame(ctx, state) {
    ctx.fillStyle = palette.background;
    ctx.fillRect(0, 0, WIDTH, HEIGHT);
- 
+
 -  // Bricks: collision + bounce + score + drawing, all in one place.
 +  // Bricks: swept collision + bounce + score + drawing, all in one place.
 +  const prevX = state.prevX ?? state.ball.x;
@@ -113,7 +113,7 @@ index 6b4a133..28871b4 100644
 +  let bounced = false;
    for (const brick of state.bricks) {
      if (!brick.alive) continue;
- 
+
 -    if (collides(state.ball, brick)) {
 +    const hit = sweepBrick(state.ball, prevX, prevY, brick);
 +    if (hit !== null) {
@@ -137,7 +137,7 @@ index 6b4a133..28871b4 100644
 +        bounced = true;
 +      }
      }
- 
+
      ctx.fillStyle = brickColor(brick.row);
 @@ -298,7 +387,10 @@ export function boot(doc = document) {
            state.best = loadBest(globalThis.localStorage);
@@ -150,7 +150,7 @@ index 6b4a133..28871b4 100644
 +          state.prevY = relaunch.prevY;
          }
        }
- 
+
 @@ -306,7 +398,10 @@ export function boot(doc = document) {
        if (state.bricks.every((b) => !b.alive)) {
          state.level += 1;
@@ -162,7 +162,7 @@ index 6b4a133..28871b4 100644
 +        state.prevY = fresh.prevY;
        }
      }
- 
+
 diff --git a/game/neon.test.js b/game/neon.test.js
 index 250d6a9..42cf4e1 100644
 --- a/game/neon.test.js
@@ -179,7 +179,7 @@ index 250d6a9..42cf4e1 100644
 @@ -52,6 +54,62 @@ test('step: ball exiting through the bottom => lost', () => {
    assert.equal(lost, true);
  });
- 
+
 +// --- #1: brick bounce ------------------------------------------------------
 +// The ball must deflect off bricks instead of plowing straight through.
 +// Each case below was a red test first, then made green by sweepBrick /

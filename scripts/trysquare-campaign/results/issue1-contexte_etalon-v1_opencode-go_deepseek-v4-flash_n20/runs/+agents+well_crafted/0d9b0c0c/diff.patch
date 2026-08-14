@@ -15,7 +15,7 @@ index 6b4a133..06e9eff 100644
  // The module runs nothing on import: only `boot()` touches the DOM. Pure
  // logic can therefore be imported from the tests (`node --test`) without a
 @@ -103,8 +104,7 @@ export function createState(level = 1) {
- 
+
  // True if the ball (circle approximated by its box) overlaps the brick.
  // Simple AABB test: it only says WHETHER the ball and the brick overlap, not
 -// WHICH face was hit. The missing bounce in frame() is what lets the ball plow
@@ -27,7 +27,7 @@ index 6b4a133..06e9eff 100644
 @@ -165,6 +165,11 @@ export function saveBest(storage, score) {
  export function step(state, dt) {
    const { ball, paddle } = state;
- 
+
 +  // Remember where this move started: `brickHit` sweeps from here to the new
 +  // position so a fast ball cannot tunnel through a brick in one step (#1).
 +  ball.px = ball.x;
@@ -35,11 +35,11 @@ index 6b4a133..06e9eff 100644
 +
    ball.x += ball.vx * dt;
    ball.y += ball.vy * dt;
- 
+
 @@ -206,30 +211,104 @@ export function step(state, dt) {
    return false;
  }
- 
+
 -// --- Rendering (DOM): brick collision logic STILL mixed in here ------------
 +// --- Brick collision: bounce resolution (issue #1) ------------------------
 +
@@ -122,7 +122,7 @@ index 6b4a133..06e9eff 100644
 +}
 +
 +// --- Rendering (DOM): brick scoring/drawing -------------------------------
- 
+
 -// Main render loop. For each live brick we test collision AND draw in the same
 -// pass: this is where logic and rendering are entangled.
 +// Main render loop. Brick collision itself now lives in the pure `brickHit`;
@@ -131,7 +131,7 @@ index 6b4a133..06e9eff 100644
    // Background
    ctx.fillStyle = palette.background;
    ctx.fillRect(0, 0, WIDTH, HEIGHT);
- 
+
 -  // Bricks: collision + bounce + score + drawing, all in one place.
 +  // Bricks: bounce + score first, then draw what is still alive.
 +  const hit = brickHit(state.ball, state.bricks);
@@ -174,11 +174,11 @@ index 250d6a9..06b266e 100644
 +  BRICK_GAP,
    WIDTH,
  } from './neon.js';
- 
+
 @@ -59,6 +64,90 @@ test('makeBricks: full, all-alive grid at start', () => {
    assert.ok(bricks.every((b) => b.x >= 0 && b.x + b.w <= WIDTH));
  });
- 
+
 +// --- #1: brick bounce (issue #1) -------------------------------------------
 +
 +// A single live brick at the default grid position.

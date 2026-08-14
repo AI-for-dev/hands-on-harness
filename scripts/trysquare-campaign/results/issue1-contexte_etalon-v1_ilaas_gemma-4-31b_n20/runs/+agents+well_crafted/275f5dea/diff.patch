@@ -4,7 +4,7 @@ index 6b4a133..ab81c84 100644
 +++ b/game/neon.js
 @@ -102,9 +102,6 @@ export function createState(level = 1) {
  // --- Collision (tested primitive) ------------------------------------------
- 
+
  // True if the ball (circle approximated by its box) overlaps the brick.
 -// Simple AABB test: it only says WHETHER the ball and the brick overlap, not
 -// WHICH face was hit. The missing bounce in frame() is what lets the ball plow
@@ -15,12 +15,12 @@ index 6b4a133..ab81c84 100644
 @@ -114,6 +111,103 @@ export function collides(ball, brick) {
    );
  }
- 
+
 +// Finds the time t in [0, 1] when the ball first hits the brick during its movement.
 +function getCollisionTime(ball, brick, oldX, oldY, dt) {
 +  const vx = ball.vx * dt;
 +  const vy = ball.vy * dt;
-+  
++
 +  const b_min_x = oldX - ball.r;
 +  const b_max_x = oldX + ball.r;
 +  const b_min_y = oldY - ball.r;
@@ -114,12 +114,12 @@ index 6b4a133..ab81c84 100644
 +}
 +
  // --- Score & combo (NOT covered by tests — debt #5) ------------------------
- 
+
  // Combo multiplier. UNBOUNDED today: a long combo makes the score blow up
 @@ -199,6 +293,9 @@ export function step(state, dt) {
      state.combo = 0; // touching the paddle resets the combo
    }
- 
+
 +  // Bricks
 +  handleBrickCollisions(state, dt);
 +
@@ -129,12 +129,12 @@ index 6b4a133..ab81c84 100644
 @@ -215,21 +312,10 @@ export function frame(ctx, state) {
    ctx.fillStyle = palette.background;
    ctx.fillRect(0, 0, WIDTH, HEIGHT);
- 
+
 -  // Bricks: collision + bounce + score + drawing, all in one place.
 +  // Bricks: just drawing now. Logic moved to step() (fixed #1).
    for (const brick of state.bricks) {
      if (!brick.alive) continue;
- 
+
 -    if (collides(state.ball, brick)) {
 -      brick.alive = false;
 -      state.combo += 1;
@@ -156,7 +156,7 @@ index 250d6a9..c4a5cda 100644
 @@ -65,5 +65,96 @@ function belowField() {
    return 500;
  }
- 
+
 -// TODO (#5): test comboMultiplier / scoreForBrick.
 -// TODO      : test level progression and loadBest/saveBest persistence.
 +test('step: ball bounces off top of brick', () => {
@@ -165,7 +165,7 @@ index 250d6a9..c4a5cda 100644
 +  state.ball = { x: 110, y: 70, r: 7, vx: 0, vy: 200 };
 +  const brick = state.bricks[0]; // Top-left brick
 +  brick.x = 90; brick.y = 80; brick.w = 40; brick.h = 20;
-+  
++
 +  step(state, 1 / 60);
 +
 +  assert.ok(state.ball.vy < 0, 'Ball should bounce UP after hitting the top of a brick');
@@ -178,7 +178,7 @@ index 250d6a9..c4a5cda 100644
 +  state.ball = { x: 110, y: 110, r: 7, vx: 0, vy: -200 };
 +  const brick = state.bricks[0];
 +  brick.x = 90; brick.y = 80; brick.w = 40; brick.h = 20;
-+  
++
 +  step(state, 1 / 60);
 +
 +  assert.ok(state.ball.vy > 0, 'Ball should bounce DOWN after hitting the bottom of a brick');
@@ -191,7 +191,7 @@ index 250d6a9..c4a5cda 100644
 +  state.ball = { x: 80, y: 90, r: 7, vx: 200, vy: 0 };
 +  const brick = state.bricks[0];
 +  brick.x = 90; brick.y = 80; brick.w = 40; brick.h = 20;
-+  
++
 +  step(state, 1 / 60);
 +
 +  assert.ok(state.ball.vx < 0, 'Ball should bounce LEFT after hitting the left side of a brick');
@@ -204,7 +204,7 @@ index 250d6a9..c4a5cda 100644
 +  state.ball = { x: 140, y: 90, r: 7, vx: -200, vy: 0 };
 +  const brick = state.bricks[0];
 +  brick.x = 90; brick.y = 80; brick.w = 40; brick.h = 20;
-+  
++
 +  step(state, 1 / 60);
 +
 +  assert.ok(state.ball.vx > 0, 'Ball should bounce RIGHT after hitting the right side of a brick');
@@ -217,7 +217,7 @@ index 250d6a9..c4a5cda 100644
 +  state.ball = { x: 85, y: 75, r: 7, vx: 200, vy: 200 };
 +  const brick = state.bricks[0];
 +  brick.x = 90; brick.y = 80; brick.w = 40; brick.h = 20;
-+  
++
 +  step(state, 1 / 60);
 +
 +  assert.ok(state.ball.vx < 0 && state.ball.vy < 0, 'Ball should bounce back diagonally');
@@ -230,9 +230,9 @@ index 250d6a9..c4a5cda 100644
 +  state.ball = { x: 110, y: 78, r: 7, vx: 0, vy: 200 };
 +  const brick = state.bricks[0];
 +  brick.x = 90; brick.y = 80; brick.w = 40; brick.h = 20;
-+  
++
 +  step(state, 1 / 60);
-+  
++
 +  // After step, ball should be outside the brick
 +  assert.ok(!collides(state.ball, brick), 'Ball should be pushed out of the brick');
 +});
@@ -246,9 +246,9 @@ index 250d6a9..c4a5cda 100644
 +  state.ball = { x: 110, y: 70, r: 7, vx: 0, vy: 1000 };
 +  const brick = state.bricks[0];
 +  brick.x = 90; brick.y = 80; brick.w = 40; brick.h = 20;
-+  
++
 +  step(state, 0.05);
-+  
++
 +  // If tunnelling is handled, the brick should be dead even if the ball is now below it.
 +  assert.equal(brick.alive, false, 'Brick should be destroyed even if the ball jumped over it');
 +});

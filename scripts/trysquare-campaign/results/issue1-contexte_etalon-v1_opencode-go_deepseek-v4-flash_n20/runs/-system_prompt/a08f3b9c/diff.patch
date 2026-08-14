@@ -5,7 +5,7 @@ index 6b4a133..2a7773c 100644
 @@ -114,6 +114,20 @@ export function collides(ball, brick) {
    );
  }
- 
+
 +// Depth of the overlap between the ball and a brick (used to pick which of
 +// several overlapping neighbors resolves the bounce — see frame()).
 +function penetration(ball, brick) {
@@ -21,12 +21,12 @@ index 6b4a133..2a7773c 100644
 +}
 +
  // --- Score & combo (NOT covered by tests — debt #5) ------------------------
- 
+
  // Combo multiplier. UNBOUNDED today: a long combo makes the score blow up
 @@ -206,6 +220,50 @@ export function step(state, dt) {
    return false;
  }
- 
+
 +// --- Brick bounce (pure, tested) -----------------------------------------
 +
 +// The axis with the SMALLER penetration is the face that was hit (#1):
@@ -72,11 +72,11 @@ index 6b4a133..2a7773c 100644
 +}
 +
  // --- Rendering (DOM): brick collision logic STILL mixed in here ------------
- 
+
  // Main render loop. For each live brick we test collision AND draw in the same
 @@ -216,18 +274,36 @@ export function frame(ctx, state) {
    ctx.fillRect(0, 0, WIDTH, HEIGHT);
- 
+
    // Bricks: collision + bounce + score + drawing, all in one place.
 +  // The grid gap (8 px) is smaller than the ball (14 px across), so a single
 +  // pass can overlap TWO neighbors. Applying the bounce once per brick would
@@ -103,7 +103,7 @@ index 6b4a133..2a7773c 100644
 +
    for (const brick of state.bricks) {
      if (!brick.alive) continue;
- 
+
 -    if (collides(state.ball, brick)) {
 +    if (hits.includes(brick)) {
        brick.alive = false;
@@ -115,7 +115,7 @@ index 6b4a133..2a7773c 100644
 -      // row. Fix = a real per-face bounce (flip vy on a top/bottom hit, vx on a
 -      // side hit) plus pushing the ball back out of the brick.
      }
- 
+
      ctx.fillStyle = brickColor(brick.row);
 diff --git a/game/neon.test.js b/game/neon.test.js
 index 250d6a9..8a5c758 100644
@@ -135,7 +135,7 @@ index 250d6a9..8a5c758 100644
 @@ -52,6 +54,77 @@ test('step: ball exiting through the bottom => lost', () => {
    assert.equal(lost, true);
  });
- 
+
 +// --- Brick bounce (#1) ----------------------------------------------------
 +
 +const brick = { x: 100, y: 100, w: 40, h: 20, alive: true };

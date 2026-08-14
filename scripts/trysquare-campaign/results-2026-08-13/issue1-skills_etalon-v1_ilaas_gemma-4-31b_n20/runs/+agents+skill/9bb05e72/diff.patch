@@ -4,7 +4,7 @@ index 6b4a133..9cf56c6 100644
 +++ b/game/neon.js
 @@ -102,9 +102,6 @@ export function createState(level = 1) {
  // --- Collision (tested primitive) ------------------------------------------
- 
+
  // True if the ball (circle approximated by its box) overlaps the brick.
 -// Simple AABB test: it only says WHETHER the ball and the brick overlap, not
 -// WHICH face was hit. The missing bounce in frame() is what lets the ball plow
@@ -15,20 +15,20 @@ index 6b4a133..9cf56c6 100644
 @@ -114,6 +111,59 @@ export function collides(ball, brick) {
    );
  }
- 
+
 +/**
 + * Resolves a collision between the ball and a brick.
 + * Handles velocity flip and repositioning to prevent sticking.
 + */
 +export function resolveBrickCollision(state, brick) {
 +  const { ball } = state;
-+  
++
 +  const overlapX = Math.min(
-+    ball.x + ball.r - brick.x, 
++    ball.x + ball.r - brick.x,
 +    brick.x + brick.w - (ball.x - ball.r)
 +  );
 +  const overlapY = Math.min(
-+    ball.y + ball.r - brick.y, 
++    ball.y + ball.r - brick.y,
 +    brick.y + brick.h - (ball.y - ball.r)
 +  );
 +
@@ -70,11 +70,11 @@ index 6b4a133..9cf56c6 100644
 +}
 +
  // --- Score & combo (NOT covered by tests — debt #5) ------------------------
- 
+
  // Combo multiplier. UNBOUNDED today: a long combo makes the score blow up
 @@ -159,8 +209,8 @@ export function saveBest(storage, score) {
  // --- Physics (movement + wall/paddle bounces) ------------------------------
- 
+
  // Advances the ball by a time step `dt` (in seconds) and handles bounces off
 -// the walls and the paddle. Does NOT handle bricks: that responsibility still
 -// lives in the render loop `frame()` (debt #2).
@@ -86,7 +86,7 @@ index 6b4a133..9cf56c6 100644
 @@ -206,30 +256,34 @@ export function step(state, dt) {
    return false;
  }
- 
+
 +/**
 + * Updates the game physics and brick collisions using sub-stepping to prevent tunneling.
 + */
@@ -105,7 +105,7 @@ index 6b4a133..9cf56c6 100644
 +}
 +
  // --- Rendering (DOM): brick collision logic STILL mixed in here ------------
- 
+
 -// Main render loop. For each live brick we test collision AND draw in the same
 -// pass: this is where logic and rendering are entangled.
 +// Main render loop.
@@ -113,7 +113,7 @@ index 6b4a133..9cf56c6 100644
    // Background
    ctx.fillStyle = palette.background;
    ctx.fillRect(0, 0, WIDTH, HEIGHT);
- 
+
 -  // Bricks: collision + bounce + score + drawing, all in one place.
 +  // Bricks: drawing only.
    for (const brick of state.bricks) {
@@ -135,7 +135,7 @@ index 6b4a133..9cf56c6 100644
    }
 @@ -288,7 +342,7 @@ export function boot(doc = document) {
      last = now;
- 
+
      if (state.running) {
 -      const lost = step(state, dt);
 +      const lost = update(state, dt);
@@ -157,7 +157,7 @@ index 250d6a9..adab8c8 100644
 @@ -20,6 +21,15 @@ import {
    WIDTH,
  } from './neon.js';
- 
+
 +// Mock canvas context
 +const ctx = {
 +  fillRect: () => {},
@@ -173,7 +173,7 @@ index 250d6a9..adab8c8 100644
 @@ -65,5 +75,56 @@ function belowField() {
    return 500;
  }
- 
+
 -// TODO (#5): test comboMultiplier / scoreForBrick.
 -// TODO      : test level progression and loadBest/saveBest persistence.
 +test('physics: ball bounces off brick (D1)', () => {
@@ -181,9 +181,9 @@ index 250d6a9..adab8c8 100644
 +  const brick = state.bricks[0];
 +  state.ball.x = brick.x + brick.w / 2;
 +  state.ball.y = brick.y - state.ball.r - 1;
-+  state.ball.vy = 100; 
++  state.ball.vy = 100;
 +  state.ball.vx = 0;
-+  state.ball.y += 2; 
++  state.ball.y += 2;
 +  const vyBefore = state.ball.vy;
 +  update(state, 0.01);
 +  assert.strictEqual(state.ball.vy, -vyBefore, 'La vitesse vy doit être inversée lors d\'un impact');
@@ -197,7 +197,7 @@ index 250d6a9..adab8c8 100644
 +  state.ball.vy = 100;
 +
 +  update(state, 0.01);
-+  
++
 +  assert.ok(!collides(state.ball, brick), 'La balle ne doit plus chevaucher la brique après résolution');
 +  assert.strictEqual(state.ball.vy, -100, 'La vitesse doit être inversée');
 +});
@@ -212,13 +212,13 @@ index 250d6a9..adab8c8 100644
 +  state.ball.vy = 0;
 +
 +  update(state, 0.01);
-+  
++
 +  assert.strictEqual(state.ball.vx, -100, 'La vitesse vx doit être inversée une seule fois');
 +});
 +
 +test('physics: no tunneling at high speed (D4)', () => {
 +  const state = createState(10);
-+  const speed = 260 + 9 * 90; 
++  const speed = 260 + 9 * 90;
 +  const dt = 0.05;
 +  const brick = state.bricks[0];
 +  state.ball.x = brick.x + brick.w / 2;

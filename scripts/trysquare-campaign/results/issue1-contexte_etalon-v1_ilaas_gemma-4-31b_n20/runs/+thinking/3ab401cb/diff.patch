@@ -25,7 +25,7 @@ index 6b4a133..4a56985 100644
 +        state.ball.y = ny > 0 ? brick.y + brick.h + state.ball.r : brick.y - state.ball.r;
 +      }
      }
- 
+
      ctx.fillStyle = brickColor(brick.row);
 diff --git a/game/neon.test.js b/game/neon.test.js
 index 250d6a9..1cf423b 100644
@@ -42,7 +42,7 @@ index 250d6a9..1cf423b 100644
 @@ -65,5 +66,50 @@ function belowField() {
    return 500;
  }
- 
+
 -// TODO (#5): test comboMultiplier / scoreForBrick.
 -// TODO      : test level progression and loadBest/saveBest persistence.
 +test('frame: ball bounces off the top of a brick', () => {
@@ -52,7 +52,7 @@ index 250d6a9..1cf423b 100644
 +  state.bricks.push(brick);
 +  // Ball is moving DOWN and hitting the top of the brick
 +  state.ball = { x: 125, y: 95, r: 7, vx: 0, vy: 200 };
-+  
++
 +  const ctx = {
 +    fillStyle: '',
 +    fillRect: () => {},
@@ -61,9 +61,9 @@ index 250d6a9..1cf423b 100644
 +    fill: () => {},
 +    fillText: () => {},
 +  };
-+  
++
 +  frame(ctx, state);
-+  
++
 +  assert.equal(brick.alive, false, 'brick should be destroyed');
 +  assert.ok(state.ball.vy < 0, 'ball should bounce UP');
 +  assert.equal(state.ball.y, 93, 'ball should be pushed out to y=93');
@@ -76,7 +76,7 @@ index 250d6a9..1cf423b 100644
 +  state.bricks.push(brick);
 +  // Ball is moving RIGHT and hitting the left side of the brick
 +  state.ball = { x: 95, y: 110, r: 7, vx: 200, vy: 0 };
-+  
++
 +  const ctx = {
 +    fillStyle: '',
 +    fillRect: () => {},
@@ -85,9 +85,9 @@ index 250d6a9..1cf423b 100644
 +    fill: () => {},
 +    fillText: () => {},
 +  };
-+  
++
 +  frame(ctx, state);
-+  
++
 +  assert.equal(brick.alive, false, 'brick should be destroyed');
 +  assert.ok(state.ball.vx < 0, 'ball should bounce LEFT');
 +  assert.equal(state.ball.x, 93, 'ball should be pushed out to x=93');

@@ -350,16 +350,16 @@ index 6b4a133..31e07b9 100644
 @@ -53,6 +53,10 @@ export const BRICK_H = 20;
  export const BRICK_GAP = 8;
  export const BRICK_TOP = 48;
- 
+
 +// Tolerances for the corner test: two penetrations closer than this are a
 +// corner (the ball arrived exactly on the diagonal) and both axes bounce.
 +const EPS = 1e-9;
 +
  const STORAGE_KEY = 'neon.best';
- 
+
  // --- State construction ----------------------------------------------------
 @@ -103,8 +107,8 @@ export function createState(level = 1) {
- 
+
  // True if the ball (circle approximated by its box) overlaps the brick.
  // Simple AABB test: it only says WHETHER the ball and the brick overlap, not
 -// WHICH face was hit. The missing bounce in frame() is what lets the ball plow
@@ -371,7 +371,7 @@ index 6b4a133..31e07b9 100644
      ball.x + ball.r > brick.x &&
 @@ -159,12 +163,14 @@ export function saveBest(storage, score) {
  // --- Physics (movement + wall/paddle bounces) ------------------------------
- 
+
  // Advances the ball by a time step `dt` (in seconds) and handles bounces off
 -// the walls and the paddle. Does NOT handle bricks: that responsibility still
 -// lives in the render loop `frame()` (debt #2).
@@ -380,17 +380,17 @@ index 6b4a133..31e07b9 100644
 +// (exits through the bottom).
  export function step(state, dt) {
    const { ball, paddle } = state;
- 
+
 +  const prevX = ball.x;
 +  const prevY = ball.y;
 +
    ball.x += ball.vx * dt;
    ball.y += ball.vy * dt;
- 
+
 @@ -199,6 +205,12 @@ export function step(state, dt) {
      state.combo = 0; // touching the paddle resets the combo
    }
- 
+
 +  // Bricks: discrete resolution when the ball rests inside a brick, then a
 +  // swept pass so a fast ball cannot jump over a brick in one step (tunneling).
 +  if (!resolveBrickOverlaps(state) && !overlapsAnyLiveBrick(state, prevX, prevY)) {
@@ -403,10 +403,10 @@ index 6b4a133..31e07b9 100644
 @@ -206,30 +218,211 @@ export function step(state, dt) {
    return false;
  }
- 
+
 -// --- Rendering (DOM): brick collision logic STILL mixed in here ------------
 +// --- Brick collision resolution (was mixed into frame(); see debt #2) ------
- 
+
 -// Main render loop. For each live brick we test collision AND draw in the same
 -// pass: this is where logic and rendering are entangled.
 +// Breaks every live brick the ball overlaps, scores it, and bounces the ball
@@ -606,13 +606,13 @@ index 6b4a133..31e07b9 100644
    // Background
    ctx.fillStyle = palette.background;
    ctx.fillRect(0, 0, WIDTH, HEIGHT);
- 
+
 -  // Bricks: collision + bounce + score + drawing, all in one place.
 +  // Bricks: drawing only. Collision resolution (bounce + score) happens in
 +  // `step()`: it needs the pre-move position for the swept pass (see debt #2).
    for (const brick of state.bricks) {
      if (!brick.alive) continue;
- 
+
 -    if (collides(state.ball, brick)) {
 -      brick.alive = false;
 -      state.combo += 1;

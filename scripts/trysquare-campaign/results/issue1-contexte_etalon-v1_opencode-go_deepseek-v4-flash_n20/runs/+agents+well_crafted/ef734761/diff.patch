@@ -24,7 +24,7 @@ index 6b4a133..52ea1b6 100644
 @@ -114,6 +124,203 @@ export function collides(ball, brick) {
    );
  }
- 
+
 +// --- Brick collision resolution (issue #1) --------------------------------
 +
 +// Entry of the ball's path into the brick, swept continuously between the
@@ -223,12 +223,12 @@ index 6b4a133..52ea1b6 100644
 +}
 +
  // --- Score & combo (NOT covered by tests — debt #5) ------------------------
- 
+
  // Combo multiplier. UNBOUNDED today: a long combo makes the score blow up
 @@ -165,6 +372,11 @@ export function saveBest(storage, score) {
  export function step(state, dt) {
    const { ball, paddle } = state;
- 
+
 +  // Record where the ball was before this step: brickHit() sweeps the path
 +  // from here to the new position (issue #1, anti-tunnelling).
 +  ball.px = ball.x;
@@ -236,11 +236,11 @@ index 6b4a133..52ea1b6 100644
 +
    ball.x += ball.vx * dt;
    ball.y += ball.vy * dt;
- 
+
 @@ -215,21 +427,16 @@ export function frame(ctx, state) {
    ctx.fillStyle = palette.background;
    ctx.fillRect(0, 0, WIDTH, HEIGHT);
- 
+
 -  // Bricks: collision + bounce + score + drawing, all in one place.
 +  // Bricks: resolve collision + bounce (pure logic in brickHit), then score
 +  // the broken ones. Logic and rendering are still interleaved here (debt #2).
@@ -272,7 +272,7 @@ index 250d6a9..6140134 100644
 --- a/game/neon.test.js
 +++ b/game/neon.test.js
 @@ -12,11 +12,17 @@ import assert from 'node:assert/strict';
- 
+
  import {
    collides,
 +  brickHit,
@@ -288,11 +288,11 @@ index 250d6a9..6140134 100644
 +  BRICK_H,
    WIDTH,
  } from './neon.js';
- 
+
 @@ -59,6 +65,211 @@ test('makeBricks: full, all-alive grid at start', () => {
    assert.ok(bricks.every((b) => b.x >= 0 && b.x + b.w <= WIDTH));
  });
- 
+
 +// --- Issue #1: the ball bounces off bricks (was: plows straight through) ---
 +// Each behaviour below was first written as a red test, then made green by
 +// the sweep + per-face resolution in `brickHit`.

@@ -8,5 +8,5 @@ index 250d6a9..b0215e0 100644
    WIDTH,
 +  frame,
  } from './neon.js';
- 
+
  test('collides: clear overlap detected', () => {

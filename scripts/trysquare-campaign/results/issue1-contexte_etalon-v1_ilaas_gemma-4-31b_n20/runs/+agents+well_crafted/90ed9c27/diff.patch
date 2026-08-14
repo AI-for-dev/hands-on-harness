@@ -4,7 +4,7 @@ index 6b4a133..8d9f7ec 100644
 +++ b/game/neon.js
 @@ -159,11 +159,12 @@ export function saveBest(storage, score) {
  // --- Physics (movement + wall/paddle bounces) ------------------------------
- 
+
  // Advances the ball by a time step `dt` (in seconds) and handles bounces off
 -// the walls and the paddle. Does NOT handle bricks: that responsibility still
 -// lives in the render loop `frame()` (debt #2).
@@ -14,7 +14,7 @@ index 6b4a133..8d9f7ec 100644
    const { ball, paddle } = state;
 +  const prevX = ball.x;
 +  const prevY = ball.y;
- 
+
    ball.x += ball.vx * dt;
    ball.y += ball.vy * dt;
 @@ -193,12 +194,13 @@ export function step(state, dt) {
@@ -27,7 +27,7 @@ index 6b4a133..8d9f7ec 100644
 -    state.combo = 0; // touching the paddle resets the combo
 +    state.combo = 0;
    }
- 
+
 +  resolveBricks(state, prevX, prevY);
 +
    // Exit through the bottom: ball lost
@@ -36,7 +36,7 @@ index 6b4a133..8d9f7ec 100644
 @@ -206,6 +208,65 @@ export function step(state, dt) {
    return false;
  }
- 
+
 +function resolveBricks(state, prevX, prevY) {
 +  const { ball, bricks } = state;
 +  let hasBounced = false;
@@ -97,17 +97,17 @@ index 6b4a133..8d9f7ec 100644
 +}
 +
  // --- Rendering (DOM): brick collision logic STILL mixed in here ------------
- 
+
  // Main render loop. For each live brick we test collision AND draw in the same
 @@ -215,21 +276,10 @@ export function frame(ctx, state) {
    ctx.fillStyle = palette.background;
    ctx.fillRect(0, 0, WIDTH, HEIGHT);
- 
+
 -  // Bricks: collision + bounce + score + drawing, all in one place.
 +  // Bricks: draw only. Collision and bounce are now handled in step().
    for (const brick of state.bricks) {
      if (!brick.alive) continue;
- 
+
 -    if (collides(state.ball, brick)) {
 -      brick.alive = false;
 -      state.combo += 1;
@@ -129,7 +129,7 @@ index 250d6a9..109bedf 100644
 @@ -65,5 +65,74 @@ function belowField() {
    return 500;
  }
- 
+
 +test('step: bounce off the top of a brick', () => {
 +  const state = createState(1);
 +  // Place ball just above a brick, moving down
@@ -154,7 +154,7 @@ index 250d6a9..109bedf 100644
 +  const brick = state.bricks[0];
 +  state.ball = { x: brick.x + 5, y: brick.y + brick.h / 2, r: 7, vx: 200, vy: 0 };
 +  // We want the ball to be at the left edge. Let's put it slightly inside.
-+  state.ball.x = brick.x - 2; 
++  state.ball.x = brick.x - 2;
 +  step(state, 1 / 60);
 +  assert.ok(state.ball.vx < 0, 'ball should bounce LEFT after hitting the left side of a brick');
 +});
@@ -195,7 +195,7 @@ index 250d6a9..109bedf 100644
 +  // Ball size 14, Brick height 20. Total 34.
 +  // Speed 1000 px/s, dt 0.05s => 50px movement.
 +  state.ball = { x: brick.x + brick.w / 2, y: brick.y - 10, r: 7, vx: 0, vy: 1000 };
-+  step(state, 0.05); 
++  step(state, 0.05);
 +  assert.ok(state.ball.vy < 0, 'ball should have collided with the brick even at high speed');
 +});
 +

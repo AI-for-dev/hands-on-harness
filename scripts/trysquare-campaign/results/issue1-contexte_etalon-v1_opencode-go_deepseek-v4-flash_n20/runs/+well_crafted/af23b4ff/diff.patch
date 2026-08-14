@@ -5,7 +5,7 @@ index 6b4a133..2b7c91e 100644
 @@ -114,6 +114,110 @@ export function collides(ball, brick) {
    );
  }
- 
+
 +// --- Brick bounce (issue #1) ----------------------------------------------
 +
 +// Applies an exactly-once bounce against a brick that the ball overlaps.
@@ -111,12 +111,12 @@ index 6b4a133..2b7c91e 100644
 +}
 +
  // --- Score & combo (NOT covered by tests — debt #5) ------------------------
- 
+
  // Combo multiplier. UNBOUNDED today: a long combo makes the score blow up
 @@ -165,6 +269,11 @@ export function saveBest(storage, score) {
  export function step(state, dt) {
    const { ball, paddle } = state;
- 
+
 +  // Record the previous position so #frame can sweep the trajectory for brick
 +  // collisions (tunnelling-safe, see issue #1).
 +  state.ballPrevX = ball.x;
@@ -124,11 +124,11 @@ index 6b4a133..2b7c91e 100644
 +
    ball.x += ball.vx * dt;
    ball.y += ball.vy * dt;
- 
+
 @@ -215,21 +324,11 @@ export function frame(ctx, state) {
    ctx.fillStyle = palette.background;
    ctx.fillRect(0, 0, WIDTH, HEIGHT);
- 
+
 -  // Bricks: collision + bounce + score + drawing, all in one place.
 +  // Bricks: resolve collisions first (bounce + push-out + score), then draw.
 +  resolveBrickCollisions(state, state.ballPrevX, state.ballPrevY);
@@ -164,12 +164,12 @@ index 250d6a9..3d31dd1 100644
    WIDTH,
 +  BALL_R,
  } from './neon.js';
- 
+
  test('collides: clear overlap detected', () => {
 @@ -59,6 +61,90 @@ test('makeBricks: full, all-alive grid at start', () => {
    assert.ok(bricks.every((b) => b.x >= 0 && b.x + b.w <= WIDTH));
  });
- 
+
 +// --- Issue #1: brick bounce -------------------------------------------------
 +
 +function brickState(ball, bricks) {

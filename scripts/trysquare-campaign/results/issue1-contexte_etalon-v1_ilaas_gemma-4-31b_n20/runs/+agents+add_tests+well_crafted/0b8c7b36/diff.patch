@@ -5,7 +5,7 @@ index 6b4a133..09648fc 100644
 @@ -114,6 +114,94 @@ export function collides(ball, brick) {
    );
  }
- 
+
 +/**
 + * Resolves a collision between a ball and a brick.
 + * Handles face detection, bouncing, and pushing the ball out to avoid sticky bounces.
@@ -24,7 +24,7 @@ index 6b4a133..09648fc 100644
 +  if (oldX !== undefined && oldY !== undefined) {
 +    const x1 = oldX, y1 = oldY, x2 = ball.x, y2 = ball.y;
 +    const rx = brick.x - ball.r, ry = brick.y - ball.r, rw = brick.w + 2 * ball.r, rh = brick.h + 2 * ball.r;
-+    
++
 +    let tmin = -Infinity, tmax = Infinity;
 +    const dx = x2 - x1, dy = y2 - y1;
 +
@@ -95,21 +95,21 @@ index 6b4a133..09648fc 100644
 +}
 +
  // --- Score & combo (NOT covered by tests — debt #5) ------------------------
- 
+
  // Combo multiplier. UNBOUNDED today: a long combo makes the score blow up
 @@ -165,6 +253,8 @@ export function saveBest(storage, score) {
  export function step(state, dt) {
    const { ball, paddle } = state;
- 
+
 +  ball.oldX = ball.x;
 +  ball.oldY = ball.y;
    ball.x += ball.vx * dt;
    ball.y += ball.vy * dt;
- 
+
 @@ -219,15 +309,10 @@ export function frame(ctx, state) {
    for (const brick of state.bricks) {
      if (!brick.alive) continue;
- 
+
 -    if (collides(state.ball, brick)) {
 +    if (resolveBrickCollision(state.ball, state.ball.oldX, state.ball.oldY, brick)) {
        brick.alive = false;
@@ -121,7 +121,7 @@ index 6b4a133..09648fc 100644
 -      // row. Fix = a real per-face bounce (flip vy on a top/bottom hit, vx on a
 -      // side hit) plus pushing the ball back out of the brick.
      }
- 
+
      ctx.fillStyle = brickColor(brick.row);
 diff --git a/game/neon.test.js b/game/neon.test.js
 index 250d6a9..bfaecdc 100644
@@ -133,7 +133,7 @@ index 250d6a9..bfaecdc 100644
    WIDTH,
 +  resolveBrickCollision,
  } from './neon.js';
- 
+
  test('collides: clear overlap detected', () => {
 +// ...
    const ball = { x: 100, y: 100, r: 8 };
@@ -142,7 +142,7 @@ index 250d6a9..bfaecdc 100644
 @@ -59,11 +61,75 @@ test('makeBricks: full, all-alive grid at start', () => {
    assert.ok(bricks.every((b) => b.x >= 0 && b.x + b.w <= WIDTH));
  });
- 
+
 +// ... (previous tests)
 +
  // Small local helper: place the ball below the field without importing the
@@ -150,7 +150,7 @@ index 250d6a9..bfaecdc 100644
  function belowField() {
    return 500;
  }
- 
+
 +test('resolveBrickCollision: top hit flip vy and push out', () => {
 +// ...
 +  const ball = { x: 100, y: 85, r: 7, vx: 0, vy: -100 };

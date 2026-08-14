@@ -8,12 +8,12 @@ index 250d6a9..2507da2 100644
    WIDTH,
 +  frame,
  } from './neon.js';
- 
+
  test('collides: clear overlap detected', () => {
 @@ -65,5 +66,25 @@ function belowField() {
    return 500;
  }
- 
+
 -// TODO (#5): test comboMultiplier / scoreForBrick.
 -// TODO      : test level progression and loadBest/saveBest persistence.
 +
@@ -23,18 +23,18 @@ index 250d6a9..2507da2 100644
 +  state.ball = { x: 100, y: 100, r: 7, vx: 0, vy: -100 };
 +  const brick = { x: 90, y: 80, w: 40, h: 20, alive: true, points: 10 };
 +  state.bricks = [brick];
-+  
-+  const ctx = { 
-+    fillStyle: '', 
-+    fillRect: () => {}, 
-+    beginPath: () => {}, 
-+    arc: () => {}, 
-+    fill: () => {}, 
-+    fillText: () => {} 
++
++  const ctx = {
++    fillStyle: '',
++    fillRect: () => {},
++    beginPath: () => {},
++    arc: () => {},
++    fill: () => {},
++    fillText: () => {}
 +  };
-+  
++
 +  frame(ctx, state);
-+  
++
 +  assert.equal(brick.alive, false, 'Brick should be broken');
 +  assert.ok(state.ball.vy > 0, 'Ball should bounce DOWN');
 +});

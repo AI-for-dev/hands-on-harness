@@ -34,5 +34,5 @@ index 6b4a133..50765c1 100644
 +        ball.y = overlapTop < overlapBottom ? brick.y - ball.r : brick.y + brick.h + ball.r;
 +      }
      }
- 
+
      ctx.fillStyle = brickColor(brick.row);

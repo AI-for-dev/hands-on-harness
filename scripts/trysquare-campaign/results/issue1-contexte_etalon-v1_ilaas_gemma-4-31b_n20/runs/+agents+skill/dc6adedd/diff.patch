@@ -4,7 +4,7 @@ index 6b4a133..aabd025 100644
 +++ b/game/neon.js
 @@ -159,47 +159,79 @@ export function saveBest(storage, score) {
  // --- Physics (movement + wall/paddle bounces) ------------------------------
- 
+
  // Advances the ball by a time step `dt` (in seconds) and handles bounces off
 -// the walls and the paddle. Does NOT handle bricks: that responsibility still
 -// lives in the render loop `frame()` (debt #2).
@@ -12,11 +12,11 @@ index 6b4a133..aabd025 100644
  // Returns `true` if the ball is lost (exits through the bottom).
  export function step(state, dt) {
    const { ball, paddle } = state;
- 
+
 -  ball.x += ball.vx * dt;
 -  ball.y += ball.vy * dt;
 +  // Sub-stepping to prevent tunneling through bricks at high speeds.
-+  const maxStep = BRICK_H / 2; 
++  const maxStep = BRICK_H / 2;
 +  const steps = Math.ceil((Math.max(Math.abs(ball.vx), Math.abs(ball.vy)) * dt) / maxStep) || 1;
 +  const subDt = dt / steps;
 +
@@ -32,7 +32,7 @@ index 6b4a133..aabd025 100644
 +      ball.x = WIDTH - ball.r;
 +      ball.vx = -Math.abs(ball.vx);
 +    }
- 
+
 -  // Side walls
 -  if (ball.x - ball.r < 0) {
 -    ball.x = ball.r;
@@ -46,7 +46,7 @@ index 6b4a133..aabd025 100644
 +      ball.y = ball.r;
 +      ball.vy = Math.abs(ball.vy);
 +    }
- 
+
 -  // Ceiling
 -  if (ball.y - ball.r < 0) {
 -    ball.y = ball.r;
@@ -87,7 +87,7 @@ index 6b4a133..aabd025 100644
 +          ball.vy *= -1;
 +          ball.y = (ball.vy > 0) ? brick.y + brick.h + ball.r : brick.y - ball.r;
 +        }
- 
+
 -  // Paddle
 -  if (
 -    ball.vy > 0 &&
@@ -105,11 +105,11 @@ index 6b4a133..aabd025 100644
 +        brick.alive = false;
 +        state.combo += 1;
 +        state.score += scoreForBrick(brick, state.combo);
-+        break; 
++        break;
 +      }
 +    }
    }
- 
+
 -  // Exit through the bottom: ball lost
    if (ball.y - ball.r > HEIGHT) {
      return true;
@@ -117,12 +117,12 @@ index 6b4a133..aabd025 100644
 @@ -215,21 +247,10 @@ export function frame(ctx, state) {
    ctx.fillStyle = palette.background;
    ctx.fillRect(0, 0, WIDTH, HEIGHT);
- 
+
 -  // Bricks: collision + bounce + score + drawing, all in one place.
 +  // Bricks: drawing only. Collision is now handled in step().
    for (const brick of state.bricks) {
      if (!brick.alive) continue;
- 
+
 -    if (collides(state.ball, brick)) {
 -      brick.alive = false;
 -      state.combo += 1;

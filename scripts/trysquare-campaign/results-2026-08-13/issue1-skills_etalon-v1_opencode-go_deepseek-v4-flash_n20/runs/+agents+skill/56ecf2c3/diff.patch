@@ -14,13 +14,13 @@ index 6b4a133..89e41c7 100644
 -// browser.
 +// browser. Brick and paddle collisions, scoring and combo live in the pure
 +// `step()`; `frame()` only renders.
- 
+
  import { palette, brickColor } from './theme.js';
  import { createGlowMap, drawGlow, GLOW_W, GLOW_H } from './bloom.js';
 @@ -156,80 +153,168 @@ export function saveBest(storage, score) {
    return best;
  }
- 
+
 -// --- Physics (movement + wall/paddle bounces) ------------------------------
 +// --- Physics (movement + wall/paddle/brick bounces) ------------------------
 +
@@ -76,7 +76,7 @@ index 6b4a133..89e41c7 100644
 +    ball.y = ball.vy > 0 ? brick.y + brick.h + ball.r : brick.y - ball.r;
 +  }
 +}
- 
+
  // Advances the ball by a time step `dt` (in seconds) and handles bounces off
 -// the walls and the paddle. Does NOT handle bricks: that responsibility still
 -// lives in the render loop `frame()` (debt #2).
@@ -89,13 +89,13 @@ index 6b4a133..89e41c7 100644
  // Returns `true` if the ball is lost (exits through the bottom).
  export function step(state, dt) {
    const { ball, paddle } = state;
- 
+
 -  ball.x += ball.vx * dt;
 -  ball.y += ball.vy * dt;
 +  const distance = Math.hypot(ball.vx, ball.vy) * dt;
 +  const subSteps = Math.max(1, Math.ceil(distance / SUB_STEP));
 +  const sdt = dt / subSteps;
- 
+
 -  // Side walls
 -  if (ball.x - ball.r < 0) {
 -    ball.x = ball.r;
@@ -107,7 +107,7 @@ index 6b4a133..89e41c7 100644
 +  for (let i = 0; i < subSteps; i++) {
 +    const prevX = ball.x;
 +    const prevY = ball.y;
- 
+
 -  // Ceiling
 -  if (ball.y - ball.r < 0) {
 -    ball.y = ball.r;
@@ -115,7 +115,7 @@ index 6b4a133..89e41c7 100644
 -  }
 +    ball.x += ball.vx * sdt;
 +    ball.y += ball.vy * sdt;
- 
+
 -  // Paddle
 -  if (
 -    ball.vy > 0 &&
@@ -139,7 +139,7 @@ index 6b4a133..89e41c7 100644
 +      ball.x = WIDTH - ball.r;
 +      ball.vx = -Math.abs(ball.vx);
 +    }
- 
+
 -  // Exit through the bottom: ball lost
 -  if (ball.y - ball.r > HEIGHT) {
 -    return true;
@@ -203,10 +203,10 @@ index 6b4a133..89e41c7 100644
    }
    return false;
  }
- 
+
 -// --- Rendering (DOM): brick collision logic STILL mixed in here ------------
 +// --- Rendering (DOM) -------------------------------------------------------
- 
+
 -// Main render loop. For each live brick we test collision AND draw in the same
 -// pass: this is where logic and rendering are entangled.
 +// Main render loop: draws the field. Collisions, scoring and level flow live
@@ -216,13 +216,13 @@ index 6b4a133..89e41c7 100644
    // Background
    ctx.fillStyle = palette.background;
    ctx.fillRect(0, 0, WIDTH, HEIGHT);
- 
+
 -  // Bricks: collision + bounce + score + drawing, all in one place.
 +  // Bricks: drawing only — collision, destruction and scoring happen in
 +  // `step()` so they are testable without a DOM.
    for (const brick of state.bricks) {
      if (!brick.alive) continue;
- 
+
 -    if (collides(state.ball, brick)) {
 -      brick.alive = false;
 -      state.combo += 1;
@@ -253,7 +253,7 @@ index 250d6a9..99db305 100644
 @@ -65,5 +67,109 @@ function belowField() {
    return 500;
  }
- 
+
 +// --- Brick & paddle collision regression tests (issue 1) --------------------
 +//
 +// The ball used to pass straight through bricks (no bounce at all). Each test

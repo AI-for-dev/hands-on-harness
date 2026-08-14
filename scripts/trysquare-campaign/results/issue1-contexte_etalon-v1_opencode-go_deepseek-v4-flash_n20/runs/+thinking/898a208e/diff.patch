@@ -3,7 +3,7 @@ index 87396ac..2f86eb8 100644
 --- a/ISSUES.md
 +++ b/ISSUES.md
 @@ -5,7 +5,7 @@ bug to fix, debt to pay down, or a feature to add.
- 
+
  | #   | Type         | Title                                                                        |
  | --- | ------------ | ---------------------------------------------------------------------------- |
 -| 1   | bug          | The ball **plows through** bricks instead of bouncing (no brick bounce)      |
@@ -12,12 +12,12 @@ index 87396ac..2f86eb8 100644
  | 3   | feature      | **Night mode**                                                               |
  | 4   | feature      | **CSV import** of a score table, compatible with the current local save      |
 @@ -14,11 +14,17 @@ bug to fix, debt to pay down, or a feature to add.
- 
+
  ---
- 
+
 -## #1 — bug: the ball plows through bricks instead of bouncing
 +## #1 — bug: the ball plows through bricks instead of bouncing ✅ FIXED
- 
+
 -`frame()` (in `game/neon.js`) destroys the brick it hits but never touches the
 -ball's velocity: only the walls and the paddle bounce (`step()`). The whole
 -collision resolution has to be fixed, not just the visible symptom.
@@ -30,7 +30,7 @@ index 87396ac..2f86eb8 100644
 +brick it hit but never touched the ball's velocity: only the walls and the
 +paddle bounced (`step()`). The whole collision resolution had to be fixed, not
 +just the visible symptom.
- 
+
  - **per face**: the axis with the *smaller* penetration is the face that was hit -
    flip `vy` on a top/bottom hit, `vx` on a side hit, and leave the other
 diff --git a/game/neon.js b/game/neon.js
@@ -50,7 +50,7 @@ index 6b4a133..f1e7097 100644
  // The module runs nothing on import: only `boot()` touches the DOM. Pure
  // logic can therefore be imported from the tests (`node --test`) without a
 @@ -103,8 +104,7 @@ export function createState(level = 1) {
- 
+
  // True if the ball (circle approximated by its box) overlaps the brick.
  // Simple AABB test: it only says WHETHER the ball and the brick overlap, not
 -// WHICH face was hit. The missing bounce in frame() is what lets the ball plow
@@ -62,7 +62,7 @@ index 6b4a133..f1e7097 100644
 @@ -114,6 +114,97 @@ export function collides(ball, brick) {
    );
  }
- 
+
 +// --- Brick bounce (pure, tested — ISSUES.md #1) -----------------------------
 +
 +// Penetration of the ball into the brick along each axis, plus which face is
@@ -155,11 +155,11 @@ index 6b4a133..f1e7097 100644
 +}
 +
  // --- Score & combo (NOT covered by tests — debt #5) ------------------------
- 
+
  // Combo multiplier. UNBOUNDED today: a long combo makes the score blow up
 @@ -159,12 +250,17 @@ export function saveBest(storage, score) {
  // --- Physics (movement + wall/paddle bounces) ------------------------------
- 
+
  // Advances the ball by a time step `dt` (in seconds) and handles bounces off
 -// the walls and the paddle. Does NOT handle bricks: that responsibility still
 -// lives in the render loop `frame()` (debt #2).
@@ -168,7 +168,7 @@ index 6b4a133..f1e7097 100644
  // Returns `true` if the ball is lost (exits through the bottom).
  export function step(state, dt) {
    const { ball, paddle } = state;
- 
+
 +  // Remember where the ball was before this step: frame() sweeps that segment
 +  // so a fast ball cannot jump over a brick (see ISSUES.md #1).
 +  ball.px = ball.x;
@@ -176,14 +176,14 @@ index 6b4a133..f1e7097 100644
 +
    ball.x += ball.vx * dt;
    ball.y += ball.vy * dt;
- 
+
 @@ -206,30 +302,30 @@ export function step(state, dt) {
    return false;
  }
- 
+
 -// --- Rendering (DOM): brick collision logic STILL mixed in here ------------
 +// --- Rendering (DOM): brick scoring STILL mixed in here --------------------
- 
+
 -// Main render loop. For each live brick we test collision AND draw in the same
 -// pass: this is where logic and rendering are entangled.
 +// Main render loop. The bounce itself is pure (bounceOffBricks); what remains
@@ -192,7 +192,7 @@ index 6b4a133..f1e7097 100644
    // Background
    ctx.fillStyle = palette.background;
    ctx.fillRect(0, 0, WIDTH, HEIGHT);
- 
+
 -  // Bricks: collision + bounce + score + drawing, all in one place.
 -  for (const brick of state.bricks) {
 -    if (!brick.alive) continue;
@@ -218,7 +218,7 @@ index 6b4a133..f1e7097 100644
 +      }
      }
 +  }
- 
+
 +  for (const brick of state.bricks) {
 +    if (!brick.alive) continue;
      ctx.fillStyle = brickColor(brick.row);
@@ -239,7 +239,7 @@ index 250d6a9..b953a5c 100644
 @@ -52,6 +53,74 @@ test('step: ball exiting through the bottom => lost', () => {
    assert.equal(lost, true);
  });
- 
+
 +// --- Brick bounce (ISSUES.md #1) -------------------------------------------
 +// Expected behavior: the axis with the SMALLER penetration is the face that
 +// was hit (flip vy on top/bottom, vx on a side hit, both on a corner), the
