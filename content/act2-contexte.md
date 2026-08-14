@@ -7,7 +7,7 @@
 - Repartir avec un `AGENTS.md` court et une décision motivée sur chaque levier
 :::
 
-La gestion du contexte est la brique dont dépendent toutes les autres, puisqu'un sous-agent sert à ne pas polluer le contexte principal, une mémoire à ne pas le remplir de ce qu'on saurait retrouver, et une permission à ne pas y déverser un fichier qu'on n'aurait pas dû lire. Tant que vous ne savez pas ce que contient la fenêtre ni ce que ça coûte, les modules qui suivent resteront des recettes appliquées sans être comprises.
+La gestion du contexte est la brique dont dépendent toutes les autres, puisqu'un sous-agent sert à ne pas polluer le contexte principal, une mémoire à ne pas le remplir de ce qu'on saurait retrouver, et une permission à ne pas y déverser un fichier qu'on n'aurait pas dû lire. Il faut donc commencer par savoir ce que contient la fenêtre et ce que chaque partie coûte, sans quoi les modules qui suivent ne seront que des recettes appliquées sans être comprises.
 
 Nous procédons dans l'ordre habituel : comprendre ce qu'il y a dans la fenêtre, reconstruire les leviers qui la remplissent, puis dégager ce qui reste vrai quand l'outil change.
 
@@ -48,7 +48,7 @@ Un appel au modèle se facture en trois postes, exprimés au million de tokens. 
 
 Ces tarifs sont ceux publiés par [opencode Zen](https://opencode.ai/docs/zen/). Nos mesures plus bas tournent sur ILaaS, qui ne facture rien aux participants de cette formation, et comptent donc des tokens plutôt que des euros. Les deux se lisent de la même façon, à ceci près qu'un compteur de tokens ne vous prévient pas quand vous dépensez.
 
-Deux écarts en ressortent. Le premier sépare les deux modèles, puisque le `pro` coûte 12,4 fois plus cher que le `flash` à tarif nominal. C'est une première façon de se rendre compte qu'un modèle à plus de capacité qu'un autre. Le second écart, bien plus large, sépare l'entrée de la lecture de cache : un facteur **50** sur `flash` et **120** sur `pro`.
+Deux écarts en ressortent. Le premier sépare les deux modèles, puisque le `pro` coûte 12,4 fois plus cher que le `flash` à tarif nominal. C'est une première façon de se rendre compte qu'un modèle a plus de capacités qu'un autre. Le second écart, bien plus large, sépare l'entrée de la lecture de cache : un facteur **50** sur `flash` et **120** sur `pro`.
 
 Ce second écart est ce qui rend un agent de code économiquement viable, car un agent relit son historique complet à chaque tour et paierait sinon vingt fois le prix de son contexte au cours d'une session de vingt tours.
 
@@ -106,7 +106,7 @@ Toutes les mesures de ce module portent sur la même tâche, l'**issue #1** de N
 
 Le ticket est décrit dans `ISSUES.md` à la racine du dépôt de NEON (https://github.com/AI-for-dev/neon). Il explique que la balle passe à travers les briques ainsi que les différents comportements qu'il faut corriger pour avoir un comportement normal de la balle. Nous pourrions donner directement ce ticket à l'agent, mais nous ne le ferons pas pour le moment. Nous souhaitons pour l'instant voir comment il se comporte en fonction du prompt qu'on lui fournit et le cadre autour.
 
-Comme vous pouvez le constater, cette issue comporte plusieurs subtilités qui vont être difficile à l'agent de trouver seul. Il va rapidement voir le problème et proposer de calculer une distance aux côtés de la brique. En fonction du côté tapé, il va inverser une des deux vitesses. Mais le problème au coin, qui est rare mais réel, ou le problème d'une vitesse trop importante qui ferait que la balle traverse la brique sans même la voir, il y a malheureusement très peu de chance qu'il les voit.
+Comme vous pouvez le constater, cette issue comporte plusieurs subtilités qui vont être difficiles à trouver pour l'agent seul. Il va rapidement voir le problème et proposer de calculer une distance aux côtés de la brique. En fonction du côté tapé, il va inverser une des deux vitesses. Mais le problème au coin, qui est rare mais réel, ou le problème d'une vitesse trop importante qui ferait que la balle traverse la brique sans même la voir, il y a malheureusement très peu de chance qu'il les voie.
 
 En plus de la correction du bug, nous souhaitons commencer à définir un cadre et vérifier que l'agent n'en sorte pas. Il y en a principalement trois :
 
@@ -131,11 +131,9 @@ Voici ce que nous proposons de mesurer sur chaque exécution :
 Nous testerons l'ensemble de ces points de manière déterministe et sans utiliser de LLM-as-a-judge. Nous avons écrit les tests qu'il faudrait avoir dans un fichier sonde. Dites-vous qu'un test à vérifier est toujours beaucoup plus sûr que l'utilisation d'un LLM pour confirmer un comportement souhaité. L'aspect probabiliste du LLM peut vous faire croire que c'est bon alors que ça ne l'est pas du tout.
 
 ::: warning Chaque exécution travaille sur un clone jeté
-Un dispositif qui modifie le dépôt mesure la dernière modification plutôt que la configuration. L'outil que nous utilisons plus bas clone NÉON **à un tag**, `etalon-v1`, dans un répertoire temporaire, à chaque exécution.
+Si le dispositif travaillait directement dans l'arbre de travail, chaque exécution modifierait le dépôt et la suivante mesurerait ces modifications plutôt que la configuration. L'outil que nous utilisons plus bas clone donc NÉON **à un tag**, `etalon-v1`, dans un répertoire temporaire, à chaque exécution. Sans cette précaution, `main` avance, une salle corrige l'issue #1, et les mesures d'hier ne se comparent plus à celles de demain sans que rien ne le signale.
 
-Jamais l'arbre de travail. `main` avance, une salle corrige l'issue #1, et les mesures d'hier cesseraient de se comparer à celles de demain sans que rien ne le signale.
-
-Cette garde est nécessaire et elle ne suffit pas, parce qu'un tag est un nom que son propriétaire peut déplacer. L'encadré « le commit de l'étalon », plus bas, dit comment s'en prémunir.
+Cette garde ne suffit pas complètement, car un tag reste un nom que son propriétaire peut déplacer. Nous y reviendrons dans la partie « Généraliser ».
 :::
 
 ### Les curseurs, à la main
@@ -143,7 +141,7 @@ Cette garde est nécessaire et elle ne suffit pas, parce qu'un tag est un nom qu
 #### Le modèle
 
 ::: info Exercice (en salle)
-Lancez la même demande sur deux modèles de tailles différentes, celui que vous utilisez d'ordinaire et le plus gros auquel vous avez accès. C'est la demande négligée, celle que tout le monde écrit le premier jour :
+Lancez la même demande sur deux modèles de tailles différentes, celui que vous utilisez d'ordinaire et le plus gros auquel vous avez accès. La demande est volontairement minimale, c'est celle qu'on écrit naturellement le premier jour. Nous l'appellerons « demande négligée » dans la suite de ce module :
 
 <<<@/../scripts/trysquare-campaign/briques/issue1-simple-prompt.md
 
@@ -161,7 +159,7 @@ Lisez les deux diffs, puis les deux `/session`. Notez vos observations sans en t
 
 #### L'effort de raisonnement
 
-`pi --help` annonce sept niveaux de raisonnement, de `off` à `max`, ce qui en fait le curseur le plus immédiatement tentant du harnais.
+`pi --help` annonce sept niveaux de raisonnement, de `off` à `max`. C'est un curseur simple à manipuler et il est donc tentant de commencer par lui.
 
 ::: info Exercice (en salle)
 Lancez la même tâche avec `--thinking minimal`, puis avec `--thinking max`, et comparez les tokens de sortie et la réponse. Vous ne trouverez aucun écart, parce que les deux drapeaux produisent exactement la même requête si vous utilisez le modèle `gemma-4-31b`.
@@ -171,20 +169,20 @@ Pour ce modèle, il n'y a que deux modes : le thinking `on` ou `off`.
 Refaites la comparaison entre deux niveaux réellement distincts sur votre modèle, par exemple `off` et `high`, et mesurez l'écart.
 :::
 
-Le raisonnement a bien un effet quand on le mesure entre deux niveaux réels, et nos mesures plus bas en donneront la taille. La leçon générale porte plutôt sur la confiance à accorder aux réglages : **un réglage exposé par le harnais n'est pas un réglage compris par le modèle**, parce qu'entre la configuration que vous tapez et la requête qui part se trouve une table de correspondance écrite par quelqu'un, qui peut être incomplète. Vous rencontrerez cette situation plusieurs fois dans la formation, et régulièrement dans votre travail, d'où l'habitude à prendre de chercher où atterrit une configuration ou un flag avant de le croire.
+Le raisonnement a bien un effet quand on le mesure entre deux niveaux réels, et nos mesures plus bas en donneront la taille. La leçon générale porte plutôt sur la confiance à accorder aux réglages : **un réglage exposé par le harnais n'est pas forcément transmis au modèle**, parce qu'entre la configuration que vous tapez et la requête qui part se trouve une table de correspondance écrite par quelqu'un, qui peut être incomplète. Vous rencontrerez cette situation plusieurs fois dans la formation, et régulièrement dans votre travail. Prenez l'habitude de chercher où atterrit une configuration ou un flag avant de lui faire confiance.
 
 ### Ce qu'on écrit
 
 #### `AGENTS.md`, le point de configuration globale
 
-Le fichier de règles placé à la racine du dépôt entre dans le contexte à chaque tour, ce qui en fait un bon candidat pour définir le cadre global de notre projet. Quand l'agent se trompe, la réaction naturelle consiste à y ajouter une phrase, puis une autre. Néanmoins, il faut être vigilant, car ajouter à chaque fois une nouvelle ligne à un coût et plus le fichier est grand et moins l'agent verra l'ensemble. De plus, l'amélioration des modèles fera que certaines lignes sont vraies aujourd'hui mais seront obsolètes à une future mise à jour. Il y a un réel travail de refactoring continu ici qu'il est important de faire tout au long de l'évolution de votre projet.
+Le fichier de règles placé à la racine du dépôt entre dans le contexte à chaque tour, ce qui en fait un bon candidat pour définir le cadre global de notre projet. Quand l'agent se trompe, la réaction naturelle consiste à y ajouter une phrase, puis une autre. Néanmoins, il faut être vigilant, car ajouter à chaque fois une nouvelle ligne a un coût et plus le fichier est grand, moins l'agent verra l'ensemble. De plus, l'amélioration des modèles fera que certaines lignes sont vraies aujourd'hui mais seront obsolètes à une future mise à jour. Il y a un réel travail de refactoring continu ici qu'il est important de faire tout au long de l'évolution de votre projet.
 
 Nous donnerons ici une contrainte forte pour cette formation.
 
 ::: danger Budget : 40 lignes
 L'`AGENTS.md` de NÉON ne dépassera jamais 40 lignes, du début à la fin de la formation. Chaque module qui voudra y ajouter une règle devra d'abord en retirer une, ou reformuler pour faire tenir les deux en une seule.
 
-Cette contrainte est le seul moyen d'éprouver concrètement la différence entre une check-list de pilote, qu'on lit, et un guide de style, qu'on ignore.
+Cette contrainte vous oblige à faire le travail de refactoring continu décrit plus haut : chaque règle doit mériter sa place, et un fichier court a beaucoup plus de chances d'être réellement suivi qu'un long guide de style.
 :::
 
 Mais nous pouvons également nous appuyer sur d'autres fichiers et le dire dans `AGENTS.md` pour qu'il aille le lire si besoin. Par exemple, nous pouvons lui indiquer que les conventions sont dans `CONTRIBUTING.md`, l'architecture dans le `README.md` et l'historique dans git. 
@@ -264,7 +262,8 @@ Ajoutez dans le `.pi/settings.json` de NÉON des seuils cohérents avec cette pe
 Vous disposez alors des deux régimes dans `/model`, le modèle réel à 128K et le même bridé à 32K. Faites travailler l'agent sur plusieurs fichiers avec le second jusqu'au déclenchement, lisez le résumé produit, puis vérifiez dans `\tree` où la coupure a eu lieu et si l'agent sait encore ce qu'on lui avait demandé au départ.
 :::
 
-Le détour par cette entrée bridée enseigne autant que la démonstration elle-même, puisque Pi compacte à 32 000 tokens non pas parce que le modèle sature, mais parce que vous le lui avez déclaré. La fenêtre que connaît un harnais est une ligne de configuration plutôt qu'une propriété du modèle, ce qui vous servira le jour où un agent se mettra à compacter trop tôt sans raison apparente.
+Cette manipulation montre également que Pi compacte à 32 000 tokens non pas parce que le modèle sature, mais parce que vous le lui avez déclaré. La fenêtre que connaît un harnais est une ligne de configuration et non une propriété du modèle. Ce constat vous servira le jour où un agent se mettra à compacter trop tôt sans raison apparente.
+
 ### Une expérience plus complète
 
 #### Le dispositif
@@ -311,11 +310,11 @@ Une expérience tient dans un fichier : `scripts/trysquare-campaign/scenarios/is
 
 Lorsque vous regarderez les résultats dans le répertoire de l'expérience, vous y verrez d'autres configurations que dans le tableau ci-dessus. Ils appartiennent à d'autres modules. Nous en discuterons donc plus tard.
 
-**Le prompt bien écrit ne recopie pas le mécanisme.** `ISSUES.md` décrit déjà comment corriger le bug, dans le dépôt que l'agent a sous la main. Le prompt nomme l'issue, le périmètre et le critère d'arrêt, et rien de plus :
+Le prompt bien écrit ne recopie pas le contenu du ticket. `ISSUES.md` décrit déjà comment corriger le bug, dans le dépôt que l'agent a sous la main. Le prompt nomme donc l'issue, le périmètre et le critère d'arrêt, et rien de plus :
 
 <<<@/../scripts/trysquare-campaign/briques/issue1-well-crafted-prompt.md
 
-Ce qui est mesuré est donc « **pointer un matériau écrit suffit-il à ce qu'il soit lu** », et non « un agent sait-il suivre une consigne qu'on vient de lui donner ». Un prompt qui dicte la solution transforme le critère en test d'obéissance.
+Cette configuration mesure donc si pointer un document écrit suffit à ce que l'agent aille le lire et en tienne compte. Si le prompt recopiait la solution, nous mesurerions uniquement la capacité de l'agent à suivre une consigne qu'on vient de lui donner.
 
 #### Les tests de validation
 
@@ -359,7 +358,7 @@ La configuration la mieux outillée déplace sa dispersion sur le coût plutôt 
 
 Un agent n'est pas déterministe, et l'écart entre deux exécutions d'une même configuration est du même ordre de grandeur que l'effet de la plupart des leviers, ce qui fait qu'une exécution unique par configuration mesure le tirage plutôt que le levier.
 
-Face à cette dispersion, trysquare ne publie **jamais un chiffre seul**. Deux notions suffisent à lire ses tables.
+Face à cette dispersion, trysquare ne publie jamais un chiffre seul. Deux notions suffisent pour lire ses tables.
 
 **Un point est un point de pourcentage de réussite.** `+agents+add_tests+well_crafted` atteint le critère 18 fois sur 20, soit 90 %, et `nothing` 11 fois sur 20, soit 55 % : l'écart vaut **+35 points**. Seules les exécutions valides comptent, celles qui n'ont rien livré étant retirées des deux côtés, ce qui explique qu'un dénominateur puisse être inférieur au nombre de répétitions.
 
@@ -367,9 +366,9 @@ Face à cette dispersion, trysquare ne publie **jamais un chiffre seul**. Deux n
 
 Lire un écart revient alors à poser une seule question : **cet intervalle contient-il zéro ?** S'il ne le contient pas, l'écart est marqué `*` et il est **établi**. S'il le contient, il est marqué `o` et n'est **pas concluant**, quelle que soit la valeur au centre.
 
-Les deux cas sont dans la matrice. Les +35 points ci-dessus viennent avec un intervalle de +10 à +60, donc le gain est certainement positif sans qu'on puisse dire s'il vaut dix points ou soixante. La configuration `+well_crafted` affiche +17 points sur ce même critère, ce qui a tout l'air d'un résultat, et son intervalle contient zéro : ces exécutions restent compatibles avec un levier qui aide comme avec un levier qui nuit.
+Les deux cas sont dans la matrice. Les +35 points ci-dessus viennent avec un intervalle de +10 à +60, donc le gain est certainement positif sans qu'on puisse dire s'il vaut dix points ou soixante. La configuration `+well_crafted` affiche +17 points sur ce même critère, mais son intervalle contient zéro : ces exécutions restent compatibles avec un levier qui aide comme avec un levier qui nuit.
 
-Les `o` sont affichés quand même plutôt que cachés, avec cette phrase sous chaque table : *aucune phrase ne peut reposer sur un `o`*.
+Les `o` sont tout de même affichés dans les tables, avec un rappel sous chacune d'elles : aucune conclusion ne peut s'appuyer sur un écart marqué `o`.
 
 Le nombre de répétitions reste un paramètre, parce que le bon choix dépend de ce que vous cherchez. **Trois suffisent à voir la dispersion**, ce qui est l'objectif en salle. **Départager deux leviers proches en demande beaucoup plus**, et les colonnes qui comptent des succès sont les plus gourmandes : un 2/3 contre 3/3 ne veut à peu près rien dire, là où un 8/20 contre 20/20 se défend. Les tableaux publiés plus bas sont à vingt répétitions pour cette raison.
 
@@ -434,7 +433,7 @@ Et les colonnes de la sonde, le critère en tête :
 
 Les dénominateurs de `+well_crafted` et `+thinking` valent 18 et 19 dans les colonnes de coût, parce qu'ILaaS a rendu des `Request timed out` pendant la mesure et que les exécutions concernées n'ont rien produit à noter.
 
-Cinq lectures sortent de ces deux tables, et la dernière est celle qui ouvre le module suivant. Tous les écarts cités plus bas viennent des intervalles décrits plus haut, avec la même marque `*` pour un écart établi et `o` pour un écart non concluant. Les comparaisons qui ne se prennent pas contre `nothing` sont obtenues en rejouant le calcul contre une autre référence, ce qui ne coûte rien et ne remesure rien. La colonne du verdict portant sur la seule métrique déclarée par `[verdict].criterion`, lire un écart sur une autre colonne demande de changer cette ligne du scénario avant de rendre :
+Nous tirons cinq enseignements de ces deux tables, et le dernier fera la transition avec le module suivant. Tous les écarts cités plus bas viennent des intervalles décrits plus haut, avec la même marque `*` pour un écart établi et `o` pour un écart non concluant. Les comparaisons qui ne se prennent pas contre `nothing` sont obtenues en rejouant le calcul contre une autre référence, ce qui ne coûte rien et ne remesure rien. La colonne du verdict portant sur la seule métrique déclarée par `[verdict].criterion`, lire un écart sur une autre colonne demande de changer cette ligne du scénario avant de rendre :
 
 ```bash
 trysquare render scenarios/issue1-contexte.toml --output results \
@@ -443,13 +442,13 @@ trysquare render scenarios/issue1-contexte.toml --output results \
 
 La sortie va dans un `synthesis_ref-<référence>.md` à côté de la synthèse habituelle, qui n'est pas touchée.
 
-**Le prompt cadré fait faire tout ce que le ticket nomme, et rien de plus.** `tests_ajoutes` passe de 0/20 à 17/20 et `rebond_angles` de 0/20 à 14/20, deux colonnes qui étaient vides et qui se remplissent. Le prompt ne dit pourtant rien du mécanisme du rebond : il nomme l'issue, le périmètre et le critère d'arrêt, et c'est `ISSUES.md` qui décrit le coin, la sortie du rectangle, la couture de la grille et le tunneling. Le coin reste à **0/20 dans les quatre configurations qui ne cadrent pas le ticket**, soit quatre-vingts exécutions consécutives. Pointer un matériau écrit suffit à ce qu'il soit lu, et ce qui est écrit dans ce matériau décide de ce qui sera traité.
+**Le prompt cadré fait faire tout ce que le ticket nomme, et rien de plus.** `tests_ajoutes` passe de 0/20 à 17/20 et `rebond_angles` de 0/20 à 14/20, deux colonnes qui étaient vides et qui se remplissent. Le prompt ne dit pourtant rien du mécanisme du rebond : il nomme l'issue, le périmètre et le critère d'arrêt, et c'est `ISSUES.md` qui décrit le coin, la sortie du rectangle, la couture de la grille et le tunneling. Le coin reste à **0/20 dans les quatre configurations qui ne cadrent pas le ticket**, soit quatre-vingts exécutions consécutives. Pointer un document écrit suffit donc à ce qu'il soit lu, et c'est le contenu de ce document qui décide de ce qui sera traité.
 
 **Le fichier de règles ne déplace que le procédé, et il ne déplace plus rien dès que le ticket est correct.** `+agents` fait passer `suite_lancee` de 0/20 à 20/20, parce qu'une de ses quatre lignes nomme la commande. Sur le critère il donne 9/20 contre 11/20 à la base, écart non concluant, et sur `tests_ajoutes` il reste à 0/20 puisqu'aucune de ses lignes ne parle de tests. Ajouté par-dessus le prompt cadré il n'apporte **strictement rien** : 11/20 contre 13/20 sur le critère, 12/20 contre 14/20 sur le coin, 17/20 contre 17/20 sur les tests ajoutés, aucun de ces trois écarts n'étant distinguable de zéro. Le fichier de règles est un substitut du bon ticket plutôt qu'un complément, ce qui donne une règle d'écriture directement applicable au budget de quarante lignes : une ligne qu'un ticket correct dirait de toute façon est une ligne à retirer.
 
-**Le raisonnement déplace le critère, et lui seul ne fait pas lire le ticket.** `+thinking` donne 16/20 sur `rebond_briques`, soit un écart de +29 points dont l'intervalle exclut zéro. C'est le seul levier de la matrice, hors ceux qui touchent au ticket, à déplacer la correction elle-même. Sa colonne du coin reste à 0/20 et ses tests ajoutés à 3/20 : réfléchir plus longtemps sur ce qu'on a sous les yeux ne fait pas aller chercher ce qu'on n'a pas.
+**Le raisonnement déplace le critère, et lui seul ne fait pas lire le ticket.** `+thinking` donne 16/20 sur `rebond_briques`, soit un écart de +29 points dont l'intervalle exclut zéro. C'est le seul levier de la matrice, hors ceux qui touchent au ticket, à déplacer la correction elle-même. Sa colonne du coin reste à 0/20 et ses tests ajoutés à 3/20 : le raisonnement améliore ce que le modèle fait de ce qu'il a sous les yeux, mais ne l'amène pas à aller chercher ce qui lui manque.
 
-**Le prompt cadré fait écrire les tests rouges, et une exécution sur cinq s'arrête là.** La colonne `touched` le dit sans ambiguïté : sur `+well_crafted` et `+agents+well_crafted`, quatre exécutions sur vingt n'ouvrent jamais `game/neon.js`, dont deux ou trois qui écrivent uniquement dans `game/neon.test.js` et une ou deux qui ne livrent rien du tout. Aucune autre configuration ne montre ce comportement, `nothing`, `+agents` et `-system_prompt` touchant la source dans vingt exécutions sur vingt. L'explication est dans le ticket, qui énumère cinq sous-cas et se termine par « each case above added **first as a red test**, then green » : `gemma-4-31b` écrit les rouges et s'arrête là, faute de pouvoir porter la spécification entière. C'est aussi pourquoi le critère de correction ne monte pas alors que le coin monte, un modèle ayant un budget que décrire plus de travail n'agrandit pas.
+**Le prompt cadré fait écrire les tests rouges, et une exécution sur cinq s'arrête là.** La colonne `touched` le dit sans ambiguïté : sur `+well_crafted` et `+agents+well_crafted`, quatre exécutions sur vingt n'ouvrent jamais `game/neon.js`, dont deux ou trois qui écrivent uniquement dans `game/neon.test.js` et une ou deux qui ne livrent rien du tout. Aucune autre configuration ne montre ce comportement, `nothing`, `+agents` et `-system_prompt` touchant la source dans vingt exécutions sur vingt. L'explication est dans le ticket, qui énumère cinq sous-cas et se termine par « each case above added **first as a red test**, then green » : `gemma-4-31b` écrit les rouges et s'arrête là, faute de pouvoir traiter la spécification entière. C'est aussi pourquoi le critère de correction ne monte pas alors que le coin monte : le modèle a un budget de travail, et décrire plus de travail dans le ticket ne l'agrandit pas.
 
 **Donner les tests répare ce décrochage.** La configuration `+agents+add_tests+well_crafted` se lit contre `+agents+well_crafted`, la seule dont elle ne diffère que par la sonde déposée dans l'arbre :
 
@@ -486,7 +485,7 @@ Les tokens d'entrée des deux matrices ne se mettent pas dans le même tableau, 
 
 #### Trois vérifications avant de citer une table
 
-Une matrice publie des tables, des intervalles et des verdicts, ce qui lui donne un air de conclusion. Néanmoins, lors de l'élaboration de cette formation, nous avons fait face à plusieurs phénomènes qui peuvent discréditer certains résultats.
+Une matrice publie des tables, des intervalles et des verdicts, ce qui peut donner l'impression de conclusions solides. Néanmoins, lors de l'élaboration de cette formation, nous avons fait face à plusieurs phénomènes qui peuvent discréditer certains résultats.
 
 ::: warning Le compte de reprises
 Une reprise est un tour que l'outil a dû relancer parce que le fournisseur avait échoué. Elle rejoue ce tour avec tout le contexte accumulé, donc elle gonfle les colonnes de coût, et surtout, elle re-pilote l'agent : ce n'est plus la même conduite de travail.
@@ -533,23 +532,23 @@ Ces chiffres n'ont pas vocation à être crus sur parole ni recopiés dans un an
 
 Le contexte bien tenu rend l'agent discipliné et complet sur ce que le ticket nomme, sans le rendre exhaustif : le coin de la brique n'est jamais atteint là où le ticket ne le décrit pas, et le tunneling reste la colonne la plus basse de toutes celles que la sonde mesure. Aller au-delà de ce que le matériau écrit contient demandera un relecteur indépendant et une boucle de vérification, ce qui est le sujet des modules sur la délégation et les workflows.
 
-::: warning Trois phrases que cette matrice rend tentantes et que ses intervalles refusent
-Chacune s'appuie sur un chiffre exact de la campagne publiée sur cette page, et aucune ne tient.
+::: warning Trois conclusions tentantes que les intervalles ne permettent pas
+Chacune des phrases suivantes s'appuie sur un chiffre exact de la campagne publiée sur cette page, et aucune ne tient.
 
-**« Le fichier de règles casse la correction. »** `+agents` donne 9/20 sur le critère contre 11/20 à la base, ce qui ferait un joli titre. L'écart vaut -10 points et son intervalle contient zéro, donc il n'y a rien à dire, dans un sens comme dans l'autre.
+**« Le fichier de règles casse la correction. »** `+agents` donne 9/20 sur le critère contre 11/20 à la base. L'écart vaut -10 points mais son intervalle contient zéro : nous ne pouvons rien en dire, ni dans un sens ni dans l'autre.
 
-**« Retirer le prompt système améliore le rebond. »** `-system_prompt` donne 14/20 contre 11/20, soit +15 points, et l'intervalle contient zéro là aussi. Trois exécutions bien tirées auraient donné 3/3 contre 1/3 et une conviction durable.
+**« Retirer le prompt système améliore le rebond. »** `-system_prompt` donne 14/20 contre 11/20, soit +15 points, et l'intervalle contient zéro là aussi. Avec seulement trois exécutions bien tirées, nous aurions obtenu 3/3 contre 1/3 et nous aurions pu y croire durablement.
 
-**« Le prompt cadré corrige mieux le bug. »** `+well_crafted` donne +17 points sur le critère, non concluant. Ce que ce levier déplace réellement est ailleurs, sur les tests ajoutés et sur le coin, où les écarts se comptent en dizaines de points et ne laissent aucun doute. Une phrase juste sur la mauvaise colonne reste une phrase fausse.
+**« Le prompt cadré corrige mieux le bug. »** `+well_crafted` donne +17 points sur le critère, non concluant. L'effet réel de ce levier se voit ailleurs, sur les tests ajoutés et sur le coin, où les écarts se comptent en dizaines de points et ne laissent aucun doute.
 
-La règle est plus dure que « répétez trois fois » : **un effet qui ne dépasse pas la dispersion de sa propre configuration n'est pas un effet**, c'est une coïncidence qu'on a eu le temps de mettre en forme. Et un effet établi sur cette tâche, avec ce ticket et ce modèle, n'est établi que là.
+Répéter trois fois ne suffit donc pas : un effet qui ne dépasse pas la dispersion de sa propre configuration n'est pas un effet. Et un effet établi sur cette tâche, avec ce ticket et ce modèle, n'est établi que dans ce cadre.
 :::
 
 Vous venez de pratiquer une évaluation, au sens où l'on compare des comportements sur une même tâche, avec des répétitions et en sachant la mesure bruitée, là où un test répond par oui ou par non à une question fermée. Le module 3.2 formalisera cette pratique avec des fichiers d'évaluation et un LLM-juge, pour les critères que la sonde de ce module n'aurait pas pu prendre en charge.
 
 ### La pile contre la base
 
-Les leviers de ce module coûtent de l'attention et du temps, alors que le modèle s'achète, ce qui pose la question de savoir s'il est plus rentable de soigner son contexte ou de payer plus cher. La seconde moitié de cette question n'est pas mesurée ici, et nous disons plus bas pourquoi. La première l'est, à modèle constant, en mettant face à face les deux configurations extrêmes de la matrice.
+Les leviers de ce module demandent de l'attention et du temps, alors qu'un modèle plus capable s'obtient simplement en payant plus cher. Il est donc légitime de se demander s'il est plus rentable de soigner son contexte ou de changer de modèle. La seconde moitié de cette question n'est pas mesurée ici, et nous disons plus bas pourquoi. La première l'est, à modèle constant, en mettant face à face les deux configurations extrêmes de la matrice.
 
 ::: info Exercice (en salle)
 Comparez la configuration `nothing`, qui reçoit une demande d'une ligne et rien d'autre, et la configuration `+agents+add_tests+well_crafted`, qui dispose du raisonnement, du ticket cadré, de l'`AGENTS.md` et de la sonde déposée dans l'arbre. Regardez d'abord les diffs, puis les colonnes de la sonde, puis seulement à la fin ce que chacune a coûté.
@@ -575,32 +574,32 @@ Le coin passe de 0/20 à 18/20, et le prompt cadré seul en obtenait déjà quat
 
 ### Ce que ce module ne sait pas obtenir
 
-Le seul levier qui ait fait traiter au modèle l'ensemble de ce que le ticket demande est celui qui lui a mis les tests sous les yeux, et il triche un peu : les cas limites étaient écrits d'avance, par nous, dans le fichier même qui note. Sur un vrai ticket, personne ne vous les fournira.
+Le seul levier qui ait amené le modèle à traiter l'ensemble de ce que le ticket demande est celui qui lui a mis les tests sous les yeux. Cette configuration a cependant quelque chose d'artificiel : les cas limites étaient écrits d'avance, par nous, dans le fichier même qui note. Sur un vrai ticket, personne ne vous les fournira.
 
-Ce que cette configuration achète en réalité tient en un mot, et c'est la persévérance. Le modèle décroche sur un ticket long parce qu'il épuise son budget à formuler les cas au lieu de les corriger ; recevoir les cas déjà formulés lui rend ce budget. La question du module suivant est donc de savoir si une **compétence**, c'est-à-dire une procédure de travail écrite une fois et rechargée à la demande, peut produire la même persévérance sans fournir les tests.
+Ce que cette configuration apporte en réalité, c'est de la persévérance. Le modèle décroche sur un ticket long parce qu'il épuise son budget à formuler les cas au lieu de les corriger ; recevoir les cas déjà formulés lui rend ce budget. La question du module suivant est donc de savoir si une **compétence**, c'est-à-dire une procédure de travail écrite une fois et rechargée à la demande, peut produire la même persévérance sans fournir les tests.
 
 
 ## Généraliser
 
-Huit principes survivent à Pi, à `ilaas` et à la version des paquets que vous venez d'installer.
+Huit principes de ce module restent valables au-delà de Pi, d'`ilaas` et de la version des paquets que vous venez d'installer.
 
 **Ce qui est stable devant, ce qui varie derrière.** Le cache ne fonctionne que sur un préfixe inchangé et coûte cinquante fois moins cher que l'entrée, si bien que toute donnée volatile placée tôt dans le contexte, qu'il s'agisse d'un horodatage, d'un état git ou d'une date, invalide tout ce qui suit.
 
-**Pointer un matériau écrit suffit à ce qu'il soit lu, et ce qui y est écrit décide du résultat.** Notre ticket cadré ne décrit pas le mécanisme du rebond : il nomme l'issue, le périmètre et le critère d'arrêt. Dix-sept exécutions sur vingt sont allées lire `ISSUES.md`, y ont trouvé la demande de cas limites en tests rouges, et l'ont exécutée, là où la demande négligée n'en avait obtenu aucune. Le coin de la brique en donne la version la plus nette : il est décrit dans `ISSUES.md` et dans aucun de nos prompts, et il vaut 0/20 dans les quatre configurations qui ne nomment pas l'issue contre 14/20 dans celle qui la nomme. Écrivez le quelque part que vous comptez pointer, et relisez-le avant de conclure quoi que ce soit sur l'agent.
+**Pointer un document écrit suffit à ce qu'il soit lu, et ce qui y est écrit décide du résultat.** Notre ticket cadré ne décrit pas le mécanisme du rebond : il nomme l'issue, le périmètre et le critère d'arrêt. Dix-sept exécutions sur vingt sont allées lire `ISSUES.md`, y ont trouvé la demande de cas limites en tests rouges, et l'ont exécutée, là où la demande négligée n'en avait obtenu aucune. Le coin de la brique en donne la version la plus nette : il est décrit dans `ISSUES.md` et dans aucun de nos prompts, et il vaut 0/20 dans les quatre configurations qui ne nomment pas l'issue contre 14/20 dans celle qui la nomme. Écrivez ce que vous attendez dans un document que vous pouvez pointer, et relisez ce document avant de conclure quoi que ce soit sur l'agent.
 
-**Un modèle a un budget, et décrire plus de travail ne l'agrandit pas.** Notre ticket énumère cinq sous-cas et demande un test rouge pour chacun ; quatre exécutions sur vingt écrivent ces tests rouges et n'ouvrent jamais le fichier source. Ce constat commande la suite : soit vous réduisez la demande à ce que le modèle peut porter, soit vous lui donnez de quoi tenir la distance, ce qui est le sujet du module suivant.
+**Un modèle a un budget, et décrire plus de travail ne l'agrandit pas.** Notre ticket énumère cinq sous-cas et demande un test rouge pour chacun ; quatre exécutions sur vingt écrivent ces tests rouges et n'ouvrent jamais le fichier source. Ce constat conditionne la suite : soit vous réduisez la demande à ce que le modèle peut porter, soit vous lui donnez de quoi tenir la distance, ce qui est le sujet du module suivant.
 
-**Le fichier de règles change ce que l'agent fait, pas ce qu'il trouve, et il ne sert que là où le ticket se tait.** Il entre dans le contexte à chaque tour, ce qui le rend puissant et coûteux, d'où l'intérêt de le tenir court, de sourcer chaque règle par un échec observé et de le refactorer plutôt que de l'allonger. Nos mesures cadrent précisément ce qu'il achète : la configuration `+agents` fait passer de 0/20 à 20/20 le nombre d'exécutions qui lancent la suite de tests, laisse le critère de correction inchangé, et n'apporte plus rien du tout dès que le prompt cadré est là. La règle d'écriture qui en découle est directement applicable au budget de quarante lignes : une ligne qu'un ticket correct dirait de toute façon est une ligne à retirer.
+**Le fichier de règles change ce que l'agent fait, pas ce qu'il trouve, et il ne sert que sur ce que le ticket ne dit pas.** Il entre dans le contexte à chaque tour, ce qui le rend puissant et coûteux, d'où l'intérêt de le tenir court, de sourcer chaque règle par un échec observé et de le refactorer plutôt que de l'allonger. Nos mesures cadrent précisément ce qu'il achète : la configuration `+agents` fait passer de 0/20 à 20/20 le nombre d'exécutions qui lancent la suite de tests, laisse le critère de correction inchangé, et n'apporte plus rien du tout dès que le prompt cadré est là. La règle d'écriture qui en découle est directement applicable au budget de quarante lignes : une ligne qu'un ticket correct dirait de toute façon est une ligne à retirer.
 
-**Un réglage exposé n'est pas un réglage compris.** Entre le drapeau que vous tapez et la requête qui part se trouvent du code et des tables de correspondance, comme le montre `--thinking max`, qui n'atteint pas le modèle que nous utilisons sans que rien ne vous en avertisse. Le corollaire côté mesure est que ce qui décide de l'expérience doit être écrit dans l'expérience : un niveau de raisonnement hérité d'une configuration personnelle a rendu une de nos configurations identique à sa base dans toutes les matrices publiées.
+**Un réglage exposé par le harnais n'est pas forcément transmis au modèle.** Entre le drapeau que vous tapez et la requête qui part se trouvent du code et des tables de correspondance, comme le montre `--thinking max`, qui n'atteint pas le modèle que nous utilisons sans que rien ne vous en avertisse. Le corollaire côté mesure est que ce qui décide de l'expérience doit être écrit dans l'expérience : un niveau de raisonnement hérité d'une configuration personnelle a rendu une de nos configurations identique à sa base dans toutes les matrices publiées.
 
-**Un effet qui ne survit pas au rééchantillonnage n'est pas un effet.** La règle n'est pas « répétez trois fois », elle est plus dure : tant que l'intervalle d'un écart contient zéro, il n'y a rien à dire. Sur les neuf configurations mesurées ici, trois seulement déplacent le critère de correction de façon établie, et les six autres offrent chacune un chiffre qui aurait fait une phrase convaincante. Un écart établi ne l'est par ailleurs que sur cette tâche, avec ce ticket et ce modèle.
+**Un effet qui ne survit pas au rééchantillonnage n'est pas un effet.** Répéter trois fois ne suffit pas : tant que l'intervalle d'un écart contient zéro, il n'y a rien à en dire. Sur les neuf configurations mesurées ici, trois seulement déplacent le critère de correction de façon établie, alors que les six autres affichent chacune un chiffre qui pourrait sembler convaincant. Un écart établi ne l'est par ailleurs que sur cette tâche, avec ce ticket et ce modèle.
 
 **Ce qui est mesuré doit être épinglé par ce qui ne bouge pas.** Un tag est un nom, et `git tag -f` le déplace sans laisser de trace du côté de la mesure, si bien que deux matrices peuvent déclarer le même étalon et avoir travaillé sur deux versions différentes du code. Épinglez par le commit, qui ne bouge pas, et si votre outil ne le permet pas encore, archivez au moins ce que le nom a résolu au moment de la mesure.
 
-**Une métrique doit dire pourquoi, pas seulement quoi.** Une colonne uniformément noire ressemble à un comportement de l'agent et peut être un défaut du validateur, et rien ne distingue les deux tant que la métrique se contente de répondre vrai ou faux. Faites-lui écrire ce sur quoi elle s'est prononcée : la nôtre recopie, sous chaque faux, les commandes que l'agent a passées, et c'est ce qui permet de vérifier un zéro au lieu de le croire.
+**Une métrique doit dire pourquoi, pas seulement quoi.** Une colonne uniformément noire ressemble à un comportement de l'agent et peut être un défaut du validateur, et rien ne distingue les deux tant que la métrique se contente de répondre vrai ou faux. Faites-lui écrire ce sur quoi elle s'est prononcée : la nôtre recopie, sous chaque faux, les commandes que l'agent a passées, et c'est ce qui permet de vérifier un zéro au lieu de le croire sur parole.
 
-**Écrivez l'hypothèse avant de mesurer, et versionnez-la.** Une hypothèse rédigée après coup est une conclusion déguisée. La nôtre, `hypotheses/issue1-contexte.md`, contient une prédiction qui s'est révélée fausse, et c'est parce qu'elle était écrite d'avance que nous l'avons publiée comme telle au lieu de la reformuler discrètement en découverte.
+**Écrivez l'hypothèse avant de mesurer, et versionnez-la.** Une hypothèse rédigée après les mesures n'est qu'une conclusion déguisée. La nôtre, `hypotheses/issue1-contexte.md`, contient une prédiction qui s'est révélée fausse, et c'est parce qu'elle était écrite d'avance que nous l'avons publiée comme telle au lieu de la reformuler après coup en découverte.
 
 ## Livrable
 
@@ -608,7 +607,7 @@ Trois pièces, dont les deux premières servent toute la journée et la troisiè
 
 **1. L'`AGENTS.md` de NÉON**, versionné dans le dépôt, sous les 40 lignes, chaque règle justifiée par un échec que vous avez observé.
 
-**2. Le répertoire de matrice** produit par `trysquare run`, avec sa ligne de journal. Le livrable n'est pas un tableau recopié mais l'archive qui permet de le refabriquer : les mesures brutes, les sessions, les diffs, et la révision de l'outil qui a mesuré. Une matrice qu'on ne peut pas renoter est une opinion.
+**2. Le répertoire de matrice** produit par `trysquare run`, avec sa ligne de journal. Le livrable n'est pas un tableau recopié mais l'archive qui permet de le refabriquer : les mesures brutes, les sessions, les diffs, et la révision de l'outil qui a mesuré. Sans cette archive, la matrice ne peut être ni vérifiée ni renotée, et ses chiffres ne valent pas mieux qu'une opinion.
 
 **3. La fiche de décision**, une ligne par levier :
 
@@ -627,12 +626,12 @@ Trois pièces, dont les deux premières servent toute la journée et la troisiè
 
 Deux lignes ont été ajoutées à cette fiche après nos dernières mesures. « Contenu du ticket pointé » y figure parce que la réécriture d'`ISSUES.md` a déplacé plus de colonnes que n'importe quel réglage du harnais, et « tests fournis d'avance » parce que c'est le seul levier qui ait rattrapé le décrochage du modèle sur un ticket long.
 
-Cette fiche constitue le premier remplissage réel de la colonne « ton harnais ? » de la table de correspondance, pour la ligne « contexte ». Les cinq modules suivants feront de même pour leur brique, si bien que vous aborderez le capstone avec une table nourrie par l'expérience plutôt qu'avec une page blanche.
+Cette fiche constitue le premier remplissage réel de la colonne « ton harnais ? » de la table de correspondance, pour la ligne « contexte ». Les cinq modules suivants feront de même pour leur brique, si bien que vous aborderez le capstone avec une table déjà remplie par vos expériences.
 
 ::: tip Critère de réussite
 Vous savez citer un levier que vous avez mesuré comme sans effet sur NÉON, et dire à quelle condition précise il en aurait un ailleurs.
 
-Notre exemple est `AGENTS.md` : il ne déplace pas d'un point le critère de correction, et il deviendrait décisif sur un ticket dont l'échec habituel est de procédé plutôt que de raisonnement, ou sur un dépôt dont les tickets sont mal écrits. Le vôtre sera différent, et c'est le but. Ce critère demande d'avoir vu les chiffres et d'avoir compris que c'est la tâche et son matériau qui les déterminent, ce qui le rend impossible à satisfaire de mémoire.
+Notre exemple est `AGENTS.md` : il ne déplace pas d'un point le critère de correction, et il deviendrait décisif sur un ticket dont l'échec habituel est de procédé plutôt que de raisonnement, ou sur un dépôt dont les tickets sont mal écrits. Le vôtre sera différent, et c'est le but. Ce critère demande d'avoir vu les chiffres et d'avoir compris que c'est la tâche et son matériau qui les déterminent. Il ne peut donc pas être satisfait de mémoire.
 :::
 
 ## Les pièges
@@ -647,11 +646,11 @@ Notre exemple est `AGENTS.md` : il ne déplace pas d'un point le critère de cor
 
 **Prendre l'absence de saturation pour une absence de problème.** Sur une fenêtre confortable rien ne déborde jamais, ce qui signifie seulement que le signal d'alarme ne sonnera pas et que le coût sera votre seul indicateur.
 
-**Juger sur un motif quand on peut juger sur un comportement.** Chercher dans un diff s'il ressemble à la solution attendue répond à une autre question que « ce diff résout-il le problème », et l'écart entre les deux est là où se logent les faux verts. Cherchez la forme exécutable avant de vous résigner au motif, puis au juge.
+**Juger sur un motif quand on peut juger sur un comportement.** Chercher dans un diff s'il ressemble à la solution attendue répond à une autre question que « ce diff résout-il le problème », et c'est dans cet écart que se logent les faux verts. Cherchez la forme exécutable avant de vous résigner au motif, puis au juge.
 
-**Ne pas compter les reprises.** Une matrice mesurée pendant que le fournisseur échoue et relance ne mesure pas la configuration, et elle en donne l'apparence complète : des tables, des intervalles, des verdicts. Le compte de reprises est une colonne de résultat, pas une note de bas de page.
+**Ne pas compter les reprises.** Une matrice mesurée pendant que le fournisseur échoue et relance ne mesure pas la configuration, et elle en donne l'apparence complète : des tables, des intervalles, des verdicts. Le compte de reprises doit donc se lire comme une colonne de résultat à part entière.
 
-**Croire une colonne uniformément noire.** Zéro sur toutes les configurations ressemble à un comportement du modèle et peut être un comparateur trop strict, comme celui qui refusait `cd /tmp/x && npm test` parce qu'il ne connaissait que `npm test`. Vérifiez la raison attachée à un faux avant d'en tirer une phrase.
+**Croire une colonne uniformément noire.** Zéro sur toutes les configurations ressemble à un comportement du modèle et peut être un comparateur trop strict, comme celui qui refusait `cd /tmp/x && npm test` parce qu'il ne connaissait que `npm test`. Vérifiez la raison attachée à un faux avant d'en tirer une conclusion.
 
 **Faire confiance à un tag.** Il se déplace, et rien dans une table ne le dira. Le seul moyen de le savoir après coup est le commit archivé par exécution, et le seul moyen de l'éviter est d'épingler par ce commit.
 

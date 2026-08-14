@@ -1,32 +1,228 @@
-# Les skills : une capacité que le modèle peut ignorer
+# Les skills : une procédure de travail, et ce qu'elle déplace
 
 ::: tip Objectifs de ce module
-- Savoir ce qu'est un skill sur Pi, et surtout ce qu'il n'est pas
-- Écrire un skill qui rende des faits exploitables plutôt qu'un avis
-- Mesurer si le modèle s'en sert réellement, et constater que ça ne va pas de soi
-- Savoir reconnaître le moment où une suggestion ne suffit plus et où il faut une garantie
+- Savoir ce qu'est un skill sur Pi, ce que le modèle en voit, et ce qu'il n'en voit pas
+- Distinguer une compétence que le modèle peut ignorer d'une compétence qu'on lui impose
+- Écrire une procédure de travail qui produise un livrable exploitable
+- Mesurer ce qu'elle déplace, et ne pas confondre déplacer et améliorer
+- Réviser une procédure à partir des exécutions lues, et vérifier la révision par une nouvelle matrice
 :::
 
-Le module précédent a épuisé ce qu'on gagne en s'y prenant mieux : choisir un modèle, régler un curseur, écrire un prompt, tenir un fichier de règles. Nous passons maintenant à ce qui s'ajoute au harnais sous forme de code. Le skill est la plus petite de ces briques, la plus facile à écrire, et celle dont l'efficacité réelle est la plus surprenante.
+Le module précédent a fait le tour de ce qu'on gagne en s'y prenant mieux : choisir un modèle, régler un curseur, écrire un ticket, tenir un fichier de règles. Il s'est terminé sur un constat. Sur les configurations qui reçoivent le ticket cadré, quatre exécutions sur vingt écrivent les tests rouges que le ticket demande et n'ouvrent jamais `game/neon.js` : le modèle épuise son budget à formuler les cas et n'arrive pas à les corriger. Le seul levier qui ait rattrapé ce décrochage consistait à lui fournir les tests déjà écrits, ce que personne ne fera sur un vrai ticket.
 
-Nous suivons l'ordre habituel : comprendre ce qu'est un skill dans le harnais, en écrire un sur une vraie question, puis mesurer s'il sert à quelque chose.
+La question de ce module est donc de savoir si une **procédure de travail**, écrite une fois et rechargée à la demande, obtient la même chose sans fournir les tests.
+
+Nous suivons l'ordre habituel : comprendre ce qu'est un skill dans le harnais, en écrire un sur cette question, mesurer ce qu'il produit, puis le réviser et remesurer.
 
 ## Comprendre
 
-### Deux mécanismes que tout le monde confond
+### Un skill est un fichier markdown
 
-Pi expose deux façons d'ajouter une capacité, et elles n'ont presque rien en commun.
+Un **skill** est un fichier `SKILL.md` posé dans un répertoire `.pi/skills/<nom>/` du projet, au format du standard ouvert [Agent Skills](https://agentskills.io). Il se compose d'un frontmatter, qui porte au minimum un nom et une description, et d'un corps qui contient les instructions. Il n'y a ni code, ni enregistrement, ni configuration à prévoir : déposer le fichier suffit.
 
-Un **skill** est un fichier `SKILL.md` posé dans `.pi/skills/<nom>/`, au format du standard ouvert [Agent Skills](https://agentskills.io). C'est du markdown : un frontmatter et des instructions. Il n'a ni schéma d'entrée, ni fonction d'exécution, ni garde de permission.
+Voici un skill complet, volontairement minuscule :
 
-Une **extension** est un module TypeScript posé dans `.pi/extensions/`, qui appelle `pi.registerTool({ name, ... })`. Là, on a un vrai outil : un nom, une description, un schéma JSON, une fonction, et la possibilité d'intercepter les appels d'outils pour y insérer une permission.
+```markdown
+---
+name: revue-rapide
+description: Relit les modifications en cours du dépôt. Utiliser quand l'utilisateur demande une relecture avant de commiter.
+---
 
-La confusion coûte cher, parce que la littérature sur les outils d'agents décrit l'anatomie d'un outil — nom, description lue par le modèle, schéma d'entrée, fonction d'exécution, permission entre la validation et l'exécution — et que le skill n'en réalise que les deux premiers éléments.
+# Revue rapide
 
-::: danger `allowed-tools` n'existe pas
-On lit souvent qu'un skill déclare les outils qu'il s'autorise via un champ `allowed-tools` dans son frontmatter. Vérifiez avant de le croire.
+1. Lance `git diff` et lis toute la sortie.
+2. Relève ce qui peut casser un test existant, puis ce qui manque de test.
+3. Rends deux listes : « à corriger avant le commit » et « peut attendre ».
+```
 
-Le type que Pi 0.80.6 lit effectivement est celui-ci :
+L'idée est celle d'une procédure de travail qu'on écrit une fois et que l'agent recharge à la demande, au lieu de la retaper dans chaque prompt. Elle occupe une place à part dans le harnais : `AGENTS.md` entre dans le contexte à chaque tour et coûte donc à chaque tour, alors qu'un skill est fait pour n'entrer que quand la tâche le demande.
+
+### Ce que le modèle en voit
+
+Il y a un point de mécanique à bien comprendre, car il conditionne tout le reste. Pi injecte dans le prompt système, **à chaque tour**, le nom, la description et le chemin de chaque skill disponible :
+
+```
+The following skills provide specialized instructions for specific tasks.
+Use the read tool to load a skill's file when the task matches its description.
+
+<available_skills>
+  <skill>
+    <name>revue-rapide</name>
+    <description>Relit les modifications en cours du dépôt...</description>
+    <location>/chemin/vers/.pi/skills/revue-rapide/SKILL.md</location>
+  </skill>
+</available_skills>
+```
+
+Le **corps** du `SKILL.md` n'y est pas. Il entre dans le contexte par l'un des deux chemins suivants, et la différence entre les deux est le sujet de ce module.
+
+Le premier est que le modèle **décide** de l'ouvrir avec l'outil de lecture, sur la foi de la seule description. La documentation de Pi le dit dans les mêmes termes, en ajoutant que « models don't always do this ».
+
+Le second est que l'utilisateur écrive `/skill:revue-rapide` dans son message, auquel cas Pi **développe** le fichier côté client et colle son corps dans le premier tour. Le modèle n'a plus rien à décider.
+
+Il y a deux conséquences pratiques. La description est la seule chose sur laquelle repose le premier chemin, si bien que tout le soin mis dans le corps ne sert à rien tant qu'elle ne déclenche pas. Et un skill ne coûte presque rien tant qu'il n'est pas utilisé, ce qui rend tentant d'en accumuler. Gardez cependant en tête que chaque description ajoutée entre dans le contexte à chaque tour et que vingt skills finissent par former un préambule conséquent.
+
+::: info Exercice (en salle)
+Vérifiez cette mécanique par vous-même, dans votre clone de NÉON.
+
+1. Créez `.pi/skills/revue-rapide/SKILL.md` avec le contenu ci-dessus, modifiez une ligne d'un fichier du jeu, puis ouvrez une session.
+2. Exportez la session avec `\export` et retrouvez le bloc `<available_skills>` dans le prompt système : le nom, la description et le chemin y sont, le corps n'y est pas.
+3. Demandez « relis ce que je viens de modifier » sans nommer le skill, et regardez si le modèle va lire `SKILL.md` de lui-même : l'appel à l'outil de lecture est visible dans la session.
+4. Ouvrez une session neuve et tapez `/skill:revue-rapide`. Le corps est cette fois collé dans votre premier message, et il n'y a plus de décision à observer.
+
+Vous venez de parcourir les deux chemins. Le premier repose entièrement sur la description, le second n'en a pas besoin.
+:::
+
+## Reconstruire
+
+### Ce qu'une procédure doit produire
+
+La compétence que nous écrivons répond au décrochage mesuré au module précédent, et elle a donc deux choses à obtenir. La première est que l'agent **décompose** le symptôme rapporté par le joueur en défauts distincts, au lieu de s'arrêter à la première explication qui rend compte de ce qu'il voit. La seconde est qu'il **tienne la distance**, c'est-à-dire qu'il corrige chaque défaut jusqu'au vert au lieu de s'arrêter une fois les cas rouges écrits.
+
+La compétence `playtest` est écrite pour ça. Elle donne à l'agent un rôle, celui du playtesteur qui sait qu'un symptôme n'est pas un bug, un repère de coordonnées pour que les signes de vitesse ne se devinent pas, une table de dix familles de défaillances à passer une par une, et l'obligation de chiffrer chaque déclencheur depuis les constantes du fichier plutôt que de le décrire.
+
+<<<@/../scripts/trysquare-campaign/briques/skills/playtest/SKILL.md{md}
+
+Deux décisions de rédaction méritent d'être relevées, parce qu'elles se transposent à n'importe quelle procédure.
+
+**Le livrable est un fichier dont la forme est imposée.** L'étape 4 impose la forme de `.scratch/to_fix.md`, un bloc par défaut, avec sa cause localisée à la ligne près, son invariant violé, son déclencheur chiffré, son cas de test, la sortie d'échec réelle copiée du terminal, et la correction naïve que ce cas refuse. Un agent qui produit ce fichier a nécessairement fait le travail que le fichier décrit.
+
+**La procédure décrit aussi ce qu'elle refuse.** L'étape 3 demande de passer chaque cas au rouge deux fois, une fois sur le code d'aujourd'hui et une fois sur la correction naïve, ce qui interdit les tests qui vérifient seulement que quelque chose a changé. C'est la contrepartie directe de ce que le module précédent a mesuré, où des corrections passaient les quatre faces et échouaient au coin.
+
+::: info Exercice (en salle)
+Écrivez la description avant de lire la nôtre, puis comparez. C'est la seule ligne du fichier que le modèle lira à coup sûr, et sa formulation demande donc le plus de soin.
+
+Un critère utile : votre description dit-elle **quand** s'en servir, ou seulement **ce que** la procédure fait ? Les deux formulations se ressemblent à la relecture, mais seule la première aide le modèle à décider d'ouvrir le fichier.
+:::
+
+### Comment la compétence entre dans la mesure
+
+Les deux configurations à compétence de la matrice reçoivent le prompt suivant :
+
+<<<@/../scripts/trysquare-campaign/briques/issue1-simple-prompt-with-skill.md
+
+Trois choses sont à noter. La demande est la demande négligée du module précédent. Le `/skill:playtest` en tête fait développer le corps du fichier côté client, donc la compétence est **imposée** plutôt que proposée. Et la lecture d'`ISSUES.md` est interdite, pour que la procédure travaille sur le symptôme du joueur et non sur un ticket déjà rédigé.
+
+La colonne `skill_invoque` vaut donc 20/20 sur ces deux configurations par construction, et 0/20 sur toutes les autres. Elle enregistre un fait sur la session sans mesurer une décision du modèle, et rien de ce qui suit ne porte sur la question de savoir si une bonne description déclenche.
+
+## Ce que la mesure dit
+
+Les configurations à compétence se lisent contre celles qui reçoivent le ticket cadré, à `AGENTS.md` et raisonnement identiques. Sur `gemma-4-31b`, vingt répétitions :
+
+| configuration                    | `in_scope` | `tests_ajoutes` | briques | angles | sortie | voisines |
+| -------------------------------- | ---------- | --------------- | ------- | ------ | ------ | -------- |
+| `+agents+well_crafted`           | 19/20      | 17/20           | 11/20   | 12/20  | 9/20   | 9/20     |
+| `+agents+skill`                  | **6/20**   | **8/20**        | 16/20   | 7/20   | 13/20  | 14/20    |
+| `+agents+add_tests+well_crafted` | 20/20      | 17/20           | 18/20   | 18/20  | 18/20  | 18/20    |
+| `+agents+add_tests+skill`        | **9/20**   | **7/20**        | 13/20   | 12/20  | 13/20  | 13/20    |
+
+Nous en tirons trois lectures, dont deux sont établies et une ne l'est pas.
+
+**La compétence déplace les tests hors de la suite.** `tests_ajoutes` passe de 17/20 à 8/20, soit un écart de -47 points dont l'intervalle exclut zéro. Ce n'est pas un manquement : la procédure demande explicitement que les cas vivent dans `.scratch/to_fix.md`, et l'agent obéit. La métrique compte les cas ajoutés à `game/neon.test.js`, donc elle enregistre exactement ce que la compétence a décidé de faire : les cas existent, mais à un endroit où la suite de tests du dépôt n'ira jamais les chercher.
+
+**La compétence laisse ses brouillons derrière elle.** `in_scope` tombe de 19/20 à 6/20, soit -68 points, également établi. La colonne `touched` nomme les coupables : `.scratch/to_fix.md` reste dans onze exécutions sur vingt, accompagné de `.scratch/repro.test.js`, `.scratch/test_collision.js` ou `.scratch/probe.js`. L'étape 6 du `SKILL.md` ordonne pourtant de retirer tous les fichiers créés. La consigne de nettoyage n'est donc suivie que dans moins d'une exécution sur trois.
+
+**Sur la correction elle-même, rien n'est établi.** Le critère passe de 11/20 à 16/20 contre le ticket cadré, mais son intervalle contient zéro. La colonne du coin va dans l'autre sens, 12/20 contre 7/20, et son intervalle contient zéro aussi. Les vingt exécutions ne permettent de conclure ni que la procédure aide, ni qu'elle nuit.
+
+::: warning Ce que l'écart à la base ne dit pas
+La synthèse publie `+agents+skill` à +29 points sur le critère contre `nothing`, écart établi, et il serait tentant d'en faire le résultat du module.
+
+Cette configuration diffère de la base par **quatre choses à la fois** : le raisonnement élevé, le fichier de règles, la compétence, et une extension de recherche web. Les trois premières ont chacune leur configuration propre dans la matrice, la compétence n'en a pas, et rien ne permet donc de lui attribuer une part de ces vingt-neuf points.
+
+Le seul écart lisible pour la compétence est celui qui la compare au ticket cadré, ci-dessus, et il est non concluant sur la correction. Isoler le levier demanderait une configuration de plus, à demande négligée, raisonnement élevé, fichier de règles, et rien d'autre. Elle n'a pas été mesurée.
+:::
+
+### La compétence face à la pile la mieux outillée
+
+La configuration `+agents+add_tests+skill` se lit contre `+agents+add_tests+well_crafted`, dont elle ne diffère que par le remplacement du ticket cadré par la compétence :
+
+| colonne          | ticket cadré | compétence | écart       |
+| ---------------- | ------------ | ---------- | ----------- |
+| `in_scope`       | 20/20        | 9/20       | -55 pts `*` |
+| `tests_ajoutes`  | 17/20        | 7/20       | -50 pts `*` |
+| `rebond_angles`  | 18/20        | 12/20      | -30 pts `*` |
+| `rebond_briques` | 18/20        | 13/20      | -25 pts `o` |
+
+Trois écarts établis, tous négatifs. Sur cette tâche, avec ce modèle, la procédure de travail ne remplace pas avantageusement un ticket correctement rédigé, et la colonne du coin le dit le plus clairement : elle est celle que le ticket décrit et que la compétence, qui n'a pas le droit de lire `ISSUES.md`, doit retrouver seule.
+
+`sonde_intacte` vaut 20/20, donc aucune exécution n'a modifié la sonde qu'elle avait sous les yeux.
+
+### Ce que la compétence coûte
+
+| configuration                    | tokens d'entrée | tours | durée |
+| -------------------------------- | --------------- | ----- | ----- |
+| `+agents+well_crafted`           | 413 335         | 30    | 378 s |
+| `+agents+skill`                  | **921 783**     | 49    | 575 s |
+| `+agents+add_tests+well_crafted` | 558 473         | 31    | 590 s |
+| `+agents+add_tests+skill`        | **811 584**     | 44    | 540 s |
+
+Contre la base, `+agents+skill` coûte +908 622 tokens d'entrée, +47 tours et +560 secondes, les trois écarts étant établis. Elle est la configuration la plus chère de toute la matrice.
+
+::: warning Ces colonnes de coût sont à lire avec la réserve du module précédent
+Les deux configurations à compétence portent à elles seules 632 des 1 151 reprises de la matrice ILaaS, 345 pour l'une et 287 pour l'autre. Une reprise rejoue le tour avec tout le contexte accumulé, donc ces colonnes mesurent en partie notre propre charge sur le fournisseur.
+
+L'ordre de grandeur reste lisible sur la matrice `deepseek-v4-flash`, qui compte trente-sept reprises au total et où `+agents+skill` met 1 068 secondes de médiane contre 553 pour `+agents+well_crafted`. Une procédure en six étapes qui impose une recherche documentaire, dix familles à instruire et une boucle TDD est un long travail, et la mesure ne dit rien d'autre.
+:::
+
+## Réviser la procédure, puis remesurer
+
+Une procédure de travail est du texte versionné qui produit des effets mesurables, et elle se révise donc comme du code : un diagnostic tiré des exécutions, une correction, une nouvelle mesure. Les colonnes en échec de la matrice ont chacune une cause qui se lit dans les exécutions prises une par une.
+
+**Les tests naissent au mauvais endroit.** L'étape 3 dit que les cas vivent dans `.scratch/to_fix.md`, et c'est l'étape 5 qui les fait migrer vers `game/neon.test.js`. Cette migration est la marche que le modèle rate : dix exécutions sur vingt finissent à « 6 cas, comme à l'étalon », l'agent ayant corrigé le code contre ses brouillons et considéré le travail terminé.
+
+**La consigne de ménage détruit parfois le livrable.** « Retire tous les fichiers que tu as créés » est restée lettre morte dans les treize exécutions qui laissent des fichiers derrière elles, et deux exécutions l'ont au contraire appliquée au pied de la lettre : `game/neon.test.js`, que l'agent venait de remplir, n'existe plus dans l'arbre mesuré.
+
+**Une référence fantôme fabrique des fichiers.** L'étape 3 demande d'exécuter chaque cas « depuis la sonde de l'étape 1 », alors que l'étape 1 est la recherche documentaire et ne crée aucune sonde. Cette consigne orpheline, restée d'une version antérieure du fichier, pousse les exécutions à inventer ce qui manque : les `probe.js`, `repro.test.js` et `test_ghost.js` qui remplissent la colonne `touched` en sont la trace.
+
+La matrice `deepseek-v4-flash` complète le diagnostic : la même compétence y obtient `tests_ajoutes` à 20/20. Le contenu de la procédure suffit donc à un modèle qui a le budget de la dérouler ; sur `gemma-4-31b`, c'est le protocole lui-même qui épuise ce budget.
+
+### La révision : `playtest-court`
+
+La version révisée garde ce qui porte le contenu : le rôle, le repère de coordonnées, la table des dix familles et l'obligation de chiffrer chaque déclencheur depuis les constantes. Elle coupe le reste, et chaque coupe répond à un défaut lu dans les exécutions. Les cas s'écrivent directement rouges dans `game/neon.test.js` et la procédure ne crée plus aucun fichier, ce qui supprime à la fois la migration ratée et le besoin de ménage. L'étape de recherche web disparaît, puisque les sessions n'en montraient qu'un seul appel. Le double rouge et le bloc de douze champs sont remplacés par une exigence d'une ligne : le cas vérifie le comportement attendu en valeurs, jamais seulement « quelque chose a changé ». Le fichier passe de six étapes à quatre et de 182 lignes à 86.
+
+<<<@/../scripts/trysquare-campaign/briques/skills/playtest-court/SKILL.md{md}
+
+### Ce que la seconde matrice dit
+
+Le scénario `issue1-skills` met les deux compétences face à face, à `AGENTS.md`, raisonnement et modèle identiques, vingt répétitions par cellule, l'originale servant de référence aux écarts. Il vit dans son propre fichier pour ne pas toucher aux matrices archivées du module, et son hypothèse, `hypotheses/issue1-skills.md`, a été écrite avant de mesurer. Sur `gemma-4-31b` :
+
+| colonne          | `playtest` | `playtest-court` | écart                  |
+| ---------------- | ---------- | ---------------- | ---------------------- |
+| `in_scope`       | 9/20       | **20/20**        | +53 pts `*` [+32, +74] |
+| `tests_ajoutes`  | 13/20      | **20/20**        | +32 pts `*` [+11, +53] |
+| `rebond_briques` | 14/20      | 17/20            | +11 pts `o`            |
+| `rebond_angles`  | 4/20       | 8/20             | +19 pts `o`            |
+
+Sur `deepseek-v4-flash`, `in_scope` passe de 15/20 à 20/20, soit +25 points établis [+10, +45], et aucune colonne de correction ne bouge : l'écart sur le critère vaut +0 point.
+
+Nous en tirons trois lectures.
+
+**Les deux déplacements établis de la première version disparaissent.** Le périmètre est plein sur les quarante exécutions à compétence courte, et les tests vont tous dans la suite du dépôt. Les modèles sont les mêmes, seul le protocole a changé : quand le livrable s'écrit directement à sa place, il n'y a plus de migration à rater ni de ménage à obtenir. Une procédure qui aurait réellement besoin de fichiers intermédiaires garderait le problème entier, et le module sur les permissions montrera comment un hook qui refuse un `git commit` tant que le brouillon est dans l'arbre garantit ce qu'une phrase ne peut que suggérer.
+
+**La correction ne bouge toujours pas de façon établie.** +11 points sur le critère et +19 sur le coin, avec des intervalles qui contiennent zéro dans les deux cas. Le coin reste la colonne la plus basse de gemma, à 8/20, loin des 14/20 que le prompt cadré obtenait au module précédent : la révision a réparé le protocole de la procédure, elle n'a pas remplacé le ticket.
+
+**Le coût baisse, et l'écart est lisible sur flash.** Sa matrice porte vingt-trois reprises, un total du même ordre que les trente-sept que le module précédent jugeait lisibles, et la compétence courte y prend 12 861 tokens d'entrée en médiane contre 34 764, 692 secondes contre 1 054, et l'écart de tours vaut -27 avec un intervalle de [-47, -16]. La matrice gemma va dans le même sens mais porte 490 reprises, si bien que ses colonnes de coût gardent la réserve habituelle : l'hypothèse prédisait cette baisse, et cette matrice-là ne peut pas la confirmer.
+
+::: warning La cellule répliquée n'a pas rendu les mêmes chiffres
+`+agents+skill` remesurée sur gemma donne 9/20 sur le périmètre, 13/20 sur les tests ajoutés et 14/20 sur le critère, là où la campagne du module en donnait 6, 8 et 16. Même configuration, même commit, même modèle : c'est la dispersion du module précédent, vue une fois de plus. C'est aussi pourquoi le scénario remesure l'originale dans la même matrice au lieu de recopier ses anciens chiffres, et pourquoi les écarts de cette section ne comparent que des cellules mesurées ensemble.
+:::
+
+L'archive de ces deux matrices est dans `scripts/trysquare-campaign/results-2026-08-13/`.
+
+## Ce qu'un skill ne garantit pas
+
+Tout ce que les deux matrices viennent de montrer tient à une seule propriété : un skill n'a que du texte. La consigne de ménage ignorée, le brouillon jamais migré vers la suite, la référence fantôme suivie à la lettre : chaque fois, la procédure demandait quelque chose que rien n'obligeait le modèle à faire. Un skill n'a ni schéma d'entrée, ni fonction d'exécution, ni garde de permission. La littérature sur les outils d'agents décrit l'anatomie d'un outil, à savoir un nom, une description lue par le modèle, un schéma d'entrée, une fonction d'exécution et une permission entre la validation et l'exécution, et un skill n'en réalise que les deux premiers éléments.
+
+Pi a un second mécanisme pour le reste. Une **extension** est un module TypeScript posé dans `.pi/extensions/`, qui appelle `pi.registerTool({ name, ... })` : un vrai outil, avec un schéma JSON validé, une fonction que vous avez écrite, et la possibilité d'intercepter les appels d'outils pour y insérer une permission. Vous en avez déjà croisé une sans le savoir : l'outil de recherche web que la première version de la procédure demandait est une extension, chargée par la brique `extension` du scénario. Le module sur les permissions s'appuiera sur ce mécanisme pour transformer les consignes en garanties.
+
+::: danger Un champ documenté n'est pas forcément lu
+Si vous cherchez malgré tout un mécanisme de permission côté skill, on lit souvent qu'un skill déclare les outils qu'il s'autorise via un champ `allowed-tools` dans son frontmatter. La documentation livrée avec Pi 0.80.6 le décrit effectivement, dans son tableau du frontmatter :
+
+```
+| `allowed-tools` | No | Space-delimited list of pre-approved tools (experimental). |
+```
+
+Le type que le code lit est celui-ci :
 
 ```ts
 export interface SkillFrontmatter {
@@ -37,279 +233,88 @@ export interface SkillFrontmatter {
 }
 ```
 
-Trois champs. La chaîne `allowed-tools` apparaît **zéro fois** dans l'intégralité du paquet, alors que `disable-model-invocation` y est bien lue. Le `[key: string]: unknown` accepte silencieusement tout ce que vous ajouterez, sans jamais s'en servir ni vous prévenir.
+Ce type ne contient que trois champs, et la chaîne `allowed-tools` n'apparaît nulle part dans le code compilé du paquet, alors que `disable-model-invocation` est bien lue. Le `[key: string]: unknown` accepte silencieusement tout ce que vous ajouterez, sans jamais s'en servir ni vous prévenir.
 
-C'est exactement le piège du `--thinking medium` du module précédent, sous une autre forme : **un champ accepté n'est pas un champ lu**. Un skill n'a donc aucun mécanisme de permission propre, et si vous en voulez un, il faut une extension.
-
-Le comble est que la documentation officielle renvoie à un fichier `docs/skills.md` qui n'est pas livré avec le paquet. Nous avons dû lire le code pour établir ce qui précède, et c'est un réflexe à prendre.
+C'est le même piège que le `--thinking max` du module précédent, en plus trompeur encore, puisque la source qui vous induit en erreur est ici la documentation de l'outil lui-même. Un skill n'a aucun mécanisme de permission propre, et si vous en voulez un, il faut une extension.
 :::
 
-### Ce que le modèle voit de votre skill
+## Ce que ce module ne sait pas encore
 
-Un point de mécanique décide de tout le reste. Pi injecte dans le prompt système, **à chaque tour**, le nom, la description et le chemin de chaque skill disponible :
+Deux questions restent ouvertes et il vaut mieux les nommer clairement que de les croire réglées.
 
-```
-The following skills provide specialized instructions for specific tasks.
-Use the read tool to load a skill's file when the task matches its description.
+**Une bonne description déclenche-t-elle ?** Nos configurations imposent la compétence par `/skill:`, donc les matrices mesurent une procédure appliquée et jamais une procédure choisie. La question tient à la mécanique décrite plus haut, elle est mesurable avec la colonne `skill_invoque` qui existe déjà pour ça, et elle demande une configuration où la compétence est chargée par son nom sans être développée dans le prompt.
 
-<available_skills>
-  <skill>
-    <name>profile</name>
-    <description>Measures where the per-frame JavaScript time actually goes...</description>
-    <location>/chemin/vers/.pi/skills/profile/SKILL.md</location>
-  </skill>
-</available_skills>
-```
-
-Le **corps** du `SKILL.md`, lui, n'est pas dans le contexte : le modèle doit décider de l'ouvrir avec l'outil de lecture. Deux conséquences.
-
-La première est que la description est la **seule** chose sur laquelle le modèle s'appuie pour décider s'il vous lira. Tout le soin qu'on met dans le corps du skill ne sert à rien si la description ne déclenche pas.
-
-La seconde est qu'un skill ne coûte presque rien tant qu'il n'est pas déclenché, ce qui rend tentant d'en accumuler. La contrepartie est que chaque description ajoutée entre dans la zone cacheable du contexte à chaque tour, et que vingt skills font un préambule.
-
-::: info Exercice (en salle)
-Installez un skill quelconque, ouvrez une session, exportez-la avec `\export`, et cherchez le bloc `<available_skills>` dans le prompt système. Comparez ce qui y figure et ce qui n'y figure pas.
-
-Puis posez au modèle une question que votre skill devrait couvrir, et regardez dans `\tree` s'il a lu le fichier. C'est cette lecture, et rien d'autre, qui signale qu'un skill a servi.
-:::
-
-## Reconstruire
-
-### La question : le ticket #2 a-t-il raison ?
-
-Le module précédent a passé quatre-vingts exécutions sur l'issue #2 de NÉON, qui affirme que « la collision scanne toutes les briques à chaque frame » et demande que ça cesse. Aucun agent, dans aucune configuration, n'a jamais vérifié cette affirmation avant d'y obéir.
-
-C'est notre sujet. Nous allons écrire la capacité qui permet de la vérifier, et découvrir ce que ça change — ou non.
-
-### Un micro-banc correct tient à quatre exigences
-
-Chronométrer du JavaScript est un exercice où l'on obtient très facilement un chiffre faux qui a l'air juste. Quatre précautions sont nécessaires, et en sauter une suffit.
-
-L'**échauffement**, d'abord : les premiers appels d'une fonction sont interprétés, et l'optimiseur ne la compile qu'après l'avoir vue tourner. Mesurer sans échauffer, c'est mesurer un régime dans lequel le code ne passera jamais en production.
-
-Un **puits**, ensuite : le résultat de chaque appel doit être accumulé dans une variable lue à la fin. Sans cela, l'optimiseur a le droit de supprimer un calcul dont personne ne consomme le résultat, et vous chronométrez une boucle vide.
-
-Des **répétitions**, puisqu'un échantillon unique mesure l'humeur de la machine — c'est la leçon du module précédent, et elle vaut pour les nanosecondes comme pour les dollars.
-
-Une **médiane** plutôt qu'une moyenne, parce que la moyenne suit les valeurs extrêmes et que les valeurs extrêmes d'un chronométrage sont des interruptions du système d'exploitation.
-
-::: info Exercice (en salle)
-Avant de lire le script, demandez au modèle de mesurer lui-même le coût du scan de collision, puis relisez le banc qu'il écrit et cherchez-y les quatre exigences.
-
-Nous avons fait l'expérience en préparant ce module, en nous attendant à un bench naïf et faux. Le résultat nous a démentis : trois exécutions du bench improvisé donnent 0,000092, 0,000076 et 0,000075 ms par frame, et la méthode correcte donne 0,000087 ms. **Le même chiffre.** L'optimiseur de V8 n'avait rien supprimé, et l'improvisation tombait juste.
-
-Gardez ce résultat en tête : nous voulions ouvrir ce module sur l'incompétence du modèle en matière de mesure, et la mesure nous a dit qu'il était compétent.
-:::
-
-### Le profileur
-
-Le voici en entier. Il ne rend que des faits — durée médiane par poste, part du budget de frame, croissance avec le nombre de briques — et ne dit jamais quoi corriger. Comme le banc du module précédent, il concentre en un seul endroit ce qu'il faut réécrire pour un autre dépôt : la fonction `postes()`, en bas de fichier.
-
-<<<@/../scripts/skills/profile/profile.mjs{js}
-
-Un mot sur le choix de langue, qui n'est pas une inadvertance. Le banc du module précédent est en Python parce qu'il appartient à l'outillage de la formation ; ce profileur est en JavaScript parce qu'il importe `game/neon.js`. **Le script d'un skill parle la langue du code qu'il mesure**, et c'est une contrainte, pas une préférence.
-
-### Ce que le profil dit du ticket #2
-
-```bash
-node .pi/skills/profile/profile.mjs --scale
-```
-
-Sur NÉON, à 60 Hz, le budget d'une frame est de 16,67 ms :
-
-| poste                 | médiane (ms) | % du budget | % du JS de la frame |
-| --------------------- | ------------ | ----------- | ------------------- |
-| carte de halo         | 3,8908       | **23,34 %** | **99,99 %**         |
-| liste des émetteurs   | 0,000124     | 0,00074 %   | 0,0032 %            |
-| scan de collision     | 0,000064     | 0,00038 %   | 0,0016 %            |
-| physique (`step`)     | 0,0000086    | 0,00005 %   | 0,00022 %           |
-| test de fin de niveau | 0,0000038    | 0,00002 %   | 0,0001 %            |
-
-Et la croissance avec le nombre de briques :
-
-| poste                 | croissance                | briques pour 1 % du budget | briques pour le saturer |
-| --------------------- | ------------------------- | -------------------------- | ----------------------- |
-| scan de collision     | ×662 pour ×1000 briques   | 131 946                    | 13 194 603              |
-| test de fin de niveau | plat                      | ne suit pas le nombre de briques | —                 |
-| carte de halo         | ×87,9 pour ×100 briques   | 2                          | **181**                 |
-
-Trois faits en découlent, et le premier suffit à trancher le ticket.
-
-**La collision ne coûte rien.** Elle représente 0,0016 % du travail JavaScript d'une frame, et il faudrait **131 946 briques** pour qu'elle atteigne un centième du budget. Le jeu en livre quarante. La moitié « performance » du ticket #2 demande d'optimiser cinq dix-millièmes de pourcent d'une frame.
-
-**Le coût réel est ailleurs, et aucun ticket n'en parle.** La carte de halo de `game/bloom.js` pèse 99,99 % du travail JavaScript par frame et près d'un quart du budget à 60 Hz — la moitié sur un écran à 120 Hz, où le budget tombe à 8,33 ms. Le jeu ne trahit rien : il tient ses images sans saccade, et rien dans le backlog ne mentionne ce fichier.
-
-**Le vrai risque d'échelle est là aussi.** Le halo remplit une frame entière de 60 Hz dès **181 briques**, contre treize millions pour la collision. Si NÉON grossit, c'est le halo qui cassera, et c'est la collision qu'on nous demande d'optimiser.
-
-::: info Exercice (en salle)
-Lancez le profileur, puis écrivez la note de triage qui clôt la moitié performance de #2 : la mesure, le seuil, et le refus motivé. Écrivez-la dans `ISSUES.md`, là où le prochain lecteur du backlog la trouvera.
-
-Puis ouvrez une issue #7 pour le halo, avec son coût mesuré et l'échelle de corrections ci-dessous. **L'aboutissement d'un profilage est une décision de triage, pas un rapport de plus.**
-:::
-
-### Ce que le modèle propose, et ce qu'il ne propose pas
-
-Le profileur ne dit pas quoi corriger : c'est le travail du modèle, et c'est la frontière que ce module veut faire sentir. Voici l'échelle des corrections du halo, mesurée sur la même carte de 160×120 :
-
-| étape                                             | médiane/frame | % du budget | gain cumulé |
-| ------------------------------------------------- | ------------- | ----------- | ----------- |
-| tel que livré                                     | 3,596 ms      | 21,6 %      | 1×          |
-| `Math.hypot` → distance au carré                  | 0,822 ms      | 4,9 %       | 4,4×        |
-| + rayon de coupure à 140 px                       | 0,235 ms      | 1,4 %       | 15,3×       |
-| + contribution statique des briques mise en cache | 0,033 ms      | 0,2 %       | **109×**    |
-
-La première marche mérite un mot, parce que c'est une faute qu'on rencontre partout. Le code calcule `Math.hypot(dx, dy)` pour obtenir une distance, puis la remet au carré dans la formule de décroissance : il paie une racine carrée pour l'annuler aussitôt. Et `Math.hypot` est particulièrement lent, parce qu'il effectue une mise à l'échelle pour éviter les débordements dont ce code n'a aucun besoin.
-
-Nous avons demandé à quatre agents ce qui coûtait cher dans une frame, sans leur donner le skill pour l'un d'eux et avec pour les trois autres. Les quatre ont désigné `computeGlow` correctement, **par simple lecture du code** : une triple boucle de 787 200 itérations par frame, ça se voit. Et les quatre ont proposé les trois premières corrections du tableau.
-
-**Aucun des quatre n'a proposé la quatrième**, celle qui porte le gain de 15× à 109×. Elle ne se lit pas dans la boucle : elle demande de remarquer que quarante des quarante et un émetteurs sont des briques immobiles, et que seule la balle bouge. C'est un fait sur le jeu, pas sur le code.
-
-Leurs chiffres, quand ils s'en risquent, sont lâches : l'un annonce que le halo coûte « ~5-8 ms » là où la mesure donne 3,9 ms, un autre estime le gain du `Math.hypot` à « ×2 à ×3 » là où il vaut 4,4×.
-
-::: warning Ce que ce module a cessé de prétendre
-Nous voulions écrire que lire le code trouve ce qui *a l'air* cher et que mesurer trouve ce qui l'*est*. C'est faux sur ce cas, et la mesure nous l'a dit avant vous : la lecture a trouvé le bon coupable quatre fois sur quatre.
-
-Ce qui reste vrai est plus étroit et plus utile. Le modèle **trouve** le point chaud, **classe mal** les corrections, **rate** celle qui demande de raisonner sur le domaine, et **chiffre à la louche**. Le profileur ne le remplace pas : il le corrige sur les trois derniers points.
-:::
-
-### Le `SKILL.md`
-
-Reste à écrire le fichier qui décide si tout ce qui précède servira un jour. Le corps donne la marche à suivre et, surtout, **ce qu'il faut faire du chiffre** : rapporter la part mesurée de tout poste que le ticket accuse, y compris et surtout quand la réponse est « trop petit pour compter ».
-
-<<<@/../scripts/skills/profile/SKILL.md{md}
-
-::: info Exercice (en salle)
-Écrivez la description avant de lire la nôtre, puis comparez. C'est la seule ligne du fichier que le modèle lira à coup sûr, et c'est donc la seule dont la formulation compte.
-
-Un critère utile : votre description dit-elle **quand** s'en servir, ou seulement **ce que** l'outil fait ? Les deux formulations paraissent équivalentes à la relecture. La section suivante mesure si elles le sont.
-:::
-
-### Est-ce que le modèle s'en sert ?
-
-Nous avons donné le ticket #2 à cinq configurations, dix fois chacune, avec le même prompt que le banc du module précédent — celui qui affirme que la collision est lente et ordonne de la corriger. Les colonnes comptent ce que l'agent a **réellement fait** : ouvert le `SKILL.md`, exécuté le profileur, chronométré quoi que ce soit, et contesté la moitié performance du ticket.
-
-| cellule                          | n  | skill lue | profileur lancé | a mesuré  | refuse la moitié perf |
-| -------------------------------- | -- | --------- | --------------- | --------- | --------------------- |
-| sans skill                       | 10 | —         | —               | **0/10**  | 0/10                  |
-| description mécanique            | 10 | 0/10      | 0/10            | **0/10**  | 0/10                  |
-| description précise              | 10 | 2/10      | 2/10            | **2/10**  | 0/10                  |
-| précise + règle dans `AGENTS.md` | 10 | 4/10      | 2/10            | **2/10**  | 0/10                  |
-| portail d'extension              | 10 | 0/10      | **10/10**       | **10/10** | **2/10**              |
-
-La description « mécanique » décrit ce que le script *fait* — *« Runs profile.mjs and prints a table of per-frame timings for the game »* — là où la « précise » dit *quand* s'en servir. La dernière ligne, le portail, est le sujet de la section suivante.
-
-Quatre résultats, et trois font mal.
-
-**Sans la capacité, le modèle ne mesure jamais.** Zéro sur dix, et pas une seule tentative d'écrire son propre banc. Le ticket affirme un coût, l'agent le croit et obéit.
-
-**Une description qui décrit l'outil ne déclenche rien.** Zéro sur dix, exactement comme si le skill n'existait pas. La description gouverne bien l'usage — et une description mécanique le gouverne vers zéro. C'est le seul endroit de ce module où la littérature avait raison, et elle avait raison dans le mauvais sens : on ne parle pas assez de ce qu'une mauvaise description **annule** l'outil qu'elle décrit.
-
-**Une bonne description ne suffit pas.** Deux sur dix. C'est mieux que rien et c'est inutilisable : huit fois sur dix, la capacité que vous venez d'écrire dort pendant que l'agent optimise à l'aveugle.
-
-**La règle dans l'`AGENTS.md` crée de la curiosité, pas de l'action.** Elle fait **ouvrir** le `SKILL.md` deux fois plus souvent — 4/10 contre 2/10 — sans faire **lancer** le profileur davantage : 2/10 de part et d'autre. L'agent va lire la notice, puis passe à autre chose. C'est un résultat que nous n'attendions pas et qui se défend : la règle attire l'attention sans changer la décision.
-
-**Et même après avoir mesuré, l'agent ne se sert presque jamais du chiffre.** Sur les quatre premières cellules, zéro sur quarante contestent la moitié performance du ticket, y compris les quatre qui ont vu le profil. Ils ont lu que le scan pesait 0,0016 % d'une frame, puis ont fait le refactor sans le mentionner, alors que le corps du `SKILL.md` leur demande explicitement de rapporter la part mesurée de tout poste accusé.
-
-::: danger Le résultat central de ce module
-Le skill est bien écrit, son script est correct, son chiffre est décisif, et le modèle l'ignore **huit fois sur dix**. Quand il ne l'ignore pas, il n'en tire rien.
-
-**Un skill est une suggestion, pas une garantie.** Vous avez ajouté une capacité au harnais ; vous n'avez pas ajouté un comportement. La différence est invisible tant qu'on ne mesure pas — c'est précisément pour ça qu'on mesure, et c'est ce qui sépare une brique de harnais d'une bonne intention.
-:::
-
-::: warning Nous avons mesuré deux fois pour rien, et voici pourquoi
-Notre première version de ce tableau donnait 2/10 pour la description mécanique **comme** pour la précise, et nous en avions conclu que la description ne gouvernait rien. C'était faux, et la cause est un drapeau.
-
-Nous avions recopié les options du banc du module précédent, qui contient `-ns`. Or `-ns` vaut `--no-skills` : *« Disable skills discovery and loading »*. Les skills n'étaient donc **jamais chargés**, aucune description n'atteignait le prompt système, et les 2/10 étaient des agents qui étaient tombés sur `.pi/skills/profile/SKILL.md` en explorant le dépôt avec `ls`, comme sur un fichier ordinaire.
-
-Le drapeau est parfaitement à sa place dans le banc du 2.1, qui exclut délibérément les skills de ses mesures. Il était exactement à contre-emploi dans une mesure *sur* les skills. Quatre-vingts exécutions perdues, 0,35 $.
-
-C'est le piège du `--thinking medium`, pour la troisième fois dans cette formation, et cette fois c'est nous qui sommes tombés dedans. **Relisez les drapeaux que vous recopiez d'un banc à l'autre** : ils encodent les hypothèses de la mesure d'origine, pas de la vôtre.
-:::
-
-### Du skill au hook : de la suggestion à la garantie
-
-Si le comportement compte, il ne faut pas le suggérer. Une extension peut faire deux choses qu'un skill ne peut pas : enregistrer un **vrai** outil, avec son schéma d'entrée validé et sa fonction d'exécution, et **intercepter** les appels d'outils pour les bloquer.
-
-La seconde est celle qui nous intéresse. Le hook `tool_call` reçoit chaque appel avant exécution et peut retourner `{ block: true, reason }`. Nous en faisons un portail : la première tentative de modifier une source du jeu est bloquée, le profil est mesuré à cet instant, et ses chiffres sont rendus au modèle **dans le motif du refus**. Les modifications suivantes passent.
-
-<<<@/../scripts/extensions/profile-gate.ts{ts}
-
-Le résultat est sans ambiguïté : **10/10**. Le modèle ne peut plus optimiser sans avoir vu la mesure, non parce qu'on l'a prié de la lire, mais parce que le harnais refuse tant qu'elle n'est pas là. Et c'est la seule des cinq cellules où un agent conteste le ticket — deux fois sur dix, ce qui est peu, mais infiniment plus que zéro sur quarante.
-
-Notez la colonne « skill lue » du portail : **0/10**. Le modèle n'a jamais ouvert le `SKILL.md`, et il a mesuré dix fois sur dix. La capacité n'avait pas besoin d'être choisie, seulement d'être imposée.
+**La compétence apporte-t-elle quelque chose à demande égale ?** Il manque toujours le témoin, c'est-à-dire la même configuration sans la compétence. La seconde matrice ne l'a pas ajouté : elle compare deux versions de la procédure entre elles, pas la procédure à son absence.
 
 ::: info Exercice (en autonomie)
-Reprenez le portail et déplacez sa condition. Bloquez sur autre chose : une modification de `game/bloom.js` sans profil récent, un `git commit` sans tests verts, une écriture hors du périmètre du ticket.
+Ajoutez au scénario une configuration `+agents+skill_par_nom`, identique à `+agents+skill` mais dont le prompt ne contient pas le `/skill:`, la compétence restant chargée par la brique `harness`. Relancez, et lisez `skill_invoque`.
 
-Vous venez d'écrire votre premier mécanisme déterministe de harnais. Le module sur les permissions généralisera le procédé — un hook qui bloque est un hook qui bloque, que ce soit pour exiger une mesure ou pour refuser la lecture d'un secret.
-:::
-
-::: warning Ce que le portail ne règle pas
-Deux sur dix seulement contestent le ticket, alors que les dix ont le chiffre sous les yeux. Garantir la **mesure** ne garantit pas la **conclusion**.
-
-Nous ne savons pas encore combler cet écart avec un hook, parce qu'un hook sait bloquer une action et non exiger un raisonnement. Ce qu'il faudrait ici est un relecteur indépendant, à qui l'on demande « le diff est-il justifié par le profil ? » — et c'est le sujet des modules sur la délégation et les workflows. Le harnais ne se termine pas à cette brique.
+Vous mesurerez la seule chose que ce module affirme sans l'avoir établie, et vous n'aurez touché ni l'outil, ni le validateur, ni les autres configurations.
 :::
 
 ## Généraliser
 
-**Un outil rend des faits, le jugement reste au modèle.** Le profileur ne dit jamais quoi corriger, et c'est ce qui le rend réutilisable : un seuil codé en dur (« au-delà de 5 % du budget, proposer un index spatial ») répondrait à la question « est-ce que ça *ressemble* à un goulot » plutôt qu'à « est-ce que c'en est un », et serait spécifique à un dépôt. Séparez la mesure de l'avis, et gardez l'avis du côté qui sait raisonner.
+**Un skill est une procédure de travail, pas un outil.** Il n'a ni schéma d'entrée, ni fonction, ni permission, et le seul mécanisme dont il dispose est le texte. Ce qu'il sait faire est imposer un ordre de travail et une forme de livrable, ce qui est utile et ne se confond pas avec l'exécution d'un code que vous contrôlez.
 
-**Une capacité que le modèle peut ignorer n'est pas une brique de harnais.** C'est la leçon que ce module a payée en cent trente exécutions. Un skill bien décrit fait passer la mesure de 0/10 à 2/10 ; un hook la fait passer à 10/10. Quand le comportement est indispensable — mesurer avant d'optimiser, lancer les tests avant de livrer, refuser la lecture d'un secret — il faut un mécanisme déterministe, pas une invitation en markdown. Gardez les skills pour ce qui est utile quand le modèle y pense, et les hooks pour ce qui doit arriver même quand il n'y pense pas.
+**La description est la seule chose lue à coup sûr.** Le corps n'entre dans le contexte que si le modèle décide de l'ouvrir ou si l'utilisateur le développe avec `/skill:`. Une description qui dit ce que la procédure fait, plutôt que quand s'en servir, s'adresse à la mauvaise décision.
 
-**Une mauvaise description n'affaiblit pas un outil, elle l'annule.** 0/10 contre 2/10 : la description qui dit ce que le script fait vaut exactement autant que l'absence de skill. On répète volontiers que la description gouverne l'usage ; on dit moins souvent qu'elle peut le gouverner jusqu'à zéro.
+**Une procédure déplace le travail avant de l'améliorer.** Les deux effets établis de la première version sont des déplacements : les tests partent dans un fichier de brouillon plutôt que dans la suite du dépôt, et les brouillons restent dans l'arbre. La révision supprime ces deux déplacements, et l'effet sur la correction reste non concluant dans les deux versions. Avant de demander si une brique améliore le résultat, regardez d'abord où elle envoie le travail.
 
-**Garantir la mesure ne garantit pas la conclusion.** Le portail met le chiffre sous les yeux du modèle dix fois sur dix ; il en tire la bonne conclusion deux fois. Un hook contraint une action, il n'impose pas un raisonnement — ce qui borne précisément ce qu'on peut attendre de cette brique, et annonce celles qui suivent.
+**Une consigne de nettoyage ne garantit pas le nettoyage.** L'étape finale de notre `SKILL.md` demande de retirer les fichiers créés, et onze exécutions sur vingt les laissent. La révision qui a rempli le périmètre n'a pas renforcé la consigne, elle a supprimé le besoin de ménage : une procédure qui ne crée rien n'a rien à nettoyer. Quand les fichiers intermédiaires sont réellement nécessaires, ce qui doit arriver même si le modèle n'y pense pas demande un mécanisme qui ne dépende pas de lui.
 
-**Un champ accepté n'est pas un champ lu.** `allowed-tools` n'existe pas dans Pi, et le frontmatter l'avale sans broncher. Vous rencontrerez la même chose ailleurs, d'autant plus facilement que la documentation renvoie parfois à des fichiers absents. Le code est la seule source qui ne se trompe pas.
+**Chaque étape intermédiaire est une marche que le modèle peut rater.** Les tests naissaient dans un brouillon avant de migrer vers la suite, et cette migration est l'étape perdue dix fois sur vingt. Écrire le livrable directement à sa place a supprimé la marche, et les deux colonnes concernées sont passées à 20/20 sur les deux modèles.
 
-**Le contenu du dépôt est peut-être un levier de harnais.** Il ne figure sur aucune liste de réglages. L'arrivée de `game/bloom.js` coïncide avec un passage de 4/20 à 10/20 sur la moitié performance du ticket #2, ce qui donne p ≈ 0,10 : suggestif, pas établi, et nous le laissons ouvert. Retenez la question plutôt que la réponse — ce que votre dépôt raconte à l'agent avant qu'il ne lise votre ticket est un paramètre, et vous ne l'avez pas choisi.
+**Une procédure se révise comme du code, exécutions en main.** Le diagnostic ne vient pas des colonnes agrégées mais des exécutions lues une par une : la migration ratée, la consigne appliquée au pied de la lettre et la référence fantôme ont dicté chaque coupe, et une nouvelle matrice a vérifié la révision au lieu de la croire.
 
-**Mesurer sert autant à démolir ses idées qu'à les confirmer.** Ce module s'est ouvert sur deux thèses que la mesure a tuées, et le module précédent a publié six conclusions fausses. C'est le fonctionnement normal du travail expérimental, et le seul moyen de ne pas s'en apercevoir est de ne pas mesurer.
+**Un champ documenté n'est pas forcément lu.** `allowed-tools` figure dans la documentation livrée avec Pi et n'apparaît nulle part dans son code. Le code est la seule source qui ne se trompe pas, et la vérification tient en un `grep`.
+
+**Une brique de harnais se mesure contre ce qu'elle remplace, jamais contre rien.** Sur cette tâche, remplacer le ticket cadré par la procédure fait perdre trente points sur le coin et cinquante sur les tests ajoutés, ce qui ne se voit pas dans une comparaison contre la base.
 
 ## Livrable
 
-Quatre pièces.
+Trois pièces.
 
-**1. Le skill `profile`**, dans `.pi/skills/profile/`, avec sa description écrite par vous et son script fonctionnel.
+**1. La compétence**, dans `.pi/skills/<nom>/`, avec sa description écrite par vous et un livrable dont la forme est imposée par le corps. Si vous l'avez révisée, les deux versions restent versionnées : la matrice qui les compare ne se comprend pas sans elles.
 
-**2. La note de triage sur #2** dans `ISSUES.md` : la mesure, le seuil, le refus motivé.
+**2. Le répertoire de matrice** produit par `trysquare run`, avec la configuration à compétence lue contre celle qu'elle remplace et non contre la base.
 
-**3. L'issue #7** sur le halo : coût mesuré, part du budget, échelle de corrections chiffrée.
+**3. La ligne « outils » de la fiche de décision** :
 
-**4. La ligne « outils » de la fiche de décision** :
-
-| levier                         | effet mesuré | adopté ? | pourquoi |
-| ------------------------------ | ------------ | -------- | -------- |
-| skill (markdown)               |              |          |          |
-| description du skill           |              |          |          |
-| règle de déclenchement dans `AGENTS.md` |     |          |          |
-| outil d'extension              |              |          |          |
-| hook de déclenchement          |              |          |          |
+| levier                           | effet mesuré | adopté ? | pourquoi |
+| -------------------------------- | ------------ | -------- | -------- |
+| skill (markdown)                 |              |          |          |
+| description du skill             |              |          |          |
+| compétence imposée par `/skill:` |              |          |          |
+| forme du livrable imposée        |              |          |          |
+| livrable direct ou via brouillon |              |          |          |
+| extension (outil réel)           |              |          |          |
 
 ::: tip Critère de réussite
-Vous savez dire à quelle condition vous écririez un skill plutôt qu'un hook, et vous savez citer le chiffre qui vous a fait choisir.
+Vous savez citer un effet de votre compétence qui est établi, un effet qui ne l'est pas, et dire ce qui manque pour trancher le second.
 
-Ce critère est impossible à satisfaire de mémoire : il demande d'avoir vu un skill correct être ignoré.
+Ce critère demande d'avoir lu une configuration contre la bonne référence. Il ne peut donc pas être satisfait de mémoire.
 :::
 
 ## Les pièges
 
-**Croire qu'ajouter une capacité ajoute un comportement.** Le skill existe, il est bon, et il ne sert pas. C'est le piège principal de ce module et il est invisible sans mesure.
+**Lire une configuration à compétence contre la base.** Elle en diffère par plusieurs choses à la fois, et l'écart publié contre `nothing` mélange tous les leviers de la pile. La référence utile est la configuration dont elle ne diffère que par la compétence.
 
-**Soigner le corps du `SKILL.md` en négligeant la description.** Le corps n'est lu que si la description a déclenché. L'inverse n'est pas vrai.
+**Confondre une compétence imposée et une compétence proposée.** Le `/skill:` du prompt développe le corps côté client, et une colonne d'invocation pleine ne dit alors rien de ce que le modèle aurait choisi.
 
-**Faire décider le script.** Un seuil codé en dur transforme un outil de mesure en outil d'opinion, et une opinion codée en dur ne se discute pas.
+**Soigner le corps du `SKILL.md` en négligeant la description.** Le corps n'est lu que si la description a déclenché sa lecture.
 
-**Chronométrer sans échauffement, sans puits, sans répétitions ou en moyenne.** Quatre façons d'obtenir un chiffre faux qui a l'air juste.
+**Faire écrire les tests ailleurs que dans la suite.** Un cas de test qui vit dans un fichier de travail ne sera lancé par personne après le départ de l'agent, et la migration promise vers la suite est précisément l'étape que le modèle rate.
 
-**Obéir à un ticket qui affirme un coût.** Un ticket est une donnée, y compris quand il est écrit par un collègue compétent, et y compris quand il est écrit par vous six mois plus tôt.
+**Compter sur une consigne de nettoyage.** Elle n'est suivie que dans moins d'une exécution sur trois, ce qui reste dans l'arbre fait échouer le périmètre de toute la configuration, et la correction robuste n'est pas une meilleure consigne mais une procédure qui ne crée rien.
 
-**Accumuler les skills.** Chacun est bon marché tant qu'il dort, mais leurs descriptions entrent toutes dans le contexte à chaque tour.
+**Réviser sans remesurer.** Une révision qui répond point par point au diagnostic reste une hypothèse tant qu'une matrice ne l'a pas vérifiée. La nôtre prédisait aussi une baisse de coût sur gemma, et cette matrice-là ne peut pas la confirmer, ses reprises rendant les colonnes de coût illisibles.
+
+**Accumuler les skills.** Chacun coûte peu tant qu'il n'est pas utilisé, mais leurs descriptions entrent toutes dans le contexte à chaque tour.
 
 ## Pour aller plus loin
 
 - [Agent Skills](https://agentskills.io), le standard ouvert que Pi implémente, et sa page sur l'intégration dans un prompt système.
 - Anthropic, [Equipping agents for the real world with Agent Skills](https://www.anthropic.com/engineering/equipping-agents-for-the-real-world-with-agent-skills).
-- Schick et al., [Toolformer](https://arxiv.org/abs/2302.04761), sur l'idée qu'un modèle apprenne quand et comment appeler un outil — à lire en gardant en tête nos 2/10.
+- Schick et al., [Toolformer](https://arxiv.org/abs/2302.04761), sur l'idée qu'un modèle apprenne quand et comment appeler un outil.
 - Yao et al., [ReAct: Reasoning + Acting](https://arxiv.org/abs/2210.03629), la boucle qui alterne raisonnement et action.
-- La [documentation des extensions de Pi](https://github.com/earendil-works/pi/blob/main/packages/coding-agent/docs/extensions.md), pour la suite du module.
+- La [documentation des extensions de Pi](https://github.com/earendil-works/pi/blob/main/packages/coding-agent/docs/extensions.md), pour la brique qui donne des garanties là où le skill donne des suggestions.
