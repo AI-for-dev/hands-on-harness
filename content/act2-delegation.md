@@ -143,11 +143,11 @@ Vous tenez maintenant le rôle que le module suivant automatisera. Ouvrez la ses
 
 La boucle comporte six gestes :
 
-1. **explorer** reçoit le ticket #2 → il rend la note d'impact ;
-2. vous lisez la note, puis **planner** reçoit le ticket et la note, telles quelles → il rend le plan ;
-3. **coder** reçoit le pas 1 du plan, et rien d'autre du plan → il rend son rapport et le diff est dans l'arbre ;
+1. **explorer** reçoit le ticket #2 et rend la note d'impact ;
+2. vous lisez la note, puis **planner** reçoit le ticket et la note, telles quelles, et rend le plan ;
+3. **coder** reçoit le pas 1 du plan, et rien d'autre du plan ; il rend son rapport, et le diff est dans l'arbre ;
 4. vous lancez **`npm test` vous-même**, dans un second terminal, et vous gardez la sortie ;
-5. **reviewer** reçoit le ticket, le pas, le diff (`git diff`) et la sortie des tests, collés par vous → il rend son verdict ;
+5. **reviewer** reçoit le ticket, le pas, le diff (`git diff`) et la sortie des tests, collés par vous, et rend son verdict ;
 6. selon le verdict : pas suivant au coder, retour au coder avec les raisons, ou retour au planner si c'est le pas qui est en cause.
 
 Pendant qu'un sous-agent travaille, un point s'affiche au-dessus de l'invite avec son modèle, ses tokens et un chronomètre, et la ligne d'outil en dessous garde la trace de l'appel. Si [herdr](https://herdr.dev) tourne sur votre machine, `/herdr on` donne à chaque sous-agent son propre volet, et vous voyez l'explorer lire pendant que vous préparez la tâche suivante. Cette vue sert à suivre le travail ; la section sur la trace explique pourquoi elle ne permet de rien conclure.
@@ -182,7 +182,7 @@ Une raison de plus de ne pas croire les indicateurs sur parole : pendant la pré
 
 Les deux modules précédents ont établi leurs affirmations sur vingt répétitions, et celui-ci n'en publie aucune. Cette absence est délibérée, et sa raison décide de ce qu'on mesure dans un harnais.
 
-Ce que ce module affirme est **structurel** : un agent sans outil d'écriture ne peut pas écrire, un relecteur au contexte neuf ne voit pas les intentions du codeur, une exploration déléguée ne revient pas dans la fenêtre. Une seule exécution, trace en main, suffit à vérifier chacune de ces propriétés, et vingt n'y ajouteraient rien, là où vingt ne suffisaient pas toujours à établir l'effet d'un prompt. Les effets probabilistes s'établissent par la répétition, et les propriétés structurelles par l'inspection d'une trace.
+Ce que ce module affirme est **structurel** : un agent sans outil d'écriture ne peut pas écrire, un relecteur au contexte neuf ne voit pas les intentions du codeur, une exploration déléguée ne revient pas dans la fenêtre. Une seule exécution, trace en main, suffit à vérifier chacune de ces propriétés, et vingt n'y ajouteraient rien, là où vingt ne suffisaient pas toujours à établir l'effet d'un prompt.
 
 Ce que ce module ne peut pas affirmer, en revanche, c'est que le découpage en rôles **améliore le résultat** : que le ticket #2 traité par cette boucle déborde moins, ou soit mieux corrigé, que le même ticket traité par un agent seul. C'est une question de mesure, elle est légitime, et elle n'est pas tranchée ici. Le module suivant pose le protocole qui permet de la trancher, la boucle automatisée contre l'agent seul sur ce même ticket dans une même matrice, et l'hypothèse s'y écrira avant les chiffres.
 
