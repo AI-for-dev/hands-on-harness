@@ -4,7 +4,7 @@ Cette formation repose sur un choix pédagogique que nous voulons expliciter dè
 
 Nous prenons le parti inverse. La colonne vertébrale de la formation, c'est le harnais lui-même, c'est-à-dire l'ensemble des briques fonctionnelles qu'il doit comporter pour fonctionner : gestion du contexte, outils, délégation, orchestration, mémoire, sûreté et vérification. Nous établissons d'abord *quelles* briques sont nécessaires et *pourquoi*, puis nous reconstruisons chacune d'elles à la main à l'aide de logiciels open source. Enfin, nous remontons au principe transférable, celui que vous garderez quel que soit l'outil du moment.
 
-L'objectif n'est pas de bâtir un concurrent de Claude Code. La reconstruction est volontairement minimale. Ce que vous emporterez à la fin, ce n'est pas un logiciel, c'est la compréhension nécessaire pour construire votre propre harnais, adapté à vos usages, et pour piloter en connaissance de cause les harnais que vous utiliserez au quotidien.
+L'objectif n'est pas de bâtir un concurrent de Claude Code, et la reconstruction est volontairement minimale. Vous emporterez à la fin, plutôt qu'un logiciel, la compréhension nécessaire pour construire votre propre harnais, adapté à vos usages, et pour piloter en connaissance de cause les harnais que vous utiliserez au quotidien.
 
 ## Le triptyque
 
@@ -12,11 +12,11 @@ Chaque module de reconstruction se déroule en trois temps que nous répétons t
 
 Le premier temps, **Comprendre**, part du besoin. À quoi sert la brique, pourquoi est-elle indispensable, et comment un harnais réel la réalise-t-il ?
 
-Le deuxième temps, **Reconstruire**, consiste à écrire l'équivalent minimal de la brique sur Pi, à la main. C'est ce qui permet d'éprouver le concept plutôt que de le lire. Il faut garder en tête que ce code est une illustration, pas la leçon : il est là pour rendre l'idée tangible, et il est remplaçable.
+Le deuxième temps, **Reconstruire**, consiste à écrire l'équivalent minimal de la brique sur Pi, à la main. C'est ce qui permet d'éprouver le concept plutôt que de le lire. Ce code est une illustration et non la leçon : il rend l'idée tangible, et il est remplaçable.
 
 Le troisième temps, **Généraliser**, dégage le principe qui survit au changement d'outil, la règle de conception que vous appliqueriez ailleurs. C'est ce temps-là qui compte vraiment, car c'est le seul qui ne périme pas.
 
-Cette distinction entre le durable et le jetable est au cœur de la formation. Les principes du troisième temps sont à retenir ; les versions de paquets et les détails de configuration du deuxième temps sont voués à changer, et nous les traitons comme tels.
+Cette distinction entre le durable et le jetable structure la formation. Les principes du troisième temps sont à retenir ; les versions de paquets et les détails de configuration du deuxième temps sont voués à changer, et nous les traitons comme tels.
 
 ## La trame d'un module
 

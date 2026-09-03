@@ -1,74 +1,74 @@
 {
   "index.md": {
     "en": {
-      "unitHash": "f8a92eff758e94b2c88ef87bc0ff9c04a9f9288a5c83af4f20cd6d2ce5fec57c",
+      "unitHash": "180cf461ba7147734af815d582d07b7a1ca27927906170f8c96d52a3fab82353",
       "model": "pi:ilaas/gemma-4-31b",
-      "translatedAt": "2026-07-28T09:25:50.364Z"
+      "translatedAt": "2026-09-03T08:04:18.250Z"
     },
     "es": {
-      "unitHash": "f8a92eff758e94b2c88ef87bc0ff9c04a9f9288a5c83af4f20cd6d2ce5fec57c",
+      "unitHash": "180cf461ba7147734af815d582d07b7a1ca27927906170f8c96d52a3fab82353",
       "model": "pi:ilaas/gemma-4-31b",
-      "translatedAt": "2026-07-28T09:26:10.156Z"
+      "translatedAt": "2026-09-03T08:04:47.594Z"
     }
   },
   "act1-harness.md": {
     "en": {
-      "unitHash": "072390689d303038045565501dd891f116503e5762546e2ee4714d665489e390",
+      "unitHash": "0eacb12ef613c325ea8dd121a79cd7872b3fa6f872e2184ec1e210528cd39180",
       "model": "pi:ilaas/gemma-4-31b",
-      "translatedAt": "2026-07-28T12:05:46.550Z"
+      "translatedAt": "2026-09-03T07:59:52.414Z"
     },
     "es": {
-      "unitHash": "072390689d303038045565501dd891f116503e5762546e2ee4714d665489e390",
+      "unitHash": "0eacb12ef613c325ea8dd121a79cd7872b3fa6f872e2184ec1e210528cd39180",
       "model": "pi:ilaas/gemma-4-31b",
-      "translatedAt": "2026-07-28T12:05:57.455Z"
+      "translatedAt": "2026-09-03T08:00:27.921Z"
     }
   },
   "act1-llm.md": {
     "en": {
-      "unitHash": "b9644315b1d003b39e2d221fa04fc0f0e2701fa1c36b4448300097d62305ef55",
+      "unitHash": "412f8d3e14e99e4ae9f4aefa997b4a21062122fd9bb7c391b49f5f3d446acfcf",
       "model": "pi:ilaas/gemma-4-31b",
-      "translatedAt": "2026-07-28T11:45:25.326Z"
+      "translatedAt": "2026-09-03T08:01:06.274Z"
     },
     "es": {
-      "unitHash": "b9644315b1d003b39e2d221fa04fc0f0e2701fa1c36b4448300097d62305ef55",
+      "unitHash": "412f8d3e14e99e4ae9f4aefa997b4a21062122fd9bb7c391b49f5f3d446acfcf",
       "model": "pi:ilaas/gemma-4-31b",
-      "translatedAt": "2026-07-28T11:45:59.988Z"
+      "translatedAt": "2026-09-03T08:01:47.480Z"
     }
   },
   "act1-pi.md": {
     "en": {
-      "unitHash": "c3c6e690e33680873966002b508dc148829ee223d6456846256ee64a9b0bd21a",
+      "unitHash": "ca7320d44470bf02e3294f6f32162c9483da3d0c1d3fea3dda6358d78b145f37",
       "model": "pi:ilaas/gemma-4-31b",
-      "translatedAt": "2026-07-28T12:06:05.211Z"
+      "translatedAt": "2026-09-03T08:02:23.537Z"
     },
     "es": {
-      "unitHash": "c3c6e690e33680873966002b508dc148829ee223d6456846256ee64a9b0bd21a",
+      "unitHash": "ca7320d44470bf02e3294f6f32162c9483da3d0c1d3fea3dda6358d78b145f37",
       "model": "pi:ilaas/gemma-4-31b",
-      "translatedAt": "2026-07-28T12:06:16.624Z"
+      "translatedAt": "2026-09-03T08:02:52.997Z"
     }
   },
   "fil-rouge.md": {
     "en": {
-      "unitHash": "ca23ceaa65f03f1df2ead756809bf9c26901a5c65bc3588f1dbc3192ef53842f",
+      "unitHash": "c2387a9c630f8f6d717ef279421efe74a49b4bbe71183a6861739fd469637290",
       "model": "pi:ilaas/gemma-4-31b",
-      "translatedAt": "2026-08-14T08:56:17.193Z"
+      "translatedAt": "2026-09-03T08:03:17.100Z"
     },
     "es": {
-      "unitHash": "ca23ceaa65f03f1df2ead756809bf9c26901a5c65bc3588f1dbc3192ef53842f",
+      "unitHash": "c2387a9c630f8f6d717ef279421efe74a49b4bbe71183a6861739fd469637290",
       "model": "pi:ilaas/gemma-4-31b",
-      "translatedAt": "2026-08-14T08:56:29.584Z"
+      "translatedAt": "2026-09-03T08:03:49.827Z"
     }
   },
   "methode.md": {
     "en": {
-      "unitHash": "7ee867468cb645d5d2b7d93e871f0ac2d426faca473631dfe735761c26c82fe3",
+      "unitHash": "301494cff6308343019b6aab1824eafb497f86d0bb4091b51947553cb652a3b9",
       "model": "pi:ilaas/gemma-4-31b",
-      "translatedAt": "2026-07-28T11:50:10.952Z"
+      "translatedAt": "2026-09-03T08:05:19.326Z"
     },
     "es": {
-      "unitHash": "7ee867468cb645d5d2b7d93e871f0ac2d426faca473631dfe735761c26c82fe3",
+      "unitHash": "301494cff6308343019b6aab1824eafb497f86d0bb4091b51947553cb652a3b9",
       "model": "pi:ilaas/gemma-4-31b",
-      "translatedAt": "2026-07-28T11:50:26.492Z"
+      "translatedAt": "2026-09-03T08:05:27.904Z"
     }
   },
   "act2-contexte.md": {

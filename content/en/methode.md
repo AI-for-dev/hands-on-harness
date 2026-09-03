@@ -4,7 +4,7 @@ This training is based on a pedagogical choice that we want to make explicit fro
 
 We are taking the opposite approach. The backbone of the training is the harness itself-that is, the set of functional building blocks it must include to work: context management, tools, delegation, orchestration, memory, safety, and verification. We first establish *which* building blocks are necessary and *why*, then we reconstruct each of them by hand using open-source software. Finally, we return to the transferable principle, the one you will keep regardless of the tool of the moment.
 
-The goal is not to build a competitor to Claude Code. The reconstruction is intentionally minimal. What you will take away at the end is not a piece of software, but the understanding necessary to build your own harness, adapted to your uses, and to confidently manage the harnesses you use daily.
+The goal is not to build a competitor to Claude Code, and the reconstruction is intentionally minimal. In the end, rather than a piece of software, you will gain the understanding necessary to build your own harness, adapted to your needs, and to operate informedly the harnesses you use daily.
 
 ## The Triptych
 
@@ -12,11 +12,11 @@ Each reconstruction module takes place in three steps that we repeat throughout 
 
 The first step, **Understand**, starts with the need. What is the purpose of the building block, why is it indispensable, and how does a real harness implement it?
 
-The second step, **Reconstruct**, consists of writing the minimal equivalent of the building block on Pi, by hand. This allows you to experience the concept rather than just read about it. Keep in mind that this code is an illustration, not the lesson: it is there to make the idea tangible, and it is replaceable.
+The second step, **Reconstruct**, consists of writing the minimal equivalent of the building block on Pi, by hand. This allows you to test the concept rather than just reading about it. This code is an illustration and not the lesson: it makes the idea tangible, and it is replaceable.
 
 The third step, **Generalize**, identifies the principle that survives the change of tool, the design rule you would apply elsewhere. This is the step that really matters, as it is the only one that does not become obsolete.
 
-This distinction between the durable and the disposable is at the heart of the training. The principles of the third step are to be remembered; the package versions and configuration details of the second step are destined to change, and we treat them as such.
+This distinction between the durable and the disposable structures the training. The principles of the third step are to be remembered; the package versions and configuration details of the second step are destined to change, and we treat them as such.
 
 ## Module Structure
 

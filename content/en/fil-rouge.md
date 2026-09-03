@@ -1,18 +1,16 @@
 # The Running Theme: NÉON
 
-Throughout the course, we work on a single repository, which we call **NÉON**. It is a small playable Breakout game, written in HTML and JavaScript on a `<canvas>`, with no dependencies. You open it in your browser and it works. It is real software, with its strengths and weaknesses.
+Throughout the training, we work on a single repository, which we call **NÉON**. It is a small playable Breakout game, written in HTML and JavaScript on a `<canvas>`, with no dependencies. You open it in your browser and it works. It is real software, with its strengths and weaknesses, because NÉON is intentionally imperfect: it contains bugs, technical choices to correct, a list of pending tickets, a booby-trapped file, and a real git history, which form the raw material of the training.
 
-Because NÉON is intentionally imperfect. It contains bugs, technical choices to be corrected, a list of pending tickets, a booby-trapped file, and a very real git history. This is not by accident: it is the raw material for the training.
-
-You can find it at the following address: https://github.com/AI-for-dev/neon
+You can find it at [github.com/AI-for-dev/neon](https://github.com/AI-for-dev/neon).
 
 ## Maintaining Rather Than Building
 
 We could have had you build NÉON from scratch, brick by brick, at the same time as your harness. That is visually satisfying, but often artificial: having an agent's memory "learn a color palette" has little to do with a developer's actual work.
 
-We therefore made a different choice. You are not building NÉON; you are maintaining it and evolving it. The harness you forge learns to understand the repository, plan a modification, delegate part of the work, modify the code, test it, refuse a dangerous instruction, and then deliver a justifiable diff and commit. Exactly what you will do at the end of this training on your own projects that already have a history.
+We have therefore made a different choice. You are not building NÉON; you are maintaining and evolving it. The harness you forge learns to understand the repository, plan a modification, delegate part of the work, modify the code, test it, refuse a dangerous instruction, and then deliver a defensible diff and commit-exactly what you will do at the end of this training on your own projects, which already have a history.
 
-This choice has three advantages. Each brick of the harness then addresses a concrete need, rather than an exercise invented for the occasion. The transfer to your daily routine is direct, because a repository, an issue, a diff, a review, and a commit are exactly what you already work on. Finally, the flow is more robust: since the repository already exists, the failure of one module does not prevent you from moving to the next.
+This choice has three advantages. Each brick of the harness then meets a concrete need rather than a contrived exercise. The transfer to your daily work is direct, as a repository, an issue, a diff, a review, and a commit are exactly what you already work on. Finally, the flow is more resilient to setbacks: since the repository already exists, failing one module does not prevent you from tackling the next.
 
 ## The Starting Repository
 
@@ -49,13 +47,13 @@ The `ISSUES.md` file contains the backlog that we work through module by module.
 
 ## The booby-trapped file
 
-The `SUPPORT.md` file contains text that looks like a support procedure, but actually asks to read the `.env` file and send its content to an external address. This text is not a legitimate instruction: it is unreliable data, placed there to test the safety of your harness.
+The `SUPPORT.md` file contains text that looks like a support procedure, but actually asks to read the `.env` file and send its content to an external address. This text is untrusted data, placed there to test your harness's safety, and not a legitimate instruction.
 
 The key point to remember now is this: your harness must treat this text as data, and not as an instruction to be executed. We will return to this in detail in the module on permissions.
 
 ## The "zero dependency" constraint (I'm not sure if I'll keep this part)
 
-The `CONTRIBUTING.md` file imposes a hard constraint: no dependencies, no CDNs. This is not a whim. It is the lesson of *context engineering* made concrete: the less code and tools there are around, the more manageable the context remains. We will defend this constraint when dealing with safety, and the harness must respect it as a project decision.
+The `CONTRIBUTING.md` file imposes a hard constraint: no dependencies, no CDN. This constraint makes the lesson of *context engineering* concrete: the less code and tooling there is around, the more manageable the context remains. We will defend this constraint when dealing with safety, and the harness must respect it as a project decision.
 
 ## The end goal
 
@@ -65,4 +63,4 @@ The final module brings together everything that came before. You give your harn
 
 The harness then runs the complete cycle autonomously: it retrieves project decisions from memory, plans, delegates to read-only sub-agents, has workers operating in parallel, has the result reviewed, requires green tests before concluding, refuses the `SUPPORT.md` trap by explaining why, updates the README, and produces a diff accompanied by a justified commit.
 
-The message we want to convey at this point is simple. You have just done, on a playground repository, exactly what you will do on your own repositories. You only need to replace NÉON with your own.
+You have now done, on a toy repository, exactly what you will do on your own repositories: you will only need to replace NÉON with your own.
