@@ -381,7 +381,7 @@ cd scripts/trysquare-campaign
 trysquare run scenarios/issue1-contexte.toml --output resultats --dry-run
 ```
 
-La config est prise dans le `trysquare.toml` le plus proche, donc celui de l'établi tant que vous lancez depuis ce répertoire.
+La config est prise dans le `trysquare.toml` le plus proche, donc celui de `scripts/trysquare-campaign/` tant que vous lancez depuis ce répertoire.
 
 Puis lancez la matrice à trois répétitions et laissez-la tourner pendant que vous discutez des curseurs :
 
@@ -663,4 +663,4 @@ Notre exemple est `AGENTS.md` : il ne déplace pas d'un point le critère de cor
 - Addy Osmani, [Agent Harness Engineering](https://addyosmani.com/blog/agent-harness-engineering/), dont la thèse est celle que la comparaison de la pile à la base met à l'épreuve.
 - [La documentation de Pi](https://github.com/earendil-works/pi/tree/main/packages/coding-agent/docs), et en particulier ses pages sur la compaction, les modèles et les réglages.
 - [trysquare](https://github.com/AI-for-dev/trysquare), l'outil de mesure utilisé dans ce module, et son guide d'écriture de scénario.
-- L'établi de la formation, `scripts/trysquare-campaign/`, avec ses hypothèses écrites avant mesure et ses matrices archivées. C'est le seul endroit où les chiffres de cette page sont vérifiables.
+- La campagne trysquare de la formation, `scripts/trysquare-campaign/`, avec ses hypothèses écrites avant mesure et ses matrices archivées. C'est le seul endroit où les chiffres de cette page sont vérifiables.
