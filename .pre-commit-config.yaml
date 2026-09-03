@@ -3,6 +3,9 @@ repos:
     rev: v5.0.0
     hooks:
       - id: trailing-whitespace
+        # Les fichiers .patch portent des espaces significatifs : une ligne de
+        # contexte vide y est un espace seul, que git apply attend tel quel.
+        exclude: '\.patch$'
       - id: end-of-file-fixer
       - id: check-merge-conflict
       - id: check-added-large-files
