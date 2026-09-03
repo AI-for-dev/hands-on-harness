@@ -4,7 +4,7 @@ Esta formación se basa en una elección pedagógica que queremos dejar clara de
 
 Tomamos el camino opuesto. La columna vertebral de la formación es el harness mismo, es decir, el conjunto de bloques funcionales que debe incluir para funcionar: gestión del contexto, herramientas, delegación, orquestación, memoria, seguridad y verificación. Primero establecemos *qué* bloques son necesarios y *por qué*, y luego reconstruimos cada uno de ellos a mano mediante software de código abierto. Finalmente, volvemos al principio transferible, aquel que conservarás independientemente de la herramienta del momento.
 
-El objetivo no es construir un competidor de Claude Code. La reconstrucción es deliberadamente mínima. Lo que te llevarás al final no es un software, sino la comprensión necesaria para construir tu propio harness, adaptado a tus necesidades, y para manejar con criterio los harness que utilices a diario.
+El objetivo no es construir un competidor de Claude Code, y la reconstrucción es deliberadamente mínima. Al final te llevarás, más que un software, la comprensión necesaria para construir tu propio harness, adaptado a tus usos, y para manejar con conocimiento de causa los harness que utilices a diario.
 
 ## El tríptico
 
@@ -12,11 +12,11 @@ Cada módulo de reconstrucción se desarrolla en tres etapas que repetimos a lo 
 
 La primera etapa, **Comprender**, parte de la necesidad. ¿Para qué sirve el bloque, por qué es indispensable y cómo lo implementa un harness real?
 
-La segunda etapa, **Reconstruir**, consiste en escribir a mano el equivalente mínimo del bloque en Pi. Esto es lo que permite poner a prueba el concepto en lugar de limitarse a leerlo. Debes tener en cuenta que este código es una ilustración, no la lección: está ahí para hacer la idea tangible y es reemplazable.
+La segunda etapa, **Reconstruir**, consiste en escribir a mano el equivalente mínimo del componente en Pi. Esto permite poner a prueba el concepto en lugar de limitarse a leerlo. Este código es una ilustración y no la lección: hace que la idea sea tangible y es reemplazable.
 
 La tercera etapa, **Generalizar**, extrae el principio que sobrevive al cambio de herramienta, la regla de diseño que aplicarías en otros casos. Esta es la etapa que realmente importa, ya que es la única que no caduca.
 
-Esta distinción entre lo duradero y lo desechable está en el centro de la formación. Los principios de la tercera etapa son los que hay que recordar; las versiones de los paquetes y los detalles de configuración de la segunda etapa están destinados a cambiar, y los tratamos como tales.
+Esta distinción entre lo duradero y lo desechable estructura la formación. Los principios de la tercera etapa son los que hay que retener; las versiones de los paquetes y los detalles de configuración de la segunda etapa están destinados a cambiar, y los tratamos como tales.
 
 ## La estructura de un módulo
 
