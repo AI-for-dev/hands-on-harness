@@ -381,7 +381,7 @@ cd scripts/trysquare-campaign
 trysquare run scenarios/issue1-contexte.toml --output resultats --dry-run
 ```
 
-La configuración se toma del `trysquare.toml` más cercano, es decir, el del banco de trabajo siempre que lances desde este directorio.
+La configuración se toma del `trysquare.toml` más cercano, es decir, el de `scripts/trysquare-campaign/` siempre que lances la ejecución desde este directorio.
 
 Luego lanza la matriz a tres repeticiones y deja que se ejecute mientras discutes los parámetros:
 
@@ -658,9 +658,9 @@ Nuestro ejemplo es `AGENTS.md`: no desplaza ni un punto el criterio de correcci�
 
 ## Para ir más lejos
 
-- Liu et al., [Lost in the Middle](https://arxiv.org/abs/2307.03172), el estudio que justifica que no baste con llenar la ventana.
+- Liu et al., [Lost in the Middle](https://arxiv.org/abs/2307.03172), el estudio que justifica que no baste con rellenar la ventana.
 - Philipp Schmid, [The New Skill in AI is Not Prompting, It's Context Engineering](https://www.philschmid.de/context-engineering), sobre el desplazamiento del prompt aislado hacia la arquitectura del contexto.
-- Addy Osmani, [Agent Harness Engineering](https://addyosmani.com/blog/agent-harness-engineering/), cuya tesis es la que la comparación de la pila en la base pone a prueba.
+- Addy Osmani, [Agent Harness Engineering](https://addyosmani.com/blog/agent-harness-engineering/), cuya tesis es la que la comparación de la pila pone a prueba desde la base.
 - [La documentación de Pi](https://github.com/earendil-works/pi/tree/main/packages/coding-agent/docs), y en particular sus páginas sobre la compactación, los modelos y los ajustes.
 - [trysquare](https://github.com/AI-for-dev/trysquare), la herramienta de medición utilizada en este módulo, y su guía de escritura de escenarios.
-- El banco de trabajo de la formación, `scripts/trysquare-campaign/`, con sus hipótesis escritas antes de la medición y sus matrices archivadas. Es el único lugar donde las cifras de esta página son verificables.
+- La campaña trysquare de la formación, `scripts/trysquare-campaign/`, con sus hipótesis escritas antes de la medición y sus matrices archivadas. Es el único lugar donde las cifras de esta página son verificables.

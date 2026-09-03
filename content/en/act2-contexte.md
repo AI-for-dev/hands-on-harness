@@ -381,7 +381,7 @@ cd scripts/trysquare-campaign
 trysquare run scenarios/issue1-contexte.toml --output resultats --dry-run
 ```
 
-The config is taken from the nearest `trysquare.toml`, so the one in the workbench as long as you launch from this directory.
+The config is taken from the nearest `trysquare.toml`, so the one in `scripts/trysquare-campaign/` as long as you launch from this directory.
 
 Then run the matrix with three repetitions and let it run while you discuss the sliders:
 
@@ -659,9 +659,9 @@ Our example is `AGENTS.md`: it does not shift the correctness criterion by a sin
 
 ## For further reading
 
-- Liu et al., [Lost in the Middle](https://arxiv.org/abs/2307.03172), the study justifying why we shouldn't just fill the window.
-- Philipp Schmid, [The New Skill in AI is Not Prompting, It's Context Engineering](https://www.philschmid.de/context-engineering), on the shift from isolated prompting to context architecture.
-- Addy Osmani, [Agent Harness Engineering](https://addyosmani.com/blog/agent-harness-engineering/), whose thesis is what the stack comparison fundamentally tests.
-- [Pi documentation](https://github.com/earendil-works/pi/tree/main/packages/coding-agent/docs), especially its pages on compaction, models, and settings.
+- Liu et al., [Lost in the Middle](https://arxiv.org/abs/2307.03172), the study that justifies why we shouldn't just fill the window.
+- Philipp Schmid, [The New Skill in AI is Not Prompting, It's Context Engineering](https://www.philschmid.de/context-engineering), on the shift from isolated prompting toward context architecture.
+- Addy Osmani, [Agent Harness Engineering](https://addyosmani.com/blog/agent-harness-engineering/), whose thesis is what the baseline stack comparison tests.
+- [Pi documentation](https://github.com/earendil-works/pi/tree/main/packages/coding-agent/docs), and specifically its pages on compaction, models, and settings.
 - [trysquare](https://github.com/AI-for-dev/trysquare), the measurement tool used in this module, and its scenario writing guide.
-- The course workbench, `scripts/trysquare-campaign/`, with its hypotheses written before measurement and its archived matrices. This is the only place where the figures on this page can be verified.
+- The training's trysquare campaign, `scripts/trysquare-campaign/`, with its hypotheses written before measurement and its archived matrices. This is the only place where the figures on this page are verifiable.
