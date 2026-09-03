@@ -8,7 +8,7 @@
 - Revisar un procedimiento a partir de las ejecuciones leídas y verificar la revisión mediante una nueva matriz
 :::
 
-El módulo anterior ha repasado lo que se gana al hacerlo mejor: elegir un modelo, ajustar un cursor, escribir un ticket, mantener un archivo de reglas. Terminó con una constatación. En las configuraciones que reciben el ticket delimitado, cuatro de cada veinte ejecuciones escriben los tests rojos que el ticket solicita y nunca abren `game/neon.js`: el modelo agota su presupuesto formulando los casos y no logra corregirlos. La única palanca que solucionó este problema consistió en proporcionarle los tests ya escritos, algo que nadie hará en un ticket real.
+El módulo anterior ha repasado lo que ganamos al mejorar el enfoque: elegir un modelo, ajustar un parámetro, escribir un ticket, mantener un archivo de reglas. Terminó con una conclusión: en las configuraciones que reciben el ticket delimitado, cuatro de cada veinte ejecuciones escriben las pruebas rojas que pide el ticket y nunca abren `game/neon.js`: el modelo agota su presupuesto formulando los casos y no logra corregirlos. La única palanca que compensó este fallo consistió en proporcionarle las pruebas ya escritas, algo que nadie hará en un ticket real.
 
 La pregunta de este módulo es, por lo tanto, si un **procedimiento de trabajo**, escrito una vez y recargado a petición, obtiene el mismo resultado sin proporcionar los tests.
 
@@ -39,7 +39,7 @@ La idea es la de un procedimiento de trabajo que escribes una vez y que el agent
 
 ### Qué ve el modelo
 
-Hay un punto mecánico que comprender bien, ya que condiciona todo lo demás. Pi inyecta en el system prompt, **en cada turno**, el nombre, la descripción y la ruta de cada skill disponible:
+Un aspecto mecánico lo condiciona todo: Pi inyecta en el system prompt, **en cada turno**, el nombre, la descripción y la ruta de cada skill disponible:
 
 ```
 The following skills provide specialized instructions for specific tasks.
@@ -83,7 +83,7 @@ La competencia `playtest` está escrita para eso. Le da al agente un rol, el del
 
 <<<@/../scripts/trysquare-campaign/briques/skills/playtest/SKILL.md{md}
 
-Dos decisiones de redacción merecen ser destacadas, ya que se pueden trasladar a cualquier procedimiento.
+Dos decisiones de redacción se aplican a cualquier procedimiento.
 
 El entregable es un archivo cuya forma está impuesta. El paso 4 impone la forma de `.scratch/to_fix.md`, un bloque por defecto, con su causa localizada hasta la línea, su invariante violado, su disparador cifrado, su caso de prueba, la salida de fallo real copiada de la terminal, y la corrección ingenua que este caso rechaza. Un agente que produce este archivo necesariamente ha realizado el trabajo que el archivo describe.
 
@@ -101,7 +101,7 @@ Las dos configuraciones con competencia de la matriz reciben el siguiente prompt
 
 <<<@/../scripts/trysquare-campaign/briques/issue1-simple-prompt-with-skill.md
 
-Hay que notar tres cosas. La solicitud es la solicitud descuidada del módulo anterior. El `/skill:playtest` al principio hace que el cuerpo del archivo se desarrolle del lado del cliente, por lo que la competencia es **impuesta** en lugar de propuesta. Y la lectura de `ISSUES.md` está prohibida, para que el procedimiento trabaje sobre el síntoma del jugador y no sobre un ticket ya redactado.
+Hay que tener en cuenta tres cosas: la solicitud es la solicitud descuidada del módulo anterior; el `/skill:playtest` al principio hace que el cuerpo del archivo se desarrolle del lado del cliente, por lo que la competencia es **impuesta** en lugar de propuesta; y la lectura de `ISSUES.md` está prohibida, para que el procedimiento trabaje sobre el síntoma del jugador y no sobre un ticket ya redactado.
 
 La columna `skill_invoque` vale, por tanto, 20/20 en estas dos configuraciones por construcción, y 0/20 en todas las demás. Registra un hecho sobre la sesión sin medir una decisión del modelo, y nada de lo que sigue trata sobre la cuestión de si una buena descripción desencadena la acción.
 
@@ -211,7 +211,7 @@ El archivo de estas dos matrices está en `scripts/trysquare-campaign/results-20
 
 ## Lo que un skill no garantiza
 
-Todo lo que las dos matrices acaban de mostrar se debe a una sola propiedad: un skill solo tiene texto. La instrucción de limpieza ignorada, el borrador que nunca se migró a la suite, la referencia fantasma seguida al pie de la letra: en cada caso, el procedimiento pedía algo que nada obligaba al modelo a hacer. Un skill no tiene ni esquema de entrada, ni función de ejecución, ni barrera de permisos. La literatura sobre las herramientas de agentes describe la anatomía de una herramienta: a saber, un nombre, una descripción leída por el modelo, un esquema de entrada, una función de ejecución y un permiso entre la validación y la ejecución; y un skill solo implementa los dos primeros elementos.
+Todo lo que las dos matrices acaban de mostrar se debe a una sola propiedad: un skill solo tiene texto. La instrucción de limpieza ignorada, el borrador que nunca se migró a la siguiente etapa, la referencia fantasma seguida al pie de la letra: en cada caso, el procedimiento pedía algo que nada obligaba al modelo a hacer. Un skill no tiene ni esquema de entrada, ni función de ejecución, ni control de permisos. Una herramienta de agente completa incluye un nombre, una descripción leída por el modelo, un esquema de entrada, una función de ejecución y un permiso entre la validación y la ejecución; un skill solo implementa los dos primeros elementos.
 
 Pi tiene un segundo mecanismo para el resto. Una **extensión** es un módulo TypeScript ubicado en `.pi/extensions/`, que llama a `pi.registerTool({ name, ... })`: una herramienta real, con un esquema JSON validado, una función que tú has escrito y la posibilidad de interceptar las llamadas a herramientas para insertar un permiso. Ya te has encontrado con una sin saberlo: la herramienta de búsqueda web que pedía la primera versión del procedimiento es una extensión, cargada por el bloque `extension` del escenario. El módulo sobre los permisos se basará en este mecanismo para transformar las instrucciones en garantías.
 
@@ -254,7 +254,7 @@ Medirás lo único que este módulo afirma sin haberlo establecido, y no habrás
 
 ## Generalizar
 
-**Un skill es un procedimiento de trabajo, no una herramienta.** No tiene ni esquema de entrada, ni función, ni permisos, y el único mecanismo del que dispone es el texto. Lo que sabe hacer es imponer un orden de trabajo y una forma de entregable, lo cual es útil y no debe confundirse con la ejecución de un código que tú controles.
+**Un skill es un procedimiento de trabajo y no una herramienta.** No tiene ni esquema de entrada, ni función, ni permisos, y el único mecanismo del que dispone es el texto. Lo que sabe hacer es imponer un orden de trabajo y una forma de entregable, lo cual es útil y no debe confundirse con la ejecución de un código que tú controlas.
 
 **La descripción es la única cosa que se lee con seguridad.** El cuerpo solo entra en el contexto si el modelo decide abrirlo o si el usuario lo despliega con `/skill:`. Una descripción que dice qué hace el procedimiento, en lugar de cuándo usarlo, se dirige a la decisión incorrecta.
 
@@ -272,7 +272,7 @@ Medirás lo único que este módulo afirma sin haberlo establecido, y no habrás
 
 ## Entregable
 
-Tres piezas.
+Este módulo produce tres piezas.
 
 **1. La competencia**, en `.pi/skills/<nombre>/`, con su descripción escrita por ti y un entregable cuya forma está impuesta por el cuerpo. Si la has revisado, ambas versiones permanecen versionadas: la matriz que las compara no se entiende sin ellas.
 
@@ -305,7 +305,7 @@ Este criterio requiere haber leído una configuración frente a la referencia co
 
 **Hacer que los tests se escriban en otro lugar que no sea la suite.** Un caso de prueba que reside en un archivo de trabajo no será ejecutado por nadie después de la salida del agente, y la migración prometida hacia la suite es precisamente el paso que el modelo omite.
 
-**Confiar en una instrucción de limpieza.** Se sigue en menos de una de cada tres ejecuciones, lo que queda en el árbol hace fallar el perímetro de toda la configuración, y la corrección robusta no es una mejor instrucción sino un procedimiento que no crea nada.
+**Confiar en una instrucción de limpieza.** Esta se sigue en menos de una de cada tres ejecuciones; lo que permanece en el árbol hace fallar el perímetro de toda la configuración, y la corrección fiable no es una mejor instrucción, sino un procedimiento que no crea nada.
 
 **Revisar sin volver a medir.** Una revisión que responde punto por punto al diagnóstico sigue siendo una hipótesis hasta que una matriz la haya verificado. La nuestra también predecía una reducción de costes en gemma, y esa matriz no puede confirmarlo, ya que sus repeticiones hacen que las columnas de costes sean ilegibles.
 
