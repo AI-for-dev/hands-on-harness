@@ -37,3 +37,19 @@ export function cleanupTranslationResponse(raw) {
 
   return lines.slice(openIdx + 1, closeIdx).join('\n')
 }
+
+// A `:::` container often spans several segments: the one that opens it carries
+// no closing fence, which invites the model to add one, shutting the box several
+// paragraphs early. Observed on "::: info Exercice (en salle)", where the
+// exercise lost its starting-point file. The repair is mechanical, hence
+// preferable to another call: we drop the fence the source did not have. Only a
+// trailing one is dropped, and only when the count is off by exactly one, so a
+// container the source really closes is never touched.
+export function dropAddedContainerFence(sourceSegment, translatedSegment) {
+  const fences = (text) => (text.match(/^:::/gm) ?? []).length
+  if (fences(translatedSegment) !== fences(sourceSegment) + 1) return translatedSegment
+
+  const lines = translatedSegment.split('\n')
+  if (lines.at(-1).trim() !== ':::') return translatedSegment
+  return lines.slice(0, -1).join('\n').trimEnd()
+}
