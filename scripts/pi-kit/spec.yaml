@@ -1,0 +1,67 @@
+schemaVersion: "2"
+kind: sandbox
+name: pi
+version: "0.1.0"
+displayName: Pi
+description: Pi coding agent (pi.dev) in a Docker sandbox.
+sourceURL: https://github.com/earendil-works/pi
+
+sandbox:
+  # Image locale chargee via `sbx template load`. Pour une equipe, pousser sur
+  # un registre et epingler par digest.
+  image: "pi-sandbox:0.84.2"
+  entrypoint: [pi, -a]
+  command:
+    default: []
+    interactive: []
+
+agentInstructions:
+  filename: AGENTS.md
+  content: |
+    ## Sandbox environment
+
+    Tu tournes dans une microVM Docker Sandbox. `sudo` est sans mot de passe,
+    Docker est disponible a l'interieur de la VM. Le reseau sortant est filtre
+    par une allowlist: un domaine non autorise echoue, ce n'est pas une panne
+    reseau. La cle du provider n'est pas dans la VM, seule une sentinelle l'est.
+
+environment:
+  variables:
+    PI_SKIP_VERSION_CHECK: "1"
+    PI_TELEMETRY: "0"
+
+credentials:
+  # Une seule cle couvre opencode-go et opencode (Zen): pi lit OPENCODE_API_KEY
+  # pour les deux. proxyManaged => la VM ne voit que la sentinelle.
+  - service: opencode-go
+    description: OpenCode API key used by pi (opencode-go and opencode Zen)
+    required: true
+    apiKey:
+      name: OPENCODE_API_KEY
+      proxyManaged: true
+      inject:
+        # Modeles openai-completions / openai-responses (deepseek-v4-flash,
+        # glm-*, kimi-*, gpt-5.6-luna, grok-4.5, ...).
+        # header/format explicites et non `scheme: bearer`: sbx 0.38.0 ignore
+        # le raccourci et n'injecte alors rien ("skipping empty service auth
+        # config" dans daemon.log).
+        - domain: opencode.ai
+          header: Authorization
+          format: "Bearer %s"
+        # Modeles anthropic-messages (minimax-m3, qwen3.7-max, qwen3.7-plus,
+        # qwen3.8-max): pi envoie x-api-key et non Authorization.
+        # A n'activer que si tu utilises ces modeles, voir README.
+        # - domain: opencode.ai
+        #   header: x-api-key
+        #   format: "%s"
+
+permissions:
+  network:
+    allow:
+      - opencode.ai
+      - github.com
+      - raw.githubusercontent.com
+      - pypi.org
+      - files.pythonhosted.org
+    deny:
+      - pi.dev

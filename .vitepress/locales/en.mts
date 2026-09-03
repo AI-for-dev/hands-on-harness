@@ -31,6 +31,7 @@ export const en: LocaleSpecificConfig<DefaultTheme.Config> = {
       {
         text: 'Act 2 - Rebuilding',
         items: [
+          { text: '2.0 The sandbox', link: '/en/act2-sandbox' },
           { text: '2.1 Context and the window', link: '/en/act2-contexte' },
           { text: '2.2 Skills', link: '/en/act2-skill' }
         ]
