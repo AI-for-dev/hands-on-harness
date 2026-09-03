@@ -73,14 +73,14 @@
   },
   "act2-contexte.md": {
     "en": {
-      "unitHash": "a86acf5c632a094675158b1f5bf140cfb5b86a964617f2dc6e29690631bd66a7",
+      "unitHash": "baa8d0d69e08d99f7caed9f996858bd31ef8bac6f83abd8af0da6382d2b0aab1",
       "model": "pi:ilaas/gemma-4-31b",
-      "translatedAt": "2026-08-14T08:51:33.109Z"
+      "translatedAt": "2026-09-03T08:19:15.296Z"
     },
     "es": {
-      "unitHash": "a86acf5c632a094675158b1f5bf140cfb5b86a964617f2dc6e29690631bd66a7",
+      "unitHash": "baa8d0d69e08d99f7caed9f996858bd31ef8bac6f83abd8af0da6382d2b0aab1",
       "model": "pi:ilaas/gemma-4-31b",
-      "translatedAt": "2026-08-14T08:53:41.315Z"
+      "translatedAt": "2026-09-03T08:19:28.475Z"
     }
   },
   "act2-skill.md": {
@@ -93,6 +93,30 @@
       "unitHash": "518a70da2c7bdcb4820d291e7063cd4613f1ebfb21b0bb0488f8b8bffc1ee65e",
       "model": "pi:ilaas/gemma-4-31b",
       "translatedAt": "2026-08-14T08:55:53.831Z"
+    }
+  },
+  "act2-delegation.md": {
+    "en": {
+      "unitHash": "f8eaeb88f79d02d54ea072f7de152e1c10b5a77f41a2bef583677ecf779b78fb",
+      "model": "pi:ilaas/gemma-4-31b",
+      "translatedAt": "2026-09-03T08:20:21.391Z"
+    },
+    "es": {
+      "unitHash": "f8eaeb88f79d02d54ea072f7de152e1c10b5a77f41a2bef583677ecf779b78fb",
+      "model": "pi:ilaas/gemma-4-31b",
+      "translatedAt": "2026-09-03T08:21:23.525Z"
+    }
+  },
+  "act2-workflows.md": {
+    "en": {
+      "unitHash": "c95982c9e63addad5291488086304657b4b730a7bbbd7aee4e39c48c1f8a7bbd",
+      "model": "pi:ilaas/gemma-4-31b",
+      "translatedAt": "2026-09-03T08:22:31.714Z"
+    },
+    "es": {
+      "unitHash": "c95982c9e63addad5291488086304657b4b730a7bbbd7aee4e39c48c1f8a7bbd",
+      "model": "pi:ilaas/gemma-4-31b",
+      "translatedAt": "2026-09-03T08:23:37.712Z"
     }
   }
 }
