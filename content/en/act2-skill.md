@@ -8,7 +8,7 @@
 - Revise a procedure based on the read executions, and verify the revision with a new matrix
 :::
 
-The previous module covered what is gained by doing things better: choosing a model, adjusting a slider, writing a ticket, maintaining a rules file. It ended with an observation. Across configurations receiving the scoped ticket, four out of twenty executions write the failing tests requested by the ticket and never open `game/neon.js`: the model exhausts its budget formulating the cases and fails to fix them. The only lever that corrected this drop-off was providing the tests already written, which no one will do on a real ticket.
+The previous module covered the gains from a better approach: choosing a model, adjusting a setting, writing a ticket, maintaining a rules file. It ended with an observation: for configurations using the scoped ticket, four out of twenty runs write the red tests requested by the ticket but never open `game/neon.js`: the model exhausts its budget formulating the cases and fails to fix them. The only lever that fixed this drop-off was providing the tests already written, which no one will do on a real ticket.
 
 The question for this module is therefore whether a **work procedure**, written once and reloaded on demand, achieves the same result without providing the tests.
 
@@ -39,7 +39,7 @@ The idea is a work procedure that you write once and the agent reloads on demand
 
 ### What the model sees
 
-There is a mechanical point to understand clearly, as it conditions everything else. Pi injects the name, description, and path of each available skill into the system prompt **every turn**:
+One mechanical point conditions everything else: Pi injects into the system prompt, **at every turn**, the name, description, and path of every available skill:
 
 ```
 The following skills provide specialized instructions for specific tasks.
@@ -83,7 +83,7 @@ The `playtest` skill is written for this. It gives the agent a role - that of a 
 
 <<<@/../scripts/trysquare-campaign/briques/skills/playtest/SKILL.md{md}
 
-Two writing decisions are worth noting, because they can be applied to any procedure.
+Two writing decisions apply to any procedure.
 
 **The deliverable is a file with a mandatory format.** Step 4 prescribes the format of `.scratch/to_fix.md`: a default block, with its cause localized down to the line, its violated invariant, its quantified trigger, its test case, the actual failure output copied from the terminal, and the naive fix that this case rejects. An agent that produces this file has necessarily performed the work described in the file.
 
@@ -101,7 +101,7 @@ The two skill-based configurations in the matrix receive the following prompt:
 
 <<<@/../scripts/trysquare-campaign/briques/issue1-simple-prompt-with-skill.md
 
-Three things are to be noted. The request is the neglected request from the previous module. The `/skill:playtest` at the top causes the body of the file to be expanded on the client side, so the skill is **imposed** rather than suggested. And reading `ISSUES.md` is forbidden, so that the procedure works on the player's symptom and not on a ticket that has already been written.
+Three things to note: the request is the overlooked request from the previous module; the `/skill:playtest` at the top makes the client develop the file's body, so the skill is **imposed** rather than suggested; and reading `ISSUES.md` is forbidden, so that the procedure works on the player's symptom and not on a pre-written ticket.
 
 The `skill_invoque` column therefore equals 20/20 for these two configurations by construction, and 0/20 for all others. It records a fact about the session without measuring a model decision, and nothing that follows concerns whether a good description triggers.
 
@@ -211,7 +211,7 @@ The archive of these two matrices is in `scripts/trysquare-campaign/results-2026
 
 ## What a skill does not guarantee
 
-Everything the two matrices have just shown comes down to a single property: a skill only has text. The ignored cleanup instruction, the draft never migrated to the suite, the ghost reference followed to the letter: each time, the procedure asked for something that nothing forced the model to do. A skill has no input schema, no execution function, and no permission guard. Literature on agent tools describes the anatomy of a tool, namely a name, a description read by the model, an input schema, an execution function, and a permission between validation and execution, and a skill only implements the first two elements.
+Everything the two matrices have just shown comes down to a single property: a skill consists only of text. The ignored cleanup instruction, the draft never migrated to the next step, the ghost reference followed to the letter: each time, the procedure requested something that nothing forced the model to do. A skill has no input schema, no execution function, and no permission guard. A complete agent tool includes a name, a description read by the model, an input schema, an execution function, and a permission check between validation and execution; a skill only implements the first two.
 
 Pi has a second mechanism for the rest. An **extension** is a TypeScript module located in `.pi/extensions/`, which calls `pi.registerTool({ name, ... })`: a real tool, with a validated JSON schema, a function you wrote, and the ability to intercept tool calls to insert a permission. You have already encountered one without knowing it: the web search tool that the first version of the procedure requested is an extension, loaded by the `extension` block of the scenario. The permissions module will rely on this mechanism to transform instructions into guarantees.
 
@@ -254,7 +254,7 @@ You will measure the only thing that this module asserts without having establis
 
 ## Generalize
 
-**A skill is a work procedure, not a tool.** It has no input schema, no function, no permission, and the only mechanism it has is text. What it can do is impose a work order and a deliverable format, which is useful and should not be confused with the execution of code that you control.
+**A skill is a work procedure and not a tool.** It has no input schema, function, or permission, and the only mechanism it has is text. Its purpose is to impose a work order and a deliverable format, which is useful and distinct from executing code that you control.
 
 **The description is the only thing guaranteed to be read.** The body only enters the context if the model decides to open it or if the user expands it with `/skill:`. A description that says what the procedure does, rather than when to use it, targets the wrong decision.
 
@@ -272,7 +272,7 @@ You will measure the only thing that this module asserts without having establis
 
 ## Deliverable
 
-Three pieces.
+This module produces three pieces.
 
 **1. The skill**, in `.pi/skills/<name>/`, with its description written by you and a deliverable whose form is imposed by the body. If you have revised it, both versions remain versioned: the matrix comparing them cannot be understood without them.
 
@@ -305,7 +305,7 @@ This criterion requires having read a configuration against the correct referenc
 
 **Having tests written anywhere other than in the suite.** A test case living in a work file will not be run by anyone after the agent departs, and the promised migration to the suite is precisely the step the model misses.
 
-**Relying on a cleanup instruction.** It is followed in fewer than one in three executions; whatever remains in the tree causes the scope of the entire configuration to fail, and the robust correction is not a better instruction but a procedure that creates nothing.
+**Relying on a cleanup instruction.** This is followed in fewer than one in three executions; whatever remains in the tree breaks the entire configuration scope, and the reliable fix is not a better instruction but a procedure that creates nothing.
 
 **Revising without remeasuring.** A revision that addresses the diagnostic point by point remains a hypothesis until a matrix has verified it. Ours also predicted a cost reduction on gemma, and that matrix cannot confirm it, as its retries make the cost columns unreadable.
 

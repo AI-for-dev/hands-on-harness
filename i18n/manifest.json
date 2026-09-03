@@ -73,38 +73,38 @@
   },
   "act2-contexte.md": {
     "en": {
-      "unitHash": "baa8d0d69e08d99f7caed9f996858bd31ef8bac6f83abd8af0da6382d2b0aab1",
+      "unitHash": "8a8a2968dcfd5809521f96f9d7d57a5443eb2034b102ea64e89eeb4749d52041",
       "model": "pi:ilaas/gemma-4-31b",
-      "translatedAt": "2026-09-03T08:19:15.296Z"
+      "translatedAt": "2026-09-03T08:39:42.791Z"
     },
     "es": {
-      "unitHash": "baa8d0d69e08d99f7caed9f996858bd31ef8bac6f83abd8af0da6382d2b0aab1",
+      "unitHash": "8a8a2968dcfd5809521f96f9d7d57a5443eb2034b102ea64e89eeb4749d52041",
       "model": "pi:ilaas/gemma-4-31b",
-      "translatedAt": "2026-09-03T08:19:28.475Z"
+      "translatedAt": "2026-09-03T08:39:42.797Z"
     }
   },
   "act2-skill.md": {
     "en": {
-      "unitHash": "518a70da2c7bdcb4820d291e7063cd4613f1ebfb21b0bb0488f8b8bffc1ee65e",
+      "unitHash": "e453bca4b56127e4353f46f608e176c88649ecad8978e4f1d85033733dd6f61d",
       "model": "pi:ilaas/gemma-4-31b",
-      "translatedAt": "2026-08-14T08:54:42.323Z"
+      "translatedAt": "2026-09-03T08:33:39.188Z"
     },
     "es": {
-      "unitHash": "518a70da2c7bdcb4820d291e7063cd4613f1ebfb21b0bb0488f8b8bffc1ee65e",
+      "unitHash": "e453bca4b56127e4353f46f608e176c88649ecad8978e4f1d85033733dd6f61d",
       "model": "pi:ilaas/gemma-4-31b",
-      "translatedAt": "2026-08-14T08:55:53.831Z"
+      "translatedAt": "2026-09-03T08:34:12.537Z"
     }
   },
   "act2-delegation.md": {
     "en": {
-      "unitHash": "f8eaeb88f79d02d54ea072f7de152e1c10b5a77f41a2bef583677ecf779b78fb",
+      "unitHash": "964d28d6c4f4d2b636270ff85778e3cb8c303116dd78b1c7a8e4019530c0882e",
       "model": "pi:ilaas/gemma-4-31b",
-      "translatedAt": "2026-09-03T08:20:21.391Z"
+      "translatedAt": "2026-09-03T08:32:47.577Z"
     },
     "es": {
-      "unitHash": "f8eaeb88f79d02d54ea072f7de152e1c10b5a77f41a2bef583677ecf779b78fb",
+      "unitHash": "964d28d6c4f4d2b636270ff85778e3cb8c303116dd78b1c7a8e4019530c0882e",
       "model": "pi:ilaas/gemma-4-31b",
-      "translatedAt": "2026-09-03T08:21:23.525Z"
+      "translatedAt": "2026-09-03T08:32:57.510Z"
     }
   },
   "act2-workflows.md": {

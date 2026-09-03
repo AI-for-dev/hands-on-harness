@@ -143,12 +143,12 @@ Ahora desempeñas el rol que el siguiente módulo automatizará. Abre la sesión
 
 El bucle consta de seis pasos:
 
-1. **explorer** recibe el ticket #2 $\rightarrow$ devuelve la nota de impacto;
-2. lees la nota, luego **planner** recibe el ticket y la nota, tal cual $\rightarrow$ devuelve el plan;
-3. **coder** recibe el paso 1 del plan, y nada más del plan $\rightarrow$ devuelve su informe y el diff queda en el árbol;
-4. lanzas **`npm test` tú mismo**, en una segunda terminal, y guardas la salida;
-5. **reviewer** recibe el ticket, el paso, el diff (`git diff`) y la salida de las pruebas, pegados por ti $\rightarrow$ devuelve su veredicto;
-6. según el veredicto: siguiente paso al coder, retorno al coder con los motivos, o retorno al planner si el problema es el paso.
+1. **explorer** recibe el ticket #2 y entrega la nota de impacto;
+2. lees la nota, luego **planner** recibe el ticket y la nota, tal cual, y entrega el plan;
+3. **coder** recibe el paso 1 del plan, y nada más del plan; entrega su informe, y el diff está en el árbol;
+4. ejecutas `npm test` tú mismo, en una segunda terminal, y guardas la salida;
+5. **reviewer** recibe el ticket, el paso, el diff (`git diff`) y la salida de las pruebas, pegados por ti, y entrega su veredicto;
+6. según el veredicto: paso siguiente al coder, regreso al coder con los motivos, o regreso al planner si el paso es el problema.
 
 Mientras un subagente trabaja, un punto aparece sobre el prompt con su modelo, sus tokens y un cronómetro, y la línea de herramienta debajo mantiene el rastro de la llamada. Si [herdr](https://herdr.dev) se ejecuta en tu máquina, `/herdr on` asigna a cada subagente su propio panel, y puedes ver al explorer leer mientras preparas la siguiente tarea. Esta vista sirve para seguir el trabajo; la sección sobre el rastro explica por qué no permite concluir nada.
 
@@ -182,7 +182,7 @@ Una razón más para no creer ciegamente en los indicadores: durante la preparac
 
 Los dos módulos anteriores basaron sus afirmaciones en veinte repeticiones, y este no publica ninguna. Esta ausencia es deliberada, y su razón determina qué se mide en un harness.
 
-Lo que este módulo afirma es **estructural**: un agente sin herramientas de escritura no puede escribir, un revisor con un contexto nuevo no ve las intenciones del programador, una exploración delegada no regresa a la ventana. Una sola ejecución, con la traza en mano, basta para verificar cada una de estas propiedades, y veinte no añadirían nada, mientras que veinte no siempre bastaban para establecer el efecto de un prompt. Los efectos probabilísticos se establecen mediante la repetición, y las propiedades estructurales mediante la inspección de una traza.
+Lo que este módulo afirma es **estructural**: un agente sin herramienta de escritura no puede escribir, un revisor con contexto nuevo no ve las intenciones del programador, una exploración delegada no regresa a la ventana. Una sola ejecución, con la traza en mano, basta para verificar cada una de estas propiedades, y veinte no añadirían nada, donde veinte no siempre bastaban para establecer el efecto de un prompt.
 
 Lo que este módulo no puede afirmar, en cambio, es que la división por roles **mejora el resultado**: que el ticket #2 procesado por este bucle se desborde menos, o esté mejor corregido, que el mismo ticket procesado por un agente solo. Es una cuestión de medición, es legítima, y no se resuelve aquí. El siguiente módulo plantea el protocolo que permite resolverla: el bucle automatizado frente al agente solo sobre este mismo ticket en una misma matriz, y la hipótesis se escribirá allí antes que las cifras.
 

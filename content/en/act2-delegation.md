@@ -143,12 +143,12 @@ You are now taking on the role that the following module will automate. Open the
 
 The loop consists of six steps:
 
-1. **explorer** receives ticket #2 → it returns the impact note;
-2. you read the note, then **planner** receives the ticket and the note as is → it returns the plan;
-3. **coder** receives step 1 of the plan, and nothing else from the plan → it returns its report and the diff is in the tree;
-4. you run **`npm test` yourself**, in a second terminal, and save the output;
-5. **reviewer** receives the ticket, the step, the diff (`git diff`), and the test output, pasted by you → it returns its verdict;
-6. depending on the verdict: next step to coder, back to coder with the reasons, or back to planner if the step itself is at fault.
+1. **explorer** receives ticket #2 and produces the impact note;
+2. you read the note, then **planner** receives the ticket and the note, as is, and produces the plan;
+3. **coder** receives step 1 of the plan, and nothing else from the plan; it produces its report, and the diff is in the tree;
+4. you run **`npm test` yourself**, in a second terminal, and you save the output;
+5. **reviewer** receives the ticket, the step, the diff (`git diff`), and the test output, pasted by you, and produces its verdict;
+6. depending on the verdict: next step to the coder, return to the coder with the reasons, or return to the planner if the step is at fault.
 
 While a sub-agent is working, a dot is displayed above the prompt with its model, tokens, and a timer, and the tool line below tracks the call. If [herdr](https://herdr.dev) is running on your machine, `/herdr on` gives each sub-agent its own pane, and you can see explorer reading while you prepare the next task. This view serves to track the work; the section on the trace explains why it does not allow for any conclusions.
 
@@ -182,7 +182,7 @@ Another reason not to take indicators at face value: during the preparation of t
 
 The previous two modules based their claims on twenty repetitions, and this one publishes none. This absence is deliberate, and the reason for it determines what is measured in a harness.
 
-What this module asserts is **structural**: an agent without a writing tool cannot write, a reviewer with a fresh context cannot see the coder's intentions, a delegated exploration does not return to the window. A single execution, with the trace in hand, is enough to verify each of these properties, and twenty would add nothing, whereas twenty were not always enough to establish the effect of a prompt. Probabilistic effects are established through repetition, and structural properties through the inspection of a trace.
+What this module asserts is **structural**: an agent without a writing tool cannot write, a reviewer with a fresh context cannot see the coder's intentions, and delegated exploration does not return to the window. A single execution, with the trace in hand, is enough to verify each of these properties, and twenty would add nothing, where twenty were not always enough to establish the effect of a prompt.
 
 What this module cannot assert, on the other hand, is that splitting into roles **improves the result**: that ticket #2 handled by this loop overflows less, or is better corrected, than the same ticket handled by a single agent. This is a question of measurement; it is legitimate, and it is not settled here. The following module sets out the protocol to settle it-the automated loop versus the single agent on this same ticket within the same matrix-and the hypothesis will be written there before the figures.
 
