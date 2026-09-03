@@ -37,6 +37,13 @@ test('a very short text escapes the length check', () => {
   assert.deepEqual(diffSignals('OK', 'De acuerdo, entendido'), [])
 })
 
+test('an added ::: closing fence is reported', () => {
+  const source = '::: info Exercice (en salle)\nÉcrivez la règle en partant de vos propres exécutions.'
+  const issues = diffSignals(source, '::: info Exercise (in class)\nWrite the rule from your own runs.\n:::')
+  assert.equal(issues.length, 1)
+  assert.match(issues[0], /::: delimiters/)
+})
+
 test('an invented code block marker is reported', () => {
   const source = 'Le bloc ci-dessus ne doit jamais être traduit, il contient une ligne vide.'
   const issues = diffSignals(source, '%%%PROTECTED_1%%%')
