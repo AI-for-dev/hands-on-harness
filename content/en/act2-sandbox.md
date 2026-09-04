@@ -211,36 +211,44 @@ The success criterion consists of four checks:
 
 ### The Threat Model
 
-- Kai Greshake, [How We Broke LLMs: Indirect Prompt Injection][greshake-blog] - the post accompanying the seminal paper by Greshake et al., [Not what you've signed up for][greshake]: data read by the model becomes an instruction, and Copilot is already being compromised by package documentation.
-- Simon Willison, [The lethal trifecta for AI agents][trifecta] - access to private data, exposure to untrusted content, and the ability to communicate externally: all three together are enough for exfiltration.
+- Kai Greshake, [How We Broke LLMs: Indirect Prompt Injection][greshake-blog] - the blog post accompanying the seminal paper by Greshake et al., [Not what you've signed up for][greshake]: data read by the model becomes an instruction, and Copilot can already be compromised by a package's documentation.
+- Simon Willison, [The lethal trifecta for AI agents][trifecta] - access to private data, exposure to untrusted content, and the ability to communicate externally: these three combined are enough for exfiltration.
 - Simon Willison, [Agents Rule of Two and The Attacker Moves Second][sw-rule-of-two] - the "at most two out of three properties" rule formulated by Meta, and an article that brings down twelve published defenses against prompt injection under adaptive attack.
 - Beurer-Kellner et al., [Design Patterns for Securing LLM Agents against Prompt Injections][design-patterns] - architectural patterns that constrain what the agent can do, at the cost of some of its utility.
 - Korny Sietsma, [Agentic AI and Security][fowler-security] - the trifecta applied to coding agents on martinfowler.com: containers, least privilege, and task decomposition.
-- OWASP, [Top 10 for Agentic Applications 2026][owasp-agentic] - ten families of risks, including supply chain compromise and unforeseen code execution.
+- OWASP, [Top 10 for Agentic Applications 2026][owasp-agentic] - ten risk families, including supply chain compromise and unplanned code execution.
+- Marchand et al., [Quantifying Frontier LLM Capabilities for Container Sandbox Escape][sandbox-escape] - a benchmark (2026) where agents find and exploit vulnerabilities in a vulnerable container to escape, providing a measured argument in favor of a separate kernel.
 
 ### Documented Incidents
 
 - Johann Rehberger, [The Month of AI Bugs][month-ai-bugs] - one vulnerability per day in August 2025 in coding agents (Claude Code, Codex, Cursor, Copilot, Devin, Jules, OpenHands), which Simon Willison [summarizes][summer-johann].
 - Johann Rehberger, [Amazon Q Developer: Remote Code Execution with Prompt Injection][etr-amazon-q] - a `find -exec` classified as read-only is enough to execute code without approval.
-- Will Vandevanter (Trail of Bits), [Prompt injection to RCE in AI agents][tob-rce] - argument injection into pre-approved commands, and sandboxing recommended as the primary defense instead of safe command lists.
-- Kevin Higgs (Trail of Bits), [Prompt injection engineering for attackers: Exploiting GitHub Copilot][tob-copilot] - a trapped GitHub issue causes the Copilot Agent to add a backdoor dependency.
-- Pillar Security, [Rules File Backdoor][rules-file] - hidden instructions in a Cursor or Copilot rules file (March 2025), the `SUPPORT.md` trap observed in real-world conditions.
-- Nx, [S1ngularity postmortem][nx-postmortem] and Wiz, [attack analysis][wiz-nx] - a compromised npm package (August 2025) recruits coding agents installed on the workstation, launched without confirmation, to locate secrets for exfiltration.
-- Fortune, [Replit AI wiped a production database][replit] - an agent wipes a production database during a change freeze (July 2025), even though written instructions forbade it.
+- Will Vandevanter (Trail of Bits), [Prompt injection to RCE in AI agents][tob-rce] - argument injection in pre-approved commands, and the sandbox recommended as the primary defense instead of safe command lists.
+- Kevin Higgs (Trail of Bits), [Prompt injection engineering for attackers: Exploiting GitHub Copilot][tob-copilot] - a trapped GitHub issue leads the Copilot Agent to add a backdoor dependency.
+- Pillar Security, [Rules File Backdoor][rules-file] - hidden instructions in a Cursor or Copilot rules file (March 2025), or the `SUPPORT.md` trap observed in real conditions.
+- Nx, [S1ngularity postmortem][nx-postmortem] and Wiz, [attack analysis][wiz-nx] - a compromised npm package (August 2025) enrolls coding agents installed on the workstation, launched without confirmation, to identify secrets to exfiltrate.
+- Fortune, [Replit AI wiped a production database][replit] - an agent wipes a production database during a change freeze (July 2025), despite a written instruction forbidding it.
+- Pillar Security, [The Agent Security Paradox][cursor-paradox] - CVE-2026-22708 (January 2026): internal shell commands like `export`, outside the Cursor authorization list, poison the environment of approved commands.
+- Unit 42, [OpenClaw's Skill Marketplace and the Emerging AI Supply Chain Threat][openclaw] - malicious Markdown skills on an agent's marketplace (2026), the same risk as for a package installed with `pi install`.
+- Ken Huang, [Coding Agent Security: Lessons from Claude Code, Cowork, Codex, and Copilot in the Wild][ken-huang] - eight incidents from 2025 and 2026, and a comparison of the sandboxes for Claude Code, Codex, Copilot and Cursor (August 2026).
+- Simon Willison, [Breaking Claude Code Opus 5 Auto Mode][sw-auto-mode] - an attack by Johann Rehberger successful four out of five times against Claude Code's automatic mode (August 2026), and the conclusion that a classifier is no replacement for a sandbox.
 
 ### Isolation practices and mechanisms
 
 - Mario Zechner, [What I learned building an opinionated and minimal coding agent][zechner-pi] - the author of Pi explains why Pi has no permissions ("As soon as your agent can write code and run code, it's pretty much game over") and recommends running it in a container.
-- Armin Ronacher, [Agentic Coding Recommendations][ronacher] - the `claude-yolo` alias assumed, and the risk shifted into Docker.
-- Simon Willison, [Designing agentic loops][sw-loops] - YOLO mode being both indispensable for productivity and dangerous, hence the sandbox, preferably on someone else's computer.
+- Armin Ronacher, [Agentic Coding Recommendations][ronacher] - the `claude-yolo` alias accepted, and the risk shifted to Docker.
+- Simon Willison, [Designing agentic loops][sw-loops] - YOLO mode is both essential for productivity and dangerous, hence the sandbox, preferably on someone else's computer.
 - Simon Willison, [Codex CLI sandbox investigation][codex-sandbox] - Seatbelt on macOS, Landlock and seccomp on Linux, or how another harness makes the same choice.
-- sysid, [Your Agent Has Root][sysid] - the built-in tools that bypass the kernel sandbox, and a Pi extension to bridge the gap.
-- Andrew Lock, [Running AI agents safely in a microVM using docker sandbox][lock] - the full path of `sbx` on a developer machine, including network policies.
-- Michael Krämer, [Trust but Sandbox][innoq] - Docker Sandboxes from a team's perspective: policies, secrets proxy, custom images.
-- Palaimon, [Coding Agents III: Sandboxing & Best Practices][palaimon] - dev containers, bubblewrap, and VMs compared, with the startup cost quantified.
+- sysid, [Your Agent Has Root][sysid] - built-in tools that bypass the kernel sandbox, and a Pi extension to bridge the gap.
+- Andrew Lock, [Running AI agents safely in a microVM using docker sandbox][lock] - the complete `sbx` workflow on a developer workstation, including network policies.
+- Michael Krämer, [Trust but Sandbox][innoq] - Docker Sandboxes from a team perspective: policies, secrets proxy, custom images.
+- Palaimon, [Coding Agents III: Sandboxing & Best Practices][palaimon] - dev containers, bubblewrap, and VMs compared, with measured boot costs.
 - Ry Walker, [Local AI Agent Sandboxes][rywalker] - eight local sandbox tools compared, and what remains for a third-party tool when harnesses integrate their own.
 - Daniel Vaughan, [Agent Sandbox Comparison Matrix][vaughan] - Codex Seatbelt, OpenShell, and Docker `sbx`: isolation boundary, network, secrets.
 - Agache et al., [Firecracker][firecracker] - the AWS Lambda micro-VM (NSDI 2020), the reference text on the trade-off between isolation and boot time.
+- Emir Beganović, [Your Container Is Not a Sandbox: The State of MicroVM Isolation in 2026][emirb] - why a container is not a security boundary, the episode where Claude Code disables its own bubblewrap, and an overview of available micro-VMs (March 2026).
+- Greg Hurrell, [List of coding agent sandboxes][wincent] - a catalog updated in 2026, from system primitives to hosted platforms, across ten categories.
+- Zheng et al., [ActPlane: Programmable OS-Level Policy Enforcement for Agent Harnesses][actplane] - a harness policy applied in the Linux kernel via eBPF (June 2026), with a measured overhead between 2% and 8%.
 
 ### Tools
 
@@ -277,6 +285,14 @@ The success criterion consists of four checks:
 [rywalker]: https://rywalker.com/research/local-agent-sandboxes
 [vaughan]: https://codex.danielvaughan.com/2026/04/24/agent-sandbox-comparison-codex-seatbelt-openshell-docker-sbx/
 [firecracker]: https://www.usenix.org/conference/nsdi20/presentation/agache
+[sandbox-escape]: https://arxiv.org/abs/2603.02277
+[cursor-paradox]: https://www.pillar.security/blog/the-agent-security-paradox-when-trusted-commands-in-cursor-become-attack-vectors
+[openclaw]: https://unit42.paloaltonetworks.com/openclaw-ai-supply-chain-risk/
+[ken-huang]: https://kenhuangus.substack.com/p/coding-agent-security-lessons-from
+[sw-auto-mode]: https://simonwillison.net/2026/Aug/27/breaking-claude-code-opus-5-auto-mode/
+[emirb]: https://emirb.github.io/blog/microvm-2026/
+[wincent]: https://gist.github.com/wincent/2752d8d97727577050c043e4ff9e386e
+[actplane]: https://arxiv.org/abs/2606.25189
 [docker-arch]: https://docs.docker.com/ai/sandboxes/architecture/
 [docker-security]: https://docs.docker.com/ai/sandboxes/security/
 [docker-kits]: https://docs.docker.com/ai/sandboxes/customize/kits/

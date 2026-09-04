@@ -212,35 +212,43 @@ El criterio de éxito consiste en cuatro verificaciones:
 ### El modelo de amenaza
 
 - Kai Greshake, [How We Broke LLMs: Indirect Prompt Injection][greshake-blog] - la entrada que acompaña al artículo fundacional de Greshake et al., [Not what you've signed up for][greshake]: un dato leído por el modelo se convierte en una instrucción, y Copilot ya se deja comprometer por la documentación de un paquete.
-- Simon Willison, [The lethal trifecta for AI agents][trifecta] - acceso a datos privados, exposición a contenido no fiable y capacidad de comunicarse hacia el exterior: los tres juntos bastan para la exfiltración.
-- Simon Willison, [Agents Rule of Two and The Attacker Moves Second][sw-rule-of-two] - la regla «máximo dos propiedades de tres» formulada por Meta, y un artículo que derriba doce defensas publicadas contra la inyección de prompt bajo ataque adaptativo.
+- Simon Willison, [The lethal trifecta for AI agents][trifecta] - acceso a datos privados, exposición a contenido no fiable y capacidad de comunicarse hacia el exterior: los tres reunidos bastan para la exfiltración.
+- Simon Willison, [Agents Rule of Two and The Attacker Moves Second][sw-rule-of-two] - la regla «como máximo dos propiedades de tres» formulada por Meta, y un artículo que derriba doce defensas publicadas contra la inyección de prompt bajo ataque adaptativo.
 - Beurer-Kellner et al., [Design Patterns for Securing LLM Agents against Prompt Injections][design-patterns] - patrones de arquitectura que restringen lo que el agente puede hacer, a costa de parte de su utilidad.
 - Korny Sietsma, [Agentic AI and Security][fowler-security] - la trifecta aplicada a los agentes de código en martinfowler.com: contenedores, mínimo privilegio, división de tareas.
-- OWASP, [Top 10 for Agentic Applications 2026][owasp-agentic] - diez familias de riesgos, incluida la compromisión de la cadena de suministro y la ejecución de código imprevista.
+- OWASP, [Top 10 for Agentic Applications 2026][owasp-agentic] - diez familias de riesgos, entre ellas la compromisión de la cadena de suministro y la ejecución de código imprevista.
+- Marchand et al., [Quantifying Frontier LLM Capabilities for Container Sandbox Escape][sandbox-escape] - un banco de pruebas (2026) donde agentes encuentran y explotan fallos de un contenedor vulnerable para salir de él, es decir, el argumento medido a favor de un núcleo separado.
 
 ### Incidentes documentados
 
-- Johann Rehberger, [The Month of AI Bugs][month-ai-bugs] - una vulnerabilidad al día en agosto de 2025 en los agentes de código (Claude Code, Codex, Cursor, Copilot, Devin, Jules, OpenHands), de la cual Simon Willison hace [el resumen][summer-johann].
-- Johann Rehberger, [Amazon Q Developer: Remote Code Execution with Prompt Injection][etr-amazon-q] - un `find -exec` clasificado como solo lectura basta para ejecutar código sin aprobación.
+- Johann Rehberger, [The Month of AI Bugs][month-ai-bugs] - una vulnerabilidad al día en agosto de 2025 en los agentes de código (Claude Code, Codex, Cursor, Copilot, Devin, Jules, OpenHands), de la cual Simon Willison hace [la síntesis][summer-johann].
+- Johann Rehberger, [Amazon Q Developer: Remote Code Execution with Prompt Injection][etr-amazon-q] - un `find -exec` clasificado como lectura sola basta para ejecutar código sin aprobación.
 - Will Vandevanter (Trail of Bits), [Prompt injection to RCE in AI agents][tob-rce] - la inyección de argumentos en comandos preaprobados, y el sandbox recomendado como defensa principal en lugar de las listas de comandos seguros.
-- Kevin Higgs (Trail of Bits), [Prompt injection engineering for attackers: Exploiting GitHub Copilot][tob-copilot] - un issue de GitHub trampa hace que Copilot Agent añada una dependencia de puerta trasera.
-- Pillar Security, [Rules File Backdoor][rules-file] - instrucciones ocultas en un archivo de reglas de Cursor o Copilot (marzo de 2025), es decir, la trampa del `SUPPORT.md` observada en condiciones reales.
-- Nx, [S1ngularity postmortem][nx-postmortem] y Wiz, [analyse de l'attaque][wiz-nx] - un paquete npm comprometido (agosto de 2025) recluta a los agentes de código instalados en el equipo, ejecutados sin confirmación, para localizar los secretos que exfiltrar.
-- Fortune, [Replit AI wiped a production database][replit] - un agente borra una base de datos de producción durante un congelamiento de cambios (julio de 2025), a pesar de que una consigna escrita lo prohibía.
+- Kevin Higgs (Trail of Bits), [Prompt injection engineering for attackers: Exploiting GitHub Copilot][tob-copilot] - un issue de GitHub trucado provoca que Copilot Agent añada una dependencia con una puerta trasera.
+- Pillar Security, [Rules File Backdoor][rules-file] - instrucciones ocultas en un archivo de reglas de Cursor o de Copilot (marzo de 2025), es decir, la trampa del `SUPPORT.md` observada en condiciones reales.
+- Nx, [S1ngularity postmortem][nx-postmortem] y Wiz, [analyse de l'attaque][wiz-nx] - un paquete npm comprometido (agosto de 2025) recluta los agentes de código instalados en el equipo, ejecutados sin confirmación, para localizar secretos que exfiltrar.
+- Fortune, [Replit AI wiped a production database][replit] - un agente borra una base de datos de producción durante una congelación de cambios (julio de 2025), a pesar de que una instrucción escrita lo prohibía.
+- Pillar Security, [The Agent Security Paradox][cursor-paradox] - CVE-2026-22708 (enero de 2026): comandos internos del shell como `export`, fuera de la lista de autorizaciones de Cursor, envenenan el entorno de los comandos aprobados.
+- Unit 42, [OpenClaw's Skill Marketplace and the Emerging AI Supply Chain Threat][openclaw] - skills en Markdown maliciosos en el marketplace de un agente (2026), el mismo riesgo que para un paquete instalado con `pi install`.
+- Ken Huang, [Coding Agent Security: Lessons from Claude Code, Cowork, Codex, and Copilot in the Wild][ken-huang] - ocho incidentes de 2025 y 2026, y una comparación de los sandboxes de Claude Code, Codex, Copilot y Cursor (agosto de 2026).
+- Simon Willison, [Breaking Claude Code Opus 5 Auto Mode][sw-auto-mode] - un ataque de Johann Rehberger logrado cuatro de cada cinco veces contra el modo automático de Claude Code (agosto de 2026), y la conclusión de que un clasificador no sustituye al sandbox.
 
 ### Las prácticas y los mecanismos de aislamiento
 
 - Mario Zechner, [What I learned building an opinionated and minimal coding agent][zechner-pi] - el autor de Pi explica por qué Pi no tiene permisos (« As soon as your agent can write code and run code, it's pretty much game over ») y recomienda ejecutarlo en un contenedor.
-- Armin Ronacher, [Agentic Coding Recommendations][ronacher] - el alias `claude-yolo` asumido y el riesgo trasladado a Docker.
-- Simon Willison, [Designing agentic loops][sw-loops] - el modo YOLO a la vez indispensable para la productividad y peligroso, de ahí el sandbox, preferiblemente en el ordenador de otra persona.
+- Armin Ronacher, [Agentic Coding Recommendations][ronacher] - el alias `claude-yolo` asumido, y el riesgo trasladado a Docker.
+- Simon Willison, [Designing agentic loops][sw-loops] - el modo YOLO, a la vez indispensable para la productividad y peligroso, de ahí el sandbox, preferiblemente en el ordenador de otra persona.
 - Simon Willison, [Codex CLI sandbox investigation][codex-sandbox] - Seatbelt en macOS, Landlock y seccomp en Linux, o cómo otro harness toma la misma decisión.
-- sysid, [Your Agent Has Root][sysid] - las herramientas integradas que escapan al sandbox del kernel y una extensión de Pi para cerrar la brecha.
-- Andrew Lock, [Running AI agents safely in a microVM using docker sandbox][lock] - el flujo completo de `sbx` en el equipo de un desarrollador, incluyendo las políticas de red.
-- Michael Krämer, [Trust but Sandbox][innoq] - Docker Sandboxes desde la perspectiva de un equipo: políticas, proxy de secretos e imágenes personalizadas.
+- sysid, [Your Agent Has Root][sysid] - las herramientas integradas que escapan al sandbox del kernel, y una extensión de Pi para cerrar esa brecha.
+- Andrew Lock, [Running AI agents safely in a microVM using docker sandbox][lock] - el flujo completo de `sbx` en el puesto de un desarrollador, incluyendo las políticas de red.
+- Michael Krämer, [Trust but Sandbox][innoq] - Docker Sandboxes desde la perspectiva de un equipo: políticas, proxy de secretos, imágenes personalizadas.
 - Palaimon, [Coding Agents III: Sandboxing & Best Practices][palaimon] - comparación entre dev containers, bubblewrap y VM, con el coste de arranque cuantificado.
-- Ry Walker, [Local AI Agent Sandboxes][rywalker] - comparación de ocho herramientas de sandbox local y qué le queda a una herramienta de terceros cuando los harness integran la suya.
-- Daniel Vaughan, [Agent Sandbox Comparison Matrix][vaughan] - Seatbelt de Codex, OpenShell y Docker `sbx`: frontera de aislamiento, red y secretos.
-- Agache et al., [Firecracker][firecracker] - la micro-VM de AWS Lambda (NSDI 2020), el texto de referencia sobre el compromiso entre aislamiento y tiempo de arranque.
+- Ry Walker, [Local AI Agent Sandboxes][rywalker] - comparación de ocho herramientas de sandbox local, y qué le queda a una herramienta de terceros cuando los harness integran la suya propia.
+- Daniel Vaughan, [Agent Sandbox Comparison Matrix][vaughan] - Seatbelt de Codex, OpenShell y Docker `sbx`: frontera de aislamiento, red, secretos.
+- Agache et al., [Firecracker][firecracker] - la micro-VM de AWS Lambda (NSDI 2020), el texto de referencia sobre el compromiso entre el aislamiento y el tiempo de arranque.
+- Emir Beganović, [Your Container Is Not a Sandbox: The State of MicroVM Isolation in 2026][emirb] - por qué un contenedor no es una frontera de seguridad, el episodio en el que Claude Code desactiva su propio bubblewrap, y un repaso de las micro-VM disponibles (marzo de 2026).
+- Greg Hurrell, [List of coding agent sandboxes][wincent] - un catálogo actualizado a 2026, desde primitivas del sistema hasta plataformas alojadas, en diez categorías.
+- Zheng et al., [ActPlane: Programmable OS-Level Policy Enforcement for Agent Harnesses][actplane] - una política de harness aplicada en el kernel de Linux mediante eBPF (junio de 2026), con un sobrecoste medido entre el 2 y el 8 %.
 
 ### Herramientas
 
@@ -277,6 +285,14 @@ El criterio de éxito consiste en cuatro verificaciones:
 [rywalker]: https://rywalker.com/research/local-agent-sandboxes
 [vaughan]: https://codex.danielvaughan.com/2026/04/24/agent-sandbox-comparison-codex-seatbelt-openshell-docker-sbx/
 [firecracker]: https://www.usenix.org/conference/nsdi20/presentation/agache
+[sandbox-escape]: https://arxiv.org/abs/2603.02277
+[cursor-paradox]: https://www.pillar.security/blog/the-agent-security-paradox-when-trusted-commands-in-cursor-become-attack-vectors
+[openclaw]: https://unit42.paloaltonetworks.com/openclaw-ai-supply-chain-risk/
+[ken-huang]: https://kenhuangus.substack.com/p/coding-agent-security-lessons-from
+[sw-auto-mode]: https://simonwillison.net/2026/Aug/27/breaking-claude-code-opus-5-auto-mode/
+[emirb]: https://emirb.github.io/blog/microvm-2026/
+[wincent]: https://gist.github.com/wincent/2752d8d97727577050c043e4ff9e386e
+[actplane]: https://arxiv.org/abs/2606.25189
 [docker-arch]: https://docs.docker.com/ai/sandboxes/architecture/
 [docker-security]: https://docs.docker.com/ai/sandboxes/security/
 [docker-kits]: https://docs.docker.com/ai/sandboxes/customize/kits/

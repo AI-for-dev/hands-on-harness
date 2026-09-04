@@ -217,6 +217,7 @@ Le critère de réussite tient en quatre vérifications :
 - Beurer-Kellner et al., [Design Patterns for Securing LLM Agents against Prompt Injections][design-patterns] - des patrons d'architecture qui contraignent ce que l'agent peut faire, au prix d'une partie de son utilité.
 - Korny Sietsma, [Agentic AI and Security][fowler-security] - la trifecta appliquée aux agents de code sur martinfowler.com : conteneurs, moindre privilège, découpage des tâches.
 - OWASP, [Top 10 for Agentic Applications 2026][owasp-agentic] - dix familles de risques, dont la compromission de la chaîne d'approvisionnement et l'exécution de code imprévue.
+- Marchand et al., [Quantifying Frontier LLM Capabilities for Container Sandbox Escape][sandbox-escape] - un banc d'essai (2026) où des agents trouvent et exploitent les failles d'un conteneur vulnérable pour en sortir, soit l'argument mesuré en faveur d'un noyau séparé.
 
 ### Des incidents documentés
 
@@ -227,6 +228,10 @@ Le critère de réussite tient en quatre vérifications :
 - Pillar Security, [Rules File Backdoor][rules-file] - des instructions cachées dans un fichier de règles de Cursor ou de Copilot (mars 2025), soit le piège du `SUPPORT.md` observé en conditions réelles.
 - Nx, [S1ngularity postmortem][nx-postmortem] et Wiz, [analyse de l'attaque][wiz-nx] - un paquet npm compromis (août 2025) enrôle les agents de code installés sur le poste, lancés sans confirmation, pour repérer les secrets à exfiltrer.
 - Fortune, [Replit AI wiped a production database][replit] - un agent efface une base de production pendant un gel des changements (juillet 2025), alors qu'une consigne écrite l'interdisait.
+- Pillar Security, [The Agent Security Paradox][cursor-paradox] - CVE-2026-22708 (janvier 2026) : des commandes internes du shell comme `export`, hors de la liste d'autorisations de Cursor, empoisonnent l'environnement des commandes approuvées.
+- Unit 42, [OpenClaw's Skill Marketplace and the Emerging AI Supply Chain Threat][openclaw] - des skills en markdown malveillants sur la place de marché d'un agent (2026), le même risque que pour un paquet installé avec `pi install`.
+- Ken Huang, [Coding Agent Security: Lessons from Claude Code, Cowork, Codex, and Copilot in the Wild][ken-huang] - huit incidents de 2025 et 2026, et une comparaison des sandboxes de Claude Code, Codex, Copilot et Cursor (août 2026).
+- Simon Willison, [Breaking Claude Code Opus 5 Auto Mode][sw-auto-mode] - une attaque de Johann Rehberger réussie quatre fois sur cinq contre le mode automatique de Claude Code (août 2026), et la conclusion qu'un classifieur ne remplace pas le sandbox.
 
 ### Les pratiques et les mécanismes d'isolation
 
@@ -241,6 +246,9 @@ Le critère de réussite tient en quatre vérifications :
 - Ry Walker, [Local AI Agent Sandboxes][rywalker] - huit outils de sandbox local comparés, et ce qui reste à un outil tiers quand les harnais intègrent le leur.
 - Daniel Vaughan, [Agent Sandbox Comparison Matrix][vaughan] - Seatbelt de Codex, OpenShell et Docker `sbx` : frontière d'isolation, réseau, secrets.
 - Agache et al., [Firecracker][firecracker] - la micro-VM d'AWS Lambda (NSDI 2020), le texte de référence sur le compromis entre isolation et temps de démarrage.
+- Emir Beganović, [Your Container Is Not a Sandbox: The State of MicroVM Isolation in 2026][emirb] - pourquoi un conteneur n'est pas une frontière de sécurité, l'épisode où Claude Code désactive son propre bubblewrap, et un tour des micro-VM disponibles (mars 2026).
+- Greg Hurrell, [List of coding agent sandboxes][wincent] - un catalogue tenu à jour en 2026, des primitives système aux plateformes hébergées, en dix catégories.
+- Zheng et al., [ActPlane: Programmable OS-Level Policy Enforcement for Agent Harnesses][actplane] - une politique de harnais appliquée dans le noyau Linux par eBPF (juin 2026), avec un surcoût mesuré entre 2 et 8 %.
 
 ### Outils
 
@@ -277,6 +285,14 @@ Le critère de réussite tient en quatre vérifications :
 [rywalker]: https://rywalker.com/research/local-agent-sandboxes
 [vaughan]: https://codex.danielvaughan.com/2026/04/24/agent-sandbox-comparison-codex-seatbelt-openshell-docker-sbx/
 [firecracker]: https://www.usenix.org/conference/nsdi20/presentation/agache
+[sandbox-escape]: https://arxiv.org/abs/2603.02277
+[cursor-paradox]: https://www.pillar.security/blog/the-agent-security-paradox-when-trusted-commands-in-cursor-become-attack-vectors
+[openclaw]: https://unit42.paloaltonetworks.com/openclaw-ai-supply-chain-risk/
+[ken-huang]: https://kenhuangus.substack.com/p/coding-agent-security-lessons-from
+[sw-auto-mode]: https://simonwillison.net/2026/Aug/27/breaking-claude-code-opus-5-auto-mode/
+[emirb]: https://emirb.github.io/blog/microvm-2026/
+[wincent]: https://gist.github.com/wincent/2752d8d97727577050c043e4ff9e386e
+[actplane]: https://arxiv.org/abs/2606.25189
 [docker-arch]: https://docs.docker.com/ai/sandboxes/architecture/
 [docker-security]: https://docs.docker.com/ai/sandboxes/security/
 [docker-kits]: https://docs.docker.com/ai/sandboxes/customize/kits/
