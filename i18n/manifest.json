@@ -97,14 +97,14 @@
   },
   "act2-sandbox.md": {
     "en": {
-      "unitHash": "04efaba42219faa54e5c2a1943cb808cbad4c30e1317c9329eb4f274c50768b5",
+      "unitHash": "8edff2289015f120fdd34f069891b4c945b1c90ab2cc6d61a1208b8c5d6664bd",
       "model": "pi:ilaas/gemma-4-31b",
-      "translatedAt": "2026-09-04T04:20:38.114Z"
+      "translatedAt": "2026-09-04T04:28:42.432Z"
     },
     "es": {
-      "unitHash": "04efaba42219faa54e5c2a1943cb808cbad4c30e1317c9329eb4f274c50768b5",
+      "unitHash": "8edff2289015f120fdd34f069891b4c945b1c90ab2cc6d61a1208b8c5d6664bd",
       "model": "pi:ilaas/gemma-4-31b",
-      "translatedAt": "2026-09-04T04:20:52.578Z"
+      "translatedAt": "2026-09-04T04:29:01.014Z"
     }
   }
 }
