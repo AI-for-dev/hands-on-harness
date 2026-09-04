@@ -209,5 +209,56 @@ The success criterion consists of four checks:
 
 ## For further reading
 
-- The [Security](https://pi.dev/docs/latest/security) page of the Pi documentation, on the trust granted to project files and the lack of a built-in sandbox, and the [Containerization](https://pi.dev/docs/latest/containerization) page, which presents two alternatives to Docker Sandboxes, Gondolin and OpenShell.
-- The Docker Sandboxes documentation: [architecture](https://docs.docker.com/ai/sandboxes/architecture/), [security model](https://docs.docker.com/ai/sandboxes/security/), and [kits](https://docs.docker.com/ai/sandboxes/customize/kits/).
+### The Threat Model
+
+- Greshake et al., [Not what you've signed up for][greshake] - the article that named indirect prompt injection: data read by the model becomes an instruction.
+- Simon Willison, [The lethal trifecta for AI agents][trifecta] - access to private data, exposure to untrusted content, and the ability to communicate externally: all three together are enough for exfiltration.
+- Meta, [Agents Rule of Two][rule-of-two] - the same idea formulated as an architectural rule: an agent must not combine all three properties in a single session without supervision.
+- Díaz, Kern, and Olive (Google), [Google's Approach for Secure AI Agents][google-agents] - deterministic controls placed outside the model loop, combined with reasoning-based defenses.
+- OWASP, [Top 10 for Agentic Applications 2026][owasp-agentic] - ten risk families, including supply chain compromise and unintended code execution.
+- Debenedetti et al., [Defeating Prompt Injections by Design][camel] - CaMeL separates the control flow from the data flow, which is the code-based version of a guardrail that the permissions module will rebuild.
+
+### Documented Incidents
+
+- Pillar Security, [Rules File Backdoor][rules-file] - instructions hidden in a Cursor or Copilot rules file (March 2025), essentially the `SUPPORT.md` trap observed in real-world conditions.
+- AWS, [bulletin AWS-2025-015][amazon-q] - a destruction instruction injected into the Amazon Q extension for VS Code (July 2025), with the harness itself serving as the vector.
+- Nx, [S1ngularity postmortem][nx-postmortem] and Wiz, [attack analysis][wiz-nx] - a compromised npm package (August 2025) recruits code agents installed on the machine, launched without confirmation, to identify secrets for exfiltration.
+- Fortune, [Replit AI wiped a production database][replit] - an agent wipes a production database during a change freeze (July 2025), despite written instructions forbidding it.
+
+### Isolation Mechanisms
+
+- Anthropic, [Beyond permission prompts][anthropic-sandbox] - 93% of authorization requests approved, 84% fewer requests with a system sandbox (Seatbelt, bubblewrap); the code is published in [sandbox-runtime][srt].
+- Claude Code, [Choose a sandbox environment][claude-envs] - a comparison of command-based, container-based, and VM sandboxes, detailing what each isolates and what it does not cover.
+- Simon Willison, [Codex CLI sandbox investigation][codex-sandbox] - Seatbelt on macOS, Landlock and seccomp on Linux, or how another harness makes the same choice.
+- Pi, [Security][pi-security] and [Containerization][pi-container] - Pi's position and its three recipes: Gondolin, Docker, and OpenShell.
+- earendil-works, [Gondolin][gondolin] - a local micro-VM driven by TypeScript, with network stack and file system in JavaScript and secrets kept outside the guest; the project is listed as experimental.
+- NVIDIA, [OpenShell][openshell] - a declarative policy runtime (file system, network, process, inference), similar to server-side Docker Sandboxes.
+- Docker, [Why MicroVMs][docker-microvm] - why containers are no longer sufficient when the agent must launch Docker itself; the documentation details the [architecture][docker-arch], the [security model][docker-security], and the [kits][docker-kits].
+- Agache et al., [Firecracker][firecracker] - the AWS Lambda micro-VM (NSDI 2020), the reference text on the trade-off between isolation and boot time.
+- Kubernetes SIG Apps, [agent-sandbox][k8s-sandbox] - the same building block as a Kubernetes resource, using gVisor or Kata, for when executions leave the local workstation.
+
+[greshake]: https://arxiv.org/abs/2302.12173
+[trifecta]: https://simonwillison.net/2025/Jun/16/the-lethal-trifecta/
+[rule-of-two]: https://ai.meta.com/blog/practical-ai-agent-security/
+[google-agents]: https://research.google/pubs/an-introduction-to-googles-approach-for-secure-ai-agents/
+[owasp-agentic]: https://genai.owasp.org/resource/owasp-top-10-for-agentic-applications-for-2026/
+[camel]: https://arxiv.org/abs/2503.18813
+[rules-file]: https://www.pillar.security/blog/new-vulnerability-in-github-copilot-and-cursor-how-hackers-can-weaponize-code-agents
+[amazon-q]: https://aws.amazon.com/security/security-bulletins/AWS-2025-015/
+[nx-postmortem]: https://nx.dev/blog/s1ngularity-postmortem
+[wiz-nx]: https://www.wiz.io/blog/s1ngularitys-aftermath
+[replit]: https://fortune.com/2025/07/23/ai-coding-tool-replit-wiped-database-called-it-a-catastrophic-failure
+[anthropic-sandbox]: https://www.anthropic.com/engineering/claude-code-sandboxing
+[srt]: https://github.com/anthropic-experimental/sandbox-runtime
+[claude-envs]: https://code.claude.com/docs/en/sandbox-environments
+[codex-sandbox]: https://simonwillison.net/2025/Nov/9/codex-sandbox-investigation/
+[pi-security]: https://pi.dev/docs/latest/security
+[pi-container]: https://pi.dev/docs/latest/containerization
+[gondolin]: https://github.com/earendil-works/gondolin
+[openshell]: https://github.com/NVIDIA/OpenShell
+[docker-microvm]: https://www.docker.com/blog/why-microvms-the-architecture-behind-docker-sandboxes/
+[docker-arch]: https://docs.docker.com/ai/sandboxes/architecture/
+[docker-security]: https://docs.docker.com/ai/sandboxes/security/
+[docker-kits]: https://docs.docker.com/ai/sandboxes/customize/kits/
+[firecracker]: https://www.usenix.org/conference/nsdi20/presentation/agache
+[k8s-sandbox]: https://github.com/kubernetes-sigs/agent-sandbox

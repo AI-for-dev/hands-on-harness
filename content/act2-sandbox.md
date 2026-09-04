@@ -209,5 +209,56 @@ Le critère de réussite tient en quatre vérifications :
 
 ## Pour aller plus loin
 
-- La page [Security](https://pi.dev/docs/latest/security) de la documentation de Pi, sur la confiance accordée aux fichiers du projet et l'absence de sandbox intégré, et la page [Containerization](https://pi.dev/docs/latest/containerization), qui présente deux alternatives à Docker Sandboxes, Gondolin et OpenShell.
-- La documentation de Docker Sandboxes : [architecture](https://docs.docker.com/ai/sandboxes/architecture/), [modèle de sécurité](https://docs.docker.com/ai/sandboxes/security/) et [kits](https://docs.docker.com/ai/sandboxes/customize/kits/).
+### Le modèle de menace
+
+- Greshake et al., [Not what you've signed up for][greshake] - l'article qui a nommé l'injection indirecte de prompt : une donnée lue par le modèle devient une instruction.
+- Simon Willison, [The lethal trifecta for AI agents][trifecta] - accès à des données privées, exposition à du contenu non fiable et capacité à communiquer vers l'extérieur : les trois réunis suffisent à l'exfiltration.
+- Meta, [Agents Rule of Two][rule-of-two] - la même idée formulée comme règle d'architecture, un agent ne cumulant pas les trois propriétés dans une même session sans supervision.
+- Díaz, Kern et Olive (Google), [Google's Approach for Secure AI Agents][google-agents] - des contrôles déterministes placés hors de la boucle du modèle, doublés de défenses fondées sur le raisonnement.
+- OWASP, [Top 10 for Agentic Applications 2026][owasp-agentic] - dix familles de risques, dont la compromission de la chaîne d'approvisionnement et l'exécution de code imprévue.
+- Debenedetti et al., [Defeating Prompt Injections by Design][camel] - CaMeL sépare le flux de contrôle du flux de données, ce qui est la version écrite en code d'une garde que le module sur les permissions reconstruira.
+
+### Des incidents documentés
+
+- Pillar Security, [Rules File Backdoor][rules-file] - des instructions cachées dans un fichier de règles de Cursor ou de Copilot (mars 2025), soit le piège du `SUPPORT.md` observé en conditions réelles.
+- AWS, [bulletin AWS-2025-015][amazon-q] - une consigne de destruction injectée dans l'extension Amazon Q pour VS Code (juillet 2025), le harnais lui-même servant de vecteur.
+- Nx, [S1ngularity postmortem][nx-postmortem] et Wiz, [analyse de l'attaque][wiz-nx] - un paquet npm compromis (août 2025) enrôle les agents de code installés sur le poste, lancés sans confirmation, pour repérer les secrets à exfiltrer.
+- Fortune, [Replit AI wiped a production database][replit] - un agent efface une base de production pendant un gel des changements (juillet 2025), alors qu'une consigne écrite l'interdisait.
+
+### Les mécanismes d'isolation
+
+- Anthropic, [Beyond permission prompts][anthropic-sandbox] - 93 % des demandes d'autorisation approuvées, 84 % de demandes en moins avec un sandbox système (Seatbelt, bubblewrap) ; le code est publié dans [sandbox-runtime][srt].
+- Claude Code, [Choose a sandbox environment][claude-envs] - un comparatif sandbox par commande, conteneur, VM, avec ce que chacun isole et ce qu'il ne couvre pas.
+- Simon Willison, [Codex CLI sandbox investigation][codex-sandbox] - Seatbelt sur macOS, Landlock et seccomp sur Linux, ou comment un autre harnais fait le même choix.
+- Pi, [Security][pi-security] et [Containerization][pi-container] - la position de Pi et ses trois recettes, Gondolin, Docker et OpenShell.
+- earendil-works, [Gondolin][gondolin] - une micro-VM locale pilotée en TypeScript, avec pile réseau et système de fichiers en JavaScript et secrets tenus hors de l'invité ; le projet se déclare expérimental.
+- NVIDIA, [OpenShell][openshell] - un runtime à politiques déclaratives (système de fichiers, réseau, processus, inférence), la même idée que Docker Sandboxes côté serveur.
+- Docker, [Why MicroVMs][docker-microvm] - pourquoi le conteneur ne suffit plus dès que l'agent doit lui-même lancer Docker ; la documentation détaille l'[architecture][docker-arch], le [modèle de sécurité][docker-security] et les [kits][docker-kits].
+- Agache et al., [Firecracker][firecracker] - la micro-VM d'AWS Lambda (NSDI 2020), le texte de référence sur le compromis entre isolation et temps de démarrage.
+- Kubernetes SIG Apps, [agent-sandbox][k8s-sandbox] - la même brique en ressource Kubernetes, sur gVisor ou Kata, quand les exécutions quittent le poste.
+
+[greshake]: https://arxiv.org/abs/2302.12173
+[trifecta]: https://simonwillison.net/2025/Jun/16/the-lethal-trifecta/
+[rule-of-two]: https://ai.meta.com/blog/practical-ai-agent-security/
+[google-agents]: https://research.google/pubs/an-introduction-to-googles-approach-for-secure-ai-agents/
+[owasp-agentic]: https://genai.owasp.org/resource/owasp-top-10-for-agentic-applications-for-2026/
+[camel]: https://arxiv.org/abs/2503.18813
+[rules-file]: https://www.pillar.security/blog/new-vulnerability-in-github-copilot-and-cursor-how-hackers-can-weaponize-code-agents
+[amazon-q]: https://aws.amazon.com/security/security-bulletins/AWS-2025-015/
+[nx-postmortem]: https://nx.dev/blog/s1ngularity-postmortem
+[wiz-nx]: https://www.wiz.io/blog/s1ngularitys-aftermath
+[replit]: https://fortune.com/2025/07/23/ai-coding-tool-replit-wiped-database-called-it-a-catastrophic-failure
+[anthropic-sandbox]: https://www.anthropic.com/engineering/claude-code-sandboxing
+[srt]: https://github.com/anthropic-experimental/sandbox-runtime
+[claude-envs]: https://code.claude.com/docs/en/sandbox-environments
+[codex-sandbox]: https://simonwillison.net/2025/Nov/9/codex-sandbox-investigation/
+[pi-security]: https://pi.dev/docs/latest/security
+[pi-container]: https://pi.dev/docs/latest/containerization
+[gondolin]: https://github.com/earendil-works/gondolin
+[openshell]: https://github.com/NVIDIA/OpenShell
+[docker-microvm]: https://www.docker.com/blog/why-microvms-the-architecture-behind-docker-sandboxes/
+[docker-arch]: https://docs.docker.com/ai/sandboxes/architecture/
+[docker-security]: https://docs.docker.com/ai/sandboxes/security/
+[docker-kits]: https://docs.docker.com/ai/sandboxes/customize/kits/
+[firecracker]: https://www.usenix.org/conference/nsdi20/presentation/agache
+[k8s-sandbox]: https://github.com/kubernetes-sigs/agent-sandbox
