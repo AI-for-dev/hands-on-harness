@@ -94,5 +94,17 @@
       "model": "pi:ilaas/gemma-4-31b",
       "translatedAt": "2026-08-14T08:55:53.831Z"
     }
+  },
+  "act2-sandbox.md": {
+    "en": {
+      "unitHash": "fbad427f746f029666eea95f7a9cac3b449ce5a22106e9804ae6bc918fa5cf8f",
+      "model": "pi:ilaas/gemma-4-31b",
+      "translatedAt": "2026-09-15T20:16:19.683Z"
+    },
+    "es": {
+      "unitHash": "fbad427f746f029666eea95f7a9cac3b449ce5a22106e9804ae6bc918fa5cf8f",
+      "model": "pi:ilaas/gemma-4-31b",
+      "translatedAt": "2026-09-15T20:16:19.686Z"
+    }
   }
 }

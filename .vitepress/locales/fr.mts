@@ -34,6 +34,7 @@ export const fr: LocaleSpecificConfig<DefaultTheme.Config> = {
       {
         text: 'Acte 2 — Reconstruction',
         items: [
+          { text: '2.0 Le bac à sable', link: '/act2-sandbox' },
           { text: '2.1 Le contexte et la fenêtre', link: '/act2-contexte' },
           { text: '2.2 Les compétences', link: '/act2-skill' }
         ]
