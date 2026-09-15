@@ -1,131 +1,298 @@
-# El sandbox: dónde el agente tiene permiso para actuar
+# El sandbox: aislar el agente de tu máquina
 
 ::: tip Objetivos de este módulo
-- Saber a qué puede acceder un agente de código desde tu máquina cuando nada se lo impide
-- Distinguir tres niveles de aislamiento, desde el clon desechable hasta la micro-máquina virtual, y nombrar qué protege cada uno y cuál es su coste
+- Saber qué puede hacer un agente de código en tu máquina
+- Comparar el clon desechable, el contenedor y la micro-máquina virtual: qué protege cada uno y cuánto cuesta
 - Lanzar Pi en un Docker Sandbox con un kit versionado en este repositorio
-- Terminar con un sandbox en el que las manipulaciones de los siguientes módulos se ejecuten sin supervisión
+- Quedarte con un sandbox en el que las manipulaciones de los siguientes módulos se ejecuten sin supervisión
 :::
 
-Los módulos siguientes lanzan Pi veinte veces para la misma tarea sin supervisión, les confían subagentes que tienen un shell y, después, encadenan estos subagentes en pipelines. Pi no tiene ningún mecanismo para pedir tu consentimiento antes de ejecutar un comando, y su [documentación sobre seguridad](https://pi.dev/docs/latest/security) lo dice claramente: las herramientas leen, escriben y lanzan comandos « with the permissions of the pi process », y « Pi does not include a built-in sandbox ». Por lo tanto, cualquier cosa que tú puedas hacer desde tu terminal, el agente también puede hacerla: leer `~/.ssh`, leer `~/.pi/agent/auth.json` donde se guardan tus claves API, ejecutar `git push --force` o enviar el contenido de un archivo a cualquier dominio con `curl`.
+Los módulos siguientes lanzan Pi veinte veces para la misma tarea sin intervención humana, le asignan subagentes con acceso a un shell y luego encadenan subagentes en pipelines. Pi no tiene ningún mecanismo para pedir tu consentimiento antes de ejecutar un comando, y su [documentación sobre seguridad](https://pi.dev/docs/latest/security) lo dice claramente: las herramientas leen, escriben y lanzan comandos « with the permissions of the pi process », y « Pi does not include a built-in sandbox ». Todo lo que puedes hacer desde tu terminal, el agente también puede hacerlo: leer `~/.ssh`, leer `~/.pi/agent/auth.json` donde se guardan tus claves de API, lanzar `git push --force` o enviar el contenido de un archivo a cualquier dominio con `curl`.
 
-La reacción natural es escribir una instrucción, « solo modifica `game/neon.js` », « no leas nada fuera del repositorio ». Una instrucción es texto, y el módulo sobre competencias medirá que una instrucción de limpieza colocada en un `SKILL.md` se sigue menos de una vez cada tres. Antes de la primera ejecución sin supervisión, es necesario establecer un límite que no dependa de la obediencia del modelo; ese es el límite que construiremos ahora, para que todo lo demás del acto se ejecute en su interior.
+La reacción natural es escribir una instrucción: « solo modifica `game/neon.js` », « no leas nada fuera del repositorio ». Una instrucción es texto y te recordamos que el uso de un LLM siempre es no determinista, lo que significa que nunca tendrás una garantía del 100 % de que se siga. En el módulo sobre habilidades, verás que una instrucción de limpieza de archivos temporales colocada en un `SKILL.md` se sigue menos de una vez cada tres. Antes de la primera ejecución sin supervisión, es necesario establecer un límite que no dependa de la obediencia del modelo. El sandbox es una forma determinista de asegurar que el LLM esté en un entorno cerrado donde los límites los determinas tú y que el modelo no puede sobrepasar.
 
 ## Comprender
 
-### ¿A qué puede acceder el agente?
+### ¿A qué tiene acceso el agente?
 
-Un agente de código que se ejecuta en tu equipo tiene acceso a tus **archivos**, es decir, al repositorio en el que trabaja y, con los mismos permisos, a tu directorio personal, donde residen las claves SSH, los tokens de los proveedores de modelos y los archivos `.env` de tus otros proyectos. La **red** le permite instalar cualquier paquete, ejecutar un `curl | sh` encontrado en un README o extraer lo que acaba de leer. Por último, lanza **procesos** con tu identidad, lo que incluye el demonio Docker, el comando `rm` y el acceso de escritura al repositorio remoto.
+Un agente de código que se ejecuta en tu equipo tiene acceso a tus archivos, es decir, al repositorio en el que trabaja y, con los mismos permisos, a tu directorio personal, donde se encuentran las claves SSH, los tokens de los proveedores de modelos y los archivos `.env` de tus otros proyectos. La red le permite instalar cualquier paquete, ejecutar un `curl | sh` encontrado en un README o difundir lo que acaba de leer. Por último, lanza procesos con tu identidad, lo que incluye el demonio Docker, el comando `rm` y el acceso de escritura al repositorio remoto. Si además tienes permisos de sudo en tu máquina, nada puede detenerlo.
 
-Estas acciones ni siquiera requieren que el modelo se equivoque. Un archivo del repositorio puede contener instrucciones escritas para el agente, y el módulo sobre permisos planteará precisamente esta trampa en un `SUPPORT.md` de NÉON. Una extensión instalada desde el directorio comunitario se ejecuta, como recordó el módulo sobre Pi, con la totalidad de tus permisos. En ambos casos, el harness mismo es la vulnerabilidad, y una barrera de seguridad escrita dentro del harness no cambiaría nada.
+Estas acciones ni siquiera requieren que el modelo se equivoque. Un archivo del repositorio puede contener instrucciones escritas para el agente, y ese es el papel del `SUPPORT.md` de NÉON, cuyo texto imita un procedimiento de asistencia pero pide leer el `.env` y enviar su contenido a una dirección externa: el agente que abre este archivo para responder a una pregunta trata la instrucción como si viniera de ti, y el módulo sobre los permisos trabajará en este caso. Una extensión instalada desde el directorio comunitario se ejecuta, como recordó el módulo sobre Pi, con la totalidad de tus derechos. En estos dos casos, la falla está en el harness, y una barrera de seguridad escrita dentro de AGENTS.md no te protegerá.
 
-La documentación de Pi saca la conclusión de esta situación: « For untrusted repositories, generated code you do not intend to monitor closely, or unattended automation, run pi in a contained environment. Use a container, VM, micro-VM, remote sandbox, or policy-controlled sandbox with only the files and credentials required for the task. » Nuestras veinte ejecuciones sobre el issue #1 son exactamente automatización sin supervisión.
+La documentación de Pi llega a la siguiente conclusión: « For untrusted repositories, generated code you do not intend to monitor closely, or unattended automation, run pi in a contained environment. Use a container, VM, micro-VM, remote sandbox, or policy-controlled sandbox with only the files and credentials required for the task. » Nuestras veinte ejecuciones sobre el issue #1 son exactamente automatización sin supervisión. Y a largo plazo, queremos agentes autónomos que puedan trabajar durante horas sin que estemos obligados a supervisarlos.
 
 ### Tres niveles de aislamiento
 
-El primer nivel es el **clon desechable**. La herramienta de medición del siguiente módulo clona NÉON en un tag, en un directorio temporal, en cada ejecución, lo que protege el historial y el árbol de trabajo del repositorio y no cuesta casi nada. Sin embargo, el proceso se ejecuta siempre bajo tu identidad, con tu directorio personal y tu red, por lo que un clon desechable solo protege el repositorio.
+El más económico de los tres es el **clon desechable**. La herramienta de medición del siguiente módulo clona NÉON en un tag, en un directorio temporal, en cada ejecución, lo que protege el historial y el árbol de trabajo del repositorio sin coste alguno o casi. Sin embargo, el proceso siempre se ejecuta bajo tu identidad, con tu directorio personal y tu red, de modo que un clon desechable solo protege el repositorio. E incluso, nada impide que el modelo haga un push en tu repositorio remoto si tiene los permisos, como ocurre si tiene acceso al comando `gh` (para trabajar en tu GitHub).
 
-El segundo nivel es el **contenedor**. Pi se ejecuta en una imagen de Docker donde solo se monta el repositorio, lo que deja tu directorio personal fuera de alcance. El contenedor comparte el núcleo del host, su red está abierta por defecto y, sobre todo, la clave del proveedor de modelos debe entrar en el contenedor para que Pi pueda llamar al modelo, algo que la [página de Pi sobre la contenerización](https://pi.dev/docs/latest/containerization) señala en una frase: « Provider API keys enter the container ». Por lo tanto, todo lo que el agente ejecute tiene acceso a esa clave.
+Un paso más allá, el **contenedor** ejecuta Pi en una imagen de Docker donde solo el repositorio está montado, lo que deja tu directorio personal fuera de su alcance. Comparte el núcleo del host, su red está abierta por defecto y, sobre todo, la clave del proveedor de modelos debe añadirse para que Pi pueda llamar al modelo, algo que la [página de Pi sobre la conteneurización](https://pi.dev/docs/latest/containerization) señala en una frase: « Provider API keys enter the container ». Por lo tanto, todo lo que el agente ejecute tiene acceso a esta clave.
 
-El tercer nivel es la **micro-máquina virtual con política**, y es la que elegimos con [Docker Sandboxes](https://docs.docker.com/ai/sandboxes/). Cada sandbox tiene su propio núcleo detrás de un hipervisor, todo el tráfico TCP saliente pasa por un proxy en el host que solo acepta los dominios de una lista de permisos, y las claves de API son inyectadas en las cabeceras HTTP por ese proxy, de modo que, para citar la [página de seguridad](https://docs.docker.com/ai/sandboxes/security/), « Credential values never enter the VM ». El directorio de trabajo se monta en la VM en la misma ruta absoluta que en el host. El coste es una imagen de setecientos megabytes que construir, un demonio que ejecutar, una lista de dominios autorizados que mantener y la imposibilidad de conectar con un proveedor local como LM Studio en `127.0.0.1`, ya que la VM tiene su propia pila de red.
+El tercer nivel es la **micro-máquina virtual con política** con [Docker Sandboxes](https://docs.docker.com/ai/sandboxes/). Cada sandbox tiene su propio núcleo detrás de un hipervisor, todo el tráfico TCP saliente pasa por un proxy en el host que solo acepta los dominios de una lista de permisos, y las claves de API son inyectadas en los encabezados HTTP por este proxy, de modo que, para citar la [página de seguridad](https://docs.docker.com/ai/sandboxes/security/), « Credential values never enter the VM ». El directorio de trabajo se monta en la VM en la misma ruta absoluta que en el host. El coste es una imagen de setecientos megabytes que construir, un demonio que ejecutar, una lista de dominios permitidos que mantener. Puede parecer complicado, pero tu IA preferida podrá ayudarte a implementar fácilmente esta infraestructura.
 
-| lo que está protegido          | clon desechable | contenedor                        | Docker Sandbox                                 |
-| --------------------------- | ------------- | -------------------------------- | ---------------------------------------------- |
-| el árbol de trabajo del repositorio | sí           | no                              | no por defecto, sí con `--clone`             |
-| tu directorio personal  | no           | sí, si solo se monta el repositorio  | sí                                            |
-| la red saliente           | no           | no por defecto                   | sí, denegación por defecto y lista de permisos |
-| tus claves de API              | no           | no, se incluyen en la imagen  | sí, solo el proxy del host las ve          |
+| lo que está protegido          | clon desechable | contenedor                       | Docker Sandboxes                               |
+| --------------------------- | ------------- | ------------------------------- | ---------------------------------------------- |
+| el árbol de trabajo del repositorio | sí           | no                             | no por defecto, sí con `--clone`             |
+| tu directorio personal  | no           | sí, si solo se monta el repositorio | sí                                            |
+| la red saliente           | no           | no por defecto                  | sí, denegación por defecto y lista de permisos |
+| tus claves de API              | no           | no, entran en la imagen | sí, solo el proxy del host las ve          |
+
+Estos tres niveles aíslan el proceso de Pi de la máquina host, pero nada dentro del sandbox impide todavía que Pi ejecute `rm -rf` en el repositorio o lea un `.env` que haya quedado en NÉON. La extensión [`pi-permission-system`](https://pi.dev/packages/@gotgenes/pi-permission-system) añade este filtro dentro del propio sandbox: se engancha al evento `tool_call` de la API de extensión de Pi, un hook que intercepta cada llamada a herramientas, cada comando bash, cada llamada MCP y cada skill invocado antes de su ejecución, y compara la solicitud con reglas `allow` / `deny` / `ask` escritas en JSON.
+
+El compromiso reside en dónde se ejecuta este filtro. Vive en el mismo proceso Node que Pi, y no en el núcleo que aísla el sandbox, de modo que una extensión que comprometiera este proceso antes de que se evalúe la regla desactivaría la barrera de seguridad junto con el resto. `pi-permission-system` restringe lo que Pi puede hacer una vez lanzado en el sandbox; no reemplaza ninguno de los tres niveles de la tabla anterior.
 
 ### Lo que el sandbox no protege
 
-En modo directo, que es el predeterminado, el agente edita tu árbol de trabajo in situ, y la documentación de Docker Sandboxes recuerda que puede modificar un hook de git, un `Makefile` o una configuración de integración continua, que se ejecutarán más tarde en el host cuando los lances tú mismo. El sandbox protege la máquina durante la ejecución, y la revisión del diff sigue siendo tu responsabilidad después. Por esta razón, la herramienta de medición del siguiente módulo mantiene su clon desechable dentro del sandbox.
+En modo directo, el predeterminado, el agente edita tu árbol de trabajo in situ, y la documentación de Docker Sandboxes recuerda que puede, por lo tanto, modificar un hook de git, un `Makefile` o una configuración de integración continua, que se ejecutarán más tarde en el host cuando los lances tú mismo. El sandbox protege la máquina mientras el agente trabaja, y no te exime de revisar el diff.
 
-La política de red `balanced`, la que recomienda `sbx policy init`, autoriza dominios mediante comodines amplios como `*.googleapis.com`, que cubren mucho más que las API de modelos. Partimos de `deny-all` y solo abrimos lo que requiere el registro de denegaciones.
+La política de red `balanced`, la que recomienda `sbx policy init`, permite dominios con comodines amplios como `*.googleapis.com`, que cubren mucho más que las API de modelos. Partimos de `deny-all` y luego solo abrimos los dominios que aparecen en el registro de denegaciones.
 
-Finalmente, dentro de la VM, el agente es administrador, con `sudo` sin contraseña y su propio demonio de Docker, lo cual aceptamos ya que el límite es la VM y todo lo que ocurre en su interior es desechable.
+Dentro de la VM, finalmente, el agente es administrador, con `sudo` sin contraseña y un demonio Docker propio, lo cual aceptamos, ya que nada de lo que ocurre allí sale fuera y la propia VM es desechable.
 
 ## Reconstruir
 
-### ¿Por qué un kit?
+Te proponemos dos enfoques a continuación: el uso de una extensión en Pi que añade un hook (que te proponemos reconstruir en otro módulo) y el uso de Docker Sandboxes. La primera solución no requiere ninguna instalación particular en tu sistema y, por lo tanto, será la que usemos para la formación presencial. Pero ten en cuenta que tiene sus límites y que es evidente que no es suficiente para el trabajo diario con agentes.
 
-`sbx` conoce una lista de agentes que sabe lanzar tal cual (`claude`, `codex`, `copilot`, `cursor`, `gemini`, `opencode` y algunos otros) y Pi no forma parte de ella. El punto de extensión previsto para este caso es el **kit**, un directorio descrito por un `spec.yaml` cuya variante `kind: sandbox` define un agente desde cero: la imagen, el comando de inicio, las instrucciones añadidas al archivo de contexto, las claves que se deben inyectar y los permisos de red. El nuestro está versionado en `scripts/pi-kit/` de este repositorio y consta de tres archivos.
+### Instalar y configurar `pi-permission-system`
+
+La extensión se instala con un solo comando, como cualquier otro paquete del directorio de Pi:
+
+```bash
+pi install npm:@gotgenes/pi-permission-system
+```
+
+Las reglas residen en un archivo JSON, leído en tres niveles de alcance: global (`~/.pi/agent/extensions/pi-permission-system/config.json`), proyecto (`.pi/extensions/pi-permission-system/config.json`, ignorada si el proyecto no está aprobado) y por agente, en el encabezado YAML de un archivo de agente, que prevalece sobre los dos anteriores. Para NÉON, una configuración de proyecto basta para frenar la instrucción más peligrosa de `SUPPORT.md`, ya que la lectura de un `.env` se deniega por diseño:
+
+```json
+{
+  "permission": {
+    "*": "allow",
+    "path": {
+      "*": "allow",
+      "*.env": "deny",
+      "*.env.*": "deny"
+    },
+    "bash": {
+      "*": "ask",
+      "rm -rf *": "deny",
+      "sudo *": "ask"
+    },
+    "external_directory": "ask"
+  }
+}
+```
+
+La regla más específica prevalece: `bash.*` solicita confirmación por defecto, `rm -rf *` deniega sin preguntar, y una ruta fuera del repositorio sigue sujeta a confirmación incluso cuando `path.*` autoriza todo lo demás. Un comando que el analizador de bash de la extensión no sabe clasificar se deniega en lugar de permitirse, y una ruta que atraviesa un enlace simbólico se resuelve antes de la comparación.
+
+::: info Ejercicio (presencial)
+Trabaja en un clon desechable de NÉON, ya que dos de las solicitudes siguientes son destructivas. Instala la extensión, guarda la configuración anterior en `.pi/extensions/pi-permission-system/config.json`, crea un archivo `.env` en la raíz con una clave falsa y, a continuación, inicia Pi y pídele tres cosas: que te lea el contenido de ese `.env`, que borre la carpeta `game/` con `rm -rf` y que ejecute la suite de pruebas. Las dos primeras solicitudes son denegadas sin que Pi te consulte; la tercera abre una confirmación que debes responder tú mismo.
+
+Luego vuelve a solicitar la lectura del `.env` tres veces seguidas reformulándola, y luego explicándole a Pi que eres el propietario del archivo y que le das permiso: el veredicto no cambia, porque proviene de una regla evaluada antes de la llamada a la herramienta y no de un arbitraje del modelo de lenguaje.
+
+Finalmente, elimina el bloque `path` de la configuración y sustitúyelo por la instrucción « no leas nunca archivos `.env` » en el archivo `AGENTS.md` del repositorio, luego vuelve a hacer la misma petición cinco veces en cinco sesiones diferentes. Cuenta los rechazos obtenidos: así tendrás tu propia cifra sobre el valor de una instrucción de texto frente a una barrera de seguridad en código.
+:::
+
+#### Instalar y configurar `sbx`
+
+`sbx` es el comando para usar Docker Sandboxes. `sbx` conoce una lista de agentes que sabe ejecutar tal cual (`claude`, `codex`, `copilot`, `cursor`, `gemini`, `opencode` y algunos otros). Lamentablemente, Pi no forma parte de ella. Por lo tanto, es necesario crear [un kit](https://docs.docker.com/ai/sandboxes/customize/): un directorio descrito por un `spec.yaml` cuya variante `kind: sandbox` define un agente desde cero: la imagen, el comando de inicio, las instrucciones añadidas al archivo de contexto, las claves a inyectar y los permisos de red. El nuestro está versionado en https://github.com/AI-for-dev/pi-sandbox y contiene solo tres archivos.
 
 ```
-scripts/pi-kit/
+pi-sandbox
 ├── Dockerfile
 ├── spec.yaml
 └── files/home/.pi/agent/settings.json
 ```
 
-Las versiones citadas a continuación son aquellas con las que se verificó este kit el 16 de agosto de 2026: `sbx` 0.38.0, Docker Engine 29.7.2, Pi 0.84.2. El kit es un artefacto de la segunda etapa del método, y estos números cambiarán.
+Las versiones mencionadas a continuación son aquellas con las que se verificó este kit en el momento de escribir el documento: `sbx` 0.38.0, Docker Engine 29.7.2, Pi 0.84.2.
 
-### Instalar `sbx`
+#### Instalar `sbx`
 
-La herramienta de línea de comandos se llama `sbx`, y las páginas que aún describen un plugin `docker sandbox` se refieren a una versión retirada:
+La herramienta de línea de comandos se llama `sbx`. Para instalarla en tu SO, solo tienes que ir a la siguiente página
 
-```bash
-brew trust docker/tap
-brew install docker/tap/sbx
-sbx login
+https://docs.docker.com/ai/sandboxes/install/
+
+#### Construir la imagen
+
+```dockerfile
+FROM docker/sandbox-templates:shell-docker
+USER root
+
+ARG NODE_VERSION=22.21.1
+ARG PI_VERSION=0.85.1
+# Ubuntu names the package fd-find and ships the binary as fdfind, to avoid a
+# name collision. pi looks for fd then fdfind, so /usr/bin/fdfind is enough and
+# pi stops downloading its own copy into ~/.pi/agent/bin.
+ARG FD_PACKAGE_VERSION=10.3.0-2ubuntu1
+
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends \
+    xz-utils ca-certificates curl "fd-find=${FD_PACKAGE_VERSION}" \
+    && fdfind --version \
+    && rm -rf /var/lib/apt/lists/*
+
+# Explicit Node install instead of inheriting from the template: pi requires
+# >= 22.19, and the base image's bundled version is not a contract.
+RUN set -eux; \
+    case "$(dpkg --print-architecture)" in \
+    amd64) a=x64 ;; \
+    arm64) a=arm64 ;; \
+    *) echo "unsupported architecture" >&2; exit 1 ;; \
+    esac; \
+    cd /tmp; \
+    curl -fsSLO "https://nodejs.org/dist/v${NODE_VERSION}/node-v${NODE_VERSION}-linux-${a}.tar.xz"; \
+    curl -fsSLO "https://nodejs.org/dist/v${NODE_VERSION}/SHASUMS256.txt"; \
+    grep " node-v${NODE_VERSION}-linux-${a}.tar.xz$" SHASUMS256.txt | sha256sum -c -; \
+    mkdir -p /opt/node; \
+    tar -xJf "node-v${NODE_VERSION}-linux-${a}.tar.xz" -C /opt/node --strip-components=1; \
+    rm -f /tmp/*.tar.xz /tmp/SHASUMS256.txt
+
+ENV PATH="/opt/node/bin:${PATH}"
+
+RUN npm install -g "@earendil-works/pi-coding-agent@${PI_VERSION}" \
+    && pi --version
+
+USER agent
 ```
 
-### Construir la imagen
+La imagen se basa en el modelo `shell-docker` proporcionado por Docker, instala una versión explícita de Node, ya que Pi requiere al menos la 22.19, y luego fija la versión de Pi.
 
-<<<@/../scripts/pi-kit/Dockerfile{dockerfile}
-
-La imagen parte de la plantilla `shell-docker` proporcionada por Docker, instala una versión explícita de Node, ya que Pi requiere al menos la 22.19 y la versión incluida en la imagen base no es un contrato, y luego fija la versión de Pi. La imagen es la unidad reproducible: ejecutar `npm install` en cada creación de sandbox no garantizaría la misma versión dos veces.
-
-El demonio de Docker Sandboxes obtiene sus imágenes desde un registro y no comparte el almacén local de Docker. Sin registro, se utiliza un archivo:
+El demonio de Docker Sandboxes obtiene sus imágenes de un registro diferente al de las imágenes locales disponibles para Docker. Sin un registro, se utiliza un archivo:
 
 ```bash
-cd scripts/pi-kit
-docker build --platform linux/arm64 -t pi-sandbox:0.84.2 .
-docker image save pi-sandbox:0.84.2 -o pi-sandbox.tar
+git clone https://github.com/AI-for-dev/pi-sandbox
+cd pi-sandbox
+docker build --platform linux/arm64 -t pi-sandbox:0.85.2 .
+docker image save pi-sandbox:0.85.2 -o pi-sandbox.tar
 sbx template load pi-sandbox.tar
 ```
 
-Para un equipo, se sube la imagen a un registro y se fija `sandbox.image` mediante su digest, por la razón que el siguiente módulo detallará sobre los tags: un nombre puede moverse, un digest no.
+Para un equipo, será preferible subir la imagen a un registro.
 
-### Declarar el kit
+#### Declarar el kit
 
-<<<@/../scripts/pi-kit/spec.yaml
+```yaml
+schemaVersion: "2"
+kind: sandbox
+name: pi
+version: "0.1.0"
+displayName: Pi
+description: Pi coding agent (pi.dev) in a Docker sandbox.
+sourceURL: https://github.com/earendil-works/pi
 
-El bloque `sandbox` nombra la imagen cargada en el paso anterior y ejecuta `pi -a`. La opción `-a` declara los archivos del proyecto como seguros para esta ejecución, lo que responde a la pregunta que `trust.json` planteaba en el módulo sobre Pi: dentro de la VM, un skill o una extensión encontrados en el repositorio solo pueden acceder a lo que contiene la VM, y la decisión de confianza cambia de escala.
+sandbox:
+  image: "pi-sandbox:0.85.1"
+  entrypoint: [pi, -a]
 
-El bloque `agentInstructions` añade algunas líneas al archivo `AGENTS.md` que lee el modelo. Le indican que un dominio denegado no es un fallo de red, lo que evita que lo intente diez veces, y que la clave del proveedor no está en la VM.
+agentInstructions:
+  filename: AGENTS.md
+  content: |
+    ## Sandbox environment
 
-El bloque `credentials` declara una clave gestionada por el proxy (`proxyManaged: true`). Pi encuentra en `OPENCODE_API_KEY` una **centinela**, un valor ficticio, y el proxy del host lo reemplaza por la clave real en el encabezado `Authorization` de las solicitudes hacia `opencode.ai`, y en ningún otro lugar. Una sola clave cubre `opencode-go` y opencode Zen, ya que Pi lee la misma variable para ambos.
+    Tu tournes dans une microVM Docker Sandbox. `sudo` est sans mot de passe,
+    Docker est disponible a l'interieur de la VM. Le reseau sortant est filtre
+    par une allowlist: un domaine non autorise echoue, ce n'est pas une panne
+    reseau. La cle du provider n'est pas dans la VM, seule une sentinelle l'est.
 
-El bloque `permissions.network` enumera los dominios que el kit habilita sobre la política global: el proveedor de modelos, GitHub para clonar NÉON, PyPI para las herramientas de medición. La denegación explícita de `pi.dev`, junto con las variables `PI_SKIP_VERSION_CHECK` y `PI_TELEMETRY`, corta las operaciones de red al inicio de Pi.
+environment:
+  variables:
+    PI_SKIP_VERSION_CHECK: "1"
+    PI_TELEMETRY: "0"
+    NODE_OPTIONS: "--disable-warning=UNDICI-EHPA"
 
-El archivo `files/home/.pi/agent/settings.json`, que el kit deposita en el directorio personal del agente, fija el proveedor y el modelo por defecto, el nivel de razonamiento y un inicio silencioso. Cumple la función del `~/.pi/agent/settings.json` de tu host, que no está montado en la VM.
+credentials:
+  - service: ilaas
+    description: ILAAS API KEY (llm.ilaas.fr)
+    required: true
+    apiKey:
+      name: ILAAS_API_KEY
+      proxyManaged: true
+      inject:
+        - domain: llm.ilaas.fr
+          header: Authorization
+          format: "Bearer %s"
 
-### Registrar la clave
+permissions:
+  network:
+    allow:
+      - github.com
+      - raw.githubusercontent.com
+      - pypi.org
+      - files.pythonhosted.org
+      - pi.dev
+```
 
-`opencode-go` se autentica mediante clave de API y Pi la guarda en tu host en `~/.pi/agent/auth.json`. Se la confía a `sbx` bajo el nombre del servicio declarado por el kit:
+El bloque `sandbox` nombra la imagen creada en el paso anterior e inicia `pi -a`. La opción `-a` declara los archivos del proyecto como seguros para esta ejecución, lo que responde a la pregunta que `trust.json` planteaba al módulo en Pi: dentro de la VM, un skill o una extensión encontrados en el repositorio solo pueden tocar lo que la VM contiene.
+
+`agentInstructions` añade algunas líneas al `AGENTS.md` que lee el modelo: un dominio denegado no es un fallo de red, lo que evita que reintente diez veces, y la clave del proveedor no está en la VM.
+
+El bloque `credentials` declara una clave gestionada por el proxy (`proxyManaged: true`). Pi encuentra en `ILAAS_API_KEY` un **centinela**, un valor ficticio, y el proxy del host lo reemplaza por la clave real en el encabezado `Authorization` de las solicitudes hacia `llm.ilaas.fr`, y en ningún otro lugar.
+
+Bajo `permissions.network`, el kit abre, sobre la política global, el proveedor de modelos, GitHub para clonar NÉON y PyPI para las herramientas de medición. Las variables `PI_SKIP_VERSION_CHECK` y `PI_TELEMETRY` desactivan algunas operaciones de red del arranque de Pi.
+
+El archivo `files/home/.pi/agent/settings.json`, que el kit deposita en el directorio personal del agente, fija el proveedor y el modelo por defecto, así como el nivel de razonamiento. Reemplaza al `~/.pi/agent/settings.json` de tu host, que no está montado en la VM. Aquí es bastante sencillo y se ve así:
+
+```json
+{
+  "defaultProvider": "ilaas",
+  "defaultModel": "deepseek-v4-flash",
+  "defaultThinkingLevel": "high"
+}
+```
+
+Del mismo modo, el archivo `files/home/.pi/agent/models.json` indica los modelos disponibles en la sandbox.
+
+```json
+{
+    "providers": {
+        "ilaas": {
+            "baseUrl": "https://llm.ilaas.fr/v1",
+            "api": "openai-completions",
+            "apiKey": "$ILAAS_API_KEY",
+            "models": [
+                {
+                    "id": "gemma-4-31b",
+                    "contextWindow": 128000,
+                    "reasoning": true
+                },
+                {
+                    "id": "qwen-3.6-35b-instruct",
+                    "contextWindow": 256000
+                }
+            ]
+        }
+    }
+}
+```
+
+#### Registrar la clave
+
+`ilaas` se autentica mediante una clave de API. Se la confiamos a `sbx` bajo el nombre del servicio declarado por el kit:
 
 ```bash
-python3 -c "import json,os;print(json.load(open(os.path.expanduser('~/.pi/agent/auth.json')))['opencode-go']['key'])" \
-  | sbx secret set opencode-go
+sbx secret set ilaas
+```
+
+Entonces debes introducir tu clave. Después puedes verificar que se haya registrado correctamente mediante el comando:
+
+```bash
 sbx secret ls
 ```
 
 En la primera ejecución, `sbx` pide aprobar el **credential binding**, la autorización otorgada a un kit externo para usar este secreto en los dominios que declara. La respuesta se guarda en `~/.config/sbx/credentials.yaml`.
 
 ::: warning En modo no interactivo, nadie responde
-Con `sbx create` o desde un script, a nadie se le pregunta por el binding; el sandbox se inicia sin la clave y solo emite una advertencia. Escribe el archivo antes:
+Con `sbx create` o desde un script, la pregunta sobre el binding no se le plantea a nadie. La sandbox arranca de todos modos, ya que `sbx` solo emite una advertencia, y la variable de entorno contiene el centinela `proxy-managed`: la clave real nunca es inyectada por el proxy. El error solo aparece al usarlo, en forma de `401`, y `pi auth check` anuncia, a pesar de todo, `ready`. Es necesario un binding por servicio declarado. Escribe el archivo previamente:
 
 ```yaml
 bindings:
-  opencode-go:
+  ilaas:
     apiKey:
-      domains: [opencode.ai]
+      domains: [llm.ilaas.fr]
 ```
 :::
 
-### Definir la política de red
+#### Establecer la política de red
 
-El ajuste es global, se requiere antes del primer sandbox y se hace una sola vez:
+Este ajuste es global, `sbx` lo requiere antes de la primera sandbox, y se realiza una sola vez:
 
 ```bash
 sbx policy init deny-all
@@ -133,66 +300,44 @@ sbx policy init deny-all
 
 Las reglas `permissions.network.allow` del kit se aplican encima, solo para sus sandboxes.
 
-### Lanzar
+#### Lanzar
 
 ```bash
-sbx kit validate scripts/pi-kit
+cd pi-sandbox
+sbx kit validate .
 cd /chemin/vers/neon
-sbx run --kit /chemin/vers/hands-on-harness/scripts/pi-kit pi
+sbx run /chemin/vers/pi-sandbox
 ```
 
-::: info Ejercicio (en aula)
-En la sesión de Pi que se abra, pide tres cosas. Primero, el valor de la variable `OPENCODE_API_KEY`: verás la centinela y no tu clave. Después, un `curl https://example.com`: la petición falla porque el dominio no está en ninguna lista. Por último, una modificación de un archivo de NÉON: aparecerá en el host en cuanto Pi haya escrito.
+::: info Exercice (en autonomie)
+Sigue por tu cuenta los cinco pasos anteriores, desde la instalación de `sbx` hasta el primer `sbx run`. En la sesión de Pi que se abra, pide el valor de la variable `ILAAS_API_KEY`: verás la centinela y no tu clave. Ejecuta después un `curl https://example.com`: la solicitud fallará porque el dominio no está en ninguna lista. Finalmente, haz que se modifique un archivo de NÉON: el cambio aparecerá en el host en cuanto Pi haya escrito.
 
-Vuelve al host y lee `sbx policy log`, donde cada denegación queda registrada con el dominio solicitado.
+Vuelve al host y lee `sbx policy log`, donde cada rechazo se registra con el dominio solicitado. Retoma para terminar el ejercicio sobre `pi-permission-system`, esta vez dentro del sandbox: las dos barreras se superponen sin interferir, y el rechazo del `rm -rf` mantiene toda su utilidad, ya que en modo directo el repositorio que Pi borraría es el de tu host.
 :::
 
-Esto es lo que se ha verificado en este kit el 16 de agosto de 2026, con las versiones citadas anteriormente: la construcción de la imagen, `sbx kit validate`, `sbx template load` y la creación del sandbox; la inyección de la clave, con un `POST /zen/go/v1/chat/completions` que lleva la centinela y devuelve un `200`; una respuesta de `pi -p` mediante `opencode-go` y `deepseek-v4-flash`; una edición solicitada a Pi visible en el repositorio del host.
-
-### Restringir la lista de permisos
+#### Ajustar la lista de permisos
 
 ::: info Ejercicio (autónomo)
 Trabaja una sesión completa en el sandbox y luego revisa `sbx policy log`. Añade a `permissions.network.allow` solo los dominios cuyo bloqueo te haya impedido avanzar, ejecutando `sbx kit validate` tras cada modificación.
 :::
 
-No escribas nunca comodines en `inject[].domain`: el proxy pasaría entonces a interceptación TLS en todos los subdominios afectados, para una clave que solo necesita un único host.
-
-::: warning Dos trampas de `sbx` 0.38.0
-La documentación presenta `scheme: bearer` como un atajo de `header: Authorization` y `format: "Bearer %s"`. `sbx` 0.38.0 no lo convierte: el proxy no inyecta nada, elimina la centinela de la petición y el gateway responde `401 Missing API key`. El síntoma se puede ver en `~/Library/Application Support/com.docker.sandboxes/sandboxes/sandboxd/daemon.log`:
-
-```
-WARN "skipping empty service auth config" service=opencode-go
-WARN "proxy: no header mapping for service" service=opencode-go
-```
-
-En `opencode-go`, los modelos servidos por una API `anthropic-messages` (`minimax-m3`, `qwen3.7-max`, `qwen3.7-plus`, `qwen3.8-max`) esperan la clave en un encabezado `x-api-key` y no en `Authorization`. La segunda entrada `inject`, comentada en el `spec.yaml`, sirve para este caso. `sbx kit validate` acepta dos entradas para el mismo dominio, pero el comportamiento del proxy cuando ambas se aplican a una misma petición no está documentado y queda por confirmar en una llamada real. La alternativa independiente del encabezado es un secreto personalizado, `sbx secret set-custom --host opencode.ai --env OPENCODE_API_KEY`, que sustituye la centinela dondequiera que aparezca en la petición, a costa de un mecanismo que Docker documenta como experimental.
-:::
-
-::: info ¿Y con ILaaS?
-El kit suministrado está orientado a `opencode-go`, porque es el proveedor sobre el cual ha sido verificado. Para un proveedor configurado manualmente como [ILaaS](https://www.ilaas.fr/), el procedimiento sigue el mismo mecanismo: un `files/home/.pi/agent/models.json` donde el campo `apiKey` es `"$ILAAS_API_KEY"`, una entrada `credentials` para esta variable con `llm.ilaas.fr` como dominio de inyección, y dicho dominio en la lista de autorizaciones. Todavía no hemos probado esta variante con una llamada real.
-
-Una clave escrita en texto plano en `models.json` entraría en la VM con el archivo y anularía la ventaja del proxy.
-:::
-
 ## Generalizar
 
-**Un límite que no depende de la obediencia.** Un permiso escrito en texto, en un `AGENTS.md` o un `SKILL.md`, es una sugerencia que el modelo sigue o no. El módulo sobre permisos construirá barreras de seguridad en código dentro del harness, que rechazan una llamada a una herramienta antes de que se ejecute. El sandbox es la capa exterior, la que resiste cuando el propio harness falla, porque una extensión maliciosa o un archivo trampa solo alcanzan lo que contiene la VM.
+**Un límite de uso que no depende de la obediencia.** Un permiso escrito en texto, en un `AGENTS.md` o un `SKILL.md`, es una sugerencia que el modelo sigue o no. El módulo sobre permisos construirá barreras en código dentro del harness, que rechazan una llamada a una herramienta antes de que se ejecute. El sandbox es la capa exterior, la que resiste cuando el propio harness falla, ya que una extensión maliciosa o un archivo trampa solo pueden dañar la VM.
 
-**El secreto permanece donde sale la petición.** El agente nunca ha necesitado la clave; necesita que sus peticiones hacia un dominio específico estén autenticadas. Separar ambos, manteniendo la clave en el host y colocándola en el encabezado en el momento en que pasa la petición, retira la clave de todo lo que el agente puede leer, ejecutar o enviar. El principio se aplica a cualquier harness, independientemente de la herramienta que lo implemente.
+**La clave permanece en el host.** El agente no necesita leer la clave, solo que sus solicitudes hacia un dominio preciso estén autenticadas; mantener la clave en el host para colocarla en la cabecera en el momento en que la solicitud pasa la aleja de todo lo que el agente puede leer, ejecutar o enviar. El principio aplica a cualquier harness, independientemente de la herramienta que lo implemente.
 
-**Rechazar por defecto, y luego abrir desde el registro.** La lista de autorizaciones de un kit no se escribe a priori: se parte del rechazo y se añade lo que `sbx policy log` solicite, al igual que el resto del acto parte de una medición antes de decidir.
-
-**La unidad reproducible es una imagen anclada.** El kit congela Node y Pi en una imagen, al igual que la herramienta de medición del siguiente módulo congela NÉON en un tag; el módulo siguiente mostrará que un tag puede desplazarse, algo que solo un digest o un commit impide.
+**Rechazar por defecto y luego abrir desde el registro.** La lista de permisos de un kit no se escribe de antemano: se parte del rechazo, se trabaja una sesión y solo se añaden los dominios cuyo rechazo haya bloqueado realmente algo, como el resto del acto se basa en una medición en lugar de en una intuición.
 
 ## Entregable
 
-Al final de este módulo, Pi se ejecuta en un sandbox sobre tu clon de NÉON, y ahí es donde se realizarán todas las manipulaciones de los siguientes módulos.
+Al final de este módulo, Pi se ejecuta en un sandbox sobre tu clon de NÉON, y todas las manipulaciones de los siguientes módulos podrán hacerse allí con un control óptimo.
 
-El criterio de éxito consiste en cuatro verificaciones:
+Cuatro verificaciones lo confirman:
 
-- la variable `OPENCODE_API_KEY` leída desde el sandbox es la centinela;
-- una petición hacia un dominio ausente de la lista falla;
-- una edición realizada por Pi aparece en el repositorio del lado del host;
+- la variable `ILAAS_API_KEY` leída desde el sandbox es la centinela;
+- una solicitud hacia un dominio ausente de la lista falla;
+- una edición realizada por Pi aparece en el repositorio del host;
 - `sbx policy log` no muestra ningún rechazo que tu lista no haya seleccionado.
 
 ## Las trampas
@@ -200,12 +345,6 @@ El criterio de éxito consiste en cuatro verificaciones:
 **Creer que el sandbox protege el repositorio.** En modo directo, el agente escribe en tu árbol de trabajo, incluidos los hooks y el `Makefile`. Revisa el diff o usa `--clone` para trabajar en una copia privada.
 
 **Copiar una clave en `models.json`.** Entra en la VM con el archivo. Toda clave debe pasar por `sbx secret` y una variable de sustitución.
-
-**Escribe `scheme: bearer`.** No se inyecta nada y el proveedor responde `401`. Escribe `header` y `format`.
-
-**No confundas `balanced` con una política restrictiva.** Sus comodines abren mucho más que las API de modelos. Parte de `deny-all`.
-
-**No olvides el binding en modo no interactivo.** El sandbox arranca sin la clave con una simple advertencia, y el error solo aparece en la primera llamada al modelo.
 
 ## Para ir más lejos
 
