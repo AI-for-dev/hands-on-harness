@@ -57,6 +57,18 @@ export function diffSignals(sourceText, translatedText) {
     issues.push(`[n] references: ${sourceRefs} in the source, ${translatedRefs} in the translation`)
   }
 
+  // A `:::` container is opened, and closed, by the source segment itself.
+  // Observed in practice: given a segment that opens one ("::: info Exercice"),
+  // a model helpfully adds the closing fence, which shuts the box several
+  // paragraphs early and swallows the rest of the exercise.
+  const sourceContainers = countMatches(sourceText, /^:::/gm)
+  const translatedContainers = countMatches(translatedText, /^:::/gm)
+  if (sourceContainers !== translatedContainers) {
+    issues.push(
+      `::: delimiters: ${sourceContainers} in the source, ${translatedContainers} in the translation`
+    )
+  }
+
   const sourceHeadings = countHeadingLines(sourceText)
   const translatedHeadings = countHeadingLines(translatedText)
   if (sourceHeadings !== translatedHeadings) {
