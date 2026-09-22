@@ -12,7 +12,7 @@ Les deux modules précédents se sont arrêtés sur deux constats. Le premier co
 
 L'agent seul a ses limites et nous pouvons que constater qu'il n'y arrive pas forcément tout seul. Mais imaginez un sous-agent qui ajoute des tests unitaires pertinents pour cet agent, est-ce que nous serions en mesure de retrouver ce résultat de 18/20 ? Nous allons donc essayer de découper le travail via des agents spécialisés dans certaines tâches.
 
-Ce module découpe le travail en quatre rôles (**explorer**, **planifier**, **coder** et **évaluer**), chacun exécuté dans un contexte séparé, avec sa liste d'outils et son modèle. Vous n'emploierez aucun mécanisme d'orchestration : c'est vous qui lancez chaque rôle, qui transmettez les livrables de l'un à l'autre et qui exécutez les tests entre deux. Le module suivant automatisera cette boucle. Mais avant d'automatiser, il faut d'abord savoir quels gestes remplacer ou agencer différemment. Cette liste s'établit en tenant la boucle soi-même, et elle fait partie des livrables du module.
+Ce module découpe le travail en quatre rôles (**explorer**, **planifier**, **coder** et **évaluer**), chacun exécuté dans un contexte séparé, avec sa liste d'outils et son modèle. Vous n'emploierez aucun mécanisme d'orchestration : c'est vous qui lancez chaque rôle, qui décidez de ce qui passe de l'un à l'autre et qui exécutez les tests entre deux. Une commande transporte les livrables à votre place, mais aucun code ne choisit le pas suivant. Le module suivant automatisera cette boucle. Mais avant d'automatiser, il faut d'abord savoir quels gestes remplacer ou agencer différemment. Cette liste s'établit en tenant la boucle soi-même, et elle fait partie des livrables du module.
 
 ## Comprendre
 
@@ -147,23 +147,25 @@ Le vérificateur ne corrige jamais, parce qu'un vérificateur qui corrige devien
 
 Deux autres fichiers, `tester.md` et `auditor.md`, vivent à côté des quatre rôles et seront copiés avec eux. Ils ne jouent aucun rôle dans la boucle de ce module : le premier est le candidat naturel du lancement en parallèle du module suivant, le second y relira le travail fini dans son ensemble.
 
+
+::: warning Utilisation de herdr
+Afin de suivre les activités des sous-agents, nous vous encourageons fortement à lancer Pi depuis herdr (https://herdr.dev/). combo sait ouvrir des fenêtres herdr pour voir les sous-agents travaillés et les refermer automatiquement lorsqu'ils ont terminé.
+:::
+
 ::: info Exercice (en salle)
 Avant de lancer quoi que ce soit, faites énoncer à chaque agent sa propre garantie. Installez l'extension et déposez les agents :
 
 ```bash
-git clone https://github.com/AI-for-dev/combo.git
-cd combo && npm install       # Node 23.6 ou plus récent, pas d'étape de build
-
 cd /chemin/vers/neon
+pi install -l npm:@ai-for-dev/combo
 mkdir -p .pi/agents && cp /chemin/vers/hands-on-harness/scripts/agents/*.md .pi/agents/
-pi -e /chemin/vers/combo/extension
+pi 
 ```
 
-L'extension n'ajoute pas de commande pour cela : `subagent` est un outil, que le modèle de la session principale appelle quand vous le lui demandez, et ce sont le nom de l'agent et la portée qui décident de ce qui sera chargé. Demandez donc l'explorateur ainsi :
+L'extension n'ajoute pas de commande pour explicite pour appeler un agent : `subagent` est un outil que le modèle de la session principale appelle quand vous le lui demandez. Il vous suffit de nommer l'agent et ce que vous souhaitez qu'il fasse. Demandez donc l'explorateur ainsi :
 
 ```
-use subagent with scope "project" and agent "explorer",
-task: "Nomme exactement les outils dont tu disposes."
+utilise le subagent "explorer" pour la tâche "Nomme exactement les outils dont tu disposes."
 ```
 
 Voici ce que le nôtre a rendu :
@@ -176,31 +178,42 @@ La liste ne contient aucun outil d'écriture, et c'est l'agent qui l'énonce lui
 Faites de même avec le codeur, en lui demandant cette fois de lancer les tests :
 
 ```
-use subagent with scope "project" and agent "coder",
-task: "Lance `npm test` et rapporte le résultat."
+utilise le subagent "coder" pour la tâche "Lance `npm test` et rapporte le résultat."
 ```
 
-> « I cannot execute shell commands, including `npm test`. According to my instructions, the orchestrator runs the tests after my response and provides the output. Since I cannot trigger the tests myself, I cannot report their result at this moment. »
+> « Le subagent "coder" indique qu'il ne dispose pas d'un outil lui permettant d'exécuter des commandes shell, et ne peut donc pas lancer npm test. »
 
 Ces deux citations sont les sorties de deux exécutions, et les vôtres seront différentes : un modèle reformule d'une fois sur l'autre, et le module sur le contexte a chiffré cette dispersion. Ce qui se reproduit est le fond, l'explorateur énumérant quatre outils de lecture et le codeur renvoyant les tests à l'orchestrateur.
 :::
 
+::: warning Choix du modèle
+Vous pouvez également dire dans votre demande le modèle que vous souhaitez utiliser comme dans le prompt suivant:
+
+```
+utilise le subagent "coder" avec le modèle deepseek-v4-flash d'opencode-go pour la tâche "Lance npm test et rapporte le résultat."
+```
+:::
+
 ### Le tour de boucle, à la main
 
-Vous tenez maintenant le rôle que le module suivant automatisera. Ouvrez la session principale avec l'extension chargée, et donnez-lui son cadre en premier message : elle est un relais, elle ne lit pas le dépôt, ne modifie rien, lance l'agent que vous nommez en portée projet avec la tâche que vous dictez, et vous rend le livrable du sous-agent tel quel. Ce cadre est une consigne et non une garantie, et c'est la trace qui vous dira ce qui s'est réellement passé.
+Vous tenez maintenant le rôle d'orchestrateur que le module suivant automatisera. Ouvrez la session principale avec l'extension chargée, et parcourez la chaîne un pas à la fois avec `/step`.
 
-La boucle comporte six gestes :
+Cette commande `/step <agent> <instruction>` lance l'agent que vous nommez sur ce que vous tapez, plus la sortie du pas précédent. Sa réponse est **écrite dans la transcription sans entrer dans le contexte du modèle** : la session principale voit défiler les rapports sans les lire, donc sans pouvoir agir dessus. C'est la différence qui compte ici. Une session qui lit un rapport d'exploration devient un orchestrateur que vous ne commandez pas et qui choisit la suite contre des conclusions que vous n'avez pas validées. Or, nous souhaitons que ce soit vous qui décidiez qu'elle est l'étape d'après. La fenêtre principale est donc votre console et pas un interlocuteur comme vous l'avez vu jusqu'à présent. La commande `/quote` vous permet de faire entrer le résultat du pas précédent dans le contexte vous permettant de faire un copier-coller rapide quand il y a quelque chose à discuter.
 
-1. **explorer** reçoit le ticket #2 et rend la note d'impact ;
-2. vous lisez la note, puis **planner** reçoit le ticket et la note, telles quelles, et rend le plan ;
-3. **coder** reçoit le pas 1 du plan, et rien d'autre du plan ; il rend son rapport, et le diff est dans l'arbre ;
+La boucle comporte six étapes :
+
+1. `/step explorer traite le ticket #2 d'ISSUES.md` rend la note d'impact ;
+2. vous la lisez dans la transcription, puis `/step planner` la reçoit telle quelle, avec le ticket, et rend le plan ;
+3. `/step coder` reçoit le plan ; donnez-lui le pas 1 et rien d'autre, en le dictant après le nom de l'agent. Il rend son rapport, et le diff est dans l'arbre ;
 4. vous lancez **`npm test` vous-même**, dans un second terminal, et vous gardez la sortie ;
-5. **reviewer** reçoit le ticket, le pas, le diff (`git diff`) et la sortie des tests, collés par vous, et rend son verdict ;
-6. selon le verdict : pas suivant au coder, retour au coder avec les raisons, ou retour au planner si c'est le pas qui est en cause.
+5. `/step reviewer` reçoit le rapport du coder ; collez-y le ticket, le pas, le diff (`git diff`) et la sortie des tests, et il rend son verdict ;
+6. selon le verdict : pas suivant au coder, retour au coder avec les raisons, ou retour au planner si c'est le pas qui est en cause. `/step --from <id>` reprend la sortie d'un pas plus ancien que le dernier, ce qui est exactement le geste du retour en arrière.
 
-Pendant qu'un sous-agent travaille, un point s'affiche au-dessus de l'invite avec son modèle, ses tokens et un chronomètre, et la ligne d'outil en dessous garde la trace de l'appel. Si [herdr](https://herdr.dev) tourne sur votre machine, `/herdr on` donne à chaque sous-agent son propre onglet, et vous voyez l'explorer lire pendant que vous préparez la tâche suivante. Cette vue sert à suivre le travail pendant qu'il se fait, sans rien vous permettre de conclure : pour cela, il vous faudra la trace.
+`/chain` liste à tout moment les pas parcourus ; `/chain reset` repart de zéro dans un nouveau répertoire. Le journal que vous teniez à la main pour l'ordre des étapes est donc déjà tenu par l'outil, ce qui vous laisse n'écrire que la partie qu'il ne sait pas voir, vos décisions.
 
-Pendant que vous faites ces gestes, tenez un journal, une ligne par geste : ce que vous avez copié, de qui vers qui, et ce que vous avez décidé au passage. Tenez-le où vous voulez. Ce journal liste ce que l'orchestrateur du module suivant devra savoir faire, et vous êtes bien placé pour l'écrire puisque vous aurez fait chaque geste vous-même.
+Pendant qu'un sous-agent travaille, un point s'affiche au-dessus de l'invite avec son modèle, ses tokens et un chronomètre, et la ligne d'outil en dessous garde la trace de l'appel. Si [herdr](https://herdr.dev) tourne sur votre machine, `/herdr on` donne à chaque sous-agent son propre onglet, et vous voyez l'explorer lire pendant que vous préparez la tâche suivante. Cette vue sert à suivre le travail pendant qu'il se fait, sans rien vous permettre de conclure : pour cela, il vous faudra la trace de l'étape précédente.
+
+Pendant que vous faites ces gestes, tenez un journal de ce que `/chain` ne peut pas voir : non pas l'ordre des pas, qu'il enregistre déjà, mais ce que vous avez décidé entre deux et sur quel critère. Pourquoi ce pas plutôt que le suivant, pourquoi ce retour au planner, ce que vous avez relu avant de trancher. Ce journal liste ce que l'orchestrateur du module suivant devra savoir faire, et vous êtes bien placé pour l'écrire puisque vous aurez pris chaque décision vous-même.
 
 ::: info Exercice (en salle)
 Déroulez la boucle jusqu'au premier `APPROVED`, c'est-à-dire jusqu'à ce que le pas 1 du plan soit livré, testé et relu. Si le reviewer refuse, jouez le refus jusqu'au bout : c'est la moitié la plus instructive de la boucle, parce qu'elle vous oblige à décider à qui renvoyer le verdict.
@@ -218,13 +231,10 @@ Dans la seconde session, chaque fichier lu est resté dans la fenêtre et y rest
 
 ### Vérifier dans la trace qui a tourné
 
-::: info Exercice (en salle) A REVOIR
+::: info Exercice (en salle) 
 Exportez la session principale avec `\export` et retrouvez chaque appel de l'outil `subagent` : le nom de l'agent, la portée, le modèle, la tâche transmise. C'est la seule réponse fiable à la question de savoir qui a tourné si vous n'avez pas vu l'activité de vos agents via herdr.
-
-Puis faites la contre-épreuve, deux fois. Demandez le lancement de l'explorer sans préciser la portée : l'appel échoue, et l'erreur énumère les neuf agents livrés, parmi lesquels le vôtre ne figure pas, sans que le message prononce le mot « portée ». Demandez ensuite celui du planner dans les mêmes termes : l'appel réussit, parce qu'un `planner` existe parmi les agents livrés avec l'extension, et c'est lui qui a reçu votre tâche, sous un autre prompt et sans `model:` déclaré. Seuls l'argument de portée dans la trace et le modèle utilisé trahissent la substitution, et rien, dans la réponse rendue, ne vous l'aurait dit.
 :::
 
-Voici une raison de plus de ne pas croire les indicateurs sur parole. Pendant la préparation de cette formation, une version antérieure de l'outillage de délégation affichait un ✓ vert sur un sous-agent mort, parce que la fonction de fermeture renvoyait `ok: true` en dur. Le défaut est corrigé et un test le garde, mais la leçon ne dépend pas du correctif : un indicateur de réussite est du code comme un autre, écrit par quelqu'un, et seule la trace fait foi.
 
 ### Pourquoi ce module ne publie pas de matrice
 
@@ -232,30 +242,28 @@ Les deux modules précédents ont établi leurs affirmations sur vingt répétit
 
 Vous avez également pu voir qu'il est facile de contrôler finement ce que peut faire un agent via ses outils et définir le modèle que l'on souhaite pour celui-ci.
 
-Ce module ne peut donc pas assurer pour le moment que le découpage en rôles améliore le résultat, c'est-à-dire que le ticket #2 traité par cette boucle serait mieux corrigé que le même ticket traité par un agent seul. La question est légitime, elle relève de la mesure, et elle n'est pas tranchée ici. Le module suivant pose le protocole qui permet de la trancher. Nous allons automatiser la boucle que vous avez joué à la main et observer la qualité des résultats.
+Ce module ne peut donc pas assurer pour le moment que le découpage en rôles améliore le résultat, c'est-à-dire que le ticket #2 traité par cette boucle serait mieux corrigé que le même ticket traité par un agent seul. La question est légitime, elle relève de la mesure. Le module suivant pose le protocole qui permet de faire cette mesure. Nous allons automatiser la boucle que vous avez jouée à la main et observer la qualité des résultats.
 
 ## Généraliser
 
-Déléguer revient à isoler un contexte pour n'en faire revenir que la conclusion. Le gain tient moins au coût du travail qu'au fait qu'il ne reste pas dans la fenêtre : une exploration faite dans la session principale s'y relit à chaque tour jusqu'à la fin, alors que la même exploration déléguée disparaît avec son contexte et ne laisse que trente lignes. Si ce qui revient du sous-agent est aussi gros que ce qu'il a lu, vous n'avez rien isolé.
+Déléguer revient à isoler un contexte pour n'en faire revenir que la conclusion. Le gain tient moins au coût du travail qu'au fait qu'il ne reste pas dans la fenêtre : une exploration faite dans la session principale s'y relit à chaque tour jusqu'à la fin, alors que la même exploration déléguée disparaît avec son contexte et ne laisse que trente lignes. Bien évidemment, si ce qui revient du sous-agent est aussi gros que ce qu'il a lu, vous n'avez rien isolé.
 
 La garantie d'un agent vient de sa panoplie plutôt que de son prompt. Le prompt du coder lui dit de ne pas lancer les tests, mais c'est l'absence d'un shell qui fait qu'il ne le peut pas, et l'agent sait lui-même faire la différence. Chaque fois que vous hésitez entre écrire une interdiction et retirer un outil, retirez l'outil : une absence se constate dans la configuration, alors qu'une interdiction suppose que le modèle la suive.
 
-Un générateur ne s'évalue pas lui-même. La valeur d'un relecteur séparé vient de ce que son contexte ne contient pas, c'est-à-dire le raisonnement qui a produit le code. C'est aussi pourquoi un reviewer qui corrige détruit sa propre valeur, en redevenant un générateur que personne ne relit.
+Un générateur ne s'évalue pas lui-même. La valeur d'un relecteur séparé vient de ce que son contexte ne contient pas, c'est-à-dire le raisonnement qui a produit le code. C'est aussi pourquoi un reviewer qui corrige détruit sa propre valeur, en redevenant un générateur de code.
 
 Un champ que vous ne déclarez pas est décidé ailleurs. Un agent sans `model:` tourne sur les réglages du jour de la machine, un fichier sans `tools:` obtient la panoplie en lecture seule, un fichier sans `name` n'existe pas. La règle vaut au-delà des agents : pour chaque champ d'une configuration, demandez-vous ce qui se passe quand il est absent, et qui décide alors à votre place.
 
-Une configuration qu'un appel peut omettre se vérifie à chaque exécution. Vos agents déposés dans `.pi/agents/` ne sont servis que si l'appel demande la portée projet, et trois de vos rôles ont des homonymes livrés qui prennent leur place sans erreur quand elle manque. Vérifiez dans la trace, ou forcez la portée par un mécanisme, mais ne la supposez jamais acquise.
+Le découpage en rôles répartit le travail du modèle sans l'augmenter. Le modèle qui décrochait sur le ticket long décrochera tout autant sur un plan entier passé en une fois. Le fait de faire par petits pas permet d'avoir un travail de meilleure qualité. Un planner qui découpe trop gros reproduit exactement le décrochage que le module sur le contexte a mesuré.
 
-Le découpage en rôles répartit le budget du modèle sans l'augmenter. Le modèle qui décrochait sur le ticket long décrochera tout autant sur un plan entier passé en une fois, et c'est le pas du plan, dimensionné pour tenir dans une invocation, qui convertit le découpage en travail fini. Un planner qui découpe trop gros reproduit exactement le décrochage que le module sur le contexte a mesuré.
-
-Automatiser une boucle demande de l'avoir tenue à la main. Votre journal de friction dit ce que l'orchestrateur devra router, dans quel ordre, et sur quels critères vous avez décidé des retours. Nous vous rappelons que construire son propre harnais demande de l'expérience et c'est au fur et à mesure de l'acquisition de cette expérience que vous allez peaufiner votre harnais pour qu'une confiance s'instaure.
+Automatiser une boucle demande de l'avoir tenue à la main. Votre journal dit ce que l'orchestrateur devra router, dans quel ordre, et sur quels critères vous avez décidé des retours. Nous vous rappelons que construire son propre harnais demande de l'expérience et c'est au fur et à mesure de l'acquisition de cette expérience que vous allez peaufiner votre harnais pour qu'une confiance s'instaure.
 
 ## Livrable
 
 Ce module produit trois pièces.
 
 1. Les quatre agents, versionnés dans votre dépôt, chacun avec sa panoplie minimale et son `model:` déclaré. Ce sont eux que le module suivant branchera sur l'orchestrateur, sans les modifier.
-2. Le journal d'un tour de boucle : la trace de la session principale exportée, le diff livré du premier pas, la sortie de `npm test` que le reviewer a lue, et votre journal de friction. C'est la pièce qui prouve qui a tourné, et celle dont le module suivant a besoin.
+2. Le journal d'un tour de boucle : la trace de la session principale exportée, le diff livré du premier pas, la sortie de `npm test` que le reviewer a lue, et votre journal. 
 3. La ligne « délégation » de la fiche de décision, ci-dessous.
 
 | levier                            | effet observé | adopté ? | pourquoi |
@@ -271,22 +279,8 @@ Ce module produit trois pièces.
 La colonne s'appelle « effet observé » plutôt que « effet mesuré », parce que ce module vérifie des propriétés dans des traces et n'établit pas d'écarts sur des répétitions. La dernière ligne se remplira en deux temps, ici puis au module suivant, quand vous saurez ce que l'automatisation de chaque geste a réellement changé.
 
 ::: tip Critère de réussite
-Vous savez montrer, trace en main, quel agent a tourné à chaque étape de votre boucle, avec quels outils et quel modèle, et citer le geste de votre journal de friction que vous refuseriez de refaire vingt fois.
-
-La première moitié demande d'avoir lu une trace plutôt qu'un ✓, la seconde d'avoir tenu la boucle soi-même, et ni l'une ni l'autre ne se remplit de mémoire.
+Vous savez montrer, trace en main, quel agent a tourné à chaque étape de votre boucle, avec quels outils et quel modèle, et citer le geste écrit dans votre journal que vous refuseriez de refaire vingt fois.
 :::
-
-## Les pièges
-
-Donner le plan entier au coder recrée, à l'intérieur du découpage, le ticket long sur lequel le modèle décroche : il écrira le début et s'arrêtera, et le reviewer refusera un travail que personne ne lui a découpé. Donnez un pas par invocation, et lisez le rapport du coder entre deux.
-
-Laisser le reviewer corriger en fait un second codeur que personne ne relit, et son `APPROVED` suivant ne vaut plus rien, puisqu'il porte sur son propre travail.
-
-Coller la session entière de l'explorer dans le contexte principal, au lieu de sa seule conclusion, annule l'isolation que vous venez de payer. Le critère se vérifie mécaniquement, puisque ce qui revient doit être petit devant ce qui a été lu.
-
-Reformuler un livrable en le routant introduit une étape invisible, ni versionnée ni relisible, exactement là où la chaîne se voulait traçable ; l'orchestrateur qui résume la note avant de la donner au planner en est le cas courant. Les livrables se transmettent tels quels, et c'est pour cela que leur forme est imposée par les prompts des agents.
-
-Prendre un refus pour une discipline revient à créditer l'agent d'une vertu qu'il n'a pas eu à exercer : un agent en lecture seule n'a pas refusé d'écrire, il n'en avait pas le moyen. Celui qui dispose de l'outil et annonce qu'il ne s'en servira pas ne garantit rien, et le module précédent a chiffré ce que vaut une consigne de ce genre, suivie moins d'une fois sur trois.
 
 ## Pour aller plus loin
 
