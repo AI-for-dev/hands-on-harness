@@ -3,25 +3,38 @@ import { fr } from './locales/fr.mts'
 import { en } from './locales/en.mts'
 import { es } from './locales/es.mts'
 
-// Le français est la langue source, servie à la racine (pas de préfixe).
-// L'anglais et l'espagnol sont générés automatiquement dans content/en et
-// content/es par `npm run i18n:translate` (voir i18n/README.md) et servis
-// sous /en/ et /es/.
+// Same attribution as LICENSE-CONTENT, shown under every page by
+// .vitepress/theme/LicenseNotice.vue and exposed in the HTML metadata.
+const author = { name: 'Loic Gouarin', link: 'https://github.com/gouarin' }
+
+// French is the source language, served at the root (no prefix). English
+// and Spanish are generated into content/en and content/es by
+// `npm run i18n:translate` (see i18n/README.md) and served under /en/ and
+// /es/.
 //
 // https://vitepress.dev/guide/i18n
 export default defineConfig({
   srcDir: 'content',
 
-  // Le dépôt GitHub (AI-for-dev/hands-on-harness) publie sur
-  // https://ai-for-dev.github.io/hands-on-harness/ : une page de projet, pas
-  // une page utilisateur/organisation (qui serait servie à la racine). Sans
-  // ce `base`, les assets (CSS/JS) et les liens internes pointeraient vers
-  // la racine du domaine et casseraient une fois déployés.
+  // The GitHub repository (AI-for-dev/hands-on-harness) publishes to
+  // https://ai-for-dev.github.io/hands-on-harness/, a project page rather
+  // than a user/organisation page served at the domain root. Without this
+  // `base`, assets (CSS/JS) and internal links would point to the domain
+  // root and break once deployed.
   base: '/hands-on-harness/',
 
-  // Un bloc ```mermaid devient un composant <Mermaid> dessiné côté client
-  // (.vitepress/theme/Mermaid.vue). Le code est encodé pour passer tel quel
-  // dans un attribut, sans que Vue ni markdown-it n'interprètent son contenu.
+  head: [['meta', { name: 'author', content: author.name }]],
+
+  // Merged into each locale's themeConfig: the author does not depend on
+  // the language.
+  themeConfig: {
+    author: { ...author, year: 2026 }
+  },
+
+  // A ```mermaid block becomes a <Mermaid> component rendered client-side
+  // (.vitepress/theme/Mermaid.vue). The code is URI-encoded so it passes
+  // through an attribute untouched, without Vue or markdown-it
+  // interpreting it.
   markdown: {
     config(md) {
       const fence = md.renderer.rules.fence!
