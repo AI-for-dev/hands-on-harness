@@ -1,0 +1,116 @@
+# Le découpage en rôles contre l'agent seul, sur l'issue #2.
+#
+# La question que le module 2.4 laisse ouverte : est-ce que découper le travail
+# en rôles spécialisés améliore le résultat, contre un agent seul recevant le
+# même brief ? Deux cellules, un seul levier entre elles, les rôles.
+#
+# CE QUE CE SCÉNARIO NE MESURE PAS. Le module 2.4 pose la question pour *son*
+# pipeline, où l'enchaînement est du code et où aucun modèle ne décide de la
+# suite. trysquare ne peut pas lancer ça : une cellule est un tour de `pi`, et
+# l'argv est construit à un seul endroit du harnais. Ce qui est mesuré ici est
+# donc le découpage **dont l'agent garde la barre** - il reçoit six rôles et
+# décide lui-même de déléguer, de à qui, et dans quel ordre. L'écart entre les
+# deux formes d'orchestration est réel et il est justement ce que le module
+# discute ; il ne se tranche pas dans cette matrice.
+#
+# Aucune métrique de procédé n'est déclarée, et ce n'est pas un oubli :
+# `ToolCall.wrote` refuse de juger dès qu'un appel `subagent` apparaît, donc
+# toute colonne lue dans les appels d'outil serait « sans objet » du côté
+# délégué et pleine de l'autre. Une colonne qui ne veut pas dire la même chose
+# des deux côtés ne compare rien.
+
+[scenario]
+name = "issue2-delegation"
+title = "le découpage en rôles contre l'agent seul, sur l'extraction de l'issue #2"
+hypothesis = "../hypotheses/issue2-delegation.md"
+
+[task]
+repo = "neon"
+etalon = "etalon-v1"
+prompt = "../briques/issue2-ticket-cadre.md"
+test_command = "npm test"
+
+[agent]
+provider = "opencode-go"
+model = "deepseek-v4-flash"
+# Déclaré et jamais hérité. Il doit valoir le `defaultThinkingLevel` de la
+# machine, sans quoi une cellule à sous-agents est refusée avant de démarrer.
+thinking = "high"
+
+[protocol]
+repetitions = 20
+concurrency = 5
+timeout = 1800
+attempts = 3
+
+# --- Cellules ---------------------------------------------------------------
+
+# La base : un agent, le ticket cadré, la convention du projet. Rien d'autre.
+[variants."agent-seul"]
+context = "../briques/AGENTS.md"
+
+# Le même brief, plus les six rôles du module 2.4 et l'outil pour les appeler.
+# L'agent orchestre lui-même : rien ne l'oblige à déléguer, et c'est une partie
+# de ce qui se mesure.
+[variants."+roles"]
+context = "../briques/AGENTS.md"
+harness = ["combo", "roles"]
+
+# --- Briques de harnais -----------------------------------------------------
+
+# L'outil `subagent`, sans quoi les définitions déposées dans `.pi/agents/` ne
+# seraient que des fichiers que personne ne peut appeler.
+[harness.combo]
+repo = "combo"
+tag = "main"
+load = "extension"
+
+# Les rôles du module, cités tels qu'ils sont versionnés : pas de copie ici, une
+# copie dériverait de l'originale sans que rien ne le dise. Leur `verdict` reste
+# sans effet sous l'outil `subagent` nu, `tools:` étant une liste d'autorisation
+# et non une demande, et les deux relecteurs retombent sur le mot que leur prose
+# décrit déjà.
+#
+# `model` écrase celui que chaque fichier déclare : sans cet écrasement les rôles
+# tourneraient sur le modèle écrit dans le dépôt pendant que le parent tourne sur
+# celui du scénario, et la cellule mesurerait deux modèles à la fois.
+[harness.roles]
+kind = "agents"
+model = "deepseek-v4-flash"
+paths = [
+  "../../agents/explorer.md",
+  "../../agents/tester.md",
+  "../../agents/planner.md",
+  "../../agents/coder.md",
+  "../../agents/reviewer.md",
+  "../../agents/auditor.md",
+]
+
+# --- Validation -------------------------------------------------------------
+
+[[validation]]
+mode = "script"
+command = "../validateurs/issue2.py"
+metrics = [
+  "delivered",
+  "in_scope",
+  "touched",
+  "api_intacte",
+  "suite_verte",
+  "extraction",
+  "purete",
+  "multi_briques",
+  "frame_inchange",
+]
+
+# --- Verdict ----------------------------------------------------------------
+
+[verdict]
+# `multi_briques` et non `extraction` : l'extraction est nommée par le ticket,
+# donc elle mesure l'obéissance et se sature. Le comportement que le ticket ne
+# nomme pas est ce qu'une extraction rate en silence, et c'est lui le critère.
+criterion = "multi_briques"
+reference = "agent-seul"
+# Une cellule qui n'a rien livré, qui est sortie du périmètre ou qui a cassé
+# l'API n'a pas d'avis à donner sur le comportement.
+validity = ["delivered", "in_scope", "api_intacte"]

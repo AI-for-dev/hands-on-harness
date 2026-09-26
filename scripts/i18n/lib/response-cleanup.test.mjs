@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict'
 import { test } from 'node:test'
 
-import { cleanupTranslationResponse } from './response-cleanup.mjs'
+import { cleanupTranslationResponse, dropAddedContainerFence } from './response-cleanup.mjs'
 
 test('leaves a clean answer untouched', () => {
   const text = '# Title\n\nA paragraph.'
@@ -29,4 +29,25 @@ test('puts a code block marker back alone on its line', () => {
 test('does not move a marker embedded in a sentence', () => {
   const raw = 'See the block %%%PROTECTED_0%%% above.'
   assert.equal(cleanupTranslationResponse(raw), raw)
+})
+
+test('a ::: fence the source did not have is dropped', () => {
+  const source = '::: info Exercice (en salle)\nÉcrivez la règle en partant de vos propres exécutions.'
+  const translated = '::: info Exercise (in class)\nWrite the rule from your own runs.\n:::'
+  assert.equal(
+    dropAddedContainerFence(source, translated),
+    '::: info Exercise (in class)\nWrite the rule from your own runs.'
+  )
+})
+
+test('a container the source really closes is left alone', () => {
+  const source = '::: tip Objectifs\nMesurer ce que fait le modèle.\n:::'
+  const translated = '::: tip Goals\nMeasure what the model does.\n:::'
+  assert.equal(dropAddedContainerFence(source, translated), translated)
+})
+
+test('a fence added elsewhere than at the end is left to the checks', () => {
+  const source = 'Un paragraphe sans conteneur.'
+  const translated = ':::\nA paragraph with no container.'
+  assert.equal(dropAddedContainerFence(source, translated), translated)
 })

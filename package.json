@@ -1,8 +1,10 @@
 {
   "license": "BSD-3-Clause",
+  "type": "module",
   "devDependencies": {
-    "vitepress": "^2.0.0-alpha.17",
-    "js-yaml": "^4.1.0"
+    "js-yaml": "^4.1.0",
+    "mermaid": "^12.0.0",
+    "vitepress": "^2.0.0-alpha.17"
   },
   "scripts": {
     "test": "node --test \"scripts/**/*.test.mjs\"",

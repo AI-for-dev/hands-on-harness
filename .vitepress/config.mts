@@ -19,6 +19,22 @@ export default defineConfig({
   // la racine du domaine et casseraient une fois déployés.
   base: '/hands-on-harness/',
 
+  // Un bloc ```mermaid devient un composant <Mermaid> dessiné côté client
+  // (.vitepress/theme/Mermaid.vue). Le code est encodé pour passer tel quel
+  // dans un attribut, sans que Vue ni markdown-it n'interprètent son contenu.
+  markdown: {
+    config(md) {
+      const fence = md.renderer.rules.fence!
+      md.renderer.rules.fence = (tokens, idx, options, env, self) => {
+        const token = tokens[idx]
+        if (token.info.trim() === 'mermaid') {
+          return `<Mermaid code="${encodeURIComponent(token.content)}" />`
+        }
+        return fence(tokens, idx, options, env, self)
+      }
+    }
+  },
+
   locales: {
     root: { label: 'Français', ...fr },
     en: { label: 'English', ...en },

@@ -7,6 +7,8 @@
 // that, a code block containing a blank line (very common) would be cut into
 // two segments, and half a code block would be sent to the model.
 import { protectCodeBlocks, restoreCodeBlocks } from './markdown-protect.mjs'
+import { containsMermaid, mermaidSkeleton } from './mermaid.mjs'
+import { delocalizeAssetLinks } from './assets.mjs'
 
 // Markdown block separator = one or more blank lines (a "blank" line may
 // contain spaces or tabs).
@@ -74,9 +76,14 @@ export function isPassthrough(segment) {
 // scripts/i18n/lib/segment-index.mjs). A heading stays a heading, a table stays
 // a table, a code block stays identical to the character: when that does not
 // hold, the alignment has shifted and must absolutely not be used to reuse
-// translations.
+// translations. Two parts of a raw segment are allowed to differ: the labels of
+// a Mermaid diagram, which are translated, and the language of a localised
+// figure (see mermaid.mjs and assets.mjs).
 export function structuralSignature(segment) {
-  if (isPassthrough(segment)) return `raw:${segment}`
+  if (isPassthrough(segment)) {
+    const raw = delocalizeAssetLinks(segment)
+    return containsMermaid(raw) ? `mermaid:${mermaidSkeleton(raw)}` : `raw:${raw}`
+  }
 
   const firstLine = segment.split('\n', 1)[0]
   const headingMatch = firstLine.match(/^(#{1,6})\s/)

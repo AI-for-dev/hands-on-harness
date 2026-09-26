@@ -8,7 +8,7 @@
 - Réviser une procédure à partir des exécutions lues, et vérifier la révision par une nouvelle matrice
 :::
 
-Le module précédent a fait le tour de ce qu'on gagne en s'y prenant mieux : choisir un modèle, régler un curseur, écrire un ticket, tenir un fichier de règles. Il s'est terminé sur un constat. Sur les configurations qui reçoivent le ticket cadré, quatre exécutions sur vingt écrivent les tests rouges que le ticket demande et n'ouvrent jamais `game/neon.js` : le modèle épuise son budget à formuler les cas et n'arrive pas à les corriger. Le seul levier qui ait rattrapé ce décrochage consistait à lui fournir les tests déjà écrits, ce que personne ne fera sur un vrai ticket.
+Le module précédent a fait le tour de ce qu'on gagne en s'y prenant mieux : choisir un modèle, régler un curseur, écrire un ticket, tenir un fichier de règles. Il s'est terminé sur un constat : sur les configurations qui reçoivent le ticket cadré, quatre exécutions sur vingt écrivent les tests rouges que le ticket demande et n'ouvrent jamais `game/neon.js` : le modèle épuise son budget à formuler les cas et n'arrive pas à les corriger. Le seul levier qui ait rattrapé ce décrochage consistait à lui fournir les tests déjà écrits, ce que personne ne fera sur un vrai ticket.
 
 La question de ce module est donc de savoir si une **procédure de travail**, écrite une fois et rechargée à la demande, obtient la même chose sans fournir les tests.
 
@@ -39,7 +39,7 @@ L'idée est celle d'une procédure de travail qu'on écrit une fois et que l'age
 
 ### Ce que le modèle en voit
 
-Il y a un point de mécanique à bien comprendre, car il conditionne tout le reste. Pi injecte dans le prompt système, **à chaque tour**, le nom, la description et le chemin de chaque skill disponible :
+Un point de mécanique conditionne tout le reste : Pi injecte dans le prompt système, **à chaque tour**, le nom, la description et le chemin de chaque skill disponible :
 
 ```
 The following skills provide specialized instructions for specific tasks.
@@ -83,7 +83,7 @@ La compétence `playtest` est écrite pour ça. Elle donne à l'agent un rôle, 
 
 <<<@/../scripts/trysquare-campaign/briques/skills/playtest/SKILL.md{md}
 
-Deux décisions de rédaction méritent d'être relevées, parce qu'elles se transposent à n'importe quelle procédure.
+Deux décisions de rédaction se transposent à n'importe quelle procédure.
 
 **Le livrable est un fichier dont la forme est imposée.** L'étape 4 impose la forme de `.scratch/to_fix.md`, un bloc par défaut, avec sa cause localisée à la ligne près, son invariant violé, son déclencheur chiffré, son cas de test, la sortie d'échec réelle copiée du terminal, et la correction naïve que ce cas refuse. Un agent qui produit ce fichier a nécessairement fait le travail que le fichier décrit.
 
@@ -101,7 +101,7 @@ Les deux configurations à compétence de la matrice reçoivent le prompt suivan
 
 <<<@/../scripts/trysquare-campaign/briques/issue1-simple-prompt-with-skill.md
 
-Trois choses sont à noter. La demande est la demande négligée du module précédent. Le `/skill:playtest` en tête fait développer le corps du fichier côté client, donc la compétence est **imposée** plutôt que proposée. Et la lecture d'`ISSUES.md` est interdite, pour que la procédure travaille sur le symptôme du joueur et non sur un ticket déjà rédigé.
+Trois choses sont à noter : la demande est la demande négligée du module précédent ; le `/skill:playtest` en tête fait développer le corps du fichier côté client, donc la compétence est **imposée** plutôt que proposée ; et la lecture d'`ISSUES.md` est interdite, pour que la procédure travaille sur le symptôme du joueur et non sur un ticket déjà rédigé.
 
 La colonne `skill_invoque` vaut donc 20/20 sur ces deux configurations par construction, et 0/20 sur toutes les autres. Elle enregistre un fait sur la session sans mesurer une décision du modèle, et rien de ce qui suit ne porte sur la question de savoir si une bonne description déclenche.
 
@@ -211,7 +211,7 @@ L'archive de ces deux matrices est dans `scripts/trysquare-campaign/results-2026
 
 ## Ce qu'un skill ne garantit pas
 
-Tout ce que les deux matrices viennent de montrer tient à une seule propriété : un skill n'a que du texte. La consigne de ménage ignorée, le brouillon jamais migré vers la suite, la référence fantôme suivie à la lettre : chaque fois, la procédure demandait quelque chose que rien n'obligeait le modèle à faire. Un skill n'a ni schéma d'entrée, ni fonction d'exécution, ni garde de permission. La littérature sur les outils d'agents décrit l'anatomie d'un outil, à savoir un nom, une description lue par le modèle, un schéma d'entrée, une fonction d'exécution et une permission entre la validation et l'exécution, et un skill n'en réalise que les deux premiers éléments.
+Tout ce que les deux matrices viennent de montrer tient à une seule propriété : un skill n'a que du texte. La consigne de ménage ignorée, le brouillon jamais migré vers la suite, la référence fantôme suivie à la lettre : chaque fois, la procédure demandait quelque chose que rien n'obligeait le modèle à faire. Un skill n'a ni schéma d'entrée, ni fonction d'exécution, ni garde de permission. Un outil d'agent complet comporte un nom, une description lue par le modèle, un schéma d'entrée, une fonction d'exécution et une permission entre la validation et l'exécution ; un skill n'en réalise que les deux premiers éléments.
 
 Pi a un second mécanisme pour le reste. Une **extension** est un module TypeScript posé dans `.pi/extensions/`, qui appelle `pi.registerTool({ name, ... })` : un vrai outil, avec un schéma JSON validé, une fonction que vous avez écrite, et la possibilité d'intercepter les appels d'outils pour y insérer une permission. Vous en avez déjà croisé une sans le savoir : l'outil de recherche web que la première version de la procédure demandait est une extension, chargée par la brique `extension` du scénario. Le module sur les permissions s'appuiera sur ce mécanisme pour transformer les consignes en garanties.
 
@@ -254,7 +254,7 @@ Vous mesurerez la seule chose que ce module affirme sans l'avoir établie, et vo
 
 ## Généraliser
 
-**Un skill est une procédure de travail, pas un outil.** Il n'a ni schéma d'entrée, ni fonction, ni permission, et le seul mécanisme dont il dispose est le texte. Ce qu'il sait faire est imposer un ordre de travail et une forme de livrable, ce qui est utile et ne se confond pas avec l'exécution d'un code que vous contrôlez.
+**Un skill est une procédure de travail et non un outil.** Il n'a ni schéma d'entrée, ni fonction, ni permission, et le seul mécanisme dont il dispose est le texte. Ce qu'il sait faire est imposer un ordre de travail et une forme de livrable, ce qui est utile et ne se confond pas avec l'exécution d'un code que vous contrôlez.
 
 **La description est la seule chose lue à coup sûr.** Le corps n'entre dans le contexte que si le modèle décide de l'ouvrir ou si l'utilisateur le développe avec `/skill:`. Une description qui dit ce que la procédure fait, plutôt que quand s'en servir, s'adresse à la mauvaise décision.
 
@@ -272,7 +272,7 @@ Vous mesurerez la seule chose que ce module affirme sans l'avoir établie, et vo
 
 ## Livrable
 
-Trois pièces.
+Ce module produit trois pièces.
 
 **1. La compétence**, dans `.pi/skills/<nom>/`, avec sa description écrite par vous et un livrable dont la forme est imposée par le corps. Si vous l'avez révisée, les deux versions restent versionnées : la matrice qui les compare ne se comprend pas sans elles.
 
@@ -305,7 +305,7 @@ Ce critère demande d'avoir lu une configuration contre la bonne référence. Il
 
 **Faire écrire les tests ailleurs que dans la suite.** Un cas de test qui vit dans un fichier de travail ne sera lancé par personne après le départ de l'agent, et la migration promise vers la suite est précisément l'étape que le modèle rate.
 
-**Compter sur une consigne de nettoyage.** Elle n'est suivie que dans moins d'une exécution sur trois, ce qui reste dans l'arbre fait échouer le périmètre de toute la configuration, et la correction robuste n'est pas une meilleure consigne mais une procédure qui ne crée rien.
+**Compter sur une consigne de nettoyage.** Elle n'est suivie que dans moins d'une exécution sur trois, ce qui reste dans l'arbre fait échouer le périmètre de toute la configuration, et la correction fiable n'est pas une meilleure consigne mais une procédure qui ne crée rien.
 
 **Réviser sans remesurer.** Une révision qui répond point par point au diagnostic reste une hypothèse tant qu'une matrice ne l'a pas vérifiée. La nôtre prédisait aussi une baisse de coût sur gemma, et cette matrice-là ne peut pas la confirmer, ses reprises rendant les colonnes de coût illisibles.
 

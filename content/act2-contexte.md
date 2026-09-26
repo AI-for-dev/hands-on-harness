@@ -104,11 +104,11 @@ Retenez aussi que changer de modèle en cours de session n'est pas gratuit, ce q
 
 Toutes les mesures de ce module portent sur la même tâche, l'**issue #1** de NÉON : la balle traverse les briques au lieu de rebondir.
 
-Le ticket est décrit dans `ISSUES.md` à la racine du dépôt de NEON (https://github.com/AI-for-dev/neon). Il explique que la balle passe à travers les briques ainsi que les différents comportements qu'il faut corriger pour avoir un comportement normal de la balle. Nous pourrions donner directement ce ticket à l'agent, mais nous ne le ferons pas pour le moment. Nous souhaitons pour l'instant voir comment il se comporte en fonction du prompt qu'on lui fournit et le cadre autour.
+Le ticket est décrit dans `ISSUES.md`, à la racine du [dépôt NÉON](https://github.com/AI-for-dev/neon) : la balle passe à travers les briques, et le ticket détaille les comportements attendus après correction. Nous pourrions le donner directement à l'agent, mais nous ne le ferons pas pour le moment : nous voulons d'abord voir comment il se comporte selon le prompt qu'on lui fournit et le cadre qui l'entoure.
 
-Comme vous pouvez le constater, cette issue comporte plusieurs subtilités qui vont être difficiles à trouver pour l'agent seul. Il va rapidement voir le problème et proposer de calculer une distance aux côtés de la brique. En fonction du côté tapé, il va inverser une des deux vitesses. Mais le problème au coin, qui est rare mais réel, ou le problème d'une vitesse trop importante qui ferait que la balle traverse la brique sans même la voir, il y a malheureusement très peu de chance qu'il les voie.
+Cette issue comporte plusieurs subtilités difficiles à trouver pour un agent seul. Il verra rapidement le problème et proposera de calculer la distance de la balle aux côtés de la brique, pour inverser, selon le côté touché, l'une des deux vitesses. Le cas du coin, rare mais réel, et celui d'une vitesse assez grande pour que la balle franchisse la brique sans jamais la recouvrir, ont en revanche très peu de chances d'être traités.
 
-En plus de la correction du bug, nous souhaitons commencer à définir un cadre et vérifier que l'agent n'en sorte pas. Il y en a principalement trois :
+En plus de la correction du bug, nous souhaitons commencer à définir un cadre et vérifier que l'agent n'en sorte pas. Ce cadre tient en trois règles :
 
 - L'agent ne peut modifier que `game/neon.js` et `game/neon.test.js` et rien d'autre.
 - L'agent doit lancer les tests pour vérifier qu'il n'a rien cassé.
@@ -128,7 +128,7 @@ Voici ce que nous proposons de mesurer sur chaque exécution :
 | `rebond_voisines`    | sur une couture de la grille, le rebond s'applique une fois et pas deux                       |
 | `rebond_traversee`   | une balle rapide ne franchit plus la brique sans la toucher                                   |
 
-Nous testerons l'ensemble de ces points de manière déterministe et sans utiliser de LLM-as-a-judge. Nous avons écrit les tests qu'il faudrait avoir dans un fichier sonde. Dites-vous qu'un test à vérifier est toujours beaucoup plus sûr que l'utilisation d'un LLM pour confirmer un comportement souhaité. L'aspect probabiliste du LLM peut vous faire croire que c'est bon alors que ça ne l'est pas du tout.
+Nous testons l'ensemble de ces points de manière déterministe, sans LLM-as-a-judge : les tests qu'il faudrait avoir sont écrits dans un fichier sonde. Un test exécutable est plus sûr qu'un LLM chargé de confirmer un comportement souhaité, dont le verdict probabiliste peut vous faire croire que c'est bon alors que ça ne l'est pas.
 
 ::: warning Chaque exécution travaille sur un clone jeté
 Si le dispositif travaillait directement dans l'arbre de travail, chaque exécution modifierait le dépôt et la suivante mesurerait ces modifications plutôt que la configuration. L'outil que nous utilisons plus bas clone donc NÉON **à un tag**, `etalon-v1`, dans un répertoire temporaire, à chaque exécution. Sans cette précaution, `main` avance, une salle corrige l'issue #1, et les mesures d'hier ne se comparent plus à celles de demain sans que rien ne le signale.
@@ -145,14 +145,14 @@ Lancez la même demande sur deux modèles de tailles différentes, celui que vou
 
 <<<@/../scripts/trysquare-campaign/briques/issue1-simple-prompt.md
 
-Vous prendrez bien soin de faire deux clones séparés au préalable en utilisant la commande
+Prenez soin de créer au préalable deux clones séparés :
 
 ```bash
 git clone --branch etalon-v1 git@github.com:AI-for-dev/neon.git neon-model-xxx
 git clone --branch etalon-v1 git@github.com:AI-for-dev/neon.git neon-model-yyy
 ```
 
-et vous travaillerez directement dans ces deux répertoires en fonction du modèle.
+puis travaillez dans le répertoire correspondant au modèle testé.
 
 Lisez les deux diffs, puis les deux `/session`. Notez vos observations sans en tirer de conclusion : la section sur les répétitions expliquera pourquoi deux exécutions ne suffisent pas à départager deux modèles.
 :::
@@ -175,9 +175,9 @@ Le raisonnement a bien un effet quand on le mesure entre deux niveaux réels, et
 
 #### `AGENTS.md`, le point de configuration globale
 
-Le fichier de règles placé à la racine du dépôt entre dans le contexte à chaque tour, ce qui en fait un bon candidat pour définir le cadre global de notre projet. Quand l'agent se trompe, la réaction naturelle consiste à y ajouter une phrase, puis une autre. Néanmoins, il faut être vigilant, car ajouter à chaque fois une nouvelle ligne a un coût et plus le fichier est grand, moins l'agent verra l'ensemble. De plus, l'amélioration des modèles fera que certaines lignes sont vraies aujourd'hui mais seront obsolètes à une future mise à jour. Il y a un réel travail de refactoring continu ici qu'il est important de faire tout au long de l'évolution de votre projet.
+Le fichier de règles placé à la racine du dépôt entre dans le contexte à chaque tour, ce qui en fait un bon candidat pour définir le cadre global de notre projet. Quand l'agent se trompe, la réaction naturelle consiste à y ajouter une phrase, puis une autre. Chaque ligne ajoutée a pourtant un coût, et plus le fichier grossit, moins l'agent en voit l'ensemble ; l'amélioration des modèles rendra par ailleurs obsolètes des lignes vraies aujourd'hui. Ce fichier demande donc un refactoring continu, tout au long de la vie du projet.
 
-Nous donnerons ici une contrainte forte pour cette formation.
+Nous posons pour cette formation une contrainte forte.
 
 ::: danger Budget : 40 lignes
 L'`AGENTS.md` de NÉON ne dépassera jamais 40 lignes, du début à la fin de la formation. Chaque module qui voudra y ajouter une règle devra d'abord en retirer une, ou reformuler pour faire tenir les deux en une seule.
@@ -185,12 +185,12 @@ L'`AGENTS.md` de NÉON ne dépassera jamais 40 lignes, du début à la fin de la
 Cette contrainte vous oblige à faire le travail de refactoring continu décrit plus haut : chaque règle doit mériter sa place, et un fichier court a beaucoup plus de chances d'être réellement suivi qu'un long guide de style.
 :::
 
-Mais nous pouvons également nous appuyer sur d'autres fichiers et le dire dans `AGENTS.md` pour qu'il aille le lire si besoin. Par exemple, nous pouvons lui indiquer que les conventions sont dans `CONTRIBUTING.md`, l'architecture dans le `README.md` et l'historique dans git.
+Nous pouvons également nous appuyer sur d'autres fichiers et le dire dans `AGENTS.md`, pour que l'agent aille les lire au besoin. Par exemple, nous pouvons lui indiquer que les conventions sont dans `CONTRIBUTING.md`, l'architecture dans le `README.md` et l'historique dans git.
 
 Sur nos vingt exécutions de l'issue #1 avec la demande négligée, **aucune n'a lancé la suite de tests** et **aucune n'a ajouté un cas**.
 
 ::: info Exercice (en salle)
-Écrivez l'`AGENTS.md` de NÉON en partant de vos propres exécutions plutôt que des nôtres : relisez les diffs que vous venez de produire et cherchez ce que l'agent a fait sans qu'on le lui demande, ou omis alors qu'on le lui demandait. Faites en sorte qu'il lance les tests à chaque fois qu'il modifie le code et qu'il en ajoute s'il n'y a pas de couvertures.
+Écrivez l'`AGENTS.md` de NÉON en partant de vos propres exécutions plutôt que des nôtres : relisez les diffs que vous venez de produire et cherchez ce que l'agent a fait sans qu'on le lui demande, ou omis alors qu'on le lui demandait. Faites en sorte qu'il lance les tests à chaque fois qu'il modifie le code et qu'il en ajoute s'il n'y a pas de couverture.
 
 Voici la base de départ, à discuter et à amender. C'est le fichier même que nos mesures utilisent, et il est versionné dans les expériences plus bas :
 
@@ -268,11 +268,11 @@ Cette manipulation montre également que Pi compacte à 32 000 tokens non pas pa
 
 #### Le dispositif
 
-Nous allons étudier un peu plus finement l'influence des différentes parties du contexte en lançant des sessions Pi avec un ensemble de répétitions pour essayer de voir la convergence des résultats.
+Nous étudions maintenant plus finement l'influence des différentes parties du contexte, en exécutant chaque configuration plusieurs fois pour tenir compte de la dispersion des résultats.
 
 Pour ce faire, nous allons utiliser [trysquare](https://github.com/AI-for-dev/trysquare), un outil écrit en Python et spécialement conçu pour cette formation. Il lance les configurations d'un scénario, note chaque exécution, agrège, et offre une synthèse des résultats. Il ne sait rien de NÉON, rien de l'issue #1, rien de cette formation.
 
-`scripts/trysquare-campaign/` est le répertoire contenant l'expérience. En voici son contenu :
+`scripts/trysquare-campaign/` est le répertoire contenant l'expérience. En voici le contenu :
 
 ```
 scripts/trysquare-campaign/
@@ -284,22 +284,20 @@ scripts/trysquare-campaign/
   results/           une matrice par répertoire
 ```
 
-Nous ne rentrerons pas dans les détails de conception et d'usage. Vous pouvez vous reporter à la documentation : https://ai-for-dev.github.io/trysquare/.
-
-Nous vous donnons ici juste les informations suffisantes pour cette formation. Dans le répertoire `scenarios`, vous avez la description des expériences. Dans chacune d'elles, vous y trouverez le modèle utilisé (celui que vous trouvez dans Pi) et le nombre de répétitions. Vous y trouverez également les différentes configurations que comporte l'expérience ainsi que les tests de validation.
+Nous ne rentrerons pas dans les détails de conception et d'usage, pour lesquels vous pouvez vous reporter à la [documentation](https://ai-for-dev.github.io/trysquare/). Retenez pour cette formation que le répertoire `scenarios/` décrit les expériences : chaque fichier déclare le modèle utilisé (au sens où Pi le nomme), le nombre de répétitions, les configurations de l'expérience et les tests de validation.
 
 #### Le plan d'expérience
 
-Le plan retenu est le plus simple qui reste lisible : une **base**, puis un ensemble de variantes effectuant des micro changements.
+Le plan retenu est le plus simple qui reste lisible : une **base**, puis un ensemble de variantes qui changent chacune peu de chose.
 
-La base, appelée `nothing`, reproduit ce que fait quelqu'un le premier jour : la demande négligée, pas de fichier de règles, le prompt système de l'agent. Nous allons juste un peu plus loin en ne mettant pas de raisonnement. Il contient le prompt qui vous a été fourni un peu plus haut lors de vos premiers tests. Chaque autre configuration ne fait qu'ajouter des éléments afin de voir l'impact sur la réponse.
+La base, appelée `nothing`, reproduit ce que fait quelqu'un le premier jour : la demande négligée fournie plus haut lors de vos premiers essais, pas de fichier de règles, le prompt système de l'agent, et le raisonnement coupé. Chaque autre configuration ajoute un élément pour en voir l'effet sur la réponse.
 
 | configuration                    | ce qui change                                                   |
 | -------------------------------- | --------------------------------------------------------------- |
 | `nothing`                        | rien, c'est la référence                                        |
 | `+thinking`                      | `thinking = "high"`                                             |
 | `+agents`                        | `brick/AGENTS.md` est déposé dans le clone                      |
-| `+well_crafted`                  | le prompt décrit proprement le problème et se réfère à ISSUE.md |
+| `+well_crafted`                  | le prompt décrit proprement le problème et se réfère à `ISSUES.md` |
 | `-system_prompt`                 | le prompt système est remplacé par trois lignes                 |
 | `+agents+well_crafted`           | `AGENTS.md` + prompt bien écrit                                 |
 | `+agents+add_tests+well_crafted` | on ajoute en plus ici les tests que l'on souhaite voir passer   |
@@ -308,7 +306,7 @@ Une expérience tient dans un fichier : `scripts/trysquare-campaign/scenarios/is
 
 <!-- <<<@/../scripts/trysquare-campaign/scenarios/issue1-contexte.toml{toml} -->
 
-Lorsque vous regarderez les résultats dans le répertoire de l'expérience, vous y verrez d'autres configurations que dans le tableau ci-dessus. Ils appartiennent à d'autres modules. Nous en discuterons donc plus tard.
+Le répertoire de l'expérience contient d'autres configurations que celles du tableau ci-dessus ; elles appartiennent à d'autres modules, et nous en discuterons plus tard.
 
 Le prompt bien écrit ne recopie pas le contenu du ticket. `ISSUES.md` décrit déjà comment corriger le bug, dans le dépôt que l'agent a sous la main. Le prompt nomme donc l'issue, le périmètre et le critère d'arrêt, et rien de plus :
 
@@ -318,26 +316,24 @@ Cette configuration mesure donc si pointer un document écrit suffit à ce que l
 
 #### Les tests de validation
 
-Afin de juger de la qualité des résultats, nous devons définir un certain nombre de tests de validation. Nous en faisons la liste ici en ajoutant leur description.
+Pour juger la qualité des résultats, le scénario déclare des tests de validation :
 
-- **delivered**: le test a fonctionné jusqu'au bout et il n'y a pas eu d'interruption.
-- **suite_lancee**: l'agent a pensé à lancer les tests qui se trouvent dans le répertoire `game`.
-- **in_scope**: l'agent n'a modifié que les fichiers qu'on lui a demandé de modifier et que les lignes qui correspondent au problème.
-- **tests_ajoutes**: l'agent a pensé à ajouter des tests pour tester les rebonds de la balle avec les briques.
-- **`sonde.test.js`**: à la fin des modifications, nous exécuterons des tests pour vérifier que les modifications apportées dans le code répondent bien à la correction du problème dans sa globalité comme décrit dans `ISSUE.md`. Cette sonde sera également utilisée dans la configuration `+add_tests`, où les tests seront directement accessibles dès le début. Le but est de voir si l'agent est en mesure de réparer ses erreurs en fonction des tests.
+- **delivered** : l'exécution est allée au bout, sans interruption.
+- **suite_lancee** : l'agent a pensé à lancer les tests qui se trouvent dans le répertoire `game`.
+- **in_scope** : l'agent n'a modifié que les fichiers qu'on lui a demandé de modifier, et seulement les lignes qui correspondent au problème.
+- **tests_ajoutes** : l'agent a pensé à ajouter des tests sur les rebonds de la balle contre les briques.
+- **`sonde.test.js`** : à la fin de l'exécution, cette sonde vérifie que les modifications du code corrigent le problème dans sa globalité, tel que décrit dans `ISSUES.md`. Elle est aussi déposée dès le départ dans la configuration `+add_tests`, pour voir si l'agent est en mesure de réparer ses erreurs en fonction des tests.
 
 #### Les traces
 
-Durant le déroulé de l'expérience, nous sauvegardons un certain nombre de traces afin d'analyser un peu plus finement ce qui s'est passé lors du post-traitement.
+L'expérience sauvegarde des traces qui permettent d'analyser après coup ce qui s'est passé. Pour chaque run, vous avez accès à :
 
-Pour chaque run, vous avez accès à
+- un export de la session Pi au format JSONL, qu'il est possible de repasser au format HTML (nous en parlerons un peu plus tard) ;
+- un répertoire `validation` qui donne l'état des tests de validation ;
+- un fichier `configuration.json` qui rappelle le cadre du run (modèle, harnais, tests...) ;
+- un patch (`diff.patch`) qui dit ce qui a été modifié dans le code de NÉON pendant le run.
 
-- un export de la session Pi au format JSONL qu'il est possible de repasser au format html (nous en parlerons un peu plus tard)
-- un répertoire `validation` qui mentionne l'état des tests de validation
-- un fichier `configuration.json` qui vous rappelle le cadre du run (modèle, harnais, tests...)
-- un patch (`diff.patch`) qui vous dit ce qui a été modifié dans le code NEON durant ce run
-
-A la fin de l'expérience, vous avez accès à une synthèse au format html et markdown qui vous donne les réussites des validations pour chacune des configurations ainsi que des moyennes sur les coûts en token et la durée des runs.
+À la fin de l'expérience, une synthèse aux formats HTML et Markdown donne les réussites des validations pour chaque configuration, ainsi que des moyennes sur les coûts en tokens et la durée des runs.
 
 #### Combien de répétitions, et pourquoi
 
@@ -381,7 +377,7 @@ cd scripts/trysquare-campaign
 trysquare run scenarios/issue1-contexte.toml --output resultats --dry-run
 ```
 
-La config est prise dans le `trysquare.toml` le plus proche, donc celui de l'établi tant que vous lancez depuis ce répertoire.
+La config est prise dans le `trysquare.toml` le plus proche, donc celui de `scripts/trysquare-campaign/` tant que vous lancez depuis ce répertoire.
 
 Puis lancez la matrice à trois répétitions et laissez-la tourner pendant que vous discutez des curseurs :
 
@@ -405,7 +401,7 @@ trysquare compare resultats/... resultats/...
 
 #### Nos mesures
 
-Vous avez dû vous en rendre compte lors de vos premiers essais avec `trysquare` : faire des mesures prend du temps. Pour une vingtaine de répétitions, il vous faudra entre 2h et 3h pour avoir l'ensemble des résultats avec ceux du module suivant. Nous avons donc préféré vous donner une campagne complète réalisée en amont dans laquelle vous pouvez naviguer dans les répertoires de chaque exécution comme vous l'avez fait précédemment.
+Vous avez dû vous en rendre compte lors de vos premiers essais avec `trysquare` : faire des mesures prend du temps. Pour une vingtaine de répétitions, il vous faudra entre 2 h et 3 h pour avoir l'ensemble des résultats avec ceux du module suivant. Nous avons donc préféré vous donner une campagne complète réalisée en amont dans laquelle vous pouvez naviguer dans les répertoires de chaque exécution comme vous l'avez fait précédemment.
 
 Voici ce que nous avons obtenu en août 2026, sur `ilaas` et `gemma-4-31b`, contre le commit `d62ccd1f` de NÉON, avec **vingt répétitions par configuration**. Les deux configurations à compétence figurent dans l'archive et appartiennent au module suivant ; elles sont écartées des tables ci-dessous, à l'exception d'une remarque à la fin.
 
@@ -570,7 +566,7 @@ Les deux dernières lignes sont prises sur la matrice `deepseek-v4-flash`, dont 
 
 Le harnais complet atteint dix-huit sur vingt sur un critère où la base plafonne à onze, et la colonne la plus sévère de la sonde passe de 7/20 à 18/20. C'est la thèse d'Addy Osmani, *« a decent model with a great harness beats a great model with a bad harness »*, vérifiée sur sa moitié la plus facile à établir : à modèle rigoureusement constant, le harnais seul fait la différence entre une correction qui marche une fois sur deux et une correction qui marche neuf fois sur dix.
 
-Le coin passe de 0/20 à 18/20, et le prompt cadré seul en obtenait déjà quatorze: l'essentiel du gain vient du fait que le prompt fait référence à un ticket dans `ISSUES.md` qui nomme le cas, et la sonde ajoute par-dessus la persévérance qui manquait pour finir le travail.
+Le coin passe de 0/20 à 18/20, et le prompt cadré seul en obtenait déjà quatorze : l'essentiel du gain vient du fait que le prompt fait référence à un ticket dans `ISSUES.md` qui nomme le cas, et la sonde ajoute par-dessus la persévérance qui manquait pour finir le travail.
 
 ### Ce que ce module ne sait pas obtenir
 
@@ -589,7 +585,7 @@ Huit principes de ce module restent valables au-delà de Pi, d'`ilaas` et de la 
 
 **Un modèle a un budget, et décrire plus de travail ne l'agrandit pas.** Notre ticket énumère cinq sous-cas et demande un test rouge pour chacun ; quatre exécutions sur vingt écrivent ces tests rouges et n'ouvrent jamais le fichier source. Ce constat conditionne la suite : soit vous réduisez la demande à ce que le modèle peut porter, soit vous lui donnez de quoi tenir la distance, ce qui est le sujet du module suivant.
 
-**Le fichier de règles change ce que l'agent fait, pas ce qu'il trouve, et il ne sert que sur ce que le ticket ne dit pas.** Il entre dans le contexte à chaque tour, ce qui le rend puissant et coûteux, d'où l'intérêt de le tenir court, de sourcer chaque règle par un échec observé et de le refactorer plutôt que de l'allonger. Nos mesures cadrent précisément ce qu'il achète : la configuration `+agents` fait passer de 0/20 à 20/20 le nombre d'exécutions qui lancent la suite de tests, laisse le critère de correction inchangé, et n'apporte plus rien du tout dès que le prompt cadré est là. La règle d'écriture qui en découle est directement applicable au budget de quarante lignes : une ligne qu'un ticket correct dirait de toute façon est une ligne à retirer.
+**Le fichier de règles change ce que l'agent fait et non ce qu'il trouve, et il ne sert que sur ce que le ticket ne dit pas.** Il entre dans le contexte à chaque tour, ce qui en fait un levier fort et coûteux à la fois, d'où l'intérêt de le tenir court, de sourcer chaque règle par un échec observé et de le refactorer plutôt que de l'allonger. Nos mesures cadrent précisément ce qu'il achète : la configuration `+agents` fait passer de 0/20 à 20/20 le nombre d'exécutions qui lancent la suite de tests, laisse le critère de correction inchangé, et n'apporte plus rien du tout dès que le prompt cadré est là. La règle d'écriture qui en découle est directement applicable au budget de quarante lignes : une ligne qu'un ticket correct dirait de toute façon est une ligne à retirer.
 
 **Un réglage exposé par le harnais n'est pas forcément transmis au modèle.** Entre le drapeau que vous tapez et la requête qui part se trouvent du code et des tables de correspondance, comme le montre `--thinking max`, qui n'atteint pas le modèle que nous utilisons sans que rien ne vous en avertisse. Le corollaire côté mesure est que ce qui décide de l'expérience doit être écrit dans l'expérience : un niveau de raisonnement hérité d'une configuration personnelle a rendu une de nos configurations identique à sa base dans toutes les matrices publiées.
 
@@ -597,13 +593,13 @@ Huit principes de ce module restent valables au-delà de Pi, d'`ilaas` et de la 
 
 **Ce qui est mesuré doit être épinglé par ce qui ne bouge pas.** Un tag est un nom, et `git tag -f` le déplace sans laisser de trace du côté de la mesure, si bien que deux matrices peuvent déclarer le même étalon et avoir travaillé sur deux versions différentes du code. Épinglez par le commit, qui ne bouge pas, et si votre outil ne le permet pas encore, archivez au moins ce que le nom a résolu au moment de la mesure.
 
-**Une métrique doit dire pourquoi, pas seulement quoi.** Une colonne uniformément noire ressemble à un comportement de l'agent et peut être un défaut du validateur, et rien ne distingue les deux tant que la métrique se contente de répondre vrai ou faux. Faites-lui écrire ce sur quoi elle s'est prononcée : la nôtre recopie, sous chaque faux, les commandes que l'agent a passées, et c'est ce qui permet de vérifier un zéro au lieu de le croire sur parole.
+**Une métrique doit dire pourquoi, et non seulement quoi.** Une colonne uniformément noire ressemble à un comportement de l'agent et peut être un défaut du validateur, et rien ne distingue les deux tant que la métrique se contente de répondre vrai ou faux. Faites-lui écrire ce sur quoi elle s'est prononcée : la nôtre recopie, sous chaque faux, les commandes que l'agent a passées, et c'est ce qui permet de vérifier un zéro au lieu de le croire sur parole.
 
 **Écrivez l'hypothèse avant de mesurer, et versionnez-la.** Une hypothèse rédigée après les mesures n'est qu'une conclusion déguisée. La nôtre, `hypotheses/issue1-contexte.md`, contient une prédiction qui s'est révélée fausse, et c'est parce qu'elle était écrite d'avance que nous l'avons publiée comme telle au lieu de la reformuler après coup en découverte.
 
 ## Livrable
 
-Trois pièces, dont les deux premières servent toute la journée et la troisième servira à l'acte 4.
+Ce module produit trois pièces : les deux premières servent toute la journée, la troisième servira à l'acte 4.
 
 **1. L'`AGENTS.md` de NÉON**, versionné dans le dépôt, sous les 40 lignes, chaque règle justifiée par un échec que vous avez observé.
 
@@ -663,4 +659,4 @@ Notre exemple est `AGENTS.md` : il ne déplace pas d'un point le critère de cor
 - Addy Osmani, [Agent Harness Engineering](https://addyosmani.com/blog/agent-harness-engineering/), dont la thèse est celle que la comparaison de la pile à la base met à l'épreuve.
 - [La documentation de Pi](https://github.com/earendil-works/pi/tree/main/packages/coding-agent/docs), et en particulier ses pages sur la compaction, les modèles et les réglages.
 - [trysquare](https://github.com/AI-for-dev/trysquare), l'outil de mesure utilisé dans ce module, et son guide d'écriture de scénario.
-- L'établi de la formation, `scripts/trysquare-campaign/`, avec ses hypothèses écrites avant mesure et ses matrices archivées. C'est le seul endroit où les chiffres de cette page sont vérifiables.
+- La campagne trysquare de la formation, `scripts/trysquare-campaign/`, avec ses hypothèses écrites avant mesure et ses matrices archivées. C'est le seul endroit où les chiffres de cette page sont vérifiables.
