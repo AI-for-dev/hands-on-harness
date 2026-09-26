@@ -19,7 +19,7 @@ cd scripts/trysquare-campaign
 ```
 
 `mesurer.sh` pointe l'outil et la config, puis écrit une ligne dans
-`resultats/journal.md` : la date, le scénario, le répertoire produit, et **la révision
+`results/journal.md` : la date, le scénario, le répertoire produit, et **la révision
 de trysquare et du harnais au moment de la mesure**. trysquare épingle le dépôt mesuré
 par un tag, mais rien n'épingle trysquare lui-même, et une expérience sur un harnais
 qui n'épingle pas le harnais mesure l'opérateur. Un `-dirty` dans le journal signale une
@@ -28,8 +28,8 @@ mesure qu'on ne saura pas reproduire exactement.
 Les sous-commandes qui ne dépensent rien passent directement :
 
 ```bash
-./mesurer.sh render resultats/issue1-contexte_etalon-v1_ilaas_gemma-4-31b_n10
-./mesurer.sh compare resultats/issue1-contexte_* resultats/issue1-contexte-pro_*
+./mesurer.sh render results/issue1-contexte_etalon-v1_ilaas_gemma-4-31b_n10
+./mesurer.sh compare results/issue1-contexte_* results/issue1-contexte-pro_*
 ```
 
 Prérequis : `uv`, le binaire `pi` sur le `PATH`, un fournisseur auquel vous avez accès,
@@ -38,24 +38,34 @@ verdicts - tourne hors ligne. Si NÉON est ailleurs, copiez `trysquare.toml` et 
 `CONFIG=/chemin/vers/ma-config.toml ./mesurer.sh ...` plutôt que de modifier le fichier
 versionné.
 
-### NÉON doit être un clone local
+### NÉON, par URL ou par chemin
+
+Une entrée de `[repos]` est une adresse, et trysquare accepte les deux formes : un
+répertoire local, ou une URL git (`https://`, `ssh://`, `git@hôte:org/dépôt.git`).
+C'est ce que fait la configuration versionnée, qui pointe l'URL publique de NÉON, si
+bien qu'il n'y a rien à cloner à la main avant un premier lancement.
+
+Une URL est **épinglée une fois** par matrice, dans
+`<workdir>/sources/<dépôt>-<empreinte>-<étalon>/`, et chaque exécution clone ensuite
+depuis ce répertoire plutôt que depuis le réseau. L'épingle est un arbre de travail et
+non un miroir nu, parce que la notation en a besoin : le validateur lit sa référence
+dans le tag avec `git show`, sur un dépôt local.
+
+Un chemin relatif se résout **par rapport au fichier de configuration**, jamais par
+rapport au répertoire courant, parce qu'une configuration décrit une machine et non
+l'endroit où se tient l'opérateur. Les variables d'environnement et le `~` sont
+développés dans un chemin, et jamais dans une URL.
 
 ```bash
-git clone <url de NÉON> ../../../neon      # depuis scripts/trysquare-campaign
-git -C ../../../neon tag -l etalon-v1      # doit répondre, sinon rien n'est mesurable
+git ls-remote --tags <url de NÉON> | grep etalon-v1   # doit répondre
 ```
 
-trysquare clone le dépôt mesuré **depuis un chemin de fichier** : il vérifie
-`source.exists()` puis passe `source.resolve()` à `git clone`, donc une URL est refusée.
-Ce n'est pas une limite qu'il faut contourner ici, parce que la notation en a besoin
-aussi : le validateur lit sa référence dans le tag avec `git show`, sur un dépôt local.
+Le tag `etalon-v1` doit exister **et avoir été poussé** (`git push origin etalon-v1`).
+Un tag créé localement et jamais poussé rend l'expérience irrejouable par quelqu'un
+d'autre, sans le moindre message d'erreur avant le premier lancement, et l'URL de la
+configuration ne le verra jamais.
 
-Le tag `etalon-v1` doit donc exister dans le clone. Il vient avec un `git clone`
-ordinaire, mais seulement s'il a été **poussé** (`git push origin etalon-v1`) : un tag
-créé localement et jamais poussé rend l'expérience irrejouable par quelqu'un d'autre,
-sans le moindre message d'erreur avant le premier lancement.
-
-Publier NÉON est ce qui rend `resultats/` vérifiable ailleurs que sur cette machine :
+Publier NÉON est ce qui rend `results/` vérifiable ailleurs que sur cette machine :
 une matrice archivée ne référence que le nom d'un tag, et un tag sur un dépôt local
 n'est reconstituable par personne. C'est aussi pourquoi le journal enregistre le
 **commit** derrière le tag et pas seulement son nom.
@@ -70,7 +80,7 @@ scripts/trysquare-campaign/
   hypotheses/        ce qui est prédit, écrit avant de mesurer
   briques/           tickets, AGENTS.md, prompt système, compétences, sonde fournie
   validateurs/       ce qui note
-  resultats/         une matrice par répertoire, versionnée, plus le journal
+  results/           une matrice par répertoire, versionnée, plus le journal
 ```
 
 Les chemins d'un scénario sont relatifs au scénario, ce qui rend le répertoire
@@ -78,7 +88,7 @@ déplaçable d'un bloc.
 
 ## Les expériences
 
-### `issue1-contexte` — les leviers de contexte, sur l'issue #1
+### `issue1-contexte` : les leviers de contexte, sur l'issue #1
 
 Les six cellules du module 2.1, un levier à la fois contre une base, mais sur l'issue #1
 de NÉON au lieu de l'issue #2. `issue1-contexte-pro` en reprend deux coins sur un modèle
@@ -86,17 +96,23 @@ plus gros, parce que le modèle est une constante de scénario dans trysquare et
 2×2 est donc deux expériences jointes par `compare`.
 
 Une septième cellule s'est ajoutée, `pile soignée +skill` : la pile soignée plus une
-compétence, `briques/skills/test-gaps`, qui se déclenche sur une demande de
-correction ou d'ajout, inventorie la suite existante, dit ce qu'il y manque pour
-démontrer le changement, et porte une liste de cas limites. Elle **ne se lit pas contre
-`rien`** mais contre `pile soignée`, la seule cellule dont elle ne diffère que par cette
-brique. Le verdict de la matrice, lui, se prend contre `rien` pour toutes les cellules :
-c'est `compare` ou la table qui donne l'écart utile ici, pas la colonne de verdict.
+compétence, `briques/skills/playtest`, qui décompose un symptôme de jouabilité en
+défauts distincts, spécifie chacun par un cas rouge et les consigne avant de les
+implémenter en TDD. Elle **ne se lit pas contre `rien`** mais contre `pile soignée`, la
+seule cellule dont elle ne diffère que par cette brique. Le verdict de la matrice, lui,
+se prend contre `rien` pour toutes les cellules : c'est `compare` ou la table qui donne
+l'écart utile ici, pas la colonne de verdict.
 
-La compétence ne nomme ni `frame()`, ni les faces d'une brique. Ce qui est mesuré est
-donc si une méthode de travail sans connaissance du domaine fait trouver le cas que la
-demande ne nomme pas - et non si un agent sait appliquer un indice qu'on vient de lui
-tendre (`briques/README.md`).
+La compétence connaît NÉON et le dit : elle nomme `frame()`, les faces d'une brique et
+le signe des vitesses. Ce qui est mesuré n'est donc pas si une méthode sans domaine
+fait trouver le cas, mais ce que le **protocole** d'une compétence coûte à budget de
+modèle constant, question que le scénario `issue1-skills` reprend en opposant `playtest`
+à sa version courte (`briques/README.md`).
+
+Les deux cellules à compétence portent une interdiction de lire `ISSUES.md`, sans quoi
+elles cumuleraient deux leviers et ne se liraient plus contre la pile soignée. Le
+validateur ne vérifie pas que l'interdiction a été suivie ; c'est une métrique qui
+reste à écrire.
 
 Une colonne l'accompagne, `skill_invoque`, et elle se lit **avant** le critère. pi ne met
 que le nom et la description d'une compétence dans le prompt système ; le corps du
@@ -187,6 +203,57 @@ Une métrique déclarée dans un scénario mais absente du validateur ne coûte 
 matrice : elle fait échouer le **validateur**, l'exécution est gardée, et `replay` la
 renote sans dépenser un jeton (`invariants.md:81`). C'est ce qui permet d'ajouter une
 métrique après coup sur des exécutions déjà payées.
+
+### `issue2-delegation` : le découpage en rôles, sur l'issue #2
+
+La question que le module 2.4 laisse ouverte. Deux cellules, un seul levier :
+`agent-seul` reçoit le ticket cadré et la convention du projet, `+roles` reçoit le
+même brief plus les six rôles du module dans `.pi/agents/` et l'extension combo qui
+fournit l'outil pour les appeler. Les rôles sont cités là où ils sont versionnés,
+`scripts/agents/`, plutôt que recopiés dans `briques/` : une copie dériverait de
+l'originale sans que rien ne le dise. Leur `verdict` reste sans effet sous l'outil
+`subagent` nu, `tools:` étant une liste d'autorisation et non une demande.
+
+**Ce que ce scénario ne mesure pas.** Le module pose la question pour *son* pipeline,
+où l'enchaînement est du code et où aucun modèle ne décide de la suite. trysquare ne
+peut pas lancer ça : une cellule est un tour de `pi`, l'argv est construit à un seul
+endroit du harnais, et une cellule ne dispose que de cinq leviers (`prompt`,
+`context`, `system`, `thinking`, `harness`). Ce qui est mesuré ici est donc le
+découpage dont l'agent garde la barre. La comparaison du pipeline appartient à
+`experiment`, dans combo.
+
+Le critère est `multi_briques` et non `extraction`. Le ticket nomme la signature,
+donc `extraction` mesure l'obéissance et se sature des deux côtés ; ce que le ticket
+ne nomme pas, c'est qu'une balle peut recouvrir deux briques dans la même passe et
+qu'elles doivent toutes deux mourir. Une exécution réelle de ce ticket a rendu une
+extraction qui ne cassait plus qu'une brique par frame sans qu'aucun test du dépôt ne
+rougisse.
+
+Ce ticket se note à l'envers du précédent. L'issue #1 demandait un comportement
+absent, donc la sonde était noire à l'étalon ; l'issue #2 demande un déplacement de
+code à comportement constant, donc `multi_briques` et `frame_inchange` sont **vertes
+avant tout travail** et ne peuvent que noircir. Ce sont des colonnes de
+non-régression, pas de réussite. La table de vérification, sur quatre arbres et sans
+un jeton dépensé, est dans la docstring de `sonde()` :
+
+```
+                                          extraction  purete  multi_briques  frame_inchange
+étalon intact                                0/2       0/3        2/2            2/2
+correction de référence                      2/2       3/3        2/2            2/2
+extraction qui ne rend que la première       2/2       1/3        0/2            2/2
+extraction impure, jeu correct               2/2       1/3        2/2            2/2
+```
+
+**Aucune métrique de procédé n'est déclarée**, et c'est une contrainte du banc.
+`ToolCall.wrote` refuse de juger dès qu'un appel `subagent` apparaît dans la session,
+donc toute colonne lue dans les appels d'outil serait « sans objet » du côté délégué
+et pleine de l'autre. Une colonne qui ne veut pas dire la même chose des deux côtés
+ne compare rien, et tout ce qui est noté ici se lit dans l'arbre.
+
+Le prix de cette contrainte est nommé dans l'hypothèse : rien ne compte les
+délégations, donc rien ne dira qu'une cellule `+roles` n'a jamais délégué. En
+attendant qu'une métrique le tranche, cela se vérifie à la main dans les sessions
+archivées de quelques exécutions.
 
 ### Affiner `suite_lancee`
 
