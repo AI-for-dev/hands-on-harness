@@ -194,7 +194,7 @@ Escribe el `AGENTS.md` de NÉON a partir de tus propias ejecuciones en lugar de 
 
 Esta es la base de partida, para discutir y enmendar. Es el mismo archivo que usan nuestras mediciones, y está versionado en los experimentos de más abajo:
 
-<<<@/../scripts/trysquare-campaign/briques/AGENTS.md{md
+<<<@/../scripts/trysquare-campaign/briques/AGENTS.md{md}
 
 :::
 

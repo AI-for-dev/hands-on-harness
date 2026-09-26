@@ -81,7 +81,7 @@ The skill we are writing addresses the drop-off measured in the previous module,
 
 The `playtest` skill is written for that. It gives the agent a role, that of the playtester who knows that a symptom is not a bug, a coordinate reference so that signs of speed do not have to be guessed, a table of ten failure families to go through one by one, and the obligation to quantify each trigger from the file's constants rather than describe it.
 
-<<<@/../scripts/trysquare-campaign/briques/skills/playtest/SKILL.md{md
+<<<@/../scripts/trysquare-campaign/briques/skills/playtest/SKILL.md{md}
 
 Two writing decisions carry over to any procedure.
 
@@ -180,7 +180,7 @@ The `deepseek-v4-flash` matrix completes the diagnosis: the same skill scores `t
 
 The revised version keeps what carries the substance: the role, the coordinate frame, the table of the ten families, and the requirement to compute each trigger from the constants. It cuts the rest, and each cut addresses a defect observed in the runs. The cases are written directly as red in `game/neon.test.js`, and the procedure no longer creates any file, which removes both the failed migration and the need for cleanup. The web research step disappears, since the sessions showed only a single call of it. The double red and the block of twelve fields are replaced by a one-line requirement: the case checks the expected behavior in values, never only "something changed". The file goes from six steps to four and from 182 lines to 86.
 
-<<<@/../scripts/trysquare-campaign/briques/skills/playtest-court/SKILL.md{md
+<<<@/../scripts/trysquare-campaign/briques/skills/playtest-court/SKILL.md{md}
 
 ### What the second matrix says
 

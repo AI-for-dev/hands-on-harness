@@ -189,3 +189,7 @@ test('separators come out without trailing whitespace', () => {
   assert.deepEqual(separators, ['\n\n'], 'the line of spaces becomes an empty line')
   assert.equal(joinSegments(segments, separators), 'Un paragraphe.\n\nUn autre.')
 })
+
+test('a lone snippet import is copied as is', () => {
+  assert.equal(isPassthrough('<<<@/../scripts/briques/AGENTS.md{md}'), true)
+})

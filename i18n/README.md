@@ -77,7 +77,8 @@ combining:
   rewording a comment there changes nothing),
 - the style guide (`i18n/style-guide.md`, injected verbatim into the prompt,
   hence hashed verbatim),
-- the prompt version number (`promptVersion` in `i18n/config.json`).
+- the prompt version number (`promptVersion` in `i18n/config.json`),
+- the processing version (`PROCESSING_VERSION` in `translate.mjs`).
 
 If none of that changed, the file is skipped without reading anything else
 (`= up to date`).
@@ -187,10 +188,17 @@ translations from one model to the next. Four safeguards are in place:
    ones.
 3. **Structure protected mechanically**, hence never left to the model's
    interpretation: code blocks (`` ``` ``/`~~~`, including nested and
-   indented ones) are replaced by opaque markers before the LLM call and
-   restored verbatim afterwards; the YAML front-matter is never reformulated
-   as free text (only text values are translated, through a separate call
-   returning JSON, key by key).
+   indented ones) and VitePress snippet imports (`<<<@/path{md}`) are
+   replaced by opaque markers before the LLM call and restored verbatim
+   afterwards; the YAML front-matter is never reformulated as free text (only
+   text values are translated, through a separate call returning JSON, key by
+   key). Snippet imports were added after deepseek-v4-flash dropped the
+   closing brace of `{md}` on three of them, which broke the build.
+
+   When this processing changes what reaches the translated files, bump
+   `PROCESSING_VERSION`. It is not one of the translation rules, so every page
+   is planned again with its segments reused, and a segment that is now
+   copied as is gets rewritten from the French without any model call.
 4. **Automatic integrity checks with retry** (`lib/validate.mjs`): tested for
    real, a small local model (mistral) once merged two paragraphs and made a
    whole sentence disappear, along with reference `[3]`. Four signals are

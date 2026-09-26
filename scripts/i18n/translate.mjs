@@ -60,6 +60,13 @@ const MAX_TRANSLATION_ATTEMPTS = 3
 // chunk.
 const NARROW_CHUNK_SEGMENTS = 3
 const DEFAULT_CONCURRENCY = 4
+// Version of the mechanical processing (segment splitting, what is protected
+// from the model). It is part of a page's fingerprint but not of the
+// translation rules: bumping it makes every page be planned again, with its
+// segments reused at no model cost, so a segment that has become
+// "copied as is" is rewritten from the French. Bump it whenever that
+// processing changes what reaches the translated file.
+const PROCESSING_VERSION = 2
 
 const MANIFEST_PATH = path.join(I18N_DIR, 'manifest.json')
 const SEGMENT_INDEX_PATH = path.join(I18N_DIR, 'segments.json')
@@ -553,7 +560,9 @@ async function main() {
 
     for (const lang of targetLangs) {
       const dependencies = pageDependencies(sourceContent, relPath, ctx, lang)
-      const unitHash = sha256(ctx.rulesHash + (dependencies ? ':' + dependencies : '') + ':' + sha256(sourceContent))
+      const unitHash = sha256(
+        `processing:${PROCESSING_VERSION}:` + ctx.rulesHash + (dependencies ? ':' + dependencies : '') + ':' + sha256(sourceContent)
+      )
       const entry = getEntry(manifest, relPath, lang.code)
       const targetFullPath = path.join(ROOT_DIR, config.contentDir, lang.code, relPath)
       const needsTranslation =

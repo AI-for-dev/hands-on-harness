@@ -180,7 +180,7 @@ La matriz `deepseek-v4-flash` completa el diagnóstico: la misma habilidad obtie
 
 La versión revisada conserva lo que sostiene el contenido: el rol, la referencia de coordenadas, la tabla de las diez familias y la obligación de cuantificar cada disparador a partir de las constantes. Recorta el resto, y cada recorte responde a un defecto leído en las ejecuciones. Los casos se escriben directamente en rojo en `game/neon.test.js` y el procedimiento ya no crea ningún archivo, lo que elimina a la vez la migración fallida y la necesidad de limpieza. El paso de búsqueda web desaparece, ya que las sesiones no mostraban más que una sola llamada. El doble rojo y el bloque de doce campos se sustituyen por un requisito de una línea: el caso verifica el comportamiento esperado en valores, nunca solo «algo ha cambiado». El archivo pasa de seis pasos a cuatro y de 182 líneas a 86.
 
-<<<@/../scripts/trysquare-campaign/briques/skills/playtest-court/SKILL.md{md
+<<<@/../scripts/trysquare-campaign/briques/skills/playtest-court/SKILL.md{md}
 
 ### Lo que dice la segunda matriz
 
