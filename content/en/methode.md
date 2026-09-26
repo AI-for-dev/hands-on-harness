@@ -1,36 +1,32 @@
-# The Method
+# The method
 
-This training is based on a pedagogical choice that we want to make explicit from the start. We could have offered you a catalog of tools accompanied by installation recipes. We will not do that, because this kind of content becomes obsolete in a few months: packages change names, configuration options evolve, and there is little left to gain from them a year later.
+This training rests on a pedagogical choice we want to make explicit from the outset. We could have offered you a catalog of tools with installation recipes. We won't, because that kind of content goes stale in a few months: packages change names, configuration options evolve, and there is little left to take away a year later.
 
-We take the opposite approach. The backbone of the training is the harness itself, meaning the set of functional building blocks it must include to operate: context management, tools, delegation, orchestration, memory, safety, and verification. We first establish *which* blocks are necessary and *why*, then we rebuild each of them by hand using open-source software. Finally, we work back to the transferable principle, the one you will keep regardless of the tool of the moment.
+We take the opposite approach. The backbone of the training is the harness itself, that is, the set of functional building blocks it must include to work: context management, tools, delegation, orchestration, memory, safety, and verification. We first establish *which* building blocks are necessary and *why*, then we rebuild each of them by hand with open source software. Finally, we work up to the transferable principle, the one you will keep no matter what the tool of the moment is.
 
-The goal is not to build a competitor to Claude Code, and the reconstruction is intentionally minimal. In the end, rather than a piece of software, you will take away the understanding necessary to build your own harness, adapted to your needs, and to knowingly manage the harnesses you use daily.
+The goal is not to build a competitor to Claude Code, and the reconstruction is deliberately minimal. What you take away at the end, rather than a piece of software, is the understanding you need to build your own harness, adapted to your use cases, and to steer the harnesses you use daily with full awareness.
 
-## The Triptych
+## The three-stage pattern
 
-Each reconstruction module takes place in three stages that we repeat throughout the training.
+Each reconstruction module unfolds in three stages that we repeat throughout the training.
 
-The first stage, **Understand**, starts with the need. What is the building block for, why is it indispensable, and how does a real harness implement it?
+The first stage, **Understand**, starts from the need. What is the building block for, why is it essential, and how does a real harness implement it?
 
-The second stage, **Rebuild**, consists of writing the minimal equivalent of the building block on Pi, by hand. This allows you to experience the concept rather than just reading about it. This code is an illustration, not the lesson: it makes the idea tangible, and it is replaceable.
+The second stage, **Rebuild**, consists of writing the minimal equivalent of the building block by hand, on Pi. This is what allows you to put the concept to the test. Implementation is always more effective than passive reading. We remind you that the code is an illustration, not the lesson. A harness is not a recipe that works for any use case. It feeds on your needs.
 
-The third stage, **Generalize**, extracts the principle that survives a change in tools, the design rule you would apply elsewhere. This stage is what really matters, as it is the only one that does not become obsolete.
+The third stage, **Generalize**, brings out the principle that is independent of the tool used. It provides the design rules you would apply elsewhere. This is the stage that really matters, because it is the only one that never goes stale.
 
-This distinction between the durable and the disposable structures the training. The principles of the third stage are to be retained; the package versions and configuration details of the second stage are destined to change, and we treat them as such.
+In addition to these three stages, each module begins with its objectives, a description of the deliverable when relevant, and references to explore the concepts further.
 
-## Module Structure
+## The structure
 
-To help you find your way, each module of the reconstruction act follows the same structure: its duration, its objectives expressed in terms of skills, its prerequisites, the Understand / Rebuild / Generalize triptych, a practical exercise based on a real artifact, a deliverable with its success criterion, and finally the pitfalls to avoid.
+The training is organized into four acts.
 
-## Course Outline (To be reviewed)
+| Act                                | Content                                                                                                          |
+| ---------------------------------- | --------------------------------------------------------------------------------------------------------------- |
+| 1. Foundations                     | LLMs and their ecosystem, the building blocks of a harness, the Pi starter harness, and the method              |
+| 2. Rebuilding brick by brick       | Context, tools, agents, workflows, memory, permissions                                                          |
+| 3. Verify, evaluate, observe       | Tests, multi-model evaluations, observability                                                                   |
+| 4. Build your own harness          | A personal use case, and the durable / disposable sorting                                                       |
 
-The training represents approximately 13.5 hours of in-person instruction. It is organized into four acts.
-
-| Act                                | Content                                                                                       | Duration |
-| ----------------------------------- | -------------------------------------------------------------------------------------------- | -------- |
-| 1. Foundations                      | LLMs and their ecosystem, the building blocks of a harness, the Pi starter harness, and the method | 3h30     |
-| 2. Brick-by-brick reconstruction    | Context, tools, agents, workflows, memory, permissions                                        | 6h30     |
-| 3. Verify, evaluate, observe        | Tests, multi-model evaluations, observability                                              | 2h00     |
-| 4. Building your own harness        | A personal use case, and sorting what is durable / disposable                                | 1h30     |
-
-Act 2 contains most of the value. It is intentionally more extensive in written content than its duration suggests, so it remains useful on your own once the training is over.
+We wanted this document to be as detailed as possible so that you can experiment fully independently.

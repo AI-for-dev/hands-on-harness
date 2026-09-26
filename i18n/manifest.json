@@ -61,14 +61,14 @@
   },
   "methode.md": {
     "en": {
-      "unitHash": "c2b8344f77db3a6f7bf35f1bc481426a9a61423f786525602b87906216da9511",
-      "model": "pi:ilaas/gemma-4-31b",
-      "translatedAt": "2026-09-26T09:04:12.692Z"
+      "unitHash": "65f226236ad034cbaaf50b9f8e83f831518af671d56a7ceee79229099116f14c",
+      "model": "pi:opencode-go/deepseek-v4-flash",
+      "translatedAt": "2026-09-26T16:12:23.882Z"
     },
     "es": {
-      "unitHash": "c2b8344f77db3a6f7bf35f1bc481426a9a61423f786525602b87906216da9511",
-      "model": "pi:ilaas/gemma-4-31b",
-      "translatedAt": "2026-09-26T09:04:21.027Z"
+      "unitHash": "65f226236ad034cbaaf50b9f8e83f831518af671d56a7ceee79229099116f14c",
+      "model": "pi:opencode-go/deepseek-v4-flash",
+      "translatedAt": "2026-09-26T16:12:44.034Z"
     }
   },
   "act2-contexte.md": {
@@ -129,18 +129,6 @@
       "unitHash": "9d3428997c70340f4354ec15ec9678ae1465388d2ddb6e65a90c45220722bc3a",
       "model": "pi:ilaas/gemma-4-31b",
       "translatedAt": "2026-09-26T09:02:22.921Z"
-    }
-  },
-  "act2-workflows copy.md": {
-    "en": {
-      "unitHash": "56b2cdea07fd717e84957227aa36b80f4e894f7b3b51b1addaed3b05bfca398f",
-      "model": "pi:ilaas/gemma-4-31b",
-      "translatedAt": "2026-09-26T08:58:27.753Z"
-    },
-    "es": {
-      "unitHash": "555333b40f22c3e2e2d11af15a6e56046ea51f13135378e599bd30b427d0098a",
-      "model": "pi:ilaas/gemma-4-31b",
-      "translatedAt": "2026-09-26T09:00:00.578Z"
     }
   }
 }
