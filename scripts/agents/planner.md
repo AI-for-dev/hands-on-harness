@@ -20,6 +20,7 @@ An ordered list of steps, each in this shape:
 
 ```
 N. <one sentence: what exists after this step that did not exist before>
+   description: <long description of what to do during this small step>
    files: <the only files this step may touch>
    test:  <the red test written first - given / when / then, one line>
    done:  <one fact the orchestrator can check by running `npm test`>

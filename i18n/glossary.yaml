@@ -40,3 +40,10 @@ terms:
   - fr: modèle de langage
     en: language model
     es: modelo de lenguaje
+  - fr: opérateur
+    en: combinator
+    es: combinador
+    note: >-
+      Dans le module workflows, désigne les fonctions de composition de combo
+      (chain, fanOut, loop, deliver...), que sa documentation nomme
+      "combinators". Ne pas traduire par "operator" ni par "operador".

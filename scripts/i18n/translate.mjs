@@ -34,6 +34,8 @@ import { diffSignals } from './lib/validate.mjs'
 import { loadManifest, saveManifest, getEntry, setEntry } from './lib/manifest.mjs'
 import { splitBody, joinSegments, isPassthrough, buildChunks } from './lib/segments.mjs'
 import { mapWithConcurrency } from './lib/pool.mjs'
+import { containsMermaid, translateMermaidBlocks } from './lib/mermaid.mjs'
+import { localizeAssetLinks, localizedAssets } from './lib/assets.mjs'
 import {
   loadSegmentIndex,
   saveSegmentIndex,
@@ -261,6 +263,63 @@ async function translateFrontmatterStrings(strings, ctx, lang) {
   }
 }
 
+// --- diagrams and figures ---------------------------------------------------
+
+// The labels of a Mermaid diagram go to the model as a JSON object of strings,
+// never the diagram itself (see lib/mermaid.mjs). A label the model leaves out
+// keeps its source text and is reported, so an answer missing a key is kept
+// rather than retried to the end.
+async function translateDiagramLabels(strings, ctx, lang) {
+  const systemPrompt = ctx.renderDiagramPrompt(lang.label, lang.code)
+  let lastError = null
+  for (let attempt = 1; attempt <= MAX_TRANSLATION_ATTEMPTS; attempt++) {
+    try {
+      const raw = await translateText(ctx.config, systemPrompt, JSON.stringify(strings, null, 2))
+      const jsonMatch = raw.match(/\{[\s\S]*\}/)
+      const answer = JSON.parse(jsonMatch ? jsonMatch[0] : raw)
+      if (Object.keys(strings).every((key) => typeof answer[key] === 'string')) return answer
+      lastError = new Error('some labels are missing from the answer')
+      if (attempt === MAX_TRANSLATION_ATTEMPTS) return answer
+    } catch (err) {
+      lastError = err
+    }
+    console.warn(`  ⚠ diagram labels, attempt ${attempt}/${MAX_TRANSLATION_ATTEMPTS} failed: ${lastError.message}`)
+  }
+  return {}
+}
+
+function translateDiagrams(text, ctx, lang) {
+  return translateMermaidBlocks(text, (strings) => translateDiagramLabels(strings, ctx, lang))
+}
+
+// Says whether an image target, as written in the page `relPath`, is a file:
+// absolute targets start at the content directory, as VitePress reads them.
+function assetResolver(relPath, ctx) {
+  const contentDir = path.join(ROOT_DIR, ctx.config.contentDir)
+  const pageDir = path.dirname(path.join(contentDir, relPath))
+  return (target) => existsSync(target.startsWith('/') ? path.join(contentDir, target) : path.join(pageDir, target))
+}
+
+// Localises the figures of one translated segment, code blocks excepted: an
+// image link shown as an example in a code block is text, not a figure.
+function localizeSegment(text, lang, exists) {
+  const { protectedMd, blocks } = protectCodeBlocks(text)
+  return restoreCodeBlocks(localizeAssetLinks(protectedMd, lang.code, exists), blocks)
+}
+
+// What a translated page depends on, besides its source and the translation
+// rules: the rules of diagram labels when it holds a diagram, and the localised
+// figures it points at. Empty for most pages, whose fingerprint is then the one
+// it has always been, so this does not retranslate the corpus.
+function pageDependencies(sourceContent, relPath, ctx, lang) {
+  return [
+    containsMermaid(sourceContent) ? ctx.diagramRulesHash : '',
+    ...localizedAssets(sourceContent, lang.code, assetResolver(relPath, ctx))
+  ]
+    .filter(Boolean)
+    .join(',')
+}
+
 // --- planning -------------------------------------------------------------
 
 // Establishes, without calling the model, the list of what actually has to be
@@ -290,9 +349,12 @@ function planFile(sourceFile, relPath, ctx, lang, segmentIndex, force) {
 
   const translations = new Array(segments.length).fill(null)
   const pending = []
+  // Segments whose only text is the labels of a diagram: they skip the chunks
+  // and go straight to the label translation.
+  const diagramPending = []
   let passthroughCount = 0
   for (const [i, segment] of segments.entries()) {
-    if (isPassthrough(segment)) {
+    if (isPassthrough(segment) && !containsMermaid(segment)) {
       // Code block, horizontal rule...: copied as is, never sent to the model,
       // even when a neighbouring chunk carries it along as context.
       translations[i] = segment
@@ -301,6 +363,7 @@ function planFile(sourceFile, relPath, ctx, lang, segmentIndex, force) {
     }
     const cached = reusableBody.get(segmentHash(segment))
     if (cached !== undefined) translations[i] = cached
+    else if (isPassthrough(segment)) diagramPending.push(i)
     else pending.push(i)
   }
 
@@ -331,9 +394,11 @@ function planFile(sourceFile, relPath, ctx, lang, segmentIndex, force) {
     translations,
     previousBody,
     chunks: buildChunks(segments, pending),
-    pendingCount: pending.length,
+    diagramPending,
+    assetExists: assetResolver(relPath, ctx),
+    pendingCount: pending.length + diagramPending.length,
     passthroughCount,
-    cachedCount: segments.length - pending.length - passthroughCount,
+    cachedCount: segments.length - pending.length - diagramPending.length - passthroughCount,
     frontmatterStrings,
     frontmatterTranslations,
     frontmatterPending
@@ -377,6 +442,30 @@ async function executePlan(plan, ctx, lang, concurrency) {
       issues.push(...candidate.issues.map((issue) => issue + kept))
     }
   }
+
+  // Diagrams: the segments holding only a diagram, and the diagrams inside a
+  // segment the chunks just translated (the chunks saw them protected, hence
+  // still in French).
+  const translatedInChunks = plan.chunks.flatMap((chunk) => chunk.keep)
+  const diagramSources = new Map([
+    ...plan.diagramPending.map((index) => [index, plan.segments[index]]),
+    ...translatedInChunks
+      .filter((index) => containsMermaid(plan.translations[index] ?? ''))
+      .map((index) => [index, plan.translations[index]])
+  ])
+  const diagramResults = await mapWithConcurrency([...diagramSources], concurrency, ([, text]) =>
+    translateDiagrams(text, ctx, lang)
+  )
+  for (const [position, [index]] of [...diagramSources].entries()) {
+    plan.translations[index] = diagramResults[position].text
+    issues.push(...diagramResults[position].issues)
+  }
+
+  // Figures: every segment, reused or not, points at the figures of its
+  // language when they exist. Idempotent, so a reused translation is unchanged.
+  plan.translations = plan.translations.map((text) =>
+    typeof text === 'string' ? localizeSegment(text, lang, plan.assetExists) : text
+  )
 
   // Guard: a segment without a translation would be serialised as "null" in the
   // target file. Better to fail loudly.
@@ -461,9 +550,10 @@ async function main() {
   for (const sourceFile of sourceFiles) {
     const relPath = path.relative(contentDirFull, sourceFile)
     const sourceContent = readFileSync(sourceFile, 'utf8')
-    const unitHash = sha256(ctx.rulesHash + ':' + sha256(sourceContent))
 
     for (const lang of targetLangs) {
+      const dependencies = pageDependencies(sourceContent, relPath, ctx, lang)
+      const unitHash = sha256(ctx.rulesHash + (dependencies ? ':' + dependencies : '') + ':' + sha256(sourceContent))
       const entry = getEntry(manifest, relPath, lang.code)
       const targetFullPath = path.join(ROOT_DIR, config.contentDir, lang.code, relPath)
       const needsTranslation =

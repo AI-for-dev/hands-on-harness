@@ -1,6 +1,7 @@
 // Preuve de mécanisme du pipeline issue2, rejouable sans modèle : le vrai code
-// de combo (parseur, runPipeline, deliver), le vrai `npm test` de NÉON comme
-// gate, et un faux modèle dont le coder applique la correction de référence.
+// de combo (parseur, runPipeline, deliver, ledger), le vrai `npm test` de NÉON
+// comme gate, et un faux modèle dont le coder applique la correction de
+// référence.
 //
 //   node scripts/workflows/issue2-smoke.mjs /chemin/vers/neon /chemin/vers/combo
 //
@@ -23,9 +24,12 @@ const NEON = path.resolve(neonArg);
 const COMBO = path.resolve(comboArg);
 const PATCH = path.join(here, "issue2-reference.patch");
 
-const { checkPipelineAgents, commandVerifier, findPipeline, loadAgents, loadPipelines, runPipeline } =
+const { checkPipelineAgents, commandVerifier, findPipeline, loadAgents, loadPipelines, runPipeline, VERDICT_TOOL } =
 	await import(pathToFileURL(path.join(COMBO, "src", "index.ts")).href);
-const { fakeSpawn } = await import(pathToFileURL(path.join(COMBO, "test", "fixtures", "fake-subagent.ts")).href);
+const { fakeSpawn, offeredTools } = await import(
+	pathToFileURL(path.join(COMBO, "test", "fixtures", "fake-subagent.ts")).href
+);
+const { callTool } = await import(pathToFileURL(path.join(COMBO, "test", "fixtures", "call-tool.ts")).href);
 
 const reset = () => execFileSync("git", ["checkout", "--", "game"], { cwd: NEON });
 const applyPatch = () => execFileSync("git", ["apply", PATCH], { cwd: NEON });
@@ -52,9 +56,33 @@ console.log("S1 parse+resolve            OK  ", pipeline.steps.map((s) => `${s.i
 
 const verify = commandVerifier({ cwd: NEON, command: "npm", args: ["test"] });
 
-function cast({ plannerSays = planJson, reviewerSays = "LGTM", coderDoes = applyPatch } = {}) {
+/** Le même roster, privé de l'outil `verdict` sur un rôle : le régime de repli. */
+const withoutVerdict = (name) =>
+	agents.map((agent) =>
+		agent.name === name ? { ...agent, tools: agent.tools.filter((tool) => tool !== VERDICT_TOOL) } : agent,
+	);
+
+/**
+ * Un tour qui décide par l'outil quand on le lui offre, et par la prose sinon.
+ * C'est la bascule que `pair` et `deliver` font eux-mêmes en lisant `tools:`.
+ */
+async function decide(options, verdict, fallbackWord) {
+	const tool = offeredTools(options).find((one) => one.name === VERDICT_TOOL);
+	if (!tool) return { output: fallbackWord };
+	await callTool(tool, { resolved: [], raised: [], ...verdict });
+	return { output: "la prose est l'argument, pas la décision" };
+}
+
+function cast({
+	plannerSays = planJson,
+	reviewerVerdict = { approved: true },
+	reviewerWord = "LGTM",
+	auditVerdicts = [{ approved: true }],
+	coderDoes = applyPatch,
+} = {}) {
 	let coderRan = false;
-	return fakeSpawn((task, agent) => {
+	let audit = 0;
+	return fakeSpawn(async (task, agent, options) => {
 		switch (agent.name) {
 			case "explorer": return { output: "Impact note: game/neon.js:213 frame() brick loop; suite in game/neon.test.js." };
 			case "tester": return { output: "Missing cases: brickHit returns the overlapped live brick; a dead brick is never hit." };
@@ -63,18 +91,20 @@ function cast({ plannerSays = planJson, reviewerSays = "LGTM", coderDoes = apply
 				if (!coderRan) { coderDoes(); coderRan = true; }
 				return { output: "Done: brickHit extracted, two tests added in game/neon.test.js." };
 			}
-			case "reviewer": return { output: reviewerSays };
-			case "auditor": return { output: "APPROVED" };
+			case "reviewer": return decide(options, reviewerVerdict, reviewerWord);
+			case "auditor": return decide(options, auditVerdicts[audit++] ?? auditVerdicts.at(-1), "APPROVED");
 			default: return { output: "?" };
 		}
 	});
 }
 
 const delivery = (done) => done.steps.find((s) => s.id === "work")?.delivery;
+const run = (options = {}, roster = agents) =>
+	runPipeline({ pipeline, agents: roster, input: ticket, verify, cwd: NEON, spawn: cast(options).spawn });
 
 // S2 - le chemin vert : diff de référence appliqué, suite verte, tout le monde signe.
 reset();
-const green = await runPipeline({ pipeline, agents, input: ticket, verify, spawn: cast().spawn });
+const green = await run();
 assert.equal(green.ok, true);
 assert.equal(delivery(green).approved, true);
 assert.match(delivery(green).verification.output, /pass 9/);
@@ -82,27 +112,40 @@ console.log("S2 chemin vert              OK   approved=true, npm test: 9 cas ver
 
 // S3 - le gate : même diff plus un test saboté ; pair et audit approuvent quand même.
 reset();
-const gate = await runPipeline({ pipeline, agents, input: ticket, verify,
-	spawn: cast({ coderDoes: applyPatchThenSabotage }).spawn });
+const gate = await run({ coderDoes: applyPatchThenSabotage });
 assert.equal(delivery(gate).approved, false, "une approbation ne doit pas battre un check rouge");
 assert.equal(delivery(gate).verification.ok, false);
-console.log("S3 gate                     OK   pair LGTM + audit APPROVED, check rouge => approved=false");
+console.log("S3 gate                     OK   verdict pair + audit favorables, check rouge => approved=false");
 
-// S4 - le planner parle le format « humain » du module précédent : aucun plan exploitable.
+// S4 - le ledger : l'auditeur soulève une obligation, puis signe sans la fermer.
 reset();
-const human = await runPipeline({ pipeline, agents, input: ticket, verify,
-	spawn: cast({ plannerSays: planHuman }).spawn });
+const ledger = await run({
+	auditVerdicts: [
+		{ approved: false, raised: ["coder: nommer le test d'après ce qu'il épingle"] },
+		{ approved: true },
+	],
+});
+const raised = delivery(ledger).obligations;
+const open = raised.filter((one) => !one.closed);
+assert.equal(raised.length, 1, "l'auditeur a soulevé une obligation");
+assert.equal(open.length, 1, "et ne l'a jamais fermée");
+assert.equal(delivery(ledger).verification.ok, true, "l'arbre est pourtant vert");
+assert.equal(delivery(ledger).approved, false, "une obligation ouverte doit battre la signature de l'auditeur");
+console.log(`S4 ledger                   OK   check vert + audit favorable, ${open.length} obligation ouverte => approved=false`);
+
+// S5 - le planner parle le format « humain » du module précédent : aucun plan exploitable.
+reset();
+const human = await run({ plannerSays: planHuman });
 assert.equal(human.ok, false);
 assert.match(human.error ?? "", /no runnable plan/i);
-console.log("S4 plan au format humain    OK   'no runnable plan' - la forme appartient à l'appelant");
+console.log("S5 plan au format humain    OK   'no runnable plan' - la forme appartient à l'appelant");
 
-// S5 - le reviewer approuve avec APPROVED là où le pair attend LGTM.
+// S6 - le repli par la prose : un reviewer sans l'outil, qui dit le mot de l'autre.
 reset();
-const wrongWord = await runPipeline({ pipeline, agents, input: ticket, verify,
-	spawn: cast({ reviewerSays: "APPROVED" }).spawn });
-const pairResult = delivery(wrongWord).tasks?.[0] ?? delivery(wrongWord).results?.[0];
+const wrongWord = await run({ reviewerWord: "APPROVED" }, withoutVerdict("reviewer"));
+const pairResult = delivery(wrongWord).tasks?.[0];
 assert.equal(pairResult.approved, false, "APPROVED ne doit pas approuver un pair qui attend LGTM");
-console.log("S5 mauvais mot d'accord     OK   pair jamais approuvé ; le tout reste sauvé par audit + check :",
+console.log("S6 mot d'accord sans outil  OK   pair jamais approuvé ; le tout reste sauvé par audit + check :",
 	"approved(deliver) =", delivery(wrongWord).approved);
 
 reset();

@@ -25,6 +25,9 @@ neon = "https://github.com/AI-for-dev/neon.git"
 
 [harness]
 websearch = "https://github.com/sebaxzero/pi-safe-search"
+# La bibliothèque de sous-agents des modules 2.3 et 2.4. Une cellule qui injecte
+# des rôles a besoin de l'outil qui sait les appeler, et il vient de là.
+combo = "https://github.com/AI-for-dev/combo"
 
 [defaults]
 # Les clones vivent dans le répertoire temporaire du système, que macOS purge au

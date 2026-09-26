@@ -16,14 +16,16 @@ i18n/
   config.json              # LLM backend, model, target languages
   glossary.yaml            # fixed term translations + proper nouns
   style-guide.md           # tone, register, formatting rules
-  prompts/                 # system prompts (body + front-matter)
+  prompts/                 # system prompts (body, front-matter, diagram labels)
   manifest.json            # translation state (generated, to be committed)
   segments.json            # index of translated segments (generated, committed)
 scripts/i18n/
   translate.mjs            # CLI
   lib/                     # segment splitting, segment index, code
                            # protection, front-matter, backends, hash,
-                           # integrity checks (validate.mjs)
+                           # integrity checks (validate.mjs), Mermaid
+                           # labels (mermaid.mjs), localised figures
+                           # (assets.mjs)
   lib/*.test.mjs           # unit tests (npm test)
 ```
 
@@ -165,6 +167,10 @@ It is also the right reflex when a term is translated two different ways from
 one paragraph to the next: add it to the glossary rather than touching up the
 generated files.
 
+One prompt is the exception: `i18n/prompts/diagram-labels-system.md` only
+concerns the pages holding a Mermaid diagram, so editing it retranslates those
+pages and no other (see below).
+
 ## Keeping translations stable across local models
 
 The risk, with models that vary widely depending on who runs the script
@@ -264,6 +270,31 @@ to be added under `scripts/i18n/` if the need is confirmed.
   limit variance from one run to the next with the same model.
 - `openai_compatible`: for LM Studio, vLLM, llama.cpp server, etc. (any
   endpoint exposing `/v1/chat/completions`), same settings as `ollama`.
+
+## Diagrams and figures
+
+A Mermaid block is a code block, so it is protected like one, but its boxes and
+arrows carry prose. The model never sees the diagram: `lib/mermaid.mjs`
+extracts the labels of a flowchart, the model translates them as a JSON object
+of strings (`prompts/diagram-labels-system.md`), and the code puts them back.
+The ids, arrows and directives cannot be damaged, since they never leave our
+code. A label that is a single lowercase word (`explorer`, `npm`) reads as an
+identifier and is left as written; a label the model returns empty, on
+several lines or with a runaway length keeps its French text, and the page is
+flagged `needsReview`. Only `flowchart` / `graph` diagrams are parsed: another
+kind of diagram is copied as is.
+
+A figure whose labels are French stays French in a translated page unless a
+localised file exists next to it, named after it: `chain-light.svg` ->
+`chain-light.en.svg`. When it exists, `lib/assets.mjs` points the translated
+page at it; when it does not, the link is left alone. The figures of the
+workflows module are generated in every language by
+`scripts/figures/workflow-nodes.mjs`, which refuses to write anything while a
+label has no translation.
+
+A page's fingerprint includes the diagram prompt when the page holds a
+diagram, and the localised figures it points at. Adding `chain-light.en.svg`
+therefore retranslates, at no model cost, the English pages that use it.
 
 ## What is not translated automatically
 

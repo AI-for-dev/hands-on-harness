@@ -1,261 +1,411 @@
-# Les workflows : la boucle écrite en code
+# Les workflows : la boucle écrite dans un fichier
 
 ::: tip Objectifs de ce module
-- Composer les rôles du module précédent avec les combinateurs de combo : chaîne, fan-out, boucle, livraison
-- Écrire un pipeline : la structure dans le frontmatter, la prose par étape, et ce qu'un fichier ne peut pas exprimer
-- Poser un gate exécutable dont le verdict bat toutes les approbations
-- Lire un résultat de workflow : `ok`, `converged`, `approved`, et ce que chacun ne dit pas
-- Rejouer le ticket #2 de bout en bout, sans intervention entre le brief et le verdict, et savoir prouver le mécanisme sans modèle
+- Reconnaître dans la boucle du module précédent les motifs d'un flux de travail
+- Écrire cette boucle dans un fichier que Pi déroule seul
+- Faire des tests le juge final, et choisir où l'humain garde la main
+- Adapter ce fichier à ses propres besoins en quelques lignes
 :::
 
-Le module précédent s'est conclu sur deux limites. Rien n'empêchait la session principale de faire le travail elle-même, puisque son rôle de relais reposait sur une consigne. Et chaque geste de routage partait de votre mémoire de travail sans être archivé nulle part, ce qui interdisait de le rejouer, de le comparer ou de le mesurer.
+Dans le module précédent, vous étiez l'orchestrateur. Vous lanciez chaque agent avec `/step`, vous relisiez la note, vous lanciez `npm test` dans un second terminal et vous décidiez, après chaque verdict, qui reprenait la main. C'est instructif une fois. Refaire ces gestes vingt fois l'est beaucoup moins, et c'est précisément le genre de tâche répétitive qu'il faut automatiser.
 
-Ce module automatise les gestes que votre journal de friction a recensés. Le routage devient du code qui appelle les rôles dans un ordre décidé à l'écriture, si bien qu'aucun modèle ne peut le réinterpréter, et le verdict devient l'exécution de la suite de tests, dont le résultat ne dépend d'aucune approbation. Il ne reste que deux interventions humaines, avant le travail et avant le commit, et vous verrez en pratique pourquoi ces deux points d'arrêt sont des décisions de conception.
+Ce module écrit ces gestes dans un fichier. combo appelle ce fichier un **flow** : un graphe de tâches décrit en YAML et en markdown, posé à côté de vos agents, et déroulé par le code plutôt que par un modèle. Nous allons voir qu'il n'y a pas de langage à apprendre et que votre harnais se modifie comme n'importe quel fichier de configuration.
+
+Nous vous rappelons que l'outil combo a été écrit spécifiquement pour cette formation et qu'il n'est peut-être pas souhaitable de l'utiliser en production aujourd'hui. Ce ne sera peut-être plus le cas à terme. L'idée est toujours de vous permettre d'expérimenter rapidement et facilement.
 
 ## Comprendre
 
-### Un workflow est une fonction
+### Qu'est-ce qu'un flux de travail ?
 
-Dans combo, un workflow est une fonction d'une entrée vers un `Result`, ou une liste de `Result` : le texte final d'un agent, ses messages, sa consommation, et un champ `ok` qui dit si le tour a tourné sans erreur de modèle. Les combinateurs composent parce qu'ils partagent ce contrat. Les agents restent les fichiers markdown du module précédent, et l'orchestration est du code : il n'y a pas de langage de description à apprendre, et la documentation de combo consigne ce choix dans ses décisions de conception.
+Si nous prenons un peu de recul sur le module précédent, les étapes que nous avons enchaînées forment un graphe. Les rectangles sont les sous-agents lancés par `/step` et les formes arrondies les gestes que vous faisiez vous-même :
 
-Neuf combinateurs couvrent les formes utiles :
+```mermaid
+flowchart TD
+    T([ticket #2]) --> E[explorer]
+    E -- note d'impact --> L([vous relisez la note])
+    L --> P[planner]
+    P -- plan en pas --> C[coder]
+    C -- rapport et diff --> N([vous lancez npm test])
+    N -- sortie des tests --> R[reviewer]
+    R --> V{verdict}
+    V -- "APPROVED, pas suivant" --> C
+    V -- "refus, le code est en cause" --> C
+    V -- "refus, le pas est en cause" --> P
+    V -- "APPROVED, dernier pas" --> F([ticket livré])
+```
 
-| combinateur   | forme                                                             |
-| ------------- | ----------------------------------------------------------------- |
-| `chain`       | 1 → 1 → 1, la sortie d'un pas nourrit le suivant                  |
-| `fanOut`      | 1 → N branches en parallèle, un agent pour toutes ou un par branche |
-| `loop`        | 1 → 1 jusqu'à une barre (`until`), plafond d'itérations           |
-| `reduce`      | N → 1, un agent synthétise des branches                           |
-| `route`       | un classifieur choisit la destination                             |
-| `orchestrate` | un agent décide du découpage, plan validé avant tout lancement    |
-| `pair`        | un travailleur et un relecteur, jusqu'à l'accord                  |
-| `interview`   | l'agent questionne l'utilisateur, une question à la fois          |
-| `deliver`     | plan, un pair par sous-tâche, check du projet, audit, correctifs  |
+Ce graphe se décompose en quelques motifs que l'on retrouve dans la plupart des systèmes multi-agents. Chaque figure indique en haut à droite comment il s'écrit dans un flow. Deux motifs ont leur propre nœud, le fan-out et la boucle. Les trois autres sont simplement des nœuds mis bout à bout.
 
-Trois champs du résultat répondent à trois questions différentes, et les confondre est la première source de mauvaise lecture d'un rapport. `ok` dit que les tours ont tourné sans erreur de fournisseur. `converged`, sur un `loop`, dit que le travail a atteint la barre demandée plutôt qu'épuisé son plafond d'itérations. `approved`, sur un `pair` ou un `deliver`, dit que quelqu'un a signé. Atteindre un plafond n'est pas une réussite, et la lecture d'un rapport commence donc par distinguer ces trois champs.
+- **chain** : le planner reçoit la note de l'explorer, le coder reçoit le plan.
 
-Un échec, par ailleurs, ne fait pas s'effondrer le workflow. Une branche de fan-out qui échoue devient un `Result` avec `ok: false` à sa place et les autres continuent. Et un sous-agent qui a consommé douze mille tokens avant d'échouer a coûté douze mille tokens : sa consommation est comptée même quand `ok` est faux.
+  ![chain](/figures/workflows/chain-light.svg){.only-light}
+  ![chain](/figures/workflows/chain-dark.svg){.only-dark}
 
-::: warning Une boucle d'agent n'a pas de limite propre
-Un tour est un `session.prompt()`, et la boucle d'agent de Pi tourne tant que le modèle demande des outils. Un modèle faible qui hallucine un nom d'outil, reçoit « unknown tool » et redemande, boucle jusqu'à ce que quelque chose l'arrête : la documentation de combo rapporte 79 appels à un outil inexistant et environ 500 000 tokens d'entrée en un seul tour.
+- **fan-out** : l'explorer et le tester lisent le ticket en même temps, puisque ni l'un ni l'autre n'écrit.
 
-`maxIterations` a un défaut (5), parce qu'une itération est une unité discrète et chère. `timeoutMs` n'en a pas, parce qu'aucune valeur par défaut ne peut décider qu'une tâche légitime a trop duré. Posez donc un `timeoutMs` sur tout ce qui tourne sans surveillance : l'oubli d'un argument ne doit pas suffire à rendre possible une boucle sans fin.
-:::
+  ![fan-out](/figures/workflows/fan-out-light.svg){.only-light}
+  ![fan-out](/figures/workflows/fan-out-dark.svg){.only-dark}
 
-### Le pipeline : la partie linéaire, en markdown
+- **orchestrate** : le planner décide combien de pas il faut, puis chaque pas part au coder.
 
-Une suite linéaire de combinateurs peut s'écrire dans un fichier plutôt que dans du code. C'est un **pipeline**, posé dans `.pi/pipelines/` à côté des agents. Le frontmatter porte la structure, c'est-à-dire les étapes, leurs agents, leurs plafonds et le check du projet, parce que c'est du vrai YAML et que l'imbrication y est naturelle ; le corps porte la prose, une section `## <id>` par étape. Aucun agent ne lit ce fichier pour décider de la suite, puisque c'est le code de combo qui le déroule.
+  ![orchestrate](/figures/workflows/orchestrate-light.svg){.only-light}
+  ![orchestrate](/figures/workflows/orchestrate-dark.svg){.only-dark}
 
-Les pipelines suivent les mêmes portées que les agents, livrés, machine, dépôt, le plus proche du travail l'emportant, et la même frontière de sécurité : ceux d'un dépôt ne sont jamais chargés par défaut. Le régime d'échec diffère en revanche de celui des agents, et cette différence corrige un piège du module précédent. Un fichier d'agent incomplet est ignoré en silence, alors qu'un pipeline malformé est refusé, jamais remplacé sans bruit par le défaut. Un agent est découvert alors qu'un pipeline est demandé par son nom, si bien qu'un fichier présent mais illisible doit être signalé avec sa raison plutôt qu'ignoré.
+- **loop** : le coder et le reviewer recommencent tant que le pas n'est pas validé.
 
-Tout est validé avant d'ouvrir la moindre session : la forme de chaque étape, la correspondance entre les entrées du frontmatter et les sections du corps dans les deux sens, et chaque nom d'agent contre le roster. Une faute de frappe à l'étape quatre coûte ainsi une seconde au lieu de trois étapes de travail réel.
+  ![loop](/figures/workflows/loop-light.svg){.only-light}
+  ![loop](/figures/workflows/loop-dark.svg){.only-dark}
 
-La limite est posée d'avance, et elle est volontaire : un pipeline n'a ni condition, ni branche, ni référence à l'étape deux. Chaque étape reçoit son instruction, la demande de départ et la sortie de l'étape précédente, rien d'autre. Au moment où une exécution a besoin d'un embranchement, elle devient un workflow en TypeScript, ce qui maintient la règle « les agents sont des données, les workflows du code » sans vous interdire d'écrire la partie linéaire en markdown.
+- **reduce** : un agent relit le résultat de plusieurs branches et en tire une seule réponse. Dans notre boucle, c'est le rôle de l'auditeur.
 
-### Le gate : la suite de tests comme verdict
+  ![reduce](/figures/workflows/reduce-light.svg){.only-light}
+  ![reduce](/figures/workflows/reduce-dark.svg){.only-dark}
 
-`deliver` accepte une vérification, et la documentation de combo rapporte l'exécution qui l'a imposée : un pair a écrit une fonction et ses tests, le relecteur a approuvé, l'auditeur a approuvé, et le fichier de test importait `./slugify.js` pour un fichier nommé `slugify.ts`. La suite ne se chargeait même pas, parce que les deux agents avaient lu le code sans jamais l'exécuter.
+### Un flow : votre boucle dans un fichier
 
-Le mécanisme est un **port** : le pipeline nomme le check (`verify: [npm, test]`), et c'est le code appelant qui l'exécute, par `execFile` et sans shell. Les arguments sont une liste, si bien que `"npm test && rm -rf /"` reste un argument et jamais deux commandes. La sortie est tronquée par la queue plutôt que par la tête, parce qu'un lanceur de tests dit à la fin ce qui a échoué. Et quand un check est configuré, son verdict est final : aucune approbation, d'aucun agent, ne transforme un check rouge en réussite.
+Regardons plutôt ce que cela donne avec combo sur un exemple concret, la chaîne explorer puis planner :
 
-## Reconstruire
+```md
+---
+name: impact-plan
+description: La note d'impact, puis le plan
+input: string
+nodes:
+  - id: note
+    agent: explorer
+    reads: [input]
+  - id: plan
+    agent: planner
+    reads: [input, note]
+---
 
-### Ce que le branchement a changé dans les rôles
+## note
+Rends la note d'impact du ticket désigné sous `input`.
 
-Brancher les agents du module précédent sur `deliver` a fait apparaître deux collisions de convention, qui relèvent du même principe : la forme du livrable appartient à l'appelant.
+## plan
+Découpe le ticket désigné sous `input` en petits pas, avec la note sous `note` comme carte.
+```
 
-La première touche le planner. `deliver` lui envoie sa propre demande de plan, un tableau JSON `[{"agent": …, "task": …}]`, et lit la réponse avec un parseur indulgent sur la forme et strict sur le fond, puisqu'un nom d'agent inconnu est abandonné au lieu d'être remplacé par un voisin plausible. Le plan « pour humain » du module précédent, avec ses `files:` et ses `done:`, ne contient rien que ce parseur sache lire : nous avons rejoué cette réponse contre le vrai parseur, et la livraison s'arrête avant d'ouvrir la moindre session, sur `no runnable plan`.
+L'en-tête décrit la structure : les nœuds, dans l'ordre, et ce que chacun lit. Le corps donne à chaque agent sa consigne, une section `## <id>` par nœud. Chaque agent reçoit sa section et les éléments listés dans `reads:`, rien d'autre. C'est exactement ce que vous faisiez en collant à la main le ticket, le pas et le diff dans le message du reviewer.
 
-La seconde touche le reviewer. Sous `pair`, le mot d'accord est `LGTM`, seul sur sa ligne, et un relecteur qui répond `APPROVED` n'est jamais compté comme un accord, si bien que le pair épuise ses tours.
-
-La correction tient en une règle ajoutée aux deux fichiers, la même : la forme par défaut sert l'orchestrateur humain, et quand l'appelant énonce la forme de réponse qu'il sait lire, c'est elle qui s'applique, parce qu'un plan que l'appelant ne peut pas analyser ne planifie rien. Les règles de fond, la taille des pas, le test rouge d'abord, l'API gelée, tiennent quelle que soit la forme.
-
-Un rôle s'ajoute, l'auditeur. Le relecteur du pair voit une sous-tâche, alors que l'auditeur lit le tout fini et cherche ce que la somme des pièces a oublié : une étape du plan que personne n'a faite, ou une exigence du ticket qu'aucune sous-tâche ne portait. C'est la version « ensemble » des vérifications que le reviewer du module précédent faisait pas à pas.
-
-<<<@/../scripts/agents/auditor.md{md}
-
-### Le pipeline du ticket #2
-
-<<<@/../scripts/pipelines/issue2.md{md}
-
-Cinq décisions de ce fichier demandent une justification.
-
-Le fan-out du module précédent s'écrit dans le fichier, deux agents, un par branche, avec des tâches littérales. Un fan-out dont les branches viendraient de l'étape précédente serait un autre combinateur, `orchestrate`, où c'est un agent qui décide du découpage, et garder les tâches littérales dispense le format de toute syntaxe de gabarit.
-
-`verify: [npm, test]` est déclaré une fois, au sommet. C'est le gate, que le pipeline nomme sans l'exécuter, puisque l'exécution appartient au code qui possède l'arbre de travail.
-
-`maxTasks: 2` et `concurrency: 1` sur la livraison, parce que les travailleurs écrivent dans le même arbre et que le travail du ticket #2 est séquentiel. Un travail séquentiel tient dans une sous-tâche plutôt que dans trois, et deux coders concurrents sur un seul dépôt produiraient des écritures croisées que personne ne relit.
-
-`maxAuditRounds: 3` plutôt que 2, parce qu'un audit qui prescrit un correctif consomme un tour, le correctif un autre, et qu'il faut un tour restant pour signer. Avec 2, un run dont le second audit demandait une retouche a fini `approved: false` sur un arbre pourtant vert et conforme.
-
-La prose de l'étape `work`, enfin, énonce le contrat du livrable, c'est-à-dire la signature exacte, la pureté, la forme du retour et le comportement de `frame()` quand la balle chevauche plusieurs briques. Chaque liberté que la demande laisse ouverte devient une variante d'un run à l'autre : avant ce bloc, six runs sur ce ticket ont rendu trois signatures différentes, dont une qui ne cassait plus qu'une brique par frame sans qu'aucun test ne rougisse. La même prose impose le test rouge d'abord dans la suite, ce qui est la règle du planner redite à l'endroit où le plan se fabrique.
+Le fichier est vérifié en entier avant que le moindre modèle ne tourne.
 
 ::: info Exercice (en salle)
-Déposez le pipeline à côté des agents, puis vérifiez ce que Pi a réellement chargé avant de rien lancer :
+Si ce n'est déjà fait, installez l'extension combo
 
 ```bash
 cd /chemin/vers/neon
-cp /chemin/vers/hands-on-harness/scripts/pipelines/issue2.md .pi/pipelines/
-cp /chemin/vers/hands-on-harness/scripts/agents/*.md .pi/agents/
-pi -e /chemin/vers/combo/extension
+pi install -l npm:@ai-for-dev/combo
+pi
 ```
 
-```
-> /pipelines
-```
-
-La commande liste les pipelines chargés, la forme de chaque exécution, et les fichiers qui ne parsent pas avec leur raison. Cassez volontairement le YAML du frontmatter, relancez `/pipelines`, et constatez le régime d'échec : le fichier est refusé et nommé avec sa raison, au lieu d'être remplacé en silence.
-
-Puis lancez la boucle :
-
-```
-> /build --pipeline issue2 --model ilaas/gemma-4-31b traite le ticket #2 d'ISSUES.md
-```
-
-`/build` s'arrête exactement deux fois, au brief avant tout travail et au commit à la fin. Entre les deux, tout ce que vous faisiez à la main au module précédent s'enchaîne sans vous : la note d'impact, le plan, le pair coder-reviewer, `npm test`, l'audit, les correctifs. Refuser un des deux arrêts ne défait rien, le travail restant dans l'arbre. À la fin, faites vos propres vérifications, celles du module précédent : `npm test`, la liste des exports, `git diff`, et la trace complète dans `runs/<horodatage>/`.
+Ajoutez ce fichier dans `.pi/flows/impact-plan.md` et testez-le sur l'issue #2. Vous pouvez regarder les agents évoluer dans herdr.
 :::
 
-Un run interrompu reprend avec `/build resume` : seules les sous-tâches approuvées sont conservées, le plan est réutilisé plutôt que refait, et rien de la conversation ne revient, si bien qu'un build repris relit le code au lieu de rejouer une transcription.
+### Automatisation de l'orchestrateur
 
-### La version script : ce que le pipeline ne peut pas exprimer
+A la session précédente vous avez mené l'orchestration des différentes étapes constituant la résolution d'un bug. Nous allons ici automatiser ce processus de la façon suivante :
 
-Le fan-out tient dans le fichier, mais trois choses n'y tiennent pas.
+| au module précédent                          | dans le flow                                                                    |
+| -------------------------------------------- | ------------------------------------------------------------------------------- |
+| `/step explorer`, et le tester à côté        | un `parallel` de deux agents                                                    |
+| le planner rend un plan en pas               | un `agent` dont la sortie est une liste de pas                                  |
+| vous donnez un pas au coder, puis le suivant | un `map` sur cette liste, un pas après l'autre                                  |
+| vous lancez `npm test`                       | un `check` qui lance `.pi/checks/test.sh`                                       |
+| le verdict, et le retour au coder            | une `loop` jusqu'à ce que les tests passent et que le reviewer approuve         |
+| le retour au planner                         | un second tour : l'auditeur relit le tout et le planner replanifie ce qui reste |
+| `/chain` et votre journal                    | le répertoire `runs/<horodatage>/`, avec la trace de chaque agent               |
 
-La première est l'autonomie complète. `/build` s'arrête deux fois par conception et possède un terminal pendant qu'il tourne, alors qu'un harnais qui doit travailler seul, sous CI, sur un déclencheur ou dans la matrice d'une expérience, ne peut se permettre ni les arrêts ni le terminal. La forme autonome de la boucle est donc un processus, sans arrêt entre la demande et le verdict, avec un code de sortie exploitable par une machine.
+Nous avons vu dans les modules précédents qu'il était important de faire chaque étape d'un plan de manière séparée. Il est possible de demander à combo de formater la sortie. C'est ce que nous ferons ici en demandant de faire une liste d'étapes.
 
-La deuxième est la politique du verdict. La preuve à blanc plus bas montre que `approved` agrège l'audit et le check et non l'accord des pairs : un pair non convergé se lit dans le rapport, il ne bloque rien. Si votre politique exige l'accord du pair, cette exigence est une ligne de code dans l'appelant, un fichier n'ayant ni condition ni accès au rapport pour l'exprimer.
+### Les tests ont le dernier mot
 
-La troisième est la mesure. Comparer le parallèle au séquentiel demande de faire varier la concurrence d'un lancement à l'autre sans rien changer d'autre, et de lire `busyMs` contre `wallMs`.
+Nous avons besoin d'une étape fiable pour savoir si les changements opérés répondent clairement à nos besoins. Nous pourrions le demander dans le prompt mais vous avez bien vu que vous n'avez pas une certitude à 100% que ce soit fait. Nous préférons donc définir un script bash qui représente les actions à faire après chaque changement. Dans un flow, le noeud `check` permet justement de faire cela en lançant un script de votre projet. Son résultat est une valeur que la boucle lit : avec `loop: tests.output.passed && review.output.approved`, le coder sait ce qu'il doit faire si le code qu'il a généré est faux ou s'il ne suit pas exactement le cadre de développement (linter par exemple).
 
-C'est le second artefact du module, la même exécution que le pipeline, écrite avec la bibliothèque :
+![gate](/figures/workflows/gate-light.svg){.only-light}
+![gate](/figures/workflows/gate-dark.svg){.only-dark}
 
-<<<@/../scripts/workflows/issue2.ts{ts}
+## Reconstruire
 
-Le script fait ce que le pipeline faisait, les deux mêmes branches, la même livraison, le même gate, et les trois choses s'y lisent. Le code de sortie du processus combine `approved` et l'accord des pairs, si bien que la politique durcie tient dans les deux lignes au-dessus de l'`exit` et qu'une CI l'applique sans rien ajouter. `--sequential` réduit la concurrence à un, et la ligne de parallélisme s'imprime. Quant à combo, il y est importé depuis son clone, en argument et jamais en variable d'environnement, parce qu'un état ambiant qui atteint un sous-agent est précisément ce que la conception de combo veut empêcher.
+### Le flow du ticket #2
 
-::: info Exercice (en autonomie)
-Lancez le script deux fois, avec et sans `--sequential`, et comparez la ligne de parallélisme. Puis comparez ce que le fan-out a réellement rapporté sur la durée totale de la boucle, gate et audit compris : c'est la version chiffrée de la comparaison promise au module précédent.
+Voici la boucle du module précédent écrite en entier. Elle utilise vos six agents sans les modifier.
 
-Voici la nôtre, deux branches sur `ilaas/gemma-4-31b`, clone réinitialisé entre les deux lancements :
+```md
+---
+name: issue2
+description: Le tour de boucle du module précédent, de la note d'impact à l'audit
+input: string
+timeout: 15m
 
-| | fan-out | séquentiel |
-| --- | --- | --- |
-| horloge / travail | 131 511 / 184 502 ms | 134 584 / 134 557 ms |
-| ligne de parallélisme | **×1,40** | ×1,00 |
-| explorer / tester | 53,0 s / 131,5 s | 75,9 s / 58,6 s |
-| boucle complète | 298 s | 348 s |
+nodes:
+  # Les deux lectures du ticket, en même temps : aucune des deux n'écrit.
+  - id: survey
+    parallel:
+      impact:
+        - id: note
+          agent: explorer
+          retry: 1
+          reads: [input]
+      cases:
+        - id: cases
+          agent: tester
+          retry: 1
+          reads: [input]
 
-Le fan-out a fait gagner 3 secondes sur 134, soit 2,3 %. Les deux branches vont individuellement 37 % plus lentement quand elles tournent ensemble, parce qu'elles se partagent le débit d'un seul fournisseur : le ×1,40 mesure donc le recouvrement des deux branches et non une accélération de la boucle. L'écart de 50 secondes sur la boucle complète vient de la dispersion du modèle d'un run à l'autre, plus grande ici que le gain mesuré, et non du parallélisme.
+  # Le retour au planner : un second tour replanifie ce que l'audit a laissé ouvert.
+  - id: round
+    loop: suite.output.passed && audit.output.approved
+    max: 2
+    ledger: round
+    do:
+      - id: plan
+        agent: planner
+        retry: 1
+        reads: [input, survey.output.impact.output, survey.output.cases.output, round.ledger]
+        output: { steps: [{ text: string }] }
 
-Reproduisez la mesure sur votre fournisseur avant de conclure, parce que ces chiffres décrivent un point d'entrée partagé et non une propriété du fan-out. Ce qui se transpose est la méthode, et le constat qu'un bon ratio de parallélisme ne prouve aucune économie sur la durée totale.
+      # Un pas après l'autre, dans le même arbre.
+      - id: steps
+        map-from: plan.output.steps
+        max: 6
+        do:
+          # Le retour au coder : jusqu'à trois essais par pas.
+          - id: step
+            loop: tests.output.passed && review.output.approved
+            max: 3
+            ledger: step
+            on-fail: continue
+            do:
+              - id: code
+                agent: coder
+                retry: 1
+                memory: step
+                reads: [input, item.text, step.previous.tests, step.previous.review, step.ledger]
+
+              - id: tests
+                check: .pi/checks/test.sh
+
+              - id: review
+                agent: reviewer
+                retry: 1
+                memory: step
+                verdict: step
+                reads: [input, item.text, code, diff, tests]
+
+      - id: suite
+        check: .pi/checks/test.sh
+
+      - id: audit
+        agent: auditor
+        retry: 1
+        verdict: round
+        reads: [input, steps, suite, diff, round.ledger]
+---
+
+## note
+Rends la note d'impact du ticket désigné sous `input`.
+
+## cases
+Liste les cas de test dont le ticket désigné sous `input` a besoin, en disant
+lesquels existent déjà. Commence par les comportements que l'extraction ne
+doit pas changer.
+
+## plan
+Découpe le ticket désigné sous `input` en petits pas, avec la note d'impact et
+le plan de tests comme carte. `remark` porte la remarque de la personne qui a
+lancé le run, vide si elle n'en a pas fait. Quand `round.ledger` n'est pas
+vide, c'est un second tour : ne planifie que ce que l'audit a soulevé et que
+personne n'a fermé.
+
+Le contrat est celui du ticket, pas le tien :
+
+- la nouvelle fonction est `brickHit(ball, bricks)`, exportée de `game/neon.js` ;
+- elle est pure : elle rend le tableau de toutes les briques vivantes que la
+  balle chevauche, et ne modifie rien ;
+- `frame()` se comporte exactement comme avant, y compris quand la balle
+  chevauche plusieurs briques : chacune meurt dans la même frame, avec un
+  incrément de combo chacune. Ce comportement est épinglé par un test avant de
+  déplacer la logique, avec une balle de rayon 7 centrée dans l'espace entre
+  deux briques voisines.
+
+Le coder ne voit que le texte de son pas : nomme les fichiers, redis la partie
+du contrat que le pas touche, et dis à quoi ressemble « fini ». Chaque pas
+commence par son test rouge, écrit dans `game/neon.test.js`, et finit sur une
+suite verte : le test rouge et le code qui le fait passer vont dans le même
+pas, jamais dans deux.
+
+## code
+Exécute le pas décrit sous `item.text`, et lui seul.
+
+Quand `step.previous.review` suit, le reviewer n'a pas approuvé ton dernier
+changement : traite chaque remarque et chaque obligation de `step.ledger`, ou
+dis clairement pourquoi tu ne le fais pas. `step.previous.tests` donne la
+sortie de la suite après ce changement.
+
+## review
+Relis le changement fait pour le pas décrit sous `item.text`. Le rapport du
+coder est sous `code`, le changement sous `diff`, la sortie de la suite sous
+`tests`. Le rapport est une affirmation, le diff et le code sont la preuve.
+Approuve, ou soulève ce qui doit encore changer.
+
+## audit
+Relis tout le changement sous `diff` contre le ticket désigné sous `input`.
+`steps` dit comment la relecture de chaque pas s'est terminée : un pas qui n'a
+pas convergé n'est pas fait tant que le code ne le montre pas. `suite` dit si
+les tests du projet passent. `round.ledger` porte ce qu'un audit précédent a
+soulevé et que personne n'a fermé.
+
+Approuve le tout, ou soulève chaque correction sur sa propre ligne.
+```
+
+Quelques remarques sur ce flow
+
+- Les pas se suivent dans le même arbre, comme vos `/step`.
+- Trois essais par pas et deux tours au plus. Un plafond est obligatoire sur chaque boucle : sans lui, un modèle qui ne converge jamais tournerait jusqu'à épuisement du budget. Si votre flow échoue en atteignant cette limite, combo vous le dira.
+- Le contrat du ticket est écrit dans la section du planner pour s'assurer que les demandes de l'utilisateur y figurent bien. La phase d'exploration peut les occulter.
+- `retry: 1` sur chaque agent. Au premier run réel de ce flow, le planner a écrit un très bon plan, mais en texte libre, sans utiliser l'outil prévu, et le run s'est arrêté. Un second essai, avec l'erreur nommée, a suffi.
+- Chaque pas finit sur une suite verte. Un autre run a planifié un pas « écrire les tests rouges » seul, sans le code. La boucle exige une suite verte, ce pas ne pouvait donc pas aboutir et il a brûlé ses trois essais. Quand une boucle ne converge pas, regardez d'abord si sa condition était atteignable.
+
+Deux rôles sont ajoutés ici. Le testeur (`scripts/agents/tester.md`) permet de vérifier si les tests existent et s'il faut en ajouter. L'auditeur (`scripts/agents/auditor.md`) s'assure que le travail est réalisé dans sa globalité et que rien n'a été oublié alors que le reviewer ne voit qu'un pas. Ce qu'il soulève reste ouvert tant que personne ne l'a traité, et le flow repart pour un second tour.
+
+::: warning  Un point sur ces choix
+Nous vous rappelons que l'objectif de cette formation est de vous donner tous les éléments pour construire votre harnais. Les choix faits ici sont donc contestables et peut-être pas optimaux pour avoir les meilleurs résultats. Mais vous avez toute la compréhension requise pour retirer des noeuds, en ajouter ou les modifier.
 :::
 
-### La preuve de mécanisme, sans modèle
-
-Avant de payer un seul token, le mécanisme entier se vérifie à blanc, et le protocole se réutilise sur n'importe quel workflow : le vrai code de combo (parseur, `runPipeline`, `deliver`), le vrai `npm test` de NÉON comme gate, et un faux modèle injecté par le port `spawn`, dont le coder applique le diff de référence du ticket #2. Seul le modèle est simulé, tout ce qui l'entoure étant le code réel. C'est `scripts/workflows/issue2-smoke.mjs`, qui se lance sur un clone jetable portant les agents et le pipeline :
+::: info Exercice (en salle)
+Déposez les agents, le flow et le script de tests dans votre clone de NÉON :
 
 ```bash
-node scripts/workflows/issue2-smoke.mjs /chemin/vers/neon /chemin/vers/combo
+cd /chemin/vers/neon
+mkdir -p .pi/agents .pi/flows .pi/checks
+cp /chemin/vers/hands-on-harness/scripts/agents/*.md .pi/agents/
+# Collez le flow ci-dessus dans .pi/flows/issue2.md
+printf '#!/usr/bin/env bash\nnpm test\n' > .pi/checks/test.sh
+
+printf '.pi/\nruns/\n' >> .gitignore
+git add .gitignore && git commit -m "ignorer .pi et runs"
+
+pi install -l git:github.com/AI-for-dev/combo
+pi
 ```
 
-Et voici sa sortie :
+Au premier lancement, Pi vous demande si vous faites confiance au dossier du projet : sans cela, il ne charge ni `.pi/` ni combo. Choisissez « Trust ».
 
+Vérifiez ce que Pi a chargé avant de lancer quoi que ce soit :
+
+```prompt
+/flows
+/flows issue2
 ```
-S1 parse+resolve            OK   note(fanOut) -> work(deliver)
-S2 chemin vert              OK   approved=true, npm test: 9 cas verts
-S3 gate                     OK   pair LGTM + audit APPROVED, check rouge => approved=false
-S4 plan au format humain    OK   'no runnable plan' - la forme appartient à l'appelant
-S5 mauvais mot d'accord     OK   pair jamais approuvé ; le tout reste sauvé par audit + check
+
+La première commande liste les flows trouvés, la seconde affiche le plan de `issue2` nœud par nœud. Cassez ensuite le fichier exprès en remplaçant `agent: coder` par `agent: codeur`, relancez `/flows` et lisez le refus : il nomme le nœud et propose le bon nom. Remettez `coder`, puis lancez la boucle :
+
+```prompt
+/run issue2 traite le ticket #2 d'ISSUES.md
 ```
 
-Chaque ligne vérifie une propriété. S1 : le fichier parse et chaque nom résout avant toute session. S2 : sur le diff de référence, la suite passe de 6 à 9 cas et tout le monde signe. S3 est la démonstration centrale, le même diff plus un test saboté, où le pair approuve, l'audit approuve, et `approved` reste faux parce que le check est rouge, une approbation ne battant pas un verdict exécutable. S4 et S5 rejouent les deux collisions de convention décrites plus haut, et prouvent qu'elles échouent là où elles doivent : avant le travail pour le plan, dans le pair pour le verdict.
+Pi dessine le flow au-dessus de l'invite pendant qu'il avance. La carte de remarque apparaît après la note d'impact ; ensuite, tout ce que vous faisiez à la main s'enchaîne sans vous.
 
-::: warning Ce que `approved` agrège
-S5 montre une subtilité de conception à connaître avant de lire un rapport de `deliver` : un pair qui épuise ses tours sans accord n'est pas un veto. Son propre `approved` reste faux et se lit dans le rapport, mais le verdict final de la livraison est « l'auditeur a signé et le check est vert ». Dans S5, le travail était fait dès le premier tour, l'audit et la suite l'ont confirmé, et la livraison est approuvée alors qu'aucun relecteur de pair n'a jamais dit le bon mot : le verdict final repose sur le check et sur la lecture du tout, et non sur l'accord de chaque étage. Si votre politique exige l'accord du pair, elle s'écrit dans le code appelant, et la version script de ce module le fait dans les deux lignes qui précèdent son code de sortie.
+À la fin, faites vos propres vérifications, celles du module précédent : `npm test`, la liste des exports, `git diff` et la trace dans `runs/<horodatage>/`. Ne vous contentez pas du verdict du flow.
 :::
 
-Cette preuve ne dit rien de ce qu'un modèle réel fera du rôle de planner ou de coder sur ce ticket. Elle établit que si le modèle fait le travail, le harnais le laissera passer, et que s'il le fait mal, le gate l'arrêtera. Le comportement du modèle, lui, ne s'établit que par la mesure.
+Un run interrompu reprend avec `/run resume`, là où il s'était arrêté.
 
-::: warning Un check vert ne dit pas que le ticket est fait
-S3 établit qu'une approbation ne bat pas un verdict rouge, et la réciproque est fausse. Un run réel de ce pipeline l'a montré : `check: vert`, `approved: true`, douze cas verts, et dans l'arbre une fonction `export function brickHit(state)` qui mute l'état, là où le ticket demande `brickHit(ball, bricks)`, pure. L'auditeur avait prescrit le changement de signature, le relecteur l'avait laissé passer, et la suite l'a validé parce qu'aucun test ne contraint la signature demandée.
+### Adapter le harnais à vos besoins
 
-Un gate ne vérifie que ce que la suite contraint. `approved` veut dire « l'auditeur a signé et le check est vert », jamais « le ticket est satisfait », et la seule chose qui relie les deux est un test que quelqu'un a écrit exprès. C'est aussi ce qui justifie l'étape `tester` du fan-out : un plan de tests qui nomme la signature attendue transforme une exigence de prose en exigence exécutable.
-:::
+Ce flow est un point de départ. Chaque modification qui suit tient en quelques lignes, et `/flows issue2` vous dit avant tout lancement si elle est valide.
 
-### La comparaison qui reste à mesurer
+Le flow s'arrête à l'audit et c'est vous qui commitez. Pour qu'il vous propose le commit, ajoutez à la fin une question, un branchement et le commit :
 
-Le module précédent a laissé une question de mesure ouverte : le découpage en rôles améliore-t-il le résultat sur le ticket #2, contre un agent seul recevant le même brief ? Ce module pose le protocole sans publier de chiffres, et comme dans le reste de la formation, l'hypothèse s'écrit avant la mesure.
+![arrêt humain](/figures/workflows/human-stop-light.svg){.only-light}
+![arrêt humain](/figures/workflows/human-stop-dark.svg){.only-dark}
 
-combo fournit la brique. `experiment` rejoue le même workflow sur M modèles et N répétitions, chaque cellule dans son répertoire avec ses mesures, et rend une table dont les colonnes de drapeaux sont ce que votre fonction retourne (`approved`, la suite verte, les exports intacts). Deux variantes suffisent, la boucle de ce module et un `run` unique du coder avec le ticket cadré. Les colonnes de lecture sont celles du module sur le contexte, le débordement de périmètre en tête.
+```yaml
+  - id: go
+    ask: "Commiter ce changement ?"
+    confirm: true
+    default: false
+    reads: [diff]
+
+  - id: ship
+    choice:
+      - when: go.output.yes
+        do:
+          - id: message
+            agent: committer
+            reads: [input, diff]
+          - id: commit
+            commit: message
+    default: []
+```
+
+Ajoutez une section `## message` qui dit au committer ce qu'il doit écrire. Le `committer` est livré avec combo, le commit part sur une branche propre au run et rien n'est poussé. Avec `default: false`, un run sans personne devant l'écran ne commite pas.
+
+Un flow qui marche devient aussi une brique. Un nœud `flow` appelle un autre flow en entier : votre `issue2` peut servir dans un flow plus large sans être recopié.
+
+![composition](/figures/workflows/composition-light.svg){.only-light}
+![composition](/figures/workflows/composition-dark.svg){.only-dark}
+
+```md
+---
+name: ticket
+description: Le flow issue2 comme une brique, puis le commit
+input: string
+nodes:
+  - id: work
+    flow: issue2
+    input: input
+
+  - id: message
+    agent: committer
+    retry: 1
+    reads: [input, diff]
+
+  - id: commit
+    commit: message
+---
+
+## message
+Écris le message de commit du changement sous `diff`, fait pour la demande sous `input`.
+```
+
+Le reste suit la même logique. Un modèle plus gros pour le planner et l'auditeur se règle dans leurs fichiers d'agents. Un audit qui n'apporte rien sur un petit ticket se retire en supprimant son nœud et en simplifiant la condition du tour. Des pas indépendants peuvent tourner en parallèle, chacun dans sa copie du dépôt (`concurrency: 2` et `copies: true` sur le `map`).
 
 ::: info Exercice (en autonomie)
-Écrivez d'abord l'hypothèse : que prédisez-vous du découpage sur le débordement, et à quelle condition diriez-vous qu'il n'apporte rien ? Écrivez ensuite la fonction d'`experiment` qui la met à l'épreuve, à vingt répétitions par variante. La leçon du module sur le contexte s'applique inchangée : trois répétitions montrent la dispersion et ne départagent rien.
+Ajoutez l'arrêt avant le commit et rejouez le ticket. Essayez ensuite une modification qui vous est propre : un autre découpage des rôles, un modèle plus gros là où l'on juge, un flow pour un autre type de ticket. La question à vous poser est toujours la même : quel geste répétiez-vous à la main, et quelle ligne l'écrirait ?
 :::
+
+### Et la mesure ? (A faire avec trysquare)
+
 
 ## Généraliser
 
-Les agents sont des données, les workflows du code. Un fichier décrit un rôle, du code décrit un enchaînement, et la frontière entre les deux est un contrat : la partie linéaire peut redevenir un fichier, la première condition la fait retourner au code. Un système qui range l'orchestration dans un langage de configuration finit par y réinventer un langage de programmation, sans l'outillage qui va avec.
+Automatiser une boucle demande de l'avoir tenue à la main ou d'analyser finement les traces. Le flow de ce module est votre journal du module précédent réécrit : chaque ligne répond à une décision que vous avez prise vous-même, et c'est pour cela que vous savez où la placer.
 
-Un verdict exécutable bat toutes les approbations. Deux agents ont approuvé un test qui ne se chargeait pas, et un check l'aurait dit en une commande. Le verdict du gate est le seul qui ne soit pas une opinion, et il est final par construction.
+Le harnais se construit par corrections successives. Chaque échec lu dans la trace devient une modification du flux.
 
-`ok`, `converged` et `approved` répondent à trois questions différentes. Des tours qui tournent ne disent pas que la barre est atteinte, un plafond épuisé n'est pas une réussite, et ce que le verdict final agrège se lit dans le code plutôt que dans son nom, comme S5 le démontre.
+Les tests ont le dernier mot mais ne vérifient que ce qu'ils contraignent. Une suite verte ne prouve pas que le ticket est fait.
 
-La forme du livrable appartient à l'appelant. Le même planner sert un humain et un parseur, à condition de dire dans son prompt à qui revient la forme. Les deux collisions de ce module se sont corrigées par une phrase chacune, parce que les rôles et les formats étaient séparés dès l'écriture ; s'ils avaient été mélangés, la correction aurait demandé une réécriture.
+Une décision mérite son propre canal. Tant qu'un verdict se lit dans de la prose, il dépend de la façon dont le modèle écrit un mot comme par exemple `APPROVED`. Quand c'est possible, donnez-lui un outil pour répondre. Vous pouvez vous appuyer sur https://laya.convaiinnovations.com/ qui permet de prendre des décisions beaucoup plus fines qu'avec un LLM classique.
 
-Toute vérification déplaçable avant la première dépense doit y être déplacée. Le pipeline est parsé, ses sections appariées, ses agents résolus et son plan borné avant la première session, si bien qu'une faute de frappe coûte une seconde au lieu de trois étapes de travail réel. La règle se transpose à tout enchaînement qui paie chaque étape.
-
-Les plafonds sans défaut se posent à la main. Le plafond d'itérations a un défaut parce que l'unité est discrète et chère, le délai n'en a pas parce qu'il serait arbitraire, et c'est donc à vous de le poser sur tout ce qui tourne sans surveillance. Cherchez, dans chaque outil, ce que l'oubli d'un argument rend possible.
-
-Le mécanisme se vérifie sans modèle. Un port d'injection, le `spawn` de combo, sépare le harnais du modèle : la preuve à blanc établit que le harnais route, gate et refuse comme prévu, en une seconde et pour zéro token, alors que ce que le modèle fera du rôle reste une question de matrice. Confondre les deux fait payer des répétitions pour vérifier du code, ou fait croire prouvé ce qui n'était que plausible.
-
-Les arrêts d'un harnais autonome sont des décisions de conception. `/build` marque deux arrêts, le brief et le commit, et tout le reste s'enchaîne sans personne. Ces arrêts sont les deux endroits où une erreur coûte plus cher à défaire qu'à prévenir, choisis à l'écriture, et un harnais autonome se juge à la position de ses arrêts plutôt qu'à leur absence.
+Les arrêts humains sont des choix de conception. Placez-les là où une erreur coûte plus cher à défaire qu'à prévenir, et pas ailleurs. Dans notre cas, une discussion questions-réponses sur le ticket pour enrichir le plan pourrait être une bonne chose.
 
 ## Livrable
 
 Ce module produit trois pièces.
 
-1. Le pipeline et le script, `scripts/pipelines/issue2.md` et `scripts/workflows/issue2.ts`, versionnés avec les trois fichiers d'agents que le branchement a touchés : les deux règles de forme ajoutées au planner et au reviewer, et l'auditeur.
-2. La trace d'un run complet : le répertoire `runs/<horodatage>/` d'un `/build` mené du brief au commit sur le ticket #2, et la sortie verte de `issue2-smoke.mjs`. La preuve de mécanisme et l'exécution réelle restent deux pièces séparées, parce qu'elles n'établissent pas la même chose.
+1. Votre flow `.pi/flows/issue2.md` et le script `.pi/checks/test.sh`, versionnés avec vos agents, dans la version que vous avez adaptée.
+2. La trace d'un run complet, le répertoire `runs/<horodatage>/` d'un `/run issue2` sur le ticket #2.
 3. La ligne « workflows » de la fiche de décision, ci-dessous.
 
-| levier                              | effet observé | adopté ? | pourquoi |
-| ----------------------------------- | ------------- | -------- | -------- |
-| pipeline markdown (partie linéaire) |               |          |          |
-| workflow en code (branches, mesure) |               |          |          |
-| gate exécutable (`verify`)          |               |          |          |
-| fan-out explorer ∥ tester           |               |          |          |
-| audit du tout, après les pairs      |               |          |          |
-| plafonds (`maxRounds`, `timeoutMs`) |               |          |          |
-| preuve de mécanisme sans modèle     |               |          |          |
-| arrêts choisis (brief, commit)      |               |          |          |
-
 ::: tip Critère de réussite
-Vous savez dire, rapport en main, pourquoi un run donné est `approved` ou ne l'est pas, c'est-à-dire quel étage a signé, ce que le check a rendu et ce qu'un plafond a épuisé, et vous savez citer la propriété du harnais que la preuve à blanc établit et celle qu'elle n'établit pas.
-
-La première moitié demande d'avoir lu un rapport de `deliver` plutôt que son dernier mot, la seconde d'avoir fait tourner la preuve soi-même, et ni l'une ni l'autre ne se remplit de mémoire.
+Vous savez dire, trace en main, pourquoi un run a abouti ou non : quel pas n'a pas convergé, si la suite était rouge, ce que l'auditeur a laissé ouvert. Vous pouvez faire évoluer votre flux de travail pour essayer d'obtenir un harnais qui suit votre façon de travailler et être confiant sur le résultat.
 :::
 
-## Les pièges
-
-Tout paralléliser se paie deux fois : deux coders concurrents écrivent dans le même arbre, et le fan-out a un coût fixe que l'exploration seule amortit rarement, la comparaison chiffrée de ce module ayant mesuré un gain de 3 secondes sur 134. Mesurez `busyMs` contre `wallMs` avant de généraliser.
-
-Oublier `timeoutMs` laisse le seul garde-fou sans valeur par défaut à zéro : un tour peut boucler sur un outil halluciné jusqu'à des centaines de milliers de tokens, et aucun plafond d'itérations ne borne l'intérieur d'un tour.
-
-Lire `approved: true` comme « le ticket est fait » revient à confondre une signature et une exigence. Le verdict agrège une signature et un check, et le check ne sait que ce que la suite contraint : une livraison qui change la signature demandée par le ticket passe le gate tant qu'aucun test ne la contraint, et le remède est un test de plus plutôt qu'un rôle de plus.
-
-Lire `ok` comme une réussite est la même erreur un cran plus bas, puisque `ok` dit seulement que les tours ont tourné. Un `loop` peut être `ok` sans avoir convergé, un `deliver` `ok` sans être approuvé, et ce sont `converged` et `approved` qui portent la réponse.
-
-Croire que le pair verrouille la livraison mène à lire un rapport de travers : le verdict final agrège l'audit et le check, et un pair non convergé s'y lit sans rien bloquer. Si votre politique l'exige, écrivez-la dans le code appelant.
-
-Laisser un rôle imposer sa forme à l'appelant produit deux échecs silencieux côté agent, le plan que l'appelant ne sait pas analyser et le verdict qu'il ne sait pas lire. C'est le parseur qui vous le dira, avant le travail pour le plan, au prix d'un run pour le verdict.
-
-Prendre `/run` pour une version sûre de `/build` est un contresens : `/run` retire l'interview et l'arrêt de commit, rien d'autre. Toute écriture d'une étape reste dans l'arbre, et ce qu'un agent peut faire reste décidé par sa panoplie.
-
-Vérifier le mécanisme à coups de répétitions coûte des tokens pour rien. Vingt runs de modèle pour constater qu'un gate arrête un test rouge donnent le verdict qu'une preuve à blanc rend en une seconde, et la dispersion du modèle brouille en prime ce qu'on voulait observer. Les répétitions servent à mesurer le modèle, quand le code s'inspecte.
 
 ## Pour aller plus loin
 
-- Anthropic, [Building Effective Agents](https://www.anthropic.com/engineering/building-effective-agents), la distinction workflows / agents dont les combinateurs de ce module sont une mise en œuvre, et les motifs (chaînage, routage, parallélisation, orchestrateur-workers, évaluateur) dans leur forme générale.
-- [La documentation de combo](https://github.com/AI-for-dev/combo/tree/main/docs) : les pages workflows, pipelines et « Deliver a change », ainsi que `docs/decisions.md`, qui consigne les décisions de conception et celles qui ont été annulées, une pratique à copier.
-- [herdr](https://herdr.dev), pour regarder un `deliver` travailler : un volet par sous-agent, le pair et l'audit visibles pendant qu'ils tournent.
-- Le `NEXT.md` de combo, qui liste ce qui reste à faire et les pièges déjà rencontrés : chaque défaut découvert y devient un test.
+- Anthropic, [Building Effective Agents](https://www.anthropic.com/engineering/building-effective-agents), la distinction workflows / agents et les motifs de ce module dans leur forme générale.
+- [La documentation de combo](https://github.com/AI-for-dev/combo/tree/main/docs), en particulier la page sur les flows et les flows `build` et `build-attended` livrés avec combo, qui font en plus générique ce que ce module fait sur un ticket.
+- [herdr](https://herdr.dev), pour regarder un flow travailler, un volet par agent.

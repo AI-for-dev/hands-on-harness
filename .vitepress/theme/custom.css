@@ -83,3 +83,10 @@
     animation: none;
   }
 }
+
+/* Figures déclinées en deux thèmes : `![](x-light.svg){.only-light}` suivie
+   de `![](x-dark.svg){.only-dark}`. Seule celle du thème courant s'affiche. */
+.dark .vp-doc img.only-light,
+html:not(.dark) .vp-doc img.only-dark {
+  display: none;
+}

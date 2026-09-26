@@ -24,7 +24,7 @@ Trois propriétés de cette définition motivent la délégation.
 
 La première est l'isolation du contexte. Le travail d'une sous-tâche est presque toujours plus gros que sa conclusion : établir quels fichiers un ticket touche demande d'en lire une dizaine, soit plusieurs milliers de tokens de sorties d'outils, alors que la note qui en résulte tient en trente lignes. Si vous faites ce travail dans la session principale, les dix fichiers restent dans votre fenêtre jusqu'à la fin. Si vous le déléguez, seule la note y entre.
 
-La deuxième est la restriction d'outils. Le module précédent a montré qu'une consigne n'oblige à rien, puisque la consigne de ménage du `SKILL.md` n'est suivie que dans moins d'une exécution sur trois. Un agent dont la panoplie ne contient pas d'outil d'écriture ne peut pas écrire et la question de l'obéissance ne se pose plus. 
+La deuxième est la restriction d'outils. Le module précédent a montré qu'une consigne n'oblige à rien, puisque la consigne de ménage du `SKILL.md` n'est suivie que dans moins d'une exécution sur trois. Un agent dont la panoplie ne contient pas d'outil d'écriture ne peut pas écrire et la question de l'obéissance ne se pose plus.
 
 La troisième est la séparation du générateur et de l'évaluateur. Un modèle qui relit son propre travail penche du côté favorable, et cela se comprend : sa fenêtre contient tout le raisonnement qui l'a conduit à ce code, si bien qu'il relit ses intentions plutôt que son diff. Un relecteur dans un contexte neuf ne connaît que le ticket, le plan et le diff, et est donc plus objectif.
 
@@ -68,7 +68,7 @@ L'entête porte le nom, la description, la **panoplie** (`tools:`) et le **modè
 
 La différence avec un skill est donc double. Le corps est lu à coup sûr, et la ligne `tools:` décide des outils que la session du sous-agent enregistre, si bien qu'un agent sans `write` n'a aucun moyen d'écrire, quelle que soit la tâche qu'il reçoit.
 
-Un fichier qui omet `tools:` obtient la panoplie en lecture seule, `read, grep, find, ls`, qui est le bon défaut pour tout ce qui explore. Nous préférerons néanmoins mettre les outils disponibles pour faciliter la lecture de ce fichier et des actions possibles de ce sous-agent. 
+Un fichier qui omet `tools:` obtient la panoplie en lecture seule, `read, grep, find, ls`, qui est le bon défaut pour tout ce qui explore. Nous préférerons néanmoins mettre les outils disponibles pour faciliter la lecture de ce fichier et des actions possibles de ce sous-agent.
 
 ::: warning Structure des fichiers d'agent
 Le premier exemple de fichier markdown que nous avons introduit correspond à la structuration classique d'un sous-agent que vous retrouverez également dans d'autres bibliothèques de harnais comme Claude, Codex, OpenCode, Cursor, ...
@@ -97,7 +97,7 @@ Vous pouvez avoir la liste de vos agents via la commande:
 :::
 
 ::: warning Voir l'activité de vos agents
-L'idée de se module est de décomposer l'orchestration et de voir les sous-agents travailler. Même s'il vous est possible avec combo de voir la trace de la session Pi après coup, il est toujours plus agréable de voir les événements se passer en direct. Pour cela, vous pouvez utiliser herdr. 
+L'idée de se module est de décomposer l'orchestration et de voir les sous-agents travailler. Même s'il vous est possible avec combo de voir la trace de la session Pi après coup, il est toujours plus agréable de voir les événements se passer en direct. Pour cela, vous pouvez utiliser herdr.
 
 Vous devrez alors lancer votre session Pi dans herdr puis taper cette ligne
 
@@ -159,7 +159,7 @@ Avant de lancer quoi que ce soit, faites énoncer à chaque agent sa propre gara
 cd /chemin/vers/neon
 pi install -l npm:@ai-for-dev/combo
 mkdir -p .pi/agents && cp /chemin/vers/hands-on-harness/scripts/agents/*.md .pi/agents/
-pi 
+pi
 ```
 
 L'extension n'ajoute pas de commande pour explicite pour appeler un agent : `subagent` est un outil que le modèle de la session principale appelle quand vous le lui demandez. Il vous suffit de nommer l'agent et ce que vous souhaitez qu'il fasse. Demandez donc l'explorateur ainsi :
@@ -231,7 +231,7 @@ Dans la seconde session, chaque fichier lu est resté dans la fenêtre et y rest
 
 ### Vérifier dans la trace qui a tourné
 
-::: info Exercice (en salle) 
+::: info Exercice (en salle)
 Exportez la session principale avec `\export` et retrouvez chaque appel de l'outil `subagent` : le nom de l'agent, la portée, le modèle, la tâche transmise. C'est la seule réponse fiable à la question de savoir qui a tourné si vous n'avez pas vu l'activité de vos agents via herdr.
 :::
 
@@ -258,28 +258,24 @@ Le découpage en rôles répartit le travail du modèle sans l'augmenter. Le mod
 
 Automatiser une boucle demande de l'avoir tenue à la main. Votre journal dit ce que l'orchestrateur devra router, dans quel ordre, et sur quels critères vous avez décidé des retours. Nous vous rappelons que construire son propre harnais demande de l'expérience et c'est au fur et à mesure de l'acquisition de cette expérience que vous allez peaufiner votre harnais pour qu'une confiance s'instaure.
 
+::: info Exercice (en autonomie)
+Vous pouvez à présent tester plein de combinaisons et essayer de voir leur influence sur les résultats. Parmi ces combinaisons, vous pouvez :
+- écrire vos propres agents ou modifier les agents proposés dans ce module,
+- ajouter des skills aux agents,
+- changer les modèles et voir notamment les changements lorsque l'on prend des modèles plus gros pour les phases de plan et de validation,
+- ...
+:::
+
 ## Livrable
 
 Ce module produit trois pièces.
 
 1. Les quatre agents, versionnés dans votre dépôt, chacun avec sa panoplie minimale et son `model:` déclaré. Ce sont eux que le module suivant branchera sur l'orchestrateur, sans les modifier.
-2. Le journal d'un tour de boucle : la trace de la session principale exportée, le diff livré du premier pas, la sortie de `npm test` que le reviewer a lue, et votre journal. 
-3. La ligne « délégation » de la fiche de décision, ci-dessous.
-
-| levier                            | effet observé | adopté ? | pourquoi |
-| --------------------------------- | ------------- | -------- | -------- |
-| contexte isolé par rôle           |               |          |          |
-| panoplie réduite (`tools:`)       |               |          |          |
-| modèle déclaré par agent          |               |          |          |
-| un pas de plan par invocation     |               |          |          |
-| relecteur séparé du codeur        |               |          |          |
-| verdict qui peut remonter au plan |               |          |          |
-| orchestration humaine             |               |          |          |
-
-La colonne s'appelle « effet observé » plutôt que « effet mesuré », parce que ce module vérifie des propriétés dans des traces et n'établit pas d'écarts sur des répétitions. La dernière ligne se remplira en deux temps, ici puis au module suivant, quand vous saurez ce que l'automatisation de chaque geste a réellement changé.
+2. Le journal d'un tour de boucle : la trace de la session principale exportée, le diff livré du premier pas, la sortie de `npm test` que le reviewer a lue, et votre journal.
+3. Les choix à faire entre chaque étape: vous avez joué le rôle de l'agent principal et organisé le flux de travail. Vous savez maintenant à quoi vous attendre pour l'automatisation complète de la boucle.
 
 ::: tip Critère de réussite
-Vous savez montrer, trace en main, quel agent a tourné à chaque étape de votre boucle, avec quels outils et quel modèle, et citer le geste écrit dans votre journal que vous refuseriez de refaire vingt fois.
+Vous savez montrer, trace en main, quel agent a tourné à chaque étape de votre boucle, avec quels outils et quel modèle. En tant qu'orchestrateur, vous avez pu également voir quelles actions vous refuseriez de refaire vingt fois. Cette compréhension est importante pour finaliser l'automatisation de votre premier flux de travail de votre harnais.
 :::
 
 ## Pour aller plus loin

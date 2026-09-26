@@ -1,0 +1,30 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 380" width="800" height="380" role="img" aria-labelledby="t d">
+  <title id="t">reduce : N → 1: un agente sintetiza ramas</title>
+  <desc id="d">Una rama que falla llega al sintetizador como { ok: false, error }: la ve.</desc>
+  <defs>
+    <marker id="head" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M1 1.5 L9 5 L1 8.5" fill="none" stroke="#5e5646" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></marker>
+    <marker id="head-danger" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M1 1.5 L9 5 L1 8.5" fill="none" stroke="#e3846f" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></marker>
+  </defs>
+  <rect x="0.5" y="0.5" width="799" height="379" rx="16" fill="#211e19" stroke="#332e26"/>
+  <text x="40" y="40" font-family="ui-monospace, 'SF Mono', Menlo, Consolas, 'Liberation Mono', monospace" font-size="10" font-weight="400" letter-spacing="1.4" fill="#a89e8e" text-anchor="start" dominant-baseline="middle">PATRÓN</text>
+  <text x="760" y="40" font-family="ui-monospace, 'SF Mono', Menlo, Consolas, 'Liberation Mono', monospace" font-size="10" font-weight="400" letter-spacing="1.4" fill="#a89e8e" text-anchor="end" dominant-baseline="middle">EN UN FLOW</text>
+  <text x="760" y="70" font-family="ui-monospace, 'SF Mono', Menlo, Consolas, 'Liberation Mono', monospace" font-size="15" font-weight="400" fill="#ece6da" text-anchor="end" dominant-baseline="middle">parallel → agent</text>
+  <text x="40" y="70" font-family="ui-monospace, 'SF Mono', Menlo, Consolas, 'Liberation Mono', monospace" font-size="26" font-weight="600" fill="#93b2e2" text-anchor="start" dominant-baseline="middle">reduce</text>
+  <text x="40" y="100" font-family="'Iowan Old Style', 'Palatino Linotype', Palatino, Georgia, serif" font-size="16" font-weight="400" fill="#ece6da" text-anchor="start" dominant-baseline="middle">N → 1: un agente sintetiza ramas</text>
+  <text x="110" y="134" font-family="ui-monospace, 'SF Mono', Menlo, Consolas, 'Liberation Mono', monospace" font-size="10" font-weight="400" letter-spacing="1.2" fill="#a89e8e" text-anchor="middle" dominant-baseline="middle">SECCIÓN + BLOQUE LEÍDO</text>
+  <text x="405" y="134" font-family="ui-monospace, 'SF Mono', Menlo, Consolas, 'Liberation Mono', monospace" font-size="10" font-weight="400" letter-spacing="1.2" fill="#a89e8e" text-anchor="middle" dominant-baseline="middle">SÍNTESIS</text>
+  <text x="690" y="134" font-family="ui-monospace, 'SF Mono', Menlo, Consolas, 'Liberation Mono', monospace" font-size="10" font-weight="400" letter-spacing="1.2" fill="#a89e8e" text-anchor="middle" dominant-baseline="middle">SALIDA</text>
+  <rect x="40" y="148" width="140" height="30" rx="15" fill="#2a261f" stroke="#5e5646" stroke-width="1.2"/><text x="110" y="164" font-family="ui-monospace, 'SF Mono', Menlo, Consolas, 'Liberation Mono', monospace" font-size="12.5" font-weight="400" fill="#ece6da" text-anchor="middle" dominant-baseline="middle">## sintesis</text>
+  <rect x="40" y="194" width="140" height="30" rx="15" fill="#332e26"/><text x="110" y="210" font-family="'Iowan Old Style', 'Palatino Linotype', Palatino, Georgia, serif" font-size="14" font-weight="400" fill="#ece6da" text-anchor="middle" dominant-baseline="middle">rama 1</text>
+  <rect x="40" y="240" width="140" height="30" rx="15" fill="#332e26"/><text x="110" y="256" font-family="'Iowan Old Style', 'Palatino Linotype', Palatino, Georgia, serif" font-size="14" font-weight="400" fill="#ece6da" text-anchor="middle" dominant-baseline="middle">rama 2</text>
+  <rect x="40" y="286" width="140" height="30" rx="15" fill="none" stroke="#e3846f" stroke-width="1.2" stroke-dasharray="4 3"/><text x="110" y="302" font-family="'Iowan Old Style', 'Palatino Linotype', Palatino, Georgia, serif" font-size="14" font-weight="400" fill="#e3846f" text-anchor="middle" dominant-baseline="middle">rama N</text>
+  <path d="M180 163 C252 163 252 232 324 232" fill="none" stroke="#5e5646" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#head)"/>
+  <path d="M180 209 C252 209 252 232 324 232" fill="none" stroke="#5e5646" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#head)"/>
+  <path d="M180 255 C252 255 252 232 324 232" fill="none" stroke="#5e5646" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#head)"/>
+  <path d="M180 301 C252 301 252 232 324 232" fill="none" stroke="#e3846f" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="4 4" marker-end="url(#head-danger)"/>
+  <rect x="330" y="202" width="150" height="60" rx="10" fill="#2a3242" stroke="#93b2e2" stroke-width="1.5"/><text x="405" y="224" font-family="ui-monospace, 'SF Mono', Menlo, Consolas, 'Liberation Mono', monospace" font-size="9" font-weight="400" letter-spacing="1.2" fill="#93b2e2" text-anchor="middle" dominant-baseline="middle">AGENT</text><text x="405" y="241" font-family="'Iowan Old Style', 'Palatino Linotype', Palatino, Georgia, serif" font-size="15" font-weight="400" fill="#ece6da" text-anchor="middle" dominant-baseline="middle">sintetizador</text>
+  <path d="M480 232 H614" fill="none" stroke="#5e5646" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#head)"/>
+  <rect x="620" y="215" width="140" height="34" rx="17" fill="#332e26"/><text x="690" y="233" font-family="'Iowan Old Style', 'Palatino Linotype', Palatino, Georgia, serif" font-size="14" font-weight="400" fill="#ece6da" text-anchor="middle" dominant-baseline="middle">salida</text>
+  <path d="M40 330 H760" fill="none" stroke="#5e5646" stroke-width="1.5" stroke-linecap="round"/>
+  <text x="40" y="352" font-family="'Iowan Old Style', 'Palatino Linotype', Palatino, Georgia, serif" font-size="13.5" font-weight="400" font-style="italic" fill="#a89e8e" text-anchor="start" dominant-baseline="middle">Una rama que falla llega al sintetizador como { ok: false, error }: la ve.</text>
+</svg>
