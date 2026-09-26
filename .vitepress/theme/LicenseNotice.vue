@@ -1,20 +1,26 @@
 <script setup lang="ts">
 import { useData } from 'vitepress'
 
-// Le footer standard de VitePress (themeConfig.footer) ne s'affiche jamais
-// quand une sidebar est présente (limitation documentée du thème par
-// défaut) — or notre mise en page "livre" a toujours une sidebar. On
-// injecte donc la mention de licence directement après le contenu de
-// chaque page via le slot `doc-after`, indépendamment de la sidebar.
+// VitePress's standard footer (themeConfig.footer) is never shown when a
+// sidebar is present (a documented limitation of the default theme), and
+// our "book" layout always has one. The author and license notice is
+// therefore injected right after each page's content through the
+// `doc-after` slot, independently of the sidebar.
 const { theme, frontmatter } = useData()
 </script>
 
 <template>
   <div v-if="frontmatter.license !== false && theme.license" class="cc-license-notice">
+    <template v-if="theme.author">
+      © {{ theme.author.year }}
+      <a :href="theme.author.link" target="_blank" rel="author noopener">{{
+        theme.author.name
+      }}</a>.
+    </template>
     {{ theme.license.message }}
     <a :href="theme.license.linkHref" target="_blank" rel="license noopener">{{
       theme.license.linkText
-    }}</a>
+    }}</a>.
   </div>
 </template>
 
