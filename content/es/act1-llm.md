@@ -68,11 +68,11 @@ Esta capacidad es el prerrequisito de todo lo que sigue. Un harness es precisame
 
 Todas las cifras de la tabla anterior, y muchas otras, se leen en el mismo lugar. Los modelos abiertos se publican hoy en día en el [*Hub* de Hugging Face][hf-hub], una plataforma que aloja a la vez los pesos de los modelos, su documentación y recursos para probarlos. Es el primer reflejo cuando se busca situar un modelo.
 
-Cada modelo dispone allí de una **ficha** (*model card*), un README redactado por el editor. Allí se encuentra lo esencial de lo que nos interesa en este módulo: el tamaño del modelo, su arquitectura (densa o MoE, número de expertos), su ventana de contexto, los idiomas y modalidades admitidos, los resultados en los grandes bancos de pruebas y la licencia de uso. La licencia se lee antes de considerar un despliegue, porque una licencia permisiva como Apache 2.0 no permite los mismos usos que una licencia «comunitaria» que conlleva restricciones.
+Cada modelo dispone en el Hub de una **ficha** (*model card*), un README redactado por el editor. Allí se encuentra lo esencial de lo que nos interesa en este módulo: el tamaño del modelo, su arquitectura (densa o MoE, número de expertos), su ventana de contexto, los idiomas y modalidades admitidos, los resultados en los grandes bancos de pruebas y la licencia de uso.
 
 Para los detalles técnicos que la ficha a veces omite, el archivo `config.json` del modelo proporciona la configuración en bruto: dimensiones internas, número de capas, número de expertos y número de expertos activados para un MoE. Es allí donde se confirma, con las cifras en la mano, la diferencia entre parámetros totales y activos mencionada más arriba.
 
-Por último, el Hub no sirve únicamente para consultar. Sus filtros permiten explorar los modelos por tarea, por tamaño o por licencia; las clasificaciones comparativas ayudan a orientarse en una oferta que cambia rápido; y las versiones cuantificadas (a menudo en formato GGUF), más ligeras, hacen que algunos modelos sean ejecutables en una máquina modesta. Volveremos a ello cuando se trate de ejecutar un modelo en local.
+Por último, el Hub no solo sirve para consultar. Sus filtros permiten explorar los modelos por tarea, por tamaño o por licencia; los rankings comparativos ayudan a orientarse en una oferta que cambia rápido; y las versiones cuantizadas (a menudo en formato GGUF), más ligeras, hacen que algunos modelos puedan ejecutarse en una máquina modesta.
 
 ## Elegir un modelo según el rol
 

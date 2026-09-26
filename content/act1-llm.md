@@ -68,11 +68,11 @@ Cette capacité est le prérequis de tout ce qui suit. Un harnais est précisém
 
 Tous les chiffres du tableau précédent, et bien d'autres, se lisent au même endroit. Les modèles ouverts sont aujourd'hui publiés sur le [*Hub* de Hugging Face][hf-hub], une plateforme qui héberge à la fois les poids des modèles, leur documentation et de quoi les essayer. C'est le premier réflexe quand on cherche à situer un modèle.
 
-Chaque modèle y dispose d'une **fiche** (*model card*), un README rédigé par l'éditeur. On y trouve l'essentiel de ce qui nous intéresse dans ce module : la taille du modèle, son architecture (dense ou MoE, nombre d'experts), sa fenêtre de contexte, les langues et modalités prises en charge, les résultats sur les grands bancs d'essai, et la licence d'utilisation. La licence se lit avant d'envisager un déploiement, car une licence permissive comme Apache 2.0 n'ouvre pas les mêmes usages qu'une licence « communautaire » assortie de restrictions.
+Chaque modèle y dispose d'une **fiche** (*model card*), un README rédigé par l'éditeur. On y trouve l'essentiel de ce qui nous intéresse dans ce module : la taille du modèle, son architecture (dense ou MoE, nombre d'experts), sa fenêtre de contexte, les langues et modalités prises en charge, les résultats sur les grands bancs d'essai, et la licence d'utilisation.
 
 Pour les détails techniques que la fiche passe parfois sous silence, le fichier `config.json` du modèle donne la configuration brute : dimensions internes, nombre de couches, nombre d'experts et nombre d'experts activés pour un MoE. C'est là qu'on confirme, chiffres à l'appui, l'écart entre paramètres totaux et actifs évoqué plus haut.
 
-Enfin, le Hub ne sert pas qu'à consulter. Ses filtres permettent d'explorer les modèles par tâche, par taille ou par licence ; des classements comparatifs aident à se repérer dans une offre qui bouge vite ; et les versions quantifiées (souvent au format GGUF), plus légères, rendent certains modèles exécutables sur une machine modeste. Nous y reviendrons quand il s'agira de faire tourner un modèle en local.
+Enfin, le Hub ne sert pas qu'à consulter. Ses filtres permettent d'explorer les modèles par tâche, par taille ou par licence ; des classements comparatifs aident à se repérer dans une offre qui bouge vite ; et les versions quantifiées (souvent au format GGUF), plus légères, rendent certains modèles exécutables sur une machine modeste.
 
 ## Choisir un modèle selon le rôle
 
