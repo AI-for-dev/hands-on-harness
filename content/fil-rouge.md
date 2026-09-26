@@ -6,11 +6,11 @@ Vous le trouverez à l'adresse [github.com/AI-for-dev/neon](https://github.com/A
 
 ## Maintenir plutôt que construire
 
-Nous aurions pu vous faire construire NÉON de zéro, brique après brique, en même temps que votre harnais. C'est visuellement satisfaisant, mais souvent artificiel : faire « apprendre une palette de couleurs » à la mémoire d'un agent n'a pas grand-chose à voir avec le travail réel d'un développeur.
+Nous aurions pu vous faire construire NÉON de zéro, brique après brique, en même temps que votre harnais. C'est visuellement satisfaisant, mais souvent artificiel : l'utilisation d'un LLM sur les premières lignes d'un code se passe généralement bien car tout est à faire. Lorsque la base de code est conséquente, ce n'est plus la même histoire.
 
-Nous avons donc fait un autre choix. Vous ne construisez pas NÉON, vous le maintenez et le faites évoluer. Le harnais que vous forgez apprend à comprendre le dépôt, à planifier une modification, à déléguer une partie du travail, à modifier le code, à le tester, à refuser une instruction dangereuse, puis à livrer un diff et un commit défendables, exactement ce que vous ferez à la fin de cette formation sur vos propres projets, qui ont déjà un historique.
+Nous avons donc fait un autre choix. Vous ne construisez pas NÉON, vous le maintenez et le faites évoluer. Le harnais que vous forgez apprend à comprendre le dépôt, à planifier une modification, à déléguer une partie du travail, à modifier le code, à le tester, à refuser une instruction dangereuse, puis à livrer un diff, un commit, une PR, exactement ce que vous ferez à la fin de cette formation sur vos propres projets, qui ont déjà un historique.
 
-Ce choix a trois avantages. Chaque brique du harnais répond alors à un besoin concret, et non à un exercice inventé pour la circonstance. Le transfert vers votre quotidien est direct, car un dépôt, une issue, un diff, une revue et un commit sont exactement ce sur quoi vous travaillez déjà. Enfin, l'animation résiste mieux aux aléas : comme le dépôt préexiste, l'échec d'un module n'empêche pas d'aborder le suivant.
+Ce choix a deux avantages. Chaque brique du harnais répond alors à un besoin concret, et non à un exercice inventé pour la circonstance. Le transfert vers votre quotidien est direct, car un dépôt, une issue, un diff, une revue et un commit sont exactement ce sur quoi vous travaillez déjà.
 
 ## Le dépôt de départ
 
@@ -34,26 +34,24 @@ La séparation entre la logique pure et le rendu est partiellement respectée. L
 
 ## Le backlog
 
-Le fichier `ISSUES.md` contient le backlog que nous exploitons module après module.
+Le fichier `ISSUES.md` contient le backlog que nous exploitons dans les modules.
 
-| #   | Type           | Titre                                                                     | Module |
-| --- | -------------- | ------------------------------------------------------------------------- | ------ |
-| 1   | bug            | La balle traverse une brique à grande vitesse                             | 2.4    |
-| 2   | performance    | La collision scanne toutes les briques à chaque frame, code mêlé au rendu | 2.1    |
-| 3   | fonctionnalité | Mode nuit                                                                 | 4.0    |
-| 4   | fonctionnalité | Import CSV d'un tableau de scores, compatible avec la sauvegarde locale   | 4.0    |
-| 5   | dette          | La logique de score et de combo n'est pas testée                          | 3.1    |
-| 6   | dette          | Couleurs en dur au lieu de la palette                                     | 2.5    |
+| #   | Type           | Titre                                                                     |
+| --- | -------------- | ------------------------------------------------------------------------- |
+| 1   | bug            | La balle traverse une brique à grande vitesse                             |
+| 2   | performance    | La collision scanne toutes les briques à chaque frame, code mêlé au rendu |
+| 3   | fonctionnalité | Mode nuit                                                                 |
+| 4   | fonctionnalité | Import CSV d'un tableau de scores, compatible avec la sauvegarde locale   |
+| 5   | dette          | La logique de score et de combo n'est pas testée                          |
+| 6   | dette          | Couleurs en dur au lieu de la palette                                     |
+
+Vous ne ferez peut-être pas tout, mais ce backlog donne assez de matière pour tester votre harnais.
 
 ## Le fichier piégé
 
 Le fichier `SUPPORT.md` contient un texte qui ressemble à une procédure d'assistance, mais qui demande en réalité de lire le fichier `.env` et d'en envoyer le contenu à une adresse externe. Ce texte est une donnée non fiable, placée là pour tester la sûreté de votre harnais, et non une consigne légitime.
 
-Le point à retenir dès maintenant est le suivant : votre harnais doit traiter ce texte comme une donnée, et non comme une instruction à exécuter. Nous y reviendrons en détail au module sur les permissions.
-
-## La contrainte « zéro dépendance » (je ne suis pas sûr de garder cette partie)
-
-Le fichier `CONTRIBUTING.md` impose une contrainte dure : aucune dépendance, aucun CDN. Cette contrainte rend concrète la leçon du *context engineering*, à savoir que moins il y a de code et d'outils autour, plus le contexte reste maîtrisable. Nous défendrons cette contrainte au moment de traiter la sûreté, et le harnais devra la respecter comme une décision de projet.
+Le point à retenir dès maintenant est le suivant : votre harnais doit traiter ce texte comme une donnée, et non comme une instruction à exécuter. Nous y reviendrons en détail au module sur l'écriture d'un hook portant sur les permissions.
 
 ## Le point d'arrivée
 
