@@ -31,6 +31,12 @@ terms:
     note: >-
       Terme technique du cours (harnais d'agent/LLM), à ne pas traduire
       littéralement par "arnés" (harnais physique).
+  - fr: formation
+    en: training
+    es: formación
+    note: >-
+      Désigne la formation que suit le lecteur. Ne pas traduire par "course"
+      en anglais : "cours" a sa propre traduction.
   - fr: invite système
     en: system prompt
     es: system prompt

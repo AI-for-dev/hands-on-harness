@@ -1,23 +1,23 @@
 # Workflows: the loop written in a file
 
-::: tip Module Objectives
-- Recognize workflow patterns within the loop from the previous module
-- Write this loop into a file that Pi executes on its own
-- Make tests the final judge, and choose where the human remains in control
+::: tip Objectives of this module
+- Recognize in the previous module's loop the patterns of a workflow
+- Write that loop in a file that Pi runs by itself
+- Make tests the final judge, and choose where the human keeps control
 - Adapt this file to your own needs in a few lines
 :::
 
-In the previous module, you were the orchestrator. You launched each agent with `/step`, reviewed the note, ran `npm test` in a second terminal, and decided, after each verdict, who took over. It is instructive once. Repeating these steps twenty times is far less so, and this is precisely the kind of repetitive task that needs to be automated.
+In the previous module, you were the orchestrator. You launched each agent with `/step`, reread the note, ran `npm test` in a second terminal, and after each verdict you decided who took over. That is instructive once. Doing these actions twenty times is far less so, and that is precisely the kind of repetitive task worth automating.
 
-This module writes these steps into a file. combo calls this file a **flow**: a task graph described in YAML and markdown, placed alongside your agents, and executed by code rather than a model. We will see that there is no language to learn and that your harness is modified just like any other configuration file.
+This module writes these actions into a file. combo calls this file a **flow**: a task graph described in YAML and markdown, placed next to your agents, and run by code rather than by a model. We will see that there is no language to learn and that your harness is modified like any configuration file.
 
-As a reminder, the combo tool was written specifically for this training and may not be suitable for production use today. This may not be the case in the long run. The goal is still to allow you to experiment quickly and easily.
+We remind you that the combo tool was written specifically for this training and that it may not be advisable to use it in production today. That may no longer be the case in the long term. The idea is always to let you experiment quickly and easily.
 
 ## Understanding
 
 ### What is a workflow?
 
-If we take a step back from the previous module, the steps we chained together form a graph. The rectangles are the sub-agents launched by `/step` and the rounded shapes are the actions you performed yourself:
+If we take a step back from the previous module, the steps we chained together form a graph. The rectangles are the subagents launched by `/step` and the rounded shapes are the actions you performed yourself:
 
 ```mermaid
 flowchart TD
@@ -29,41 +29,41 @@ flowchart TD
     N -- test output --> R[reviewer]
     R --> V{verdict}
     V -- "APPROVED, next step" --> C
-    V -- "rejected, code issue" --> C
-    V -- "rejected, step issue" --> P
+    V -- "rejected, code is at fault" --> C
+    V -- "rejected, step is at fault" --> P
     V -- "APPROVED, final step" --> F([ticket delivered])
 ```
 
-This graph breaks down into a few patterns found in most multi-agent systems. Each figure indicates in the top right how it is written in a flow. Two patterns have their own node: fan-out and loop. The other three are simply nodes placed end-to-end.
+This graph breaks down into a few patterns found in most multi-agent systems. Each figure shows in the top right how it is written in a flow. Two patterns have their own node: fan-out and loop. The other three are simply nodes placed end to end.
 
-- **chain**: the planner receives the note from the explorer, the coder receives the plan.
+- **chain**: the planner receives the explorer's note, the coder receives the plan.
 
   ![chain](/figures/workflows/chain-light.en.svg){.only-light}
   ![chain](/figures/workflows/chain-dark.en.svg){.only-dark}
 
-- **fan-out**: the explorer and the tester read the ticket at the same time, since neither writes.
+- **fan-out**: the explorer and the tester read the ticket at the same time, since neither of them writes.
 
   ![fan-out](/figures/workflows/fan-out-light.en.svg){.only-light}
   ![fan-out](/figures/workflows/fan-out-dark.en.svg){.only-dark}
 
-- **orchestrate**: the planner decides how many steps are needed, then each step is sent to the coder.
+- **orchestrate**: the planner decides how many steps are needed, then each step goes to the coder.
 
   ![orchestrate](/figures/workflows/orchestrate-light.en.svg){.only-light}
   ![orchestrate](/figures/workflows/orchestrate-dark.en.svg){.only-dark}
 
-- **loop**: the coder and the reviewer repeat until the step is validated.
+- **loop**: the coder and the reviewer start again until the step is validated.
 
   ![loop](/figures/workflows/loop-light.en.svg){.only-light}
   ![loop](/figures/workflows/loop-dark.en.svg){.only-dark}
 
-- **reduce**: an agent reviews the results from several branches and derives a single answer. In our loop, this is the auditor's role.
+- **reduce**: an agent rereads the result of several branches and derives a single answer from it. In our loop, that is the auditor's role.
 
 ![reduce](/figures/workflows/reduce-light.en.svg){.only-light}
   ![reduce](/figures/workflows/reduce-dark.en.svg){.only-dark}
 
 ### A flow: your loop in a file
 
-Let's look at how this works with combo on a concrete example, the explorer then planner chain:
+Let's see instead what this gives with combo on a concrete example, the explorer-then-planner chain:
 
 ```md
 ---
@@ -86,11 +86,11 @@ Rends la note d'impact du ticket désigné sous `input`.
 Découpe le ticket désigné sous `input` en petits pas, avec la note sous `note` comme carte.
 ```
 
-The header describes the structure: the nodes, in order, and what each one reads. The body provides instructions for each agent, with a `## <id>` section per node. Each agent receives its section and the elements listed in `reads:`, nothing else. This is exactly what you were doing by manually pasting the ticket, the step, and the diff into the reviewer's message.
+The header describes the structure: the nodes, in order, and what each one reads. The body gives each agent its instructions, one `## <id>` section per node. Each agent receives its section and the items listed in `reads:`, nothing else. That is exactly what you were doing when you manually pasted the issue, the step, and the diff into the reviewer's message.
 
 The entire file is validated before any model runs.
 
-::: info Exercise (in-class)
+::: info Exercise (in class)
 If you haven't already, install the combo extension
 
 ```bash
@@ -99,37 +99,37 @@ pi install -l npm:@ai-for-dev/combo
 pi
 ```
 
-Add this file to `.pi/flows/impact-plan.md` and test it on issue #2. You can watch the agents evolve in herdr.
+Add this file to `.pi/flows/impact-plan.md` and test it on issue #2. You can watch the agents progress in herdr.
 :::
 
-### Orchestrator Automation
+### Automating the orchestrator
 
-In the previous session, you managed the orchestration of the different steps involved in resolving a bug. We will now automate this process as follows:
+In the previous session, you orchestrated the different steps that make up a bug fix. Here, we will automate this process as follows:
 
-| in the previous module                          | in the flow                                                                    |
+| in the previous module                         | in the flow                                                                    |
 | -------------------------------------------- | ------------------------------------------------------------------------------- |
-| `/step explorer`, and testing it on the side        | a `parallel` of two agents                                                    |
-| the planner returns a plan as a series of steps               | an `agent` whose output is a list of steps                                  |
-| you give one step to the coder, then the next | a `map` over this list, one step at a time                                  |
-| you run `npm test`                       | a `check` that runs `.pi/checks/test.sh`                                       |
-| the verdict, and the return to the coder            | a `loop` until the tests pass and the reviewer approves         |
-| the return to the planner                         | a second round: the auditor reviews everything and the planner replans what remains |
-| `/chain` and your log                    | the `runs/<timestamp>/` directory, with the trace of each agent               |
+| `/step explorer`, and test it alongside       | a `parallel` of two agents                                                    |
+| the planner returns a plan in steps           | an `agent` whose output is a list of steps                                     |
+| you give a step to the coder, then the next   | a `map` over that list, one step at a time                                     |
+| you run `npm test`                            | a `check` that runs `.pi/checks/test.sh`                                       |
+| the verdict, and the return to the coder      | a `loop` until the tests pass and the reviewer approves                        |
+| the return to the planner                     | a second pass: the auditor re-reads everything and the planner replans what remains |
+| `/chain` and your journal                     | the `runs/<timestamp>/` directory, with the trace of each agent                |
 
-We saw in the previous modules that it was important to perform each step of a plan separately. It is possible to ask combo to format the output. This is what we will do here by asking it to create a list of steps.
+We saw in previous modules that it was important to carry out each step of a plan separately. You can ask combo to format the output. That is what we will do here, by asking it to produce a list of steps.
 
-### Tests have the final word
+### Tests have the last word
 
-We need a reliable step to determine if the changes made clearly meet our needs. We could ask for it in the prompt, but as you've seen, you can't be 100% certain it's actually done. We therefore prefer to define a bash script that represents the actions to take after each change. In a flow, the `check` node does exactly this by running a script from your project. Its result is a value that the loop reads: with `loop: tests.output.passed && review.output.approved`, the coder knows what to do if the generated code is wrong or does not strictly follow the development framework (a linter, for example).
+We need a reliable step to know whether the applied changes clearly meet our needs. We could ask for it in the prompt, but you've seen that you can't be 100% sure it's done. So we prefer to define a bash script that represents the actions to take after each change. In a flow, the `check` node does exactly this by running a script from your project. Its result is a value the loop reads: with `loop: tests.output.passed && review.output.approved`, the coder knows what to do if the code it generated is wrong or doesn't follow the development framework exactly (linter, for example).
 
 ![gate](/figures/workflows/gate-light.en.svg){.only-light}
 ![gate](/figures/workflows/gate-dark.en.svg){.only-dark}
 
-## Rebuild
+## Rebuilding
 
-### The flow for ticket #2
+### The flow of ticket #2
 
-Here is the full loop from the previous module. It uses your six agents without modifying them.
+Here is the loop from the previous module written in full. It uses your six agents without modifying them.
 
 ```md
 ---
@@ -261,20 +261,20 @@ Approuve le tout, ou soulève chaque correction sur sa propre ligne.
 
 A few remarks on this flow
 
-- The steps follow one another in the same tree, like your `/step`.
-- Three attempts per step and two rounds at most. A ceiling is mandatory for each loop: without it, a model that never converges would run until the budget is exhausted. If your flow fails upon reaching this limit, combo will tell you.
-- The ticket contract is written in the planner section to ensure that user requests are included. The exploration phase can overshadow them.
-- `retry: 1` on each agent. During the first real run of this flow, the planner wrote a very good plan, but in free text, without using the intended tool, and the run stopped. A second attempt, with the named error, was sufficient.
-- Each step ends with a green suite. Another run scheduled a "write red tests" step on its own, without the code. The loop requires a green suite, so this step could not succeed and it burned through its three attempts. When a loop does not converge, first check if its condition was reachable.
+- The steps follow each other in the same tree, like your `/step`s.
+- Three attempts per step and at most two rounds. A cap is required on every loop: without it, a model that never converges would keep running until the budget runs out. If your flow fails when it hits this limit, combo will tell you.
+- The ticket contract is written in the planner section to make sure the user's requests are properly included. The exploration phase can obscure them.
+- `retry: 1` on each agent. On the first real run of this flow, the planner wrote a very good plan, but in free text, without using the intended tool, and the run stopped. A second attempt, with the error named, was enough.
+- Each step ends on a green suite. Another run planned a "write the red tests" step on its own, without the code. The loop requires a green suite, so that step could not succeed and it used up its three attempts. When a loop does not converge, first check whether its condition was reachable.
 
-Two roles are added here. The tester (`scripts/agents/tester.md`) makes it possible to verify if tests exist and if more need to be added. The auditor (`scripts/agents/auditor.md`) ensures that the work is completed as a whole and that nothing has been forgotten, whereas the reviewer only sees one step. Whatever the auditor raises remains open until it has been addressed, and the flow starts a second round.
+Two roles are added here. The tester (`scripts/agents/tester.md`) checks whether tests exist and whether more are needed. The auditor (`scripts/agents/auditor.md`) ensures the work is completed in full and nothing has been forgotten, while the reviewer only sees one step. What it raises stays open until someone addresses it, and the flow starts a second round.
 
-::: warning A point on these choices
-We remind you that the goal of this training is to give you all the elements to build your harness. The choices made here are therefore debatable and perhaps not optimal for achieving the best results. But you have all the understanding required to remove nodes, add them, or modify them.
+::: warning A note on these choices
+We remind you that the goal of this training is to give you all the elements you need to build your harness. The choices made here are therefore debatable and maybe not optimal for getting the best results. But you have all the understanding required to remove nodes, add some, or modify them.
 :::
 
 ::: info Exercise (in class)
-Place the agents, the flow, and the test script into your NÉON clone:
+Place the agents, the flow, and the test script in your NÉON clone:
 
 ```bash
 cd /chemin/vers/neon
@@ -290,36 +290,36 @@ pi install -l git:github.com/AI-for-dev/combo
 pi
 ```
 
-On the first launch, Pi asks if you trust the project folder: without this, it loads neither `.pi/` nor combo. Choose "Trust".
+On first launch, Pi asks whether you trust the project folder: without this, it loads neither `.pi/` nor combo. Choose "Trust".
 
-Check what Pi has loaded before launching anything:
+Check what Pi loaded before launching anything:
 
 ```prompt
 /flows
 /flows issue2
 ```
 
-The first command lists the flows found, the second displays the `issue2` plan node by node. Then intentionally break the file by replacing `agent: coder` with `agent: codeur`, run `/flows` again, and read the refusal: it names the node and suggests the correct name. Put back `coder`, then start the loop:
+The first command lists the flows found, the second displays the plan of `issue2` node by node. Then break the file on purpose by replacing `agent: coder` with `agent: codeur`, rerun `/flows`, and read the refusal: it names the node and suggests the correct name. Put `coder` back, then run the loop:
 
 ```prompt
 /run issue2 traite le ticket #2 d'ISSUES.md
 ```
 
-Pi draws the flow above the prompt as it progresses. The remark card appears after the impact note; then, everything you used to do by hand happens automatically.
+Pi draws the flow above the prompt as it progresses. The remark card appears after the impact note; then everything you used to do by hand now runs without you.
 
-At the end, perform your own checks, those from the previous module: `npm test`, the list of exports, `git diff`, and the trace in `runs/<timestamp>/`. Do not rely solely on the flow's verdict.
+At the end, do your own checks, the ones from the previous module: `npm test`, the exports list, `git diff`, and the trace in `runs/<horodatage>/`. Don't settle for the flow's verdict.
 :::
 
-An interrupted run resumes with `/run resume`, from where it stopped.
+An interrupted run resumes with `/run resume`, where it stopped.
 
-### Adapting the harness to your needs
+### Adapt the harness to your needs
 
-This flow is a starting point. Each subsequent modification only takes a few lines, and `/flows issue2` tells you if it is valid before any launch.
+This flow is a starting point. Each modification that follows only takes a few lines, and `/flows issue2` tells you before any run whether it is valid.
 
-The flow stops at the audit and you are the one committing. To have it suggest the commit, add a question, a branch, and the commit at the end:
+The flow stops at the audit, and committing is left to you. To have it propose the commit, add a question, a branch, and the commit at the end:
 
-![arrêt humain](/figures/workflows/human-stop-light.en.svg){.only-light}
-![arrêt humain](/figures/workflows/human-stop-dark.en.svg){.only-dark}
+![human stop](/figures/workflows/human-stop-light.en.svg){.only-light}
+![human stop](/figures/workflows/human-stop-dark.en.svg){.only-dark}
 
 ```yaml
   - id: go
@@ -340,9 +340,9 @@ The flow stops at the audit and you are the one committing. To have it suggest t
     default: []
 ```
 
-Add a `## message` section that tells the committer what to write. The `committer` is provided with combo, the commit goes to a branch specific to the run, and nothing is pushed. With `default: false`, a run with no one at the screen will not commit.
+Add a `## message` section that tells the committer what to write. The `committer` ships with combo, the commit goes to a branch dedicated to the run, and nothing is pushed. With `default: false`, a run with no one at the screen does not commit.
 
-A working flow also becomes a building block. A `flow` node calls another entire flow: your `issue2` can be used in a larger flow without being copied.
+A flow that works also becomes a building block. A `flow` node calls another flow in its entirety: your `issue2` can be used in a larger flow without being copied.
 
 ![composition](/figures/workflows/composition-light.en.svg){.only-light}
 ![composition](/figures/workflows/composition-dark.en.svg){.only-dark}
@@ -370,42 +370,42 @@ nodes:
 Écris le message de commit du changement sous `diff`, fait pour la demande sous `input`.
 ```
 
-The rest follows the same logic. A larger model for the planner and the auditor is configured in their agent files. An audit that adds nothing to a small ticket can be removed by deleting its node and simplifying the loop condition. Independent steps can run in parallel, each in its own copy of the repository (`concurrency: 2` and `copies: true` on the `map`).
+The rest follows the same logic. A larger model for the planner and the auditor is set in their agent files. An audit that adds nothing on a small ticket is removed by deleting its node and simplifying the loop condition. Independent steps can run in parallel, each in its own copy of the repository (`concurrency: 2` and `copies: true` on the `map`).
 
-::: info Exercise (self-guided)
-Add the stop before the commit and rerun the ticket. Then try a modification of your own: a different breakdown of roles, a larger model where judgment is required, or a flow for another type of ticket. The question to ask yourself is always the same: what manual step were you repeating, and what line of code would automate it?
+::: info Exercise (on your own)
+Add the stop before the commit and replay the ticket. Then try a modification of your own: a different split of the roles, a larger model where you judge it useful, a flow for another type of ticket. The question to ask yourself is always the same: what gesture were you repeating by hand, and which line would write it?
 :::
 
-### And the measurement? (To be done with trysquare)
+### And the measurement? (To do with trysquare)
 
 
 ## Generalizing
 
-Automating a loop requires having performed it manually or finely analyzing the traces. The flow in this module is a rewrite of your log from the previous module: each line corresponds to a decision you made yourself, which is why you know where to place it.
+Automating a loop requires having run it by hand or analyzing the traces closely. The flow in this module is your journal from the previous module, rewritten: each line answers a decision you made yourself, and that is why you know where to put it.
 
-The harness is built through successive corrections. Every failure read in the trace becomes a modification to the flow.
+The harness is built through successive corrections. Each failure read in the trace becomes a modification to the flow.
 
-Tests have the final say but only verify what they constrain. A green suite does not prove that the ticket is completed.
+Tests have the final say, but they only check what they constrain. A green suite does not prove the ticket is done.
 
-A decision deserves its own channel. As long as a verdict is read as prose, it depends on how the model writes a word such as `APPROVED`. Whenever possible, give it a tool to respond. You can use https://laya.convaiinnovations.com/, which allows for much finer decisions than a classic LLM.
+A decision deserves its own channel. As long as a verdict is read from prose, it depends on how the model writes a word such as `APPROVED`. When possible, give it a tool to answer. You can rely on https://laya.convaiinnovations.com/ , which allows much finer decisions than a classic LLM.
 
-Human stops are design choices. Place them where an error is more expensive to undo than to prevent, and nowhere else. In our case, a Q&A discussion on the ticket to enrich the plan could be a good addition.
+Human stops are design choices. Place them where an error costs more to undo than to prevent, and nowhere else. In our case, a Q&A discussion on the ticket to enrich the plan could be a good thing.
 
 ## Deliverable
 
 This module produces three pieces.
 
-1. Your `.pi/flows/issue2.md` flow and the `.pi/checks/test.sh` script, versioned with your agents, in the version you adapted.
-2. The trace of a complete run, the `runs/<timestamp>/` directory of a `/run issue2` on ticket #2.
+1. Your flow `.pi/flows/issue2.md` and the script `.pi/checks/test.sh`, versioned with your agents, in the version you adapted.
+2. The trace of a complete run, the `runs/<timestamp>/` directory from a `/run issue2` on ticket #2.
 3. The "workflows" line of the decision sheet, below.
 
 ::: tip Success criterion
-You can say, trace in hand, why a run succeeded or not: which step did not converge, if the rest was red, what the auditor left open. You can evolve your workflow to try and obtain a harness that follows your way of working and be confident in the result.
+You can say, with the trace in hand, why a run succeeded or not: which step did not converge, whether the suite was red, what the auditor left open. You can evolve your workflow to try to get a harness that follows the way you work and be confident about the result.
 :::
 
 
-## Further reading
+## Going further
 
-- Anthropic, [Building Effective Agents](https://www.anthropic.com/engineering/building-effective-agents), the distinction between workflows / agents and the patterns of this module in their general form.
-- [The combo documentation](https://github.com/AI-for-dev/combo/tree/main/docs), particularly the page on flows and the `build` and `build-attended` flows delivered with combo, which do in a more generic way what this module does on a ticket.
-- [herdr](https://herdr.dev), to watch a flow working, one pane per agent.
+- Anthropic, [Building Effective Agents](https://www.anthropic.com/engineering/building-effective-agents), the distinction between workflows and agents, and the patterns of this module in their general form.
+- [The combo documentation](https://github.com/AI-for-dev/combo/tree/main/docs), in particular the page on flows and the `build` and `build-attended` flows shipped with combo, which do more generically what this module does on a ticket.
+- [herdr](https://herdr.dev), to watch a flow work, one panel per agent.
