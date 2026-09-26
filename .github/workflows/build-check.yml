@@ -1,8 +1,8 @@
 name: Build check
 
-# Vérifie que le site VitePress build correctement avant de merger dans
-# main. La publication réelle sur GitHub Pages (deploy.yml) ne se déclenche
-# que sur push vers main, une fois la PR mergée.
+# Checks that the VitePress site builds before merging into main. The
+# actual GitHub Pages deployment (deploy.yml) only runs on push to main,
+# once the PR is merged.
 on:
   pull_request:
     branches: [main]

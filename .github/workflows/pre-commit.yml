@@ -15,12 +15,11 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v5
 
-      # Le hook local "i18n-translations-up-to-date" est en `language:
-      # system` : il lance directement `node scripts/i18n/translate.mjs
-      # --dry-run`, qui importe js-yaml depuis node_modules. Sans Node ni
-      # `npm ci` avant pre-commit, ce hook échouerait pour une mauvaise
-      # raison (dépendance manquante) plutôt que sur un vrai écart de
-      # traduction.
+      # The local hook "i18n-translations-up-to-date" uses `language:
+      # system`: it runs `node scripts/i18n/translate.mjs --dry-run`
+      # directly, which imports js-yaml from node_modules. Without Node and
+      # `npm ci` before pre-commit, this hook would fail for the wrong
+      # reason (missing dependency) instead of on a real translation gap.
       - name: Setup Node
         uses: actions/setup-node@v6
         with:
@@ -35,8 +34,8 @@ jobs:
         with:
           python-version: "3.13"
 
-      # Reprend les étapes de pre-commit/action, dont la dernière version (v3.0.1)
-      # dépend encore d'actions/cache@v4 (Node.js 20).
+      # Same steps as pre-commit/action, whose latest release (v3.0.1) still
+      # depends on actions/cache@v4 (Node.js 20).
       - name: Install pre-commit
         run: python -m pip install pre-commit
 

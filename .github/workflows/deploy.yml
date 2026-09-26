@@ -10,9 +10,8 @@ permissions:
   pages: write
   id-token: write
 
-# Une seule publication à la fois : les suivantes en attente sont annulées
-# au profit de la plus récente, mais on ne coupe jamais un déploiement déjà
-# en cours.
+# One deployment at a time: pending ones are cancelled in favor of the
+# most recent, but a deployment already in progress is never interrupted.
 concurrency:
   group: pages
   cancel-in-progress: false
