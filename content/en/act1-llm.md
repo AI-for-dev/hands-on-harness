@@ -68,11 +68,11 @@ This capability is the prerequisite for everything that follows. A harness is pr
 
 All the figures in the previous table, and many more, can be read in the same place. Open models are now published on the [Hugging Face Hub][hf-hub], a platform that hosts the model weights, their documentation, and a way to try them out. It's the first reflex when you're trying to situate a model.
 
-Each model has a **model card** there, a README written by the publisher. There you'll find the essentials of what interests us in this module: the model's size, its architecture (dense or MoE, number of experts), its context window, the languages and modalities supported, the results on the major benchmarks, and the usage license. You read the license before considering deployment, because a permissive license like Apache 2.0 does not open up the same uses as a "community" license with restrictions.
+Each model has a **model card**, a README written by its publisher. It holds what matters for this module: the model size, its architecture (dense or MoE, number of experts), its context window, the supported languages and modalities, results on the major benchmarks, and the usage license.
 
 For the technical details the model card sometimes omits, the model's `config.json` file gives the raw configuration: internal dimensions, number of layers, number of experts and number of active experts for an MoE. That's where you confirm, numbers in hand, the gap between total and active parameters mentioned earlier.
 
-Finally, the Hub is not just for browsing. Its filters let you explore models by task, size, or license; comparative leaderboards help you get your bearings in a fast-moving offering; and the quantized versions (often in GGUF format), being lighter, make certain models runnable on a modest machine. We'll come back to this when it comes to running a model locally.
+Finally, the Hub is not just for browsing. Its filters let you explore models by task, size, or license; comparative leaderboards help you find your way in a fast-moving catalog; and quantized versions (often in GGUF format), being lighter, make some models runnable on a modest machine.
 
 ## Choosing a model according to its role
 

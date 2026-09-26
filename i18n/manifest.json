@@ -25,14 +25,14 @@
   },
   "act1-llm.md": {
     "en": {
-      "unitHash": "f17c7385dbe6efbcc2bf4887ff71be0cea1b7ccd4847e15eb32fe35079abe4d7",
+      "unitHash": "19ce213d3a001fe0dea1d7ba413c2cf75c52cc3d988d6586b4f7e6482a8397ec",
       "model": "pi:opencode-go/deepseek-v4-flash",
-      "translatedAt": "2026-09-26T20:25:38.735Z"
+      "translatedAt": "2026-09-26T20:44:31.651Z"
     },
     "es": {
-      "unitHash": "f17c7385dbe6efbcc2bf4887ff71be0cea1b7ccd4847e15eb32fe35079abe4d7",
+      "unitHash": "19ce213d3a001fe0dea1d7ba413c2cf75c52cc3d988d6586b4f7e6482a8397ec",
       "model": "pi:opencode-go/deepseek-v4-flash",
-      "translatedAt": "2026-09-26T20:25:38.736Z"
+      "translatedAt": "2026-09-26T20:44:51.462Z"
     }
   },
   "act1-pi.md": {
