@@ -86,8 +86,8 @@ Puedes jugar con él haciéndole preguntas, observar el bucle y ver cómo te res
 
     Deberías ver al menos las herramientas read, bash, edit y write.
 
-    ::: info Ejercicio
-    A partir del prompt, intenta con tu pregunta activar cada una de estas herramientas.
+    ::: info Ejercicio (en clase)
+    A partir del prompt, intenta activar cada una de estas herramientas con tu pregunta.
     :::
 
 - El árbol de tu sesión
@@ -98,8 +98,8 @@ Puedes jugar con él haciéndole preguntas, observar el bucle y ver cómo te res
     \tree
     ```
 
-    ::: info Ejercicio
-    Intenta retomar desde un punto de tu hilo de conversación.
+    ::: info Ejercicio (en clase)
+    Intenta volver a un punto de tu hilo de discusión.
     :::
 
 - Retomar una sesión anterior
@@ -110,7 +110,7 @@ Puedes jugar con él haciéndole preguntas, observar el bucle y ver cómo te res
     \resume
     ```
 
-    ::: info Ejercicio
+    ::: info Ejercicio (en clase)
     Intenta retomar una sesión anterior.
     :::
 
@@ -122,8 +122,8 @@ Puedes jugar con él haciéndole preguntas, observar el bucle y ver cómo te res
     \export
     ```
 
-    ::: info Ejercicio
-    Haz una exportación de tu sesión a HTML (formato por defecto) y abre ese archivo.
+    ::: info Ejercicio (en clase)
+    Haz una exportación de tu sesión en HTML (formato por defecto) y abre este archivo.
     :::
 
 Hemos repasado los principales comandos que consideramos útiles por ahora; veremos otros a lo largo de la formación.
@@ -146,7 +146,7 @@ Pi no se limita a sus cuatro herramientas básicas y es completamente extensible
 
 Una extensión se distribuye como un paquete npm o como un repositorio git, y se instala con `pi install`:
 
-```
+```bash
 pi install npm:@tintinweb/pi-subagents
 pi install git:github.com/user/repo
 ```
@@ -155,28 +155,25 @@ Por defecto, la instalación es global: el paquete se deposita en `~/.pi/agent/n
 
 Para probar una extensión sin instalarla, ya sea un paquete o un simple archivo local, la opción `-e` (o `--extension`) la carga solo durante la sesión en curso:
 
-```
+```bash
 pi -e npm:@tintinweb/pi-subagents
 pi -e ./mon-extension.ts
 ```
 
 Es el reflejo que hay que adoptar antes de comprometerte con una extensión encontrada en el directorio comunitario. Ten en cuenta, sin embargo, que una extensión se ejecuta con la totalidad de tus permisos de sistema: instala y prueba únicamente lo que estés dispuesto a ejecutar con confianza.
 
-## Las cuatro extensiones
+::: warning La extensión combo
+En el resto de la formación, solo tendrás que instalar una extensión especialmente diseñada para esta. Te animamos encarecidamente a mirar lo que existe, a probar y a tomar distancia de tus experimentos. Puede ocurrir que una extensión nos haga perder el control de nuestro harness y desencadene eventos que degradan los resultados.
+:::
 
-Podríamos haberte hecho construir tus propias extensiones, pero en el tiempo asignado, sin conocer todavía ni la herramienta Pi ni la estructura de un harness, habrías perdido tiempo y motivación. Esperamos que al final de esta formación tengas las ideas suficientemente claras para imaginar tú mismo mejoras de tu harness en forma de nuevas extensiones Pi.
+::: info Ejercicio (en clase)
+Instala en local (`-l`) la extensión combo
 
-Para construir nuestro harness, nos apoyaremos en cuatro extensiones:
+```bash
+pi install -l npm:@ai-for-dev/combo
+```
 
-- `pi-rtk-optimizer` se encargará del contexto y de la compactación,
-- `@tintinweb/pi-subagents` proporcionará la delegación,
-- `pi-hermes-memory` asumirá la memoria,
-- `pi-lens` completará la observabilidad y el utillaje de código.
-
-Los permisos y las herramientas, por su parte, se reconstruirán a mano en `.pi/skills/`.
-
-::: info Ejercicio
-Instala en local (`-l`) una de las cuatro extensiones anteriores y comprueba que aparece bien en `.pi/npm/`. Lanza Pi: deberías verla en la sección de extensiones. Después puedes intentar retirarla con `pi remove`.
+verifica que aparece correctamente en `.pi/npm/`. Lanza Pi: deberías verla en la sección de extensiones. Luego puedes intentar quitarla con `pi remove`.
 :::
 
 ## Para saber más
