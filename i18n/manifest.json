@@ -97,14 +97,14 @@
   },
   "act2-sandbox.md": {
     "en": {
-      "unitHash": "acf515f44a7788f954eecbbde96f81a8863889c995fb7186999e75297c68b7d8",
-      "model": "pi:opencode-go/deepseek-v4-flash",
-      "translatedAt": "2026-09-26T20:25:38.755Z"
+      "unitHash": "8cfad5c8e478d5f41ec79e8258f810088bb2050cb722a7b23b857b3ac7f5e804",
+      "model": "pi:ilaas/gemma-4-31b",
+      "translatedAt": "2026-09-27T06:24:23.318Z"
     },
     "es": {
-      "unitHash": "acf515f44a7788f954eecbbde96f81a8863889c995fb7186999e75297c68b7d8",
+      "unitHash": "8cfad5c8e478d5f41ec79e8258f810088bb2050cb722a7b23b857b3ac7f5e804",
       "model": "pi:opencode-go/deepseek-v4-flash",
-      "translatedAt": "2026-09-26T20:25:38.757Z"
+      "translatedAt": "2026-09-27T06:24:42.772Z"
     }
   },
   "act2-delegation.md": {
