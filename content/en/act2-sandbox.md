@@ -102,7 +102,7 @@ pi-sandbox
 └── files/home/.pi/agent/settings.json
 ```
 
-The versions listed below are the ones with which this kit was verified at the time of writing: `sbx` 0.38.0, Docker Engine 29.7.2, Pi 0.84.2.
+The versions listed below are those with which this kit was verified at the time of writing: `sbx` 0.45.1, Docker Engine 29.7.2, Pi 0.87.1.
 
 #### Install `sbx`
 
@@ -117,7 +117,7 @@ FROM docker/sandbox-templates:shell-docker
 USER root
 
 ARG NODE_VERSION=22.21.1
-ARG PI_VERSION=0.85.1
+ARG PI_VERSION=0.87.1
 # Ubuntu names the package fd-find and ships the binary as fdfind, to avoid a
 # name collision. pi looks for fd then fdfind, so /usr/bin/fdfind is enough and
 # pi stops downloading its own copy into ~/.pi/agent/bin.
@@ -160,8 +160,8 @@ The Docker Sandboxes daemon pulls its images from a registry different from the 
 ```bash
 git clone https://github.com/AI-for-dev/pi-sandbox
 cd pi-sandbox
-docker build --platform linux/arm64 -t pi-sandbox:0.85.2 .
-docker image save pi-sandbox:0.85.2 -o pi-sandbox.tar
+docker build --platform linux/arm64 -t pi-sandbox:0.87.1 .
+docker image save pi-sandbox:0.87.1 -o pi-sandbox.tar
 sbx template load pi-sandbox.tar
 ```
 
@@ -179,7 +179,7 @@ description: Pi coding agent (pi.dev) in a Docker sandbox.
 sourceURL: https://github.com/earendil-works/pi
 
 sandbox:
-  image: "pi-sandbox:0.85.1"
+  image: "pi-sandbox:0.87.1"
   entrypoint: [pi, -a]
 
 agentInstructions:
@@ -339,12 +339,6 @@ Four checks confirm it:
 - a request to a domain absent from the list fails;
 - an edit made by Pi appears in the repository on the host side;
 - `sbx policy log` shows no refusal your list did not choose.
-
-## Pitfalls
-
-**Believing the sandbox protects the repository.** In direct mode the agent writes in your working tree, hooks and `Makefile` included. Review the diff, or use `--clone` to work on a private copy.
-
-**Copying a key into `models.json`.** It enters the VM with the file. Any key goes through `sbx secret` and a substitution variable.
 
 ## Going further
 

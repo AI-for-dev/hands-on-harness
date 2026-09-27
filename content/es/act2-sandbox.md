@@ -102,7 +102,7 @@ pi-sandbox
 └── files/home/.pi/agent/settings.json
 ```
 
-Las versiones citadas a continuación son aquellas con las que este kit fue verificado en el momento de redactar el documento: `sbx` 0.38.0, Docker Engine 29.7.2, Pi 0.84.2.
+Las versiones citadas a continuación son aquellas con las que se verificó este kit en el momento de escribir el documento: `sbx` 0.45.1, Docker Engine 29.7.2, Pi 0.87.1.
 
 #### Instalar `sbx`
 
@@ -117,7 +117,7 @@ FROM docker/sandbox-templates:shell-docker
 USER root
 
 ARG NODE_VERSION=22.21.1
-ARG PI_VERSION=0.85.1
+ARG PI_VERSION=0.87.1
 # Ubuntu names the package fd-find and ships the binary as fdfind, to avoid a
 # name collision. pi looks for fd then fdfind, so /usr/bin/fdfind is enough and
 # pi stops downloading its own copy into ~/.pi/agent/bin.
@@ -160,8 +160,8 @@ El demonio de Docker Sandboxes obtiene sus imágenes de un registro distinto de 
 ```bash
 git clone https://github.com/AI-for-dev/pi-sandbox
 cd pi-sandbox
-docker build --platform linux/arm64 -t pi-sandbox:0.85.2 .
-docker image save pi-sandbox:0.85.2 -o pi-sandbox.tar
+docker build --platform linux/arm64 -t pi-sandbox:0.87.1 .
+docker image save pi-sandbox:0.87.1 -o pi-sandbox.tar
 sbx template load pi-sandbox.tar
 ```
 
@@ -179,7 +179,7 @@ description: Pi coding agent (pi.dev) in a Docker sandbox.
 sourceURL: https://github.com/earendil-works/pi
 
 sandbox:
-  image: "pi-sandbox:0.85.1"
+  image: "pi-sandbox:0.87.1"
   entrypoint: [pi, -a]
 
 agentInstructions:
@@ -339,12 +339,6 @@ Cuatro verificaciones lo confirman:
 - una petición hacia un dominio ausente de la lista falla;
 - una edición hecha por Pi aparece en el repositorio del lado del host;
 - `sbx policy log` no muestra ningún rechazo que tu lista no haya elegido.
-
-## Las trampas
-
-**Creer que el sandbox protege el repositorio.** En modo directo, el agente escribe en tu árbol de trabajo, hooks y `Makefile` incluidos. Vuelve a revisar el diff, o usa `--clone` para trabajar en una copia privada.
-
-**Copiar una clave en `models.json`.** La clave entra en la VM con el archivo. Toda clave pasa por `sbx secret` y una variable de sustitución.
 
 ## Para profundizar
 

@@ -102,7 +102,7 @@ pi-sandbox
 └── files/home/.pi/agent/settings.json
 ```
 
-Les versions citées ci-dessous sont celles avec lesquelles ce kit a été vérifié au moment de l'écriture du document : `sbx` 0.38.0, Docker Engine 29.7.2, Pi 0.84.2.
+Les versions citées ci-dessous sont celles avec lesquelles ce kit a été vérifié au moment de l'écriture du document : `sbx` 0.45.1, Docker Engine 29.7.2, Pi 0.87.1.
 
 #### Installer `sbx`
 
@@ -117,7 +117,7 @@ FROM docker/sandbox-templates:shell-docker
 USER root
 
 ARG NODE_VERSION=22.21.1
-ARG PI_VERSION=0.85.1
+ARG PI_VERSION=0.87.1
 # Ubuntu names the package fd-find and ships the binary as fdfind, to avoid a
 # name collision. pi looks for fd then fdfind, so /usr/bin/fdfind is enough and
 # pi stops downloading its own copy into ~/.pi/agent/bin.
@@ -160,8 +160,8 @@ Le démon de Docker Sandboxes tire ses images depuis un registre différent des 
 ```bash
 git clone https://github.com/AI-for-dev/pi-sandbox
 cd pi-sandbox
-docker build --platform linux/arm64 -t pi-sandbox:0.85.2 .
-docker image save pi-sandbox:0.85.2 -o pi-sandbox.tar
+docker build --platform linux/arm64 -t pi-sandbox:0.87.1 .
+docker image save pi-sandbox:0.87.1 -o pi-sandbox.tar
 sbx template load pi-sandbox.tar
 ```
 
@@ -179,7 +179,7 @@ description: Pi coding agent (pi.dev) in a Docker sandbox.
 sourceURL: https://github.com/earendil-works/pi
 
 sandbox:
-  image: "pi-sandbox:0.85.1"
+  image: "pi-sandbox:0.87.1"
   entrypoint: [pi, -a]
 
 agentInstructions:
@@ -339,12 +339,6 @@ Quatre vérifications le confirment :
 - une requête vers un domaine absent de la liste échoue ;
 - une édition faite par Pi apparaît dans le dépôt côté hôte ;
 - `sbx policy log` ne montre aucun refus que votre liste n'ait pas choisi.
-
-## Les pièges
-
-**Croire que le sandbox protège le dépôt.** En mode direct l'agent écrit dans votre arbre de travail, hooks et `Makefile` compris. Relisez le diff, ou passez `--clone` pour travailler sur une copie privée.
-
-**Copier une clé dans `models.json`.** Elle entre dans la VM avec le fichier. Toute clé passe par `sbx secret` et une variable de substitution.
 
 ## Pour aller plus loin
 
