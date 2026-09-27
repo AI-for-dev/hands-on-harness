@@ -51,3 +51,23 @@ test('a fence added elsewhere than at the end is left to the checks', () => {
   const translated = ':::\nA paragraph with no container.'
   assert.equal(dropAddedContainerFence(source, translated), translated)
 })
+
+test('keeps the indentation of the first line', () => {
+  const raw = '    ::: info Exercise (in class)\n    Trigger each tool.\n    :::\n\n- Your session tree'
+  assert.equal(cleanupTranslationResponse(raw), raw)
+})
+
+test('an indented container the source really closes is left alone', () => {
+  const source = '    ::: info Exercice (en salle)\n    Déclenchez chaque outil.\n    :::'
+  const translated = '    ::: info Exercise (in class)\n    Trigger each tool.\n    :::'
+  assert.equal(dropAddedContainerFence(source, translated), translated)
+})
+
+test('an indented ::: fence the source did not have is dropped', () => {
+  const source = '    ::: info Exercice (en salle)\n    Installez l\'extension'
+  const translated = '    ::: info Exercise (in class)\n    Install the extension\n    :::'
+  assert.equal(
+    dropAddedContainerFence(source, translated),
+    '    ::: info Exercise (in class)\n    Install the extension'
+  )
+})
