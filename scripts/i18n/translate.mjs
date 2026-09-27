@@ -29,7 +29,7 @@ import {
   serializeFrontmatter
 } from './lib/frontmatter.mjs'
 import { translateText, currentModelId } from './lib/backends.mjs'
-import { cleanupTranslationResponse, dropAddedContainerFence } from './lib/response-cleanup.mjs'
+import { cleanupTranslationResponse, dropAddedContainerFence, restoreFirstLineIndent } from './lib/response-cleanup.mjs'
 import { diffSignals } from './lib/validate.mjs'
 import { loadManifest, saveManifest, getEntry, setEntry } from './lib/manifest.mjs'
 import { splitBody, joinSegments, isPassthrough, buildChunks } from './lib/segments.mjs'
@@ -134,7 +134,7 @@ async function translateChunkOnce(sourceSegments, keep, ctx, lang) {
 
     // A single segment: the whole answer is its most plausible translation, even
     // when badly split. We keep it as a candidate, measured like the others.
-    const translated = dropAddedContainerFence(protectedMd, cleaned)
+    const translated = dropAddedContainerFence(protectedMd, restoreFirstLineIndent(protectedMd, cleaned))
     return {
       candidates: new Map([
         [0, { text: restoreCodeBlocks(translated, blocks), issues: [alignment, ...diffSignals(protectedMd, translated)] }]
@@ -146,10 +146,11 @@ async function translateChunkOnce(sourceSegments, keep, ctx, lang) {
   const protectedSegments = splitBody(protectedMd).segments
   const candidates = new Map()
   for (const index of keep) {
-    const translated = dropAddedContainerFence(protectedSegments[index], returned[index])
+    const source = protectedSegments[index]
+    const translated = dropAddedContainerFence(source, restoreFirstLineIndent(source, returned[index]))
     candidates.set(index, {
       text: restoreCodeBlocks(translated, blocks),
-      issues: diffSignals(protectedSegments[index], translated)
+      issues: diffSignals(source, translated)
     })
   }
   return { candidates, issues: [] }
