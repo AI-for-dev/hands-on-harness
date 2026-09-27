@@ -86,7 +86,7 @@ Vous pouvez jouer avec en lui posant des questions, observer la boucle et voir c
 
     Vous devriez voir au moins les outils read, bash, edit et write.
 
-    ::: info Exercice
+    ::: info Exercice (en salle)
     À partir du prompt, essayez grâce à votre question de déclencher chacun de ces outils.
     :::
 
@@ -98,7 +98,7 @@ Vous pouvez jouer avec en lui posant des questions, observer la boucle et voir c
     \tree
     ```
 
-    ::: info Exercice
+    ::: info Exercice (en salle)
     Essayez de repartir d'un point de votre fil de discussion.
     :::
 
@@ -110,7 +110,7 @@ Vous pouvez jouer avec en lui posant des questions, observer la boucle et voir c
     \resume
     ```
 
-    ::: info Exercice
+    ::: info Exercice (en salle)
     Essayez de repartir d'une session précédente.
     :::
 
@@ -122,7 +122,7 @@ Vous pouvez jouer avec en lui posant des questions, observer la boucle et voir c
     \export
     ```
 
-    ::: info Exercice
+    ::: info Exercice (en salle)
     Faites un export de votre session en HTML (format par défaut) et ouvrez ce fichier.
     :::
 
@@ -146,7 +146,7 @@ Pi ne se limite pas à ses quatre outils de base et est complètement extensible
 
 Une extension se distribue comme un paquet npm ou comme un dépôt git, et s'installe avec `pi install` :
 
-```
+```bash
 pi install npm:@tintinweb/pi-subagents
 pi install git:github.com/user/repo
 ```
@@ -155,28 +155,25 @@ Par défaut, l'installation est globale : le paquet est déposé dans `~/.pi/age
 
 Pour essayer une extension sans l'installer, que ce soit un paquet ou un simple fichier local, l'option `-e` (ou `--extension`) la charge pour la seule durée de la session en cours :
 
-```
+```bash
 pi -e npm:@tintinweb/pi-subagents
 pi -e ./mon-extension.ts
 ```
 
 C'est le réflexe à adopter avant de s'engager sur une extension trouvée dans l'annuaire communautaire. Gardez toutefois à l'esprit qu'une extension s'exécute avec l'intégralité de vos permissions système : n'installez, et ne testez, que ce que vous êtes prêt à faire tourner en confiance.
 
-## Les quatre extensions
+::: warning L'extension combo
+Dans la suite de la formation, vous n'aurez à installer qu'une extension spécialement conçue pour celle-ci. Nous vous encourageons fortement à regarder ce qui existe, à tester et à prendre du recul sur vos expériences. Il arrive parfois qu'une extension nous fasse perdre la maîtrise de notre harnais et déclenche des événements qui dégradent les résultats.
+:::
 
-Nous aurions pu vous faire construire vos propres extensions, mais dans le temps imparti, sans connaître encore ni l'outil Pi ni la structure d'un harnais, vous y auriez perdu du temps et de la motivation. Nous espérons qu'à la fin de cette formation, vous aurez les idées assez claires pour imaginer vous-même des améliorations de votre harnais sous forme de nouvelles extensions Pi.
+::: info Exercice (en salle)
+Installez en local (`-l`) l'extension combo
 
-Pour construire notre harnais, nous nous appuierons sur quatre extensions :
+```bash
+pi install -l npm:@ai-for-dev/combo
+```
 
-- `pi-rtk-optimizer` prendra en charge le contexte et la compaction,
-- `@tintinweb/pi-subagents` fournira la délégation,
-- `pi-hermes-memory` portera la mémoire,
-- `pi-lens` complétera l'observabilité et l'outillage de code.
-
-Les permissions et les outils, eux, seront reconstruits à la main dans `.pi/skills/`.
-
-::: info Exercice
-Installez en local (`-l`) l'une des quatre extensions ci-dessus, vérifiez qu'elle apparaît bien dans `.pi/npm/`. Lancez Pi : vous devriez la voir dans la section extensions. Vous pouvez ensuite essayer de la retirer avec `pi remove`.
+vérifiez qu'elle apparaît bien dans `.pi/npm/`. Lancez Pi : vous devriez la voir dans la section extensions. Vous pouvez ensuite essayer de la retirer avec `pi remove`.
 :::
 
 ## Pour aller plus loin

@@ -86,8 +86,8 @@ You can play with it by asking questions, observing the loop and seeing how it r
 
     You should see at least the read, bash, edit and write tools.
 
-    ::: info Exercise
-    From the prompt, try to trigger each of these tools with your questions.
+    ::: info Exercise (in class)
+    From the prompt, try to trigger each of these tools with your question.
     :::
 
 - Your session tree
@@ -98,8 +98,8 @@ You can play with it by asking questions, observing the loop and seeing how it r
     \tree
     ```
 
-    ::: info Exercise
-    Try restarting from a point in your discussion thread.
+    ::: info Exercise (in class)
+    Try picking up from a point in your discussion thread.
     :::
 
 - Resuming a previous session
@@ -110,8 +110,8 @@ You can play with it by asking questions, observing the loop and seeing how it r
     \resume
     ```
 
-    ::: info Exercise
-    Try restarting from a previous session.
+    ::: info Exercise (in class)
+    Try resuming a previous session.
     :::
 
 - Exporting your session
@@ -122,8 +122,8 @@ You can play with it by asking questions, observing the loop and seeing how it r
     \export
     ```
 
-    ::: info Exercise
-    Export your session as HTML (the default format) and open that file.
+    ::: info Exercise (in class)
+    Export your session to HTML (the default format) and open the file.
     :::
 
 We have covered the main commands we consider useful for now; we will see others as the training progresses.
@@ -146,7 +146,7 @@ Pi is not limited to its four basic tools and is completely extensible. You can 
 
 An extension is distributed as an npm package or a git repository, and installs with `pi install`:
 
-```
+```bash
 pi install npm:@tintinweb/pi-subagents
 pi install git:github.com/user/repo
 ```
@@ -155,28 +155,25 @@ By default, the installation is global: the package is placed in `~/.pi/agent/np
 
 To try an extension without installing it, whether it is a package or a simple local file, the `-e` option (or `--extension`) loads it for the duration of the current session only:
 
-```
+```bash
 pi -e npm:@tintinweb/pi-subagents
 pi -e ./mon-extension.ts
 ```
 
 This is the reflex to adopt before committing to an extension found in the community directory. Keep in mind, however, that an extension runs with all your system permissions: only install and test what you are willing to run with confidence.
 
-## The four extensions
+::: warning The combo extension
+For the rest of the training, you will only have to install one extension specially designed for it. We strongly encourage you to look at what exists, to test, and to step back from your experiences. It sometimes happens that an extension makes us lose control of our harness and triggers events that degrade the results.
+:::
 
-We could have had you build your own extensions, but given the time available, without yet knowing the Pi tool or the structure of a harness, you would have wasted time and motivation. We hope that by the end of this training, you will have clear enough ideas to imagine improvements to your harness yourself, in the form of new Pi extensions.
+::: info Exercise (in class)
+Install the combo extension locally (`-l`)
 
-To build our harness, we will rely on four extensions:
+```bash
+pi install -l npm:@ai-for-dev/combo
+```
 
-- `pi-rtk-optimizer` will handle context and compaction,
-- `@tintinweb/pi-subagents` will provide delegation,
-- `pi-hermes-memory` will provide memory,
-- `pi-lens` will complete observability and code tooling.
-
-As for permissions and tools, they will be rebuilt by hand in `.pi/skills/`.
-
-::: info Exercise
-Install one of the four extensions above locally (`-l`), check that it appears in `.pi/npm/`. Launch Pi: you should see it in the extensions section. You can then try removing it with `pi remove`.
+check that it appears in `.pi/npm/`. Launch Pi: you should see it in the extensions section. You can then try to remove it with `pi remove`.
 :::
 
 ## Going further
