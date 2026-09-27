@@ -57,3 +57,16 @@ export function dropAddedContainerFence(sourceSegment, translatedSegment) {
   if (lines.at(-1).trim() !== ':::') return translatedSegment
   return lines.slice(0, -1).join('\n').trimEnd()
 }
+
+// A model answer never starts with spaces: when an indented list continuation
+// opens a chunk, its first line comes back flush left and leaves the list.
+// Observed with gemma-4-31b and deepseek-v4-flash on the same segment. The
+// indentation of a segment's first line is structure, not wording, so we take
+// it from the source whenever the translation has less.
+export function restoreFirstLineIndent(sourceSegment, translatedSegment) {
+  const indentOf = (text) => text.match(/^[ \t]*/)[0]
+  const sourceIndent = indentOf(sourceSegment)
+  const translatedIndent = indentOf(translatedSegment)
+  if (translatedIndent.length >= sourceIndent.length) return translatedSegment
+  return sourceIndent + translatedSegment.slice(translatedIndent.length)
+}

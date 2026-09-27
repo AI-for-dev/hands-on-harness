@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict'
 import { test } from 'node:test'
 
-import { cleanupTranslationResponse, dropAddedContainerFence } from './response-cleanup.mjs'
+import { cleanupTranslationResponse, dropAddedContainerFence, restoreFirstLineIndent } from './response-cleanup.mjs'
 
 test('leaves a clean answer untouched', () => {
   const text = '# Title\n\nA paragraph.'
@@ -70,4 +70,25 @@ test('an indented ::: fence the source did not have is dropped', () => {
     dropAddedContainerFence(source, translated),
     '    ::: info Exercise (in class)\n    Install the extension'
   )
+})
+
+test('puts back the first-line indentation the model dropped', () => {
+  const source = '    ::: info Exercice (en salle)\n    Déclenchez chaque outil.\n    :::'
+  const translated = '::: info Exercise (in class)\n    Trigger each tool.\n    :::'
+  assert.equal(
+    restoreFirstLineIndent(source, translated),
+    '    ::: info Exercise (in class)\n    Trigger each tool.\n    :::'
+  )
+})
+
+test('leaves a translation that kept its first-line indentation alone', () => {
+  const source = '    Vous devriez voir les outils.'
+  const translated = '    You should see the tools.'
+  assert.equal(restoreFirstLineIndent(source, translated), translated)
+})
+
+test('does not indent a segment the source does not indent', () => {
+  const source = '## Les extensions'
+  const translated = '## Extensions'
+  assert.equal(restoreFirstLineIndent(source, translated), translated)
 })
