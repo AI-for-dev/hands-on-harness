@@ -14,8 +14,11 @@ function unindentMarkerLines(text) {
   return text.replaceAll(/^[ \t]+(%%%PROTECTED_\d+%%%)[ \t]*$/gm, '$1')
 }
 
+// Only blank lines are stripped at the start: the first segment of a chunk can
+// be an indented list continuation, and losing its indentation moves it out of
+// the list.
 export function cleanupTranslationResponse(raw) {
-  const text = unindentMarkerLines(raw.trim())
+  const text = unindentMarkerLines(raw.replace(/^(?:[ \t]*\n)+/, '').trimEnd())
   const lines = text.split('\n')
 
   const openIdx = lines.findIndex((line) => /^```[\w-]*\s*$/.test(line.trim()))
@@ -44,9 +47,10 @@ export function cleanupTranslationResponse(raw) {
 // exercise lost its starting-point file. The repair is mechanical, hence
 // preferable to another call: we drop the fence the source did not have. Only a
 // trailing one is dropped, and only when the count is off by exactly one, so a
-// container the source really closes is never touched.
+// container the source really closes is never touched. Fences are counted
+// whatever their indentation, since a container can sit inside a list item.
 export function dropAddedContainerFence(sourceSegment, translatedSegment) {
-  const fences = (text) => (text.match(/^:::/gm) ?? []).length
+  const fences = (text) => (text.match(/^[ \t]*:::/gm) ?? []).length
   if (fences(translatedSegment) !== fences(sourceSegment) + 1) return translatedSegment
 
   const lines = translatedSegment.split('\n')
