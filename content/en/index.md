@@ -4,11 +4,11 @@
 
 ## Context and positioning
 
-This training material was created for the [ANF IA4Dev](https://ia4dev-2026.sciencesconf.org/), a national training initiative held from October 19 to 22, 2026. Using Large Language Models (LLMs), for coding as for other tasks, raises important legal (the ownership of the generated code, for example), social, and environmental questions. During the ANF, we invited several speakers on these topics, but we do not elaborate on them in this material; those interested will nonetheless find a few references on these questions in the appendix.
+This material was created for the [IA4Dev training](https://ia4dev-2026.sciencesconf.org/), which takes place from October 19 to 22, 2026. Using Large Language Models (LLMs), for coding as for other tasks, raises significant legal (for example, ownership of the produced code), social, and environmental questions. During the training, we invited several people to speak on these subjects, but we do not develop them in this material; interested readers will nevertheless find some references on these questions in the appendix.
 
 Building training on AI applied to software development therefore raises a question: are we implicitly promoting the use of AI for coding? Our choice not to address the legal, social, and environmental aspects here makes it even more critical, since it relegates to the appendix what should perhaps be the primary information, the one that lets everyone take an informed stance.
 
-We were fortunate enough to bring together very different positions within the organizing committee of this ANF, and this diversity fueled many discussions. This training is in no way intended to convince anyone to use or not to use AI, even though, by showing how to do it, we contribute to the spread of this practice.
+We were fortunate to bring together in the organizing committee of this training very different positions, and this diversity fueled many discussions. This training has absolutely no objective of convincing anyone to use or not to use AI, even if, by showing how to do it, we participate in the diffusion of this practice.
 
 On July 14, 2026, in a message to a kernel mailing list, Linus Torvalds, the creator of Linux, made a statement close to the positioning of this material, which we translate here:
 
@@ -38,7 +38,7 @@ Because it's not like natural intelligence is always all that great either.
 Linus Torvalds, [Re: Linking Patchwork with Sashiko?](https://lore.kernel.org/all/CAHk-=wi4zC+Ze8e+p3tMv8TtG_80KzsZ1syL9anBtmEh5Z40vg@mail.gmail.com/)
 ```
 
-We want to help beyond the maintainers alone: people who already use AI, those who would like to use it, and even those who are not sure they will use it but who want to understand how it works. Organising this ANF showed us how strong this demand is. We therefore truly leave you to judge whether you should use AI, and we address the question that comes next: how to use it relevantly within higher education and research (ESR), if you wish to.
+We want to help beyond just the maintainers: people who already use AI, those who would like to use it, and even those who aren't sure they will use it but want to understand how it works. Organizing this training has shown us that this demand is strong. We therefore truly leave it to you to judge whether you should use AI, and we address the question that follows: how to use it appropriately in higher education and research (ESR) if you wish.
 
 Using a harness, which takes up most of this material, corresponds to a rather advanced use. You can already connect your development environment (IDE) to an AI provider and use the chat, edit and agent commands, often built in or available through plugins. The choice of provider is a fundamental question, whose answer depends on the context in which you work and is likely to evolve over time; we invite you to look into this.
 

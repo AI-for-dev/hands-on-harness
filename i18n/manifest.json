@@ -1,14 +1,14 @@
 {
   "index.md": {
     "en": {
-      "unitHash": "e2d44a3b677215d11c597aca6cb36c287a73deef68d01cdb4ab5a90af130ea29",
+      "unitHash": "88ac3737321e82594ef3a631bc9e25355f14fa2d7971aa8942fb92b90f4d55eb",
       "model": "pi:opencode-go/deepseek-v4-flash",
-      "translatedAt": "2026-09-28T14:09:35.840Z"
+      "translatedAt": "2026-09-28T14:19:22.080Z"
     },
     "es": {
-      "unitHash": "e2d44a3b677215d11c597aca6cb36c287a73deef68d01cdb4ab5a90af130ea29",
+      "unitHash": "88ac3737321e82594ef3a631bc9e25355f14fa2d7971aa8942fb92b90f4d55eb",
       "model": "pi:opencode-go/deepseek-v4-flash",
-      "translatedAt": "2026-09-28T14:10:58.107Z"
+      "translatedAt": "2026-09-28T14:19:41.849Z"
     }
   },
   "act1-harness.md": {

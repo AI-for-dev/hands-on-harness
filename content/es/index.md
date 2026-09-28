@@ -4,11 +4,11 @@
 
 ## Contexto y posicionamiento
 
-Este material de formación se creó para la [ANF IA4Dev](https://ia4dev-2026.sciencesconf.org/), una acción nacional de formación que se celebra del 19 al 22 de octubre de 2026. El uso de los Large Language Models (LLM), tanto para programar como para otras tareas, plantea cuestiones jurídicas (la propiedad del código producido, por ejemplo), sociales y medioambientales importantes. Durante la ANF, contamos con la intervención de varias personas sobre estos temas, pero no los desarrollamos en este material; las personas interesadas encontrarán no obstante algunas referencias sobre estas cuestiones en el anexo.
+Este material ha sido creado para la [formación IA4Dev](https://ia4dev-2026.sciencesconf.org/), que se celebra del 19 al 22 de octubre de 2026. El uso de los grandes modelos de lenguaje (LLM), tanto para programar como para otras tareas, plantea importantes cuestiones jurídicas (por ejemplo, la propiedad del código producido), sociales y ambientales. Durante la formación, invitamos a varias personas a hablar sobre estos temas, pero no los desarrollamos en este material; sin embargo, las personas interesadas encontrarán algunas referencias sobre estas cuestiones en el anexo.
 
 Construir una formación sobre la IA aplicada al desarrollo de software plantea, pues, una pregunta: ¿se promueve de manera implícita el uso de la IA para programar? Nuestra decisión de no tratar aquí los aspectos jurídicos, sociales y medioambientales la vuelve aún más crítica, ya que relega al anexo lo que quizá debería constituir la información principal, la que permite a cada cual posicionarse con pleno conocimiento de causa.
 
-Hemos tenido la suerte de reunir en el comité de organización de esta ANF posicionamientos muy diferentes, y esta diversidad ha alimentado numerosos debates. Esta formación no tiene en absoluto el objetivo de convencer a nadie de que use o no use la IA, aunque, al mostrar cómo hacerlo, participamos en la difusión de esta práctica.
+Hemos tenido la suerte de reunir en el comité de organización de esta formación posturas muy diferentes, y esta diversidad ha alimentado numerosos debates. Esta formación no tiene en absoluto por objetivo convencer a nadie de usar o de no usar la IA, aunque, al mostrar cómo hacerlo, contribuimos a la difusión de esta práctica.
 
 El 14 de julio de 2026, en un mensaje a una lista de correo del núcleo, Linus Torvalds, el creador de Linux, hizo una declaración cercana al posicionamiento de este material, que traducimos aquí:
 
@@ -38,7 +38,7 @@ Because it's not like natural intelligence is always all that great either.
 Linus Torvalds, [Re: Linking Patchwork with Sashiko?](https://lore.kernel.org/all/CAHk-=wi4zC+Ze8e+p3tMv8TtG_80KzsZ1syL9anBtmEh5Z40vg@mail.gmail.com/)
 ```
 
-Queremos ayudar más allá de los únicos mantenedores: las personas que ya usan la IA, las que querrían usarla e incluso las que no están seguras de utilizarla pero quieren entender cómo funciona. La organización de esta ANF nos ha mostrado que esta demanda es fuerte. Os dejamos, pues, como jueces de la cuestión de si debéis usar la IA, y tratamos la que viene después: cómo utilizarla de manera pertinente en el marco de la enseñanza superior y la investigación (ESR), si así lo deseáis.
+Queremos ayudar más allá de los únicos mantenedores: las personas que ya usan la IA, las que querrían usarla, e incluso las que no están seguras de usarla pero que quieren entender cómo funciona. La organización de esta formación nos mostró que esta demanda es fuerte. Así que te dejamos a ti ser juez de la cuestión de si debes usar la IA, y tratamos la que viene después: cómo utilizarla de manera pertinente en el marco de la enseñanza superior y de la investigación (ESR) si así lo deseas.
 
 El uso de un harness, que ocupa la mayor parte de este material, corresponde a un uso más bien avanzado. Ya se puede conectar el entorno de desarrollo (IDE) a un proveedor de IA y usar los comandos chat, edit y agent, a menudo integrados o accesibles mediante plugins. La elección del proveedor es una cuestión de fondo, cuya respuesta varía según el marco en el que trabajáis y puede evolucionar con el tiempo; os invitamos a informaros al respecto.
 
