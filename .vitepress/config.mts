@@ -5,7 +5,10 @@ import { es } from './locales/es.mts'
 
 // Same attribution as LICENSE-CONTENT, shown under every page by
 // .vitepress/theme/LicenseNotice.vue and exposed in the HTML metadata.
-const author = { name: 'Loic Gouarin', link: 'https://github.com/gouarin' }
+const authors = [
+  { name: 'Loic Gouarin', link: 'https://github.com/gouarin' },
+  { name: 'Max Beligné', link: 'https://github.com/PUD-GA' }
+]
 
 // French is the source language, served at the root (no prefix). English
 // and Spanish are generated into content/en and content/es by
@@ -23,12 +26,13 @@ export default defineConfig({
   // root and break once deployed.
   base: '/hands-on-harness/',
 
-  head: [['meta', { name: 'author', content: author.name }]],
+  head: [['meta', { name: 'author', content: authors.map((a) => a.name).join(', ') }]],
 
-  // Merged into each locale's themeConfig: the author does not depend on
+  // Merged into each locale's themeConfig: the authors do not depend on
   // the language.
   themeConfig: {
-    author: { ...author, year: 2026 }
+    authors,
+    copyrightYear: 2026
   },
 
   // A ```mermaid block becomes a <Mermaid> component rendered client-side
