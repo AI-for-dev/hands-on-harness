@@ -6,7 +6,7 @@
 - Savoir énumérer les briques indispensables d'un harnais et, pour chacune, à quel problème elle répond
 :::
 
-La page [Historique](./historique) a présenté une frise des techniques apparues depuis fin 2022. Nous la reprenons ici sous un autre angle, non plus pour raconter une histoire, mais pour comprendre une mécanique. Chaque étape de cette frise répond à un manque de l'étape précédente, et surtout, chacune s'empile sur les autres plutôt que de les remplacer. Un harnais ne rend pas le *prompt engineering* obsolète ; il en a toujours besoin, mais il l'organise.
+Le début de cet acte a présenté une [frise des techniques](./historique) apparues depuis fin 2022. Nous la reprenons ici sous un autre angle, non plus pour raconter une histoire, mais pour comprendre une mécanique. Chaque étape de cette frise répond à un manque de l'étape précédente, et surtout, chacune s'empile sur les autres plutôt que de les remplacer. Un harnais ne rend pas le *prompt engineering* obsolète ; il en a toujours besoin, mais il l'organise.
 
 Au commencement, il y a le prompt. On s'aperçoit vite que la façon de formuler une demande change radicalement la réponse, et le *prompt engineering* consiste à formuler mieux. Mais un modèle bien interrogé reste ignorant de votre base de code et de votre documentation interne. Le RAG comble ce manque : il va chercher les documents pertinents et les fournit au modèle avant qu'il ne réponde, au prix d'une construction qui peut être fastidieuse.
 
