@@ -4,11 +4,11 @@
 
 ## Contexte et positionnement
 
-Ce support de formation a été créé pour l'[ANF IA4Dev](https://ia4dev-2026.sciencesconf.org/), une action nationale de formation qui se tient du 19 au 22 octobre 2026. L'utilisation des Large Language Models (LLM), pour coder comme pour d'autres tâches, pose des questions juridiques (la propriété du code produit, par exemple), sociales et environnementales importantes. Pendant l'ANF, nous avons fait intervenir plusieurs personnes sur ces sujets, mais nous ne les développons pas dans ce support ; les personnes intéressées trouveront toutefois quelques références sur ces questions en annexe.
+Ce support a été créé pour la [formation IA4Dev](https://ia4dev-2026.sciencesconf.org/), qui se tient du 19 au 22 octobre 2026. L'utilisation des Large Language Models (LLM), pour coder comme pour d'autres tâches, pose des questions juridiques (la propriété du code produit, par exemple), sociales et environnementales importantes. Pendant la formation, nous avons fait intervenir plusieurs personnes sur ces sujets, mais nous ne les développons pas dans ce support ; les personnes intéressées trouveront toutefois quelques références sur ces questions en annexe.
 
 Construire une formation sur l'IA appliquée au développement logiciel pose donc une question : fait-on, de manière implicite, la promotion de l'usage de l'IA pour coder ? Notre choix de ne pas traiter ici les aspects juridiques, sociaux et environnementaux la rend plus critique encore, puisqu'il relègue en annexe ce qui devrait peut-être constituer l'information première, celle qui permet à chacun de se positionner en connaissance de cause.
 
-Nous avons eu la chance de réunir dans le comité d'organisation de cette ANF des positionnements très différents, et cette diversité a nourri de nombreuses discussions. Cette formation n'a aucunement pour objectif de convaincre quiconque d'utiliser ou de ne pas utiliser l'IA, même si, en montrant comment faire, nous participons à la diffusion de cette pratique.
+Nous avons eu la chance de réunir dans le comité d'organisation de cette formation des positionnements très différents, et cette diversité a nourri de nombreuses discussions. Cette formation n'a aucunement pour objectif de convaincre quiconque d'utiliser ou de ne pas utiliser l'IA, même si, en montrant comment faire, nous participons à la diffusion de cette pratique.
 
 Le 14 juillet 2026, dans un message à une liste de diffusion du noyau, Linus Torvalds, le créateur de Linux, a fait une déclaration proche du positionnement de ce support, que nous traduisons ici :
 
@@ -38,7 +38,7 @@ Because it's not like natural intelligence is always all that great either.
 Linus Torvalds, [Re: Linking Patchwork with Sashiko?](https://lore.kernel.org/all/CAHk-=wi4zC+Ze8e+p3tMv8TtG_80KzsZ1syL9anBtmEh5Z40vg@mail.gmail.com/)
 ```
 
-Nous voulons aider au-delà des seuls mainteneurs : les personnes qui utilisent déjà l'IA, celles qui aimeraient l'utiliser, et même celles qui ne sont pas certaines de s'en servir mais qui ont envie de comprendre comment elle fonctionne. L'organisation de cette ANF nous a montré que cette demande est forte. Nous vous laissons donc vraiment juges de la question de savoir si vous devez vous servir de l'IA, et nous traitons celle qui vient ensuite : comment l'utiliser de manière pertinente dans le cadre de l'enseignement supérieur et de la recherche (ESR) si vous le souhaitez.
+Nous voulons aider au-delà des seuls mainteneurs : les personnes qui utilisent déjà l'IA, celles qui aimeraient l'utiliser, et même celles qui ne sont pas certaines de s'en servir mais qui ont envie de comprendre comment elle fonctionne. L'organisation de cette formation nous a montré que cette demande est forte. Nous vous laissons donc vraiment juges de la question de savoir si vous devez vous servir de l'IA, et nous traitons celle qui vient ensuite : comment l'utiliser de manière pertinente dans le cadre de l'enseignement supérieur et de la recherche (ESR) si vous le souhaitez.
 
 L'utilisation d'un harnais, qui occupe l'essentiel de ce support, correspond à un usage plutôt avancé. On peut déjà connecter son environnement de développement (IDE) à un fournisseur d'IA et utiliser les commandes chat, edit et agent, souvent intégrées ou accessibles via des plugins. Le choix du fournisseur est une question de fond, dont la réponse varie selon le cadre dans lequel vous travaillez et risque d'évoluer avec le temps ; nous vous invitons à vous renseigner sur ce point.
 
