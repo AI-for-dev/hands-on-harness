@@ -9,7 +9,7 @@
 
 The following modules launch Pi twenty times on the same task without human intervention, give it sub-agents that have a shell, then chain sub-agents into pipelines. Pi has no mechanism for asking your consent before executing a command, and its [security documentation](https://pi.dev/docs/latest/security) says it clearly: the tools read, write and run commands "with the permissions of the pi process", and "Pi does not include a built-in sandbox". Anything you can do from your terminal, the agent can do too: read `~/.ssh`, read `~/.pi/agent/auth.json` where your API keys are stored, run `git push --force`, or send the content of a file to any domain with `curl`.
 
-The natural reaction is to write an instruction, "only modify `game/neon.js`", "read nothing outside the repository". An instruction is text, and we remind you that using an LLM is always non-deterministic, which means you will never have a 100% guarantee that it will be followed. In the module on skills, you will observe that an instruction to clean up temporary files placed in a `SKILL.md` is followed less than one time in three. Before the first unattended run, you therefore need a boundary that does not depend on the model's obedience. The sandbox is a deterministic way to ensure the LLM is in a closed environment where the boundaries are set by you and that the model cannot cross.
+The natural reaction is to write a prompt: "only modify `game/neon.js`", "don't read anything outside the repository". A prompt is text, and we remind you that using an LLM is always non-deterministic, which means you will never have a 100% guarantee that it will be followed. In the module on skills, you will observe that an instruction for cleaning up temporary files placed in a `SKILL.md` is followed less than one time in three. Before the first unattended run, you therefore need a limit that doesn't depend on the model's obedience. The sandbox is a deterministic way to ensure that the LLM is in a closed environment whose boundaries are defined by you and that the model cannot overstep.
 
 ## Understanding
 
@@ -17,7 +17,7 @@ The natural reaction is to write an instruction, "only modify `game/neon.js`", "
 
 A code agent running on your machine has access to your files, that is, the repository it works on and, with the same rights, your home directory, where the SSH keys, the model provider tokens and the `.env` files of your other projects live. The network lets it install any package, run a `curl | sh` found in a README, or broadcast what it has just read. Finally, it launches processes with your identity, which covers the Docker daemon, the `rm` command and write access to the remote repository. If you also have sudo privileges on your machine, nothing stops it.
 
-These actions do not even require the model to make a mistake. A file in the repository can contain instructions written for the agent, and that is the role of NÉON's `SUPPORT.md`, whose text mimics a support procedure but asks the agent to read the `.env` and send its contents to an external address: the agent that opens this file to answer a question treats the instruction as if it came from you, and the permissions module will deal with this case. An extension installed from the community directory runs, as the module on Pi reminded us, with all of your rights. In both cases, the flaw is in the harness, and a guardrail written inside AGENTS.md will not protect you.
+These actions don't even require the model to make a mistake. A repository file can contain instructions written for the agent: that is the role of NÉON's `SUPPORT.md`. Its text mimics a support procedure but asks the agent to read the `.env` and send its contents to an external address. An agent that opens this file to answer a question treats the instruction as if it came from you, and the module on permissions will work on this case. An extension installed from the community directory runs, as the module on Pi reminded you, with all of your permissions. In both cases, the flaw is in the harness, and a guardrail written inside `AGENTS.md` will not protect you.
 
 Pi's documentation concludes: "For untrusted repositories, generated code you do not intend to monitor closely, or unattended automation, run pi in a contained environment. Use a container, VM, micro-VM, remote sandbox, or policy-controlled sandbox with only the files and credentials required for the task." Our twenty runs on issue #1 are exactly unattended automation. And eventually, we want autonomous agents that can work for hours without us having to monitor them.
 
@@ -60,7 +60,7 @@ The extension installs with one command, like any package from Pi's directory:
 pi install npm:@gotgenes/pi-permission-system
 ```
 
-The rules live in a JSON file, read at three scopes: global (`~/.pi/agent/extensions/pi-permission-system/config.json`), project (`.pi/extensions/pi-permission-system/config.json`, ignored if the project is not approved) and per agent, in the YAML header of an agent file, which overrides the first two. For NÉON, a project configuration is enough to stop the most dangerous instruction in `SUPPORT.md`, since reading a `.env` is refused by construction:
+The rules live in a JSON file, read at three scopes: global (`~/.pi/agent/extensions/pi-permission-system/config.json`), project (`.pi/extensions/pi-permission-system/config.json`, ignored if the project is not approved), and per-agent, in the YAML header of an agent file, which takes precedence over the first two. For NÉON, a project configuration is enough to stop the most dangerous instruction in `SUPPORT.md`, since reading a `.env` is refused by construction:
 
 ```json
 {
@@ -93,7 +93,7 @@ Finally, remove the `path` block from the configuration and replace it with the 
 
 #### Install and configure `sbx`
 
-`sbx` is the command for using Docker Sandboxes. `sbx` has a list of agents it can launch as-is (`claude`, `codex`, `copilot`, `cursor`, `gemini`, `opencode`, and a few others). Unfortunately, Pi is not one of them. You therefore need to create [a kit](https://docs.docker.com/ai/sandboxes/customize/): a directory described by a `spec.yaml` whose `kind: sandbox` variant defines an agent from scratch: the image, the startup command, the instructions added to the context file, the keys to inject, and the network permissions. Ours is versioned at https://github.com/AI-for-dev/pi-sandbox and contains only three files.
+`sbx` is the command to use Docker Sandboxes. `sbx` knows a list of agents it can launch as-is (`claude`, `codex`, `copilot`, `cursor`, `gemini`, `opencode` and a few others). Unfortunately, Pi is not among them. It is therefore necessary to create [a kit](https://docs.docker.com/ai/sandboxes/customize/): a directory described by a `spec.yaml` whose `kind: sandbox` variant defines an agent from scratch: the image, the startup command, the instructions added to the context file, the keys to inject, and the network permissions. Ours is versioned in https://github.com/AI-for-dev/pi-sandbox and contains only three files.
 
 ```
 pi-sandbox
@@ -153,7 +153,7 @@ RUN npm install -g "@earendil-works/pi-coding-agent@${PI_VERSION}" \
 USER agent
 ```
 
-The image starts from the `shell-docker` template provided by Docker, installs an explicit version of Node because Pi requires at least version 22.19, then pins the Pi version.
+The image starts from the `shell-docker` base image provided by Docker, installs an explicit version of Node, because Pi requires at least 22.19, then pins the version of Pi.
 
 The Docker Sandboxes daemon pulls its images from a registry different from the local images available to Docker. Without a registry, you go through an archive:
 
@@ -228,7 +228,7 @@ The `credentials` block declares a key managed by the proxy (`proxyManaged: true
 
 Under `permissions.network`, the kit opens, on top of the global policy, the model provider, GitHub for cloning NÉON, and PyPI for the measurement tools. The `PI_SKIP_VERSION_CHECK` and `PI_TELEMETRY` variables disable some of Pi's startup network operations.
 
-The `files/home/.pi/agent/settings.json` file, which the kit drops into the agent's home directory, sets the default provider and model, and the reasoning level. It replaces your host's `~/.pi/agent/settings.json`, which is not mounted in the VM. It is fairly simple here and looks like this
+The `files/home/.pi/agent/settings.json` file, which the kit places in the agent's home directory, sets the provider, the default model, and the reasoning level. It replaces the `~/.pi/agent/settings.json` of your host, which is not mounted in the VM. It is quite simple here and looks like this:
 
 ```json
 {

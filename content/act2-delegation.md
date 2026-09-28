@@ -8,9 +8,9 @@
 - Repartir avec le journal de ce que l'orchestration vous a appris, dont le module suivant a besoin pour automatiser la boucle
 :::
 
-Les deux modules précédents se sont arrêtés sur deux constats. Le premier constat est que soigner le texte du prompt en disant explicitement le comportement souhaité améliore les résultats sur certaines colonnes. Notre ticket cadré fait passer le cas du coin de 0/20 à 14/20 parce qu'ISSUES.md le décrit. Néanmoins, avec ou sans la description fine des bugs de l'issue #1, la correction "briques" est de 11/20 respectivement 13/20 ce qui n'est pas un changement fondamental. En revanche, déposer les tests unitaires que l'on souhaite en amont fait progresser ce résultat de 11/20 à 18/20 sans changer une ligne du prompt. Le second constat est qu'un skill n'a que du texte, sans schéma d'entrée, sans fonction d'exécution ni garde de permission, si bien que rien de ce qu'il demande n'est garanti : sa consigne de faire le ménage à la fin est restée lettre morte dans onze exécutions sur vingt, et ses seuls effets établis ont été des déplacements de travail, jamais une amélioration de la correction.
+Les deux modules précédents se sont arrêtés sur deux constats. Le premier constat est que soigner le texte du prompt en disant explicitement le comportement souhaité améliore les résultats sur certaines colonnes. Notre ticket cadré fait passer le cas du coin de 0/20 à 14/20 parce qu'ISSUES.md le décrit. Néanmoins, avec ou sans la description fine des bugs de l'issue #1, la correction "briques" est respectivement de 11/20 et de 13/20, ce qui n'est pas un changement fondamental. En revanche, déposer les tests unitaires que l'on souhaite en amont fait progresser ce résultat de 11/20 à 18/20 sans changer une ligne du prompt. Le second constat est qu'un skill n'a que du texte, sans schéma d'entrée, sans fonction d'exécution ni garde de permission, si bien que rien de ce qu'il demande n'est garanti : sa consigne de faire le ménage à la fin est restée lettre morte dans onze exécutions sur vingt, et ses seuls effets établis ont été des déplacements de travail, jamais une amélioration de la correction.
 
-L'agent seul a ses limites et nous pouvons que constater qu'il n'y arrive pas forcément tout seul. Mais imaginez un sous-agent qui ajoute des tests unitaires pertinents pour cet agent, est-ce que nous serions en mesure de retrouver ce résultat de 18/20 ? Nous allons donc essayer de découper le travail via des agents spécialisés dans certaines tâches.
+L'agent seul a ses limites et nous ne pouvons que constater qu'il n'y arrive pas forcément tout seul. Mais imaginez un sous-agent qui ajoute des tests unitaires pertinents pour cet agent, est-ce que nous serions en mesure de retrouver ce résultat de 18/20 ? Nous allons donc essayer de découper le travail via des agents spécialisés dans certaines tâches.
 
 Ce module découpe le travail en quatre rôles (**explorer**, **planifier**, **coder** et **évaluer**), chacun exécuté dans un contexte séparé, avec sa liste d'outils et son modèle. Vous n'emploierez aucun mécanisme d'orchestration : c'est vous qui lancez chaque rôle, qui décidez de ce qui passe de l'un à l'autre et qui exécutez les tests entre deux. Une commande transporte les livrables à votre place, mais aucun code ne choisit le pas suivant. Le module suivant automatisera cette boucle. Mais avant d'automatiser, il faut d'abord savoir quels gestes remplacer ou agencer différemment. Cette liste s'établit en tenant la boucle soi-même, et elle fait partie des livrables du module.
 
@@ -35,7 +35,7 @@ Sur Pi, la délégation n'est pas dans le cœur de l'outil : elle arrive par [co
 ::: info D'où vient combo, et quelles extensions lui préférer
 combo est né des besoins de ce cours, et ses choix s'expliquent par là. Nous ne pouvons pas dire que cet outil est un bijou de conception pour piloter des sous-agents. Nous l'avons modelé à notre façon et il évoluera certainement selon nos futurs usages pour peut-être devenir un jour utile pour construire des pipelines complexes. Nous voulions avant tout que vous puissiez plonger dans les discussions des sous-agents, que vous puissiez écrire des workflows complexes facilement.
 
-Son intégration à [herdr](https://herdr.dev) donne un volet par sous-agent, pour regarder le travail se faire au lieu d'attendre devant un compteur. Nous avons également ajouté un ensemble d'orchestration afin de créer des pipelines composer de formes plus riches qu'un appel isolé. Et comme tout le reste de la formation mesure, une exécution y compte le temps et les tokens de chaque sous-agent, et s'exporte entière en HTML lisible et en JSONL rejouable. Si ces mesures sont possibles sans instrumenter de processus enfant, c'est que les sous-agents tournent dans le processus de Pi, par le SDK et que Pi a déjà toutes ses informations.
+Son intégration à [herdr](https://herdr.dev) donne un volet par sous-agent, pour regarder le travail se faire au lieu d'attendre devant un compteur. Nous avons également ajouté un ensemble d'orchestration afin de créer des pipelines composés de formes plus riches qu'un appel isolé. Et comme tout le reste de la formation mesure, une exécution y compte le temps et les tokens de chaque sous-agent, et s'exporte entière en HTML lisible et en JSONL rejouable. Si ces mesures sont possibles sans instrumenter de processus enfant, c'est que les sous-agents tournent dans le processus de Pi, par le SDK et que Pi a déjà toutes ses informations.
 
 Nous rappelons que combo n'est pas pour le moment une bibliothèque de production, et plusieurs extensions de l'écosystème Pi sont plus éprouvées pour un usage quotidien.
 
@@ -64,7 +64,7 @@ You read the file you are given and list its exported symbols,
 one per line, with the line number. Nothing else.
 ```
 
-L'entête porte le nom, la description, la **panoplie** (`tools:`) et le **modèle**. Le corps devient le **prompt système** du sous-agent : chaque session de `reader` démarre avec ce texte pour seul cadre, là où un skill reste une procédure que le modèle décide ou non d'ouvrir.
+L'en-tête porte le nom, la description, la **panoplie** (`tools:`) et le **modèle**. Le corps devient le **prompt système** du sous-agent : chaque session de `reader` démarre avec ce texte pour seul cadre, là où un skill reste une procédure que le modèle décide ou non d'ouvrir.
 
 La différence avec un skill est donc double. Le corps est lu à coup sûr, et la ligne `tools:` décide des outils que la session du sous-agent enregistre, si bien qu'un agent sans `write` n'a aucun moyen d'écrire, quelle que soit la tâche qu'il reçoit.
 
@@ -83,13 +83,13 @@ Un sous-agent n'hérite de rien de votre environnement : ni extensions, ni skill
 Les fichiers d'agents du projet vivent dans `.pi/agents/`, ceux de votre machine dans `~/.pi/agent/agents/`, et l'extension apporte ses propres agents de démonstration. Il vous est possible d'avoir le même nom d'agent globalement et localement et combo vous permet de choisir lequel vous souhaitez utiliser. Nous le verrons dans la suite.
 
 ::: warning Un agent sans `model:` tourne sur les réglages du jour
-Le modèle d'un sous-agent n'est jamais hérité de la session parente. Il vient d'un argument passé à l'appel, à défaut du fichier de pipeline, à défaut de l'entête de l'agent, et en dernier recours des réglages de Pi : le plus proche du travail l'emporte. Un agent qui ne déclare rien et qu'on lance sans argument tourne donc sur votre `~/.pi/agent/settings.json`, c'est-à-dire sur ce qui s'y trouve ce jour-là.
+Le modèle d'un sous-agent n'est jamais hérité de la session parente. Il vient d'un argument passé à l'appel, à défaut du fichier de pipeline, à défaut de l'en-tête de l'agent, et en dernier recours des réglages de Pi : le plus proche du travail l'emporte. Un agent qui ne déclare rien et qu'on lance sans argument tourne donc sur votre `~/.pi/agent/settings.json`, c'est-à-dire sur ce qui s'y trouve ce jour-là.
 :::
 
 ::: warning Vos agents de projet ne sont jamais chargés par défaut
 `.pi/agents/` est un contenu contrôlé par le dépôt, donc ses instructions sont des instructions tierces : combo refuse de les charger sans qu'on le demande. La portée se demande à chaque appel de l'outil.
 
-Vous pouvez avoir la liste de vos agents via la commande:
+Vous pouvez avoir la liste de vos agents via la commande :
 
 ```
 /agents
@@ -97,15 +97,15 @@ Vous pouvez avoir la liste de vos agents via la commande:
 :::
 
 ::: warning Voir l'activité de vos agents
-L'idée de se module est de décomposer l'orchestration et de voir les sous-agents travailler. Même s'il vous est possible avec combo de voir la trace de la session Pi après coup, il est toujours plus agréable de voir les événements se passer en direct. Pour cela, vous pouvez utiliser herdr.
+L'idée de ce module est de décomposer l'orchestration et de voir les sous-agents travailler. Même s'il vous est possible avec combo de voir la trace de la session Pi après coup, il est toujours plus agréable de voir les événements se passer en direct. Pour cela, vous pouvez utiliser herdr.
 
-Vous devrez alors lancer votre session Pi dans herdr puis taper cette ligne
+Vous devrez alors lancer votre session Pi dans herdr puis taper cette ligne :
 
 ```
 /herdr on
 ```
 
-Pour que tout sous-agent dans combo ouvre sa propre fenêtre.
+pour que tout sous-agent dans combo ouvre sa propre fenêtre.
 :::
 
 ## Reconstruire
@@ -131,7 +131,7 @@ Les quatre fichiers sont versionnés dans `scripts/agents/` et se recopient dans
 
 <<<@/../scripts/agents/explorer.md{md}
 
-L'exploreur rend une note et non un avis, et sa dernière section le lui rappelle : une note qui contient aussi la correction cesse d'être une note. Son prompt lui dit par ailleurs que les tickets de ce dépôt sont écrits par un mainteneur qui s'est parfois trompé sur l'emplacement du code, ce qui est vrai, et suffit à ce que la note vérifie au lieu de recopier.
+L'explorateur rend une note et non un avis, et sa dernière section le lui rappelle : une note qui contient aussi la correction cesse d'être une note. Son prompt lui dit par ailleurs que les tickets de ce dépôt sont écrits par un mainteneur qui s'est parfois trompé sur l'emplacement du code, ce qui est vrai, et suffit à ce que la note vérifie au lieu de recopier.
 
 <<<@/../scripts/agents/planner.md{md}
 
@@ -149,7 +149,7 @@ Deux autres fichiers, `tester.md` et `auditor.md`, vivent à côté des quatre r
 
 
 ::: warning Utilisation de herdr
-Afin de suivre les activités des sous-agents, nous vous encourageons fortement à lancer Pi depuis herdr (https://herdr.dev/). combo sait ouvrir des fenêtres herdr pour voir les sous-agents travaillés et les refermer automatiquement lorsqu'ils ont terminé.
+Afin de suivre les activités des sous-agents, nous vous encourageons fortement à lancer Pi depuis herdr (https://herdr.dev/). combo sait ouvrir des fenêtres herdr pour voir les sous-agents travailler et les refermer automatiquement lorsqu'ils ont terminé.
 :::
 
 ::: info Exercice (en salle)
@@ -162,7 +162,7 @@ mkdir -p .pi/agents && cp /chemin/vers/hands-on-harness/scripts/agents/*.md .pi/
 pi
 ```
 
-L'extension n'ajoute pas de commande pour explicite pour appeler un agent : `subagent` est un outil que le modèle de la session principale appelle quand vous le lui demandez. Il vous suffit de nommer l'agent et ce que vous souhaitez qu'il fasse. Demandez donc l'explorateur ainsi :
+L'extension n'ajoute pas de commande explicite pour appeler un agent : `subagent` est un outil que le modèle de la session principale appelle quand vous le lui demandez. Il vous suffit de nommer l'agent et ce que vous souhaitez qu'il fasse. Demandez donc l'explorateur ainsi :
 
 ```
 utilise le subagent "explorer" pour la tâche "Nomme exactement les outils dont tu disposes."
@@ -187,7 +187,7 @@ Ces deux citations sont les sorties de deux exécutions, et les vôtres seront d
 :::
 
 ::: warning Choix du modèle
-Vous pouvez également dire dans votre demande le modèle que vous souhaitez utiliser comme dans le prompt suivant:
+Vous pouvez également dire dans votre demande le modèle que vous souhaitez utiliser comme dans le prompt suivant :
 
 ```
 utilise le subagent "coder" avec le modèle deepseek-v4-flash d'opencode-go pour la tâche "Lance npm test et rapporte le résultat."
@@ -198,7 +198,7 @@ utilise le subagent "coder" avec le modèle deepseek-v4-flash d'opencode-go pour
 
 Vous tenez maintenant le rôle d'orchestrateur que le module suivant automatisera. Ouvrez la session principale avec l'extension chargée, et parcourez la chaîne un pas à la fois avec `/step`.
 
-Cette commande `/step <agent> <instruction>` lance l'agent que vous nommez sur ce que vous tapez, plus la sortie du pas précédent. Sa réponse est **écrite dans la transcription sans entrer dans le contexte du modèle** : la session principale voit défiler les rapports sans les lire, donc sans pouvoir agir dessus. C'est la différence qui compte ici. Une session qui lit un rapport d'exploration devient un orchestrateur que vous ne commandez pas et qui choisit la suite contre des conclusions que vous n'avez pas validées. Or, nous souhaitons que ce soit vous qui décidiez qu'elle est l'étape d'après. La fenêtre principale est donc votre console et pas un interlocuteur comme vous l'avez vu jusqu'à présent. La commande `/quote` vous permet de faire entrer le résultat du pas précédent dans le contexte vous permettant de faire un copier-coller rapide quand il y a quelque chose à discuter.
+Cette commande `/step <agent> <instruction>` lance l'agent que vous nommez sur ce que vous tapez, plus la sortie du pas précédent. Sa réponse est **écrite dans la transcription sans entrer dans le contexte du modèle** : la session principale voit défiler les rapports sans les lire, donc sans pouvoir agir dessus. C'est la différence qui compte ici. Une session qui lit un rapport d'exploration devient un orchestrateur que vous ne commandez pas et qui choisit la suite contre des conclusions que vous n'avez pas validées. Or, nous souhaitons que ce soit vous qui décidiez quelle est l'étape d'après. La fenêtre principale est donc votre console et pas un interlocuteur comme vous l'avez vu jusqu'à présent. La commande `/quote` vous permet de faire entrer le résultat du pas précédent dans le contexte vous permettant de faire un copier-coller rapide quand il y a quelque chose à discuter.
 
 La boucle comporte six étapes :
 
@@ -240,7 +240,7 @@ Exportez la session principale avec `\export` et retrouvez chaque appel de l'out
 
 Les deux modules précédents ont établi leurs affirmations sur vingt répétitions, et celui-ci n'en publie aucune. Cette absence est délibérée. Nous souhaitions avant tout vous montrer comment fonctionne la délégation et ce qu'elle peut vous apporter sur la taille de votre contexte ou sur la vérification des modifications dans un contexte neuf.
 
-Vous avez également pu voir qu'il est facile de contrôler finement ce que peut faire un agent via ses outils et définir le modèle que l'on souhaite pour celui-ci.
+Vous avez également pu voir qu'il est facile de contrôler finement ce que peut faire un agent via ses outils et de définir le modèle que l'on souhaite pour celui-ci.
 
 Ce module ne peut donc pas assurer pour le moment que le découpage en rôles améliore le résultat, c'est-à-dire que le ticket #2 traité par cette boucle serait mieux corrigé que le même ticket traité par un agent seul. La question est légitime, elle relève de la mesure. Le module suivant pose le protocole qui permet de faire cette mesure. Nous allons automatiser la boucle que vous avez jouée à la main et observer la qualité des résultats.
 
@@ -272,7 +272,7 @@ Ce module produit trois pièces.
 
 1. Les quatre agents, versionnés dans votre dépôt, chacun avec sa panoplie minimale et son `model:` déclaré. Ce sont eux que le module suivant branchera sur l'orchestrateur, sans les modifier.
 2. Le journal d'un tour de boucle : la trace de la session principale exportée, le diff livré du premier pas, la sortie de `npm test` que le reviewer a lue, et votre journal.
-3. Les choix à faire entre chaque étape: vous avez joué le rôle de l'agent principal et organisé le flux de travail. Vous savez maintenant à quoi vous attendre pour l'automatisation complète de la boucle.
+3. Les choix à faire entre chaque étape : vous avez joué le rôle de l'agent principal et organisé le flux de travail. Vous savez maintenant à quoi vous attendre pour l'automatisation complète de la boucle.
 
 ::: tip Critère de réussite
 Vous savez montrer, trace en main, quel agent a tourné à chaque étape de votre boucle, avec quels outils et quel modèle. En tant qu'orchestrateur, vous avez pu également voir quelles actions vous refuseriez de refaire vingt fois. Cette compréhension est importante pour finaliser l'automatisation de votre premier flux de travail de votre harnais.

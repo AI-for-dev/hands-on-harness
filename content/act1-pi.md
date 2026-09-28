@@ -167,13 +167,13 @@ Dans la suite de la formation, vous n'aurez à installer qu'une extension spéci
 :::
 
 ::: info Exercice (en salle)
-Installez en local (`-l`) l'extension combo
+Installez en local (`-l`) l'extension combo :
 
 ```bash
 pi install -l npm:@ai-for-dev/combo
 ```
 
-vérifiez qu'elle apparaît bien dans `.pi/npm/`. Lancez Pi : vous devriez la voir dans la section extensions. Vous pouvez ensuite essayer de la retirer avec `pi remove`.
+puis vérifiez qu'elle apparaît bien dans `.pi/npm/`. Lancez Pi : vous devriez la voir dans la section extensions. Vous pouvez ensuite essayer de la retirer avec `pi remove`.
 :::
 
 ## Pour aller plus loin

@@ -9,7 +9,7 @@
 
 Los módulos siguientes lanzan Pi veinte veces sobre la misma tarea sin intervención humana, le confían subagentes que tienen una shell y luego encadenan subagentes en pipelines. Pi no tiene ningún mecanismo para pedir tu aprobación antes de ejecutar un comando, y su [documentación de seguridad](https://pi.dev/docs/latest/security) lo dice claramente: las herramientas leen, escriben y lanzan comandos «with the permissions of the pi process», y «Pi does not include a built-in sandbox». Todo lo que puedes hacer desde tu terminal, el agente también puede hacerlo: leer `~/.ssh`, leer `~/.pi/agent/auth.json` donde están guardadas tus claves de API, lanzar `git push --force` o enviar el contenido de un archivo a cualquier dominio con `curl`.
 
-La reacción natural es escribir una consigna, «no modifiques más que `game/neon.js`», «no leas nada fuera del repositorio». Una consigna es texto, y te recordamos que el uso de un LLM siempre es no determinista, lo que significa que nunca tendrás una garantía del 100 % de que se cumpla. En el módulo de habilidades, comprobarás que una consigna de limpieza de archivos temporales colocada en un `SKILL.md` se cumple menos de una vez de cada tres. Antes de la primera ejecución sin supervisión, hace falta, por tanto, un límite que no dependa de la obediencia del modelo. El arenero (llamado sandbox) es una forma determinista de asegurarse de que el LLM está en un entorno cerrado cuyas fronteras determinas tú y que el modelo no puede traspasar.
+La reacción natural es escribir una consigna: « no modifiques más que `game/neon.js` », « no leas nada fuera del repositorio ». Una consigna es texto, y te recordamos que el uso de un LLM siempre es no determinista, lo que significa que nunca tendrás una garantía del 100 % de que se cumpla. En el módulo sobre las habilidades, comprobarás que una consigna de limpieza de archivos temporales colocada en un `SKILL.md` se cumple menos de una de cada tres veces. Antes de la primera ejecución sin supervisión, hace falta por tanto un límite que no dependa de la obediencia del modelo. La caja de arena (llamada sandbox) es una forma determinista de asegurarse de que el LLM se encuentre en un entorno cerrado cuyas fronteras determinas tú y que el modelo no puede sobrepasar.
 
 ## Comprender
 
@@ -17,7 +17,7 @@ La reacción natural es escribir una consigna, «no modifiques más que `game/ne
 
 Un agente de código que se ejecuta en tu equipo tiene acceso a tus archivos, es decir, al repositorio en el que trabaja y, con los mismos permisos, a tu directorio personal, donde viven las claves SSH, los tokens de los proveedores de modelos y los archivos `.env` de tus otros proyectos. La red le permite instalar cualquier paquete, ejecutar un `curl | sh` encontrado en un README o difundir lo que acaba de leer. Por último, lanza procesos con tu identidad, lo que cubre el demonio de Docker, el comando `rm` y el acceso de escritura al repositorio remoto. Si además tienes permisos sudo en tu máquina, nada lo detiene.
 
-Estas acciones ni siquiera exigen que el modelo se equivoque. Un archivo del repositorio puede contener instrucciones escritas para el agente, y ese es el papel del `SUPPORT.md` de NÉON, cuyo texto imita un procedimiento de asistencia pero pide leer el `.env` y enviar su contenido a una dirección externa: el agente que abre este archivo para responder a una pregunta trata la instrucción como si viniera de ti, y el módulo sobre los permisos trabajará sobre este caso. Una extensión instalada desde el directorio comunitario se ejecuta, como recordó el módulo sobre Pi, con la totalidad de tus derechos. En estos dos casos, la falla está en el harness, y una barrera de seguridad escrita dentro de AGENTS.md no te protegerá.
+Estas acciones ni siquiera exigen que el modelo se equivoque. Un archivo del repositorio puede contener instrucciones escritas para el agente, y ese es el papel del `SUPPORT.md` de NÉON, cuyo texto imita un procedimiento de asistencia pero pide leer el `.env` y enviar su contenido a una dirección externa: el agente que abre ese archivo para responder a una pregunta trata la instrucción como si viniera de ti, y el módulo de permisos trabajará en este caso. Una extensión instalada desde el directorio comunitario se ejecuta, como lo recordó el módulo sobre Pi, con la totalidad de tus derechos. En estos dos casos, la falla está en el harness, y una barrera de seguridad escrita dentro de AGENTS.md no te protegerá.
 
 La documentación de Pi extrae la conclusión: «Para repositorios no confiables, código generado que no tienes intención de supervisar de cerca o automatización desatendida, ejecuta pi en un entorno contenido. Usa un contenedor, una VM, una micro-VM, un sandbox remoto o un sandbox controlado por políticas, solo con los archivos y credenciales necesarios para la tarea.» Nuestras veinte ejecuciones sobre el issue #1 son exactamente automatización desatendida. Y a largo plazo, queremos agentes autónomos capaces de trabajar durante horas sin que nos veamos obligados a supervisarlos.
 
@@ -60,7 +60,7 @@ La extensión se instala en un solo comando, como cualquier paquete del director
 pi install npm:@gotgenes/pi-permission-system
 ```
 
-Las reglas residen en un archivo JSON, leído en tres ámbitos: global (`~/.pi/agent/extensions/pi-permission-system/config.json`), proyecto (`.pi/extensions/pi-permission-system/config.json`, ignorada si el proyecto no está aprobado) y por agente, en el encabezado YAML de un archivo de agente, que prevalece sobre las dos primeras. Para NÉON, una configuración de proyecto basta para frenar la instrucción más peligrosa de `SUPPORT.md`, ya que la lectura de un `.env` se deniega por construcción:
+Las reglas residen en un archivo JSON, leído en tres ámbitos: global (`~/.pi/agent/extensions/pi-permission-system/config.json`), proyecto (`.pi/extensions/pi-permission-system/config.json`, ignorada si el proyecto no está aprobado) y por agente, en el encabezado YAML de un archivo de agente, que prevalece sobre los dos primeros. Para NÉON, una configuración de proyecto basta para frenar la instrucción más peligrosa de `SUPPORT.md`, ya que la lectura de un `.env` se rechaza por construcción:
 
 ```json
 {
@@ -93,7 +93,7 @@ Por último, retira el bloque `path` de la configuración y reemplázalo por la 
 
 #### Instalar y configurar `sbx`
 
-`sbx` es el comando para usar Docker Sandboxes. `sbx` conoce una lista de agentes que sabe lanzar tal cual (`claude`, `codex`, `copilot`, `cursor`, `gemini`, `opencode` y algunos otros). Lamentablemente, Pi no forma parte de ella. Por lo tanto, es necesario crear [un kit](https://docs.docker.com/ai/sandboxes/customize/): un directorio descrito por un `spec.yaml` cuya variante `kind: sandbox` define un agente desde cero: la imagen, el comando de arranque, las instrucciones añadidas al archivo de contexto, las claves a inyectar y los permisos de red. El nuestro está versionado en https://github.com/AI-for-dev/pi-sandbox y contiene solo tres archivos.
+`sbx` es el comando para usar Docker Sandboxes. `sbx` conoce una lista de agentes que sabe lanzar tal cual (`claude`, `codex`, `copilot`, `cursor`, `gemini`, `opencode` y algunos otros). Desafortunadamente, Pi no forma parte de ella. Por lo tanto, es necesario crear [un kit](https://docs.docker.com/ai/sandboxes/customize/): un directorio descrito por un `spec.yaml` cuya variante `kind: sandbox` define un agente desde cero: la imagen, el comando de arranque, las instrucciones añadidas al archivo de contexto, las claves a inyectar y los permisos de red. El nuestro está versionado en https://github.com/AI-for-dev/pi-sandbox y contiene solo tres archivos.
 
 ```
 pi-sandbox
@@ -228,7 +228,7 @@ El bloque `credentials` declara una clave gestionada por el proxy (`proxyManaged
 
 Bajo `permissions.network`, el kit abre, por encima de la política global, el acceso al proveedor de modelos, a GitHub para clonar NÉON y a PyPI para las herramientas de medición. Las variables `PI_SKIP_VERSION_CHECK` y `PI_TELEMETRY` desactivan algunas operaciones de red del arranque de Pi.
 
-El archivo `files/home/.pi/agent/settings.json`, que el kit coloca en el directorio personal del agente, fija el proveedor y el modelo por defecto, el nivel de razonamiento. Reemplaza el `~/.pi/agent/settings.json` de tu host, que no está montado en la VM. Aquí es bastante simple y se parece a esto:
+El archivo `files/home/.pi/agent/settings.json`, que el kit coloca en el directorio personal del agente, fija el proveedor, el modelo por defecto y el nivel de razonamiento. Reemplaza el `~/.pi/agent/settings.json` de tu host, que no está montado en la VM. Aquí es bastante simple y se parece a esto
 
 ```json
 {

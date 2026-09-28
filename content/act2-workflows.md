@@ -34,7 +34,7 @@ flowchart TD
     V -- "APPROVED, dernier pas" --> F([ticket livré])
 ```
 
-Ce graphe se décompose en quelques motifs que l'on retrouve dans la plupart des systèmes multi-agents. Chaque figure indique en haut à droite comment il s'écrit dans un flow. Deux motifs ont leur propre nœud, le fan-out et la boucle. Les trois autres sont simplement des nœuds mis bout à bout.
+Ce graphe se décompose en quelques motifs que l'on retrouve dans la plupart des systèmes multi-agents. Chaque figure indique en haut à droite comment le motif s'écrit dans un flow. Deux motifs ont leur propre nœud, le fan-out et la boucle. Les trois autres sont simplement des nœuds mis bout à bout.
 
 - **chain** : le planner reçoit la note de l'explorer, le coder reçoit le plan.
 
@@ -104,7 +104,7 @@ Ajoutez ce fichier dans `.pi/flows/impact-plan.md` et testez-le sur l'issue #2. 
 
 ### Automatisation de l'orchestrateur
 
-A la session précédente vous avez mené l'orchestration des différentes étapes constituant la résolution d'un bug. Nous allons ici automatiser ce processus de la façon suivante :
+À la session précédente vous avez mené l'orchestration des différentes étapes constituant la résolution d'un bug. Nous allons ici automatiser ce processus de la façon suivante :
 
 | au module précédent                          | dans le flow                                                                    |
 | -------------------------------------------- | ------------------------------------------------------------------------------- |
@@ -120,7 +120,7 @@ Nous avons vu dans les modules précédents qu'il était important de faire chaq
 
 ### Les tests ont le dernier mot
 
-Nous avons besoin d'une étape fiable pour savoir si les changements opérés répondent clairement à nos besoins. Nous pourrions le demander dans le prompt mais vous avez bien vu que vous n'avez pas une certitude à 100% que ce soit fait. Nous préférons donc définir un script bash qui représente les actions à faire après chaque changement. Dans un flow, le noeud `check` permet justement de faire cela en lançant un script de votre projet. Son résultat est une valeur que la boucle lit : avec `loop: tests.output.passed && review.output.approved`, le coder sait ce qu'il doit faire si le code qu'il a généré est faux ou s'il ne suit pas exactement le cadre de développement (linter par exemple).
+Nous avons besoin d'une étape fiable pour savoir si les changements opérés répondent clairement à nos besoins. Nous pourrions le demander dans le prompt mais vous avez bien vu que vous n'avez pas une certitude à 100% que ce soit fait. Nous préférons donc définir un script bash qui représente les actions à faire après chaque changement. Dans un flow, le nœud `check` permet justement de faire cela en lançant un script de votre projet. Son résultat est une valeur que la boucle lit : avec `loop: tests.output.passed && review.output.approved`, le coder sait ce qu'il doit faire si le code qu'il a généré est faux ou s'il ne suit pas exactement le cadre de développement (linter par exemple).
 
 ![gate](/figures/workflows/gate-light.svg){.only-light}
 ![gate](/figures/workflows/gate-dark.svg){.only-dark}
@@ -270,7 +270,7 @@ Quelques remarques sur ce flow
 Deux rôles sont ajoutés ici. Le testeur (`scripts/agents/tester.md`) permet de vérifier si les tests existent et s'il faut en ajouter. L'auditeur (`scripts/agents/auditor.md`) s'assure que le travail est réalisé dans sa globalité et que rien n'a été oublié alors que le reviewer ne voit qu'un pas. Ce qu'il soulève reste ouvert tant que personne ne l'a traité, et le flow repart pour un second tour.
 
 ::: warning  Un point sur ces choix
-Nous vous rappelons que l'objectif de cette formation est de vous donner tous les éléments pour construire votre harnais. Les choix faits ici sont donc contestables et peut-être pas optimaux pour avoir les meilleurs résultats. Mais vous avez toute la compréhension requise pour retirer des noeuds, en ajouter ou les modifier.
+Nous vous rappelons que l'objectif de cette formation est de vous donner tous les éléments pour construire votre harnais. Les choix faits ici sont donc contestables et peut-être pas optimaux pour avoir les meilleurs résultats. Mais vous avez toute la compréhension requise pour retirer des nœuds, en ajouter ou les modifier.
 :::
 
 ::: info Exercice (en salle)
@@ -376,7 +376,7 @@ Le reste suit la même logique. Un modèle plus gros pour le planner et l'audite
 Ajoutez l'arrêt avant le commit et rejouez le ticket. Essayez ensuite une modification qui vous est propre : un autre découpage des rôles, un modèle plus gros là où l'on juge, un flow pour un autre type de ticket. La question à vous poser est toujours la même : quel geste répétiez-vous à la main, et quelle ligne l'écrirait ?
 :::
 
-### Et la mesure ? (A faire avec trysquare)
+### Et la mesure ? (À faire avec trysquare)
 
 
 ## Généraliser
@@ -400,7 +400,7 @@ Ce module produit trois pièces.
 3. La ligne « workflows » de la fiche de décision, ci-dessous.
 
 ::: tip Critère de réussite
-Vous savez dire, trace en main, pourquoi un run a abouti ou non : quel pas n'a pas convergé, si la suite était rouge, ce que l'auditeur a laissé ouvert. Vous pouvez faire évoluer votre flux de travail pour essayer d'obtenir un harnais qui suit votre façon de travailler et être confiant sur le résultat.
+Vous savez dire, trace en main, pourquoi un run a abouti ou non : quel pas n'a pas convergé, si la suite était rouge, ce que l'auditeur a laissé ouvert. Vous pouvez faire évoluer votre flux de travail pour essayer d'obtenir un harnais qui suit votre façon de travailler et être confiant dans le résultat.
 :::
 
 
