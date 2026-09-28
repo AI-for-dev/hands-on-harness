@@ -10,19 +10,19 @@ Construire une formation sur l'IA appliquée au développement logiciel pose don
 
 Nous avons eu la chance de réunir dans le comité d'organisation de cette ANF des positionnements très différents, et cette diversité a nourri de nombreuses discussions. Cette formation n'a aucunement pour objectif de convaincre quiconque d'utiliser ou de ne pas utiliser l'IA, même si, en montrant comment faire, nous participons à la diffusion de cette pratique.
 
-Au moment où nous écrivons ces lignes, Linus Torvalds, le créateur de Linux, a fait une déclaration proche du positionnement de ce support, que nous traduisons ici :
+Le 14 juillet 2026, dans un message à une liste de diffusion du noyau, Linus Torvalds, le créateur de Linux, a fait une déclaration proche du positionnement de ce support, que nous traduisons ici :
 
 > […] L'IA est un outil, tout comme d'autres outils que nous utilisons. Et c'est clairement un outil utile.
 > Ce n'était peut-être pas aussi « clair » il y a seulement un an, mais ce n'est plus une question aujourd'hui.
 > Il y a d'autres questions autour de l'IA (comme ce à quoi l'économie de l'IA ressemblera réellement à la fin), mais « est-ce utile » n'est plus l'une de ces questions. Quiconque en doute n'a clairement pas réellement utilisé l'IA.
 > Oui, cela peut également être un outil quelque peu douloureux, tant pour la charge de travail des mainteneurs que du point de vue de « ça continue de trouver des bugs embarrassants ».
 > Mais la solution n'est pas de mettre la tête dans le sable et de chanter « La La La, je ne t'entends pas » à pleine voix comme certains semblent le faire.
-> La solution est de s'assurer que ces outils LLM *aident* les mainteneurs au lieu de leur causer de la douleur. Il n'y a pas de question de ce côté-là.
-> Nous ne forçons personne à l'utiliser, mais j'ignorerai très bruyamment les personnes qui essaient de contredire d'autres sur leur utilisation.
-> Et non, l'IA n'est pas parfaite. Mais bordel, quiconque souligne les problèmes de l'IA ferait mieux de se regarder dans le miroir en même temps.
+> La solution est de s'assurer que ces outils LLM *aident* les mainteneurs au lieu de simplement leur causer de la douleur. Il n'y a pas de question de ce côté-là.
+> Nous ne forçons personne à l'utiliser, mais j'ignorerai très bruyamment les personnes qui essaient de dissuader les autres de l'utiliser.
+> Et non, l'IA n'est pas parfaite. Mais bordel, quiconque souligne les problèmes de l'IA ferait mieux de se regarder dans le miroir et de se montrer du doigt en même temps.
 > Parce que ce n'est pas comme si l'intelligence naturelle était toujours si géniale non plus.
 >
-> Linus Torvalds, cité par [Phoronix](https://www.phoronix.com/news/Linux-Is-Not-Anti-AI)
+> Linus Torvalds, [Re: Linking Patchwork with Sashiko?](https://lore.kernel.org/all/CAHk-=wi4zC+Ze8e+p3tMv8TtG_80KzsZ1syL9anBtmEh5Z40vg@mail.gmail.com/)
 
 Nous voulons aider au-delà des seuls mainteneurs : les personnes qui utilisent déjà l'IA, celles qui aimeraient l'utiliser, et même celles qui ne sont pas certaines de s'en servir mais qui ont envie de comprendre comment elle fonctionne. L'organisation de cette ANF nous a montré que cette demande est forte. Nous vous laissons donc vraiment juges de la question de savoir si vous devez vous servir de l'IA, et nous traitons celle qui vient ensuite : comment l'utiliser de manière pertinente dans le cadre de l'enseignement supérieur et de la recherche (ESR) si vous le souhaitez.
 
