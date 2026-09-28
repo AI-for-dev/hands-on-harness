@@ -6,7 +6,7 @@
 - Be able to list the essential building blocks of a harness and, for each one, what problem it addresses
 :::
 
-The introduction presented a timeline of techniques that have appeared since late 2022. We revisit it here from another angle, no longer to tell a story, but to understand a mechanism. Each step in this timeline addresses a gap in the previous one, and above all, each one stacks on top of the others rather than replacing them. A harness does not make *prompt engineering* obsolete; it still needs it, but it organizes it.
+The [History](./historique) page presented a timeline of techniques that have emerged since late 2022. We are revisiting it here from a different angle - no longer to tell a story, but to understand the underlying mechanics. Each step in this timeline addresses a gap in the previous one, and more importantly, each builds upon the others rather than replacing them. A harness does not make *prompt engineering* obsolete; it still requires it, but it organizes it.
 
 At the beginning, there is the prompt. You quickly notice that the way you phrase a request radically changes the answer, and *prompt engineering* is about phrasing it better. But however well you query it, a model remains unaware of your codebase and your internal documentation. RAG fills that gap: it fetches the relevant documents and provides them to the model before it answers, at the cost of a setup that can be tedious.
 
