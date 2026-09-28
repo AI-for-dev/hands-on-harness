@@ -304,6 +304,36 @@ A page's fingerprint includes the diagram prompt when the page holds a
 diagram, and the localised figures it points at. Adding `chain-light.en.svg`
 therefore retranslates, at no model cost, the English pages that use it.
 
+## Quotations in another language
+
+A page may quote someone in another language, translated by hand in the
+French source. If the quote went through the model like any paragraph, the
+page in its own language would present the model's translation of that French
+translation as the author's words. The source therefore keeps the original wording in a
+`quote` code block, placed right after the translated quote and separated from
+it by a blank line:
+
+````markdown
+> L'IA est un outil, tout comme d'autres outils que nous utilisons.
+>
+> Linus Torvalds, [Re: Linking Patchwork with Sashiko?](https://lore.kernel.org/...)
+
+```quote en
+AI is a tool, just like other tools we use.
+
+Linus Torvalds, [Re: Linking Patchwork with Sashiko?](https://lore.kernel.org/...)
+```
+````
+
+The original is a code block, so it never reaches the model. In the translation
+into its own language (`en` here), `lib/quotes.mjs` replaces the translated
+quote with the original, verbatim and without any model call; the other
+languages translate the quote from the French as usual. The site shows the
+block as a collapsible "Texte original" under the quote, and hides it on the
+page in its own language, which already shows the original in its place (see
+`.vitepress/config.mts`). A `quote` block that does not directly follow a `>`
+quote stops the run with an error instead of producing a page that misquotes.
+
 ## What is not translated automatically
 
 The VitePress navigation and sidebar labels (`.vitepress/locales/*.mts`) are
