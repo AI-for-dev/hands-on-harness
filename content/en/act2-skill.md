@@ -18,7 +18,7 @@ We follow the usual order: understand what a skill is in the harness, write one 
 
 ### A skill is a Markdown file
 
-A **skill** is a `SKILL.md` file placed in a `.pi/skills/<name>/` directory of the project, in the format of the open standard [Agent Skills](https://agentskills.io). It consists of a frontmatter, which carries at minimum a name and a description, and a body that contains the instructions. There is no code, no registration, and no configuration to plan for: dropping the file in is enough.
+A **skill** is a `SKILL.md` file placed in a `.pi/skills/<nom>/` directory of the project or of Pi's global directory, in the format of the open [Agent Skills](https://agentskills.io) standard. It consists of a frontmatter, which carries at minimum a name and a description, and a body that contains the instructions. There is no code, no registration, no configuration to plan for: simply placing the file there is enough.
 
 Here is a complete skill, deliberately tiny:
 
@@ -294,22 +294,6 @@ You can cite an effect of your skill that is established, one that is not, and s
 
 This criterion requires having read a configuration against the right reference. It therefore cannot be satisfied from memory.
 :::
-
-## Pitfalls
-
-**Reading a skill configuration against the baseline.** It differs from it by several things at once, and the gap published against `nothing` mixes all the levers of the stack. The useful reference is the configuration from which it differs only by the skill.
-
-**Confusing an imposed skill with a proposed skill.** The `/skill:` in the prompt expands the body client-side, and a populated invocation column then says nothing about what the model would have chosen.
-
-**Polishing the `SKILL.md` body while neglecting the description.** The body is only read if the description has triggered its reading.
-
-**Getting tests written outside the suite.** A test case that lives in a working file will not be run by anyone after the agent leaves, and the migration promised to the suite is precisely the step the model misses.
-
-**Relying on a cleanup instruction.** It is followed in fewer than one run in three, what remains in the tree makes the whole configuration's scope fail, and the reliable fix is not a better instruction but a procedure that creates nothing.
-
-**Revising without measuring again.** A revision that answers the diagnosis point by point remains a hypothesis until a matrix has verified it. Our own also predicted a cost decrease on gemma, and this matrix cannot confirm it, its reruns making the cost columns unreadable.
-
-**Accumulating skills.** Each costs little as long as it is not used, but their descriptions all enter the context on every turn.
 
 ## Going further
 
