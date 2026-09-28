@@ -24,6 +24,20 @@ Le 14 juillet 2026, dans un message à une liste de diffusion du noyau, Linus To
 >
 > Linus Torvalds, [Re: Linking Patchwork with Sashiko?](https://lore.kernel.org/all/CAHk-=wi4zC+Ze8e+p3tMv8TtG_80KzsZ1syL9anBtmEh5Z40vg@mail.gmail.com/)
 
+```quote en
+[…] AI is a tool, just like other tools we use. And it's clearly a useful one.
+It may not have been that "clearly" even just a year ago, but it's no longer in question today.
+There are other questions around AI (like what the economy of it will actually look like in the end), but "is it useful" is no longer one of those questions. Anybody who doubts that clearly hasn't actually used it.
+Yes, it can also be a somewhat painful tool, both for maintainer workloads and just from a "it keeps finding embarrassing bugs" standpoint.
+But the solution is not to put your head in the sand and sing "La La La, I can't hear you" at the top of your voice like some people seem to do.
+The solution is to make sure those LLM tools *help* maintainers instead of just causing them pain. There's no question on that side.
+We're not forcing anybody to use it, but I will very loudly ignore people who try to argue against other people from using it.
+And no, AI isn't perfect. But Christ, anybody who points to the problems at AI had better be looking in the mirror and pointing at themselves at the same time.
+Because it's not like natural intelligence is always all that great either.
+
+Linus Torvalds, [Re: Linking Patchwork with Sashiko?](https://lore.kernel.org/all/CAHk-=wi4zC+Ze8e+p3tMv8TtG_80KzsZ1syL9anBtmEh5Z40vg@mail.gmail.com/)
+```
+
 Nous voulons aider au-delà des seuls mainteneurs : les personnes qui utilisent déjà l'IA, celles qui aimeraient l'utiliser, et même celles qui ne sont pas certaines de s'en servir mais qui ont envie de comprendre comment elle fonctionne. L'organisation de cette ANF nous a montré que cette demande est forte. Nous vous laissons donc vraiment juges de la question de savoir si vous devez vous servir de l'IA, et nous traitons celle qui vient ensuite : comment l'utiliser de manière pertinente dans le cadre de l'enseignement supérieur et de la recherche (ESR) si vous le souhaitez.
 
 L'utilisation d'un harnais, qui occupe l'essentiel de ce support, correspond à un usage plutôt avancé. On peut déjà connecter son environnement de développement (IDE) à un fournisseur d'IA et utiliser les commandes chat, edit et agent, souvent intégrées ou accessibles via des plugins. Le choix du fournisseur est une question de fond, dont la réponse varie selon le cadre dans lequel vous travaillez et risque d'évoluer avec le temps ; nous vous invitons à vous renseigner sur ce point.
