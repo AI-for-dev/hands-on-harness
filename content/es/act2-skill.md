@@ -18,7 +18,7 @@ Seguimos el orden habitual: entender qué es un skill en el harness, escribir un
 
 ### Un skill es un archivo Markdown
 
-Un **skill** es un archivo `SKILL.md` colocado en un directorio `.pi/skills/<nom>/` del proyecto, con el formato del estándar abierto [Agent Skills](https://agentskills.io). Se compone de un frontmatter, que lleva como mínimo un nombre y una descripción, y de un cuerpo que contiene las instrucciones. No hay que prever ni código, ni registro, ni configuración: basta con colocar el archivo.
+Un **skill** es un archivo `SKILL.md` ubicado en un directorio `.pi/skills/<nom>/` del proyecto o del directorio global de Pi, en el formato del estándar abierto [Agent Skills](https://agentskills.io). Se compone de un frontmatter, que incluye como mínimo un nombre y una descripción, y de un cuerpo que contiene las instrucciones. No hay que preparar código, registro ni configuración: basta con colocar el archivo.
 
 He aquí un skill completo, deliberadamente mínimo:
 
@@ -294,22 +294,6 @@ Sabes citar un efecto de tu competencia que está establecido, un efecto que no 
 
 Este criterio exige haber leído una configuración contra la referencia correcta. Por tanto, no puede satisfacerse de memoria.
 :::
-
-## Los escollos
-
-**Leer una configuración con competencia contra la base.** Difiere de ella por varias cosas a la vez, y la brecha publicada contra `nothing` mezcla todas las palancas de la pila. La referencia útil es la configuración de la que solo difiere por la competencia.
-
-**Confundir una competencia impuesta y una competencia propuesta.** El `/skill:` del prompt expande el cuerpo del lado del cliente, y una columna de invocación llena no dice entonces nada de lo que el modelo habría elegido.
-
-**Cuidar el cuerpo del `SKILL.md` descuidando la descripción.** El cuerpo solo se lee si la descripción ha disparado su lectura.
-
-**Hacer que se escriban las pruebas fuera de la suite.** Un caso de prueba que vive en un archivo de trabajo no lo ejecutará nadie después de que el agente se haya ido, y la migración prometida hacia la suite es precisamente el paso en el que el modelo falla.
-
-**Contar con una consigna de limpieza.** Solo se sigue en menos de una de cada tres ejecuciones, lo que queda en el árbol hace fallar el alcance de toda la configuración, y la corrección fiable no es una mejor consigna sino un procedimiento que no crea nada.
-
-**Revisar sin volver a medir.** Una revisión que responde punto por punto al diagnóstico sigue siendo una hipótesis mientras una matriz no la haya verificado. La nuestra también predecía una bajada de coste en gemma, y esa matriz no puede confirmarla: sus repeticiones hacen ilegibles las columnas de coste.
-
-**Acumular skills.** Cada uno cuesta poco mientras no se usa, pero sus descripciones entran todas en el contexto en cada turno.
 
 ## Para ir más lejos
 

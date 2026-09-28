@@ -18,7 +18,7 @@ Nous suivons l'ordre habituel : comprendre ce qu'est un skill dans le harnais, e
 
 ### Un skill est un fichier markdown
 
-Un **skill** est un fichier `SKILL.md` posé dans un répertoire `.pi/skills/<nom>/` du projet, au format du standard ouvert [Agent Skills](https://agentskills.io). Il se compose d'un frontmatter, qui porte au minimum un nom et une description, et d'un corps qui contient les instructions. Il n'y a ni code, ni enregistrement, ni configuration à prévoir : déposer le fichier suffit.
+Un **skill** est un fichier `SKILL.md` posé dans un répertoire `.pi/skills/<nom>/` du projet ou du répertoire global de Pi, au format du standard ouvert [Agent Skills](https://agentskills.io). Il se compose d'un frontmatter, qui porte au minimum un nom et une description, et d'un corps qui contient les instructions. Il n'y a ni code, ni enregistrement, ni configuration à prévoir : déposer le fichier suffit.
 
 Voici un skill complet, volontairement minuscule :
 
@@ -294,22 +294,6 @@ Vous savez citer un effet de votre compétence qui est établi, un effet qui ne 
 
 Ce critère demande d'avoir lu une configuration contre la bonne référence. Il ne peut donc pas être satisfait de mémoire.
 :::
-
-## Les pièges
-
-**Lire une configuration à compétence contre la base.** Elle en diffère par plusieurs choses à la fois, et l'écart publié contre `nothing` mélange tous les leviers de la pile. La référence utile est la configuration dont elle ne diffère que par la compétence.
-
-**Confondre une compétence imposée et une compétence proposée.** Le `/skill:` du prompt développe le corps côté client, et une colonne d'invocation pleine ne dit alors rien de ce que le modèle aurait choisi.
-
-**Soigner le corps du `SKILL.md` en négligeant la description.** Le corps n'est lu que si la description a déclenché sa lecture.
-
-**Faire écrire les tests ailleurs que dans la suite.** Un cas de test qui vit dans un fichier de travail ne sera lancé par personne après le départ de l'agent, et la migration promise vers la suite est précisément l'étape que le modèle rate.
-
-**Compter sur une consigne de nettoyage.** Elle n'est suivie que dans moins d'une exécution sur trois, ce qui reste dans l'arbre fait échouer le périmètre de toute la configuration, et la correction fiable n'est pas une meilleure consigne mais une procédure qui ne crée rien.
-
-**Réviser sans remesurer.** Une révision qui répond point par point au diagnostic reste une hypothèse tant qu'une matrice ne l'a pas vérifiée. La nôtre prédisait aussi une baisse de coût sur gemma, et cette matrice-là ne peut pas la confirmer, ses reprises rendant les colonnes de coût illisibles.
-
-**Accumuler les skills.** Chacun coûte peu tant qu'il n'est pas utilisé, mais leurs descriptions entrent toutes dans le contexte à chaque tour.
 
 ## Pour aller plus loin
 

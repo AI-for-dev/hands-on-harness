@@ -7,7 +7,7 @@
 - Salir con un `AGENTS.md` corto y una decisión motivada sobre cada palanca
 :::
 
-La gestión del contexto es el ladrillo del que dependen todos los demás, ya que un subagente sirve para no contaminar el contexto principal, una memoria para no llenarlo con lo que se podría volver a encontrar, y un permiso para no volcar en él un archivo que no se habría debido leer. Por tanto, hay que empezar por saber qué contiene la ventana y cuánto cuesta cada parte; de lo contrario, los módulos que siguen no serán más que recetas aplicadas sin entenderlas.
+La gestión del contexto es el bloque del que dependen todas las demás, ya que un subagente sirve para no contaminar el contexto principal, una memoria para no llenarlo con lo que se podría volver a encontrar, y un permiso para no volcar en él un archivo que no se debería haber leído. Por lo tanto, hay que empezar por saber qué contiene la ventana y cómo se alimenta a lo largo del tiempo. Los módulos siguientes presentarán herramientas que intervendrán en el proceso de llenado del contexto.
 
 Procedemos en el orden habitual: entender qué hay en la ventana, reconstruir las palancas que la llenan y luego extraer lo que sigue siendo cierto cuando la herramienta cambia.
 
@@ -25,12 +25,12 @@ Cuando escribes una pregunta en Pi, el modelo recibe una pila en la que tu pregu
 2. los **archivos de contexto**, `AGENTS.md` y `CLAUDE.md`, cargados desde tu directorio personal, luego desde cada directorio padre en orden ascendente, y luego desde el directorio actual;
 3. las **descripciones de las herramientas**, en JSON, una por herramienta disponible;
 4. **tu pregunta**;
-5. y, a medida que el bucle gira, el **historial**, es decir, cada respuesta del modelo, cada llamada a herramienta y cada salida de herramienta.
+5. y, a medida que el bucle gira, el **historial**, es decir, cada respuesta del modelo con su fase de razonamiento, cada llamada a herramienta y cada salida de herramienta.
 
 Las cuatro primeras fuentes son estables de un turno a otro, mientras que la quinta crece en cada turno, lo que casi siempre la convierte en la responsable de los desbordamientos.
 
-::: info Ejercicio (en sala)
-Abre una sesión, haz una pregunta cualquiera y luego exporta la sesión con `\export`. Abre el archivo HTML generado y lee el system prompt de Pi completo, algo que la mayoría de los agentes de código no te permiten hacer.
+::: info Ejercicio (en clase)
+Abre una sesión, haz una pregunta cualquiera, luego exporta la sesión con `\export`. Abre el archivo HTML producido y lee el system prompt de Pi por completo, algo que la mayoría de los agentes de código no te permiten ver.
 
 Identifica en él lo que describe **capacidades** y lo que describe **convenciones**: más adelante mediremos el peso real de cada una de las dos categorías.
 :::
@@ -48,7 +48,7 @@ Una llamada al modelo se factura en tres partidas, expresadas por millón de tok
 
 Estos precios son los publicados por [opencode Zen](https://opencode.ai/docs/zen/). Nuestras mediciones más abajo se ejecutan en ILaaS, que no cobra nada a los participantes de esta formación, y cuentan por tanto tokens en lugar de euros. Ambos se leen de la misma manera, con la salvedad de que un contador de tokens no te avisa cuando estás gastando.
 
-De ahí salen dos diferencias. La primera separa los dos modelos, ya que el `pro` cuesta 12,4 veces más que el `flash` a precio nominal. Es una primera manera de darse cuenta de que un modelo tiene más capacidades que otro. La segunda diferencia, mucho mayor, separa la entrada de la lectura de caché: un factor **50** en `flash` y **120** en `pro`.
+De ello se desprenden dos brechas. La primera separa los dos modelos, ya que el `pro` cuesta 12,4 veces más que el `flash` a tarifa nominal. Es una primera manera de darse cuenta de que un modelo posee más capacidades que otro. La segunda brecha, mucho más amplia, separa la entrada de la lectura de caché: un factor **50** en `flash` y **120** en `pro`.
 
 Esta segunda diferencia es lo que hace económicamente viable a un agente de código, porque un agente relee su historial completo en cada turno y, de otro modo, pagaría veinte veces el precio de su contexto a lo largo de una sesión de veinte turnos.
 
@@ -58,7 +58,8 @@ En una sesión interactiva, encadena cinco preguntas sobre un mismo archivo tecl
 Esta es la secuencia exacta que hemos medido, aquí en modo no interactivo para que sea reproducible tal cual. La opción `-c` continúa la sesión anterior, y los acentos se omiten en los comandos sin incidencia sobre el resultado:
 
 ```bash
-cd /chemin/vers/neon
+git clone https://github.com/AI-for-dev/neon
+cd neon
 
 pi -p --provider opencode-go --model deepseek-v4-flash -nc -ns -np -ne \
   "Lis game/theme.js et dis en une phrase ce que fait ce fichier."
@@ -90,8 +91,8 @@ Estos cinco turnos producen seis llamadas al modelo, porque el primero consume d
 El caché se activa ya en la segunda llamada, incluso dentro de un mismo turno, y reduce el costo por un factor de tres a cinco. El cambio de modelo en el cuarto turno vuelve a poner la lectura de caché a cero y hace que todo el prefijo se vuelva a pagar a tarifa completa: ese solo turno cuesta quince veces más que el siguiente, con el mismo modelo.
 :::
 
-::: warning Si `pi -p` se bloquea sin mostrar nada
-Desde un script, redirige la entrada estándar con `< /dev/null`. En modo no interactivo, `pi` espera en su entrada estándar mientras esta siga abierta, lo que lo bloquea indefinidamente cuando se le llama desde un script bash, por ejemplo. La herramienta de medición trysquare, que describiremos más abajo, conoce esta trampa y cierra la entrada estándar de cada ejecución usando `stdin=subprocess.DEVNULL` en un comando Python `subprocess.run`.
+::: warning Si `pi -p` se queda congelado sin mostrar nada
+Desde un script, redirige la entrada estándar con `< /dev/null`. En modo no interactivo, `pi` espera en su entrada estándar mientras esta permanezca abierta, lo que bloquea indefinidamente cuando se le llama desde un script bash, por ejemplo.
 :::
 
 El caché solo funciona sobre un **prefijo sin cambios**, de lo que se desprende la regla de ordenación del contexto: todo lo que varía debe colocarse después de lo que es estable. Una marca de tiempo o un `git status` insertado en el system prompt invalida todo lo que sigue, incluyendo herramientas, pregunta e historial, y te hace volver a pagar la tarifa completa en cada turno, mientras que el mismo dato colocado en el mensaje del turno actual no cuesta nada, porque ya se encuentra en la zona variable.
@@ -131,9 +132,7 @@ Esto es lo que proponemos medir en cada ejecución:
 Probamos todos estos puntos de forma determinista, sin LLM-as-a-judge: las pruebas que haría falta tener están escritas en un archivo sonda. Una prueba ejecutable es más fiable que un LLM encargado de confirmar un comportamiento deseado, cuyo veredicto probabilista puede hacerte creer que está bien cuando no lo está.
 
 ::: warning Cada ejecución trabaja sobre un clon desechable
-Si el dispositivo trabajara directamente en el árbol de trabajo, cada ejecución modificaría el repositorio y la siguiente mediría esas modificaciones en lugar de la configuración. La herramienta que usamos más abajo clona por tanto NÉON **en un tag**, `etalon-v1`, en un directorio temporal, en cada ejecución. Sin esta precaución, `main` avanza, una sala corrige el issue #1, y las mediciones de ayer ya no se comparan con las de mañana sin que nada lo señale.
-
-Esta protección no basta del todo, porque un tag sigue siendo un nombre que su propietario puede desplazar. Volveremos a ello en la parte «Generalizar».
+Si el dispositivo trabajara directamente en el árbol de trabajo, cada ejecución modificaría el repositorio y la siguiente mediría esas modificaciones en lugar de la configuración. La herramienta que usamos más abajo clona por tanto NÉON **a un tag**, `etalon-v1`, en un directorio temporal, en cada ejecución.
 :::
 
 ### Los controles, a mano
@@ -175,7 +174,7 @@ El razonamiento sí tiene un efecto cuando se mide entre dos niveles reales, y n
 
 #### `AGENTS.md`, el punto de configuración global
 
-El archivo de reglas situado en la raíz del repositorio entra en el contexto en cada turno, lo que lo convierte en un buen candidato para definir el marco global de nuestro proyecto. Cuando el agente se equivoca, la reacción natural consiste en añadirle una frase, y luego otra. Sin embargo, cada línea añadida tiene un costo, y cuanto más crece el archivo, menos visión de conjunto tiene el agente; por otro lado, la mejora de los modelos volverá obsoletas líneas que hoy son ciertas. Este archivo exige por tanto una refactorización continua, a lo largo de toda la vida del proyecto.
+El archivo de reglas situado en la raíz del repositorio entra en el contexto en cada turno, lo que lo convierte en un buen candidato para definir el marco global de nuestro proyecto. Cuando el agente se equivoca, la reacción natural consiste en añadirle una frase, y luego otra. Cada línea añadida tiene, sin embargo, un coste, y cuanto más crece el archivo, menos ve el agente el conjunto; la mejora de los modelos volverá además obsoletas las líneas introducidas anteriormente. Este archivo exige por tanto un refactoring continuo, a lo largo de toda la vida del proyecto.
 
 Establecemos para esta formación una restricción fuerte.
 
@@ -198,8 +197,8 @@ Esta es la base de partida, para discutir y enmendar. Es el mismo archivo que us
 
 :::
 
-::: warning Un `AGENTS.md` puede ocultar a otro
-Pi carga estos archivos de forma acumulativa, desde tu `~/.pi/agent/AGENTS.md` personal, luego desde cada directorio padre hacia arriba, y luego desde el directorio actual. Un archivo de reglas personal se cuela así en todas tus mediciones sin que nada lo señale.
+::: warning Un `AGENTS.md` puede esconder a otro
+Pi carga estos archivos de forma acumulativa: desde tu `~/.pi/agent/AGENTS.md` personal, luego desde cada directorio padre al subir, y por último desde el directorio actual. Un archivo de reglas personal se cuela así en todas tus mediciones sin que estés informado.
 
 La bandera `--no-context-files`, abreviada `-nc`, desactiva esta detección, lo que es indispensable para medir correctamente. La herramienta de medición más abajo trabaja en un clon desechable donde solo se deposita el archivo `AGENTS.md` del directorio actual (NEON).
 :::
@@ -223,7 +222,7 @@ El prompt de sistema de Pi ocupa 550 tokens. Todo el resto del trabajo se juega 
 
 Cuando el contexto se acerca al límite, Pi compacta, es decir, resume los mensajes antiguos y solo conserva intactos los más recientes. El disparo sigue la regla `contextTokens > contextWindow - reserveTokens`, donde `reserveTokens` vale 16 384 por defecto y representa el espacio dejado para la respuesta. El corte es visible en `\tree`, y `/compact` permite forzarlo, con instrucciones opcionales para orientar el resumen.
 
-En NÉON, la compactación nunca se disparará. El repositorio tiene 617 líneas, `gemma-4-31b` anuncia una ventana de unos 128 000 tokens, lo que sitúa el umbral alrededor de 112 000, y nuestro experimento más costoso solo alcanza ese total acumulando trece turnos, ninguno de los cuales pesa más de una decena de miles de tokens. Observar el mecanismo supone por tanto fabricar la restricción.
+En NÉON, según el modelo, la compactación nunca se activará. El repositorio tiene 617 líneas, `gemma-4-31b` anuncia una ventana de aproximadamente 128 000 tokens, lo que sitúa el umbral en torno a 112 000, y nuestra experiencia más costosa solo alcanza esa cifra acumulando trece turnos, ninguno de los cuales pesa más de una decena de miles de tokens. Observar el mecanismo implica, por tanto, crear la restricción para ver sus efectos más rápidamente.
 
 ::: info Ejercicio (autónomo)
 Declara en `~/.pi/agent/models.json` una segunda entrada, que apunte al mismo servicio, pero anunciando una ventana de 32 000 tokens:
@@ -290,17 +289,17 @@ No entraremos en los detalles de diseño y de uso, para los cuales puedes remiti
 
 El plan elegido es el más simple que sigue siendo legible: una **base** y luego un conjunto de variantes que cambian cada una pocas cosas.
 
-La base, llamada `nothing`, reproduce lo que hace alguien el primer día: la petición descuidada que viste más arriba en tus primeros ensayos, sin archivo de reglas, el system prompt del agente y el razonamiento desactivado. Cada una de las demás configuraciones añade un elemento para ver su efecto en la respuesta.
+La base, llamada `nothing`, reproduce lo que alguien hace el primer día: la solicitud descuidada proporcionada más arriba en tus primeros ensayos, sin archivo de reglas, el system prompt del agente y el razonamiento desactivado. Cada otra configuración añade un elemento para ver su efecto en la respuesta.
 
-| configuración | lo que cambia |
-| -------------------------------- | --------------------------------------------------------------- |
-| `nothing` | nada, es la referencia |
-| `+thinking` | `thinking = "high"` |
-| `+agents` | `brick/AGENTS.md` se coloca en el clon |
-| `+well_crafted` | el prompt describe correctamente el problema y hace referencia a `ISSUES.md` |
-| `-system_prompt` | el system prompt se reemplaza por tres líneas |
-| `+agents+well_crafted` | `AGENTS.md` + prompt bien escrito |
-| `+agents+add_tests+well_crafted` | aquí se añaden además las pruebas que se quieren ver pasar |
+| configuración                    | lo que cambia                                                        |
+| -------------------------------- | -------------------------------------------------------------------- |
+| `nothing`                        | nada, es la referencia                                               |
+| `+thinking`                      | `thinking = "high"`                                                  |
+| `+agents`                        | `brick/AGENTS.md` se coloca en el clon                               |
+| `+well_crafted`                  | el prompt describe correctamente el problema y se refiere a `ISSUES.md` |
+| `-system_prompt`                 | el system prompt se reemplaza por tres líneas                        |
+| `+agents+well_crafted`           | `AGENTS.md` + prompt bien redactado                                  |
+| `+agents+add_tests+well_crafted` | aquí se añaden además los tests que queremos ver pasar               |
 
 Un experimento cabe en un archivo: `scripts/trysquare-campaign/scenarios/issue1-contexte.toml`.
 
@@ -352,13 +351,11 @@ El costo varía en menos de un cuarto, el número de turnos toma dos valores, y 
 
 La configuración mejor equipada desplaza su dispersión al costo más que a la respuesta. En `+agents+add_tests+well_crafted`, los tokens de entrada van de 42 731 a 2 420 677, es decir, un rango de **×57**, y tres ejecuciones consecutivas dan 2 420 677, 2 147 526 y luego 594 786.
 
-Un agente no es determinista, y la diferencia entre dos ejecuciones de una misma configuración es del mismo orden de magnitud que el efecto de la mayoría de las palancas, lo que hace que una ejecución única por configuración mida el sorteo más que la palanca.
-
 Ante esta dispersión, trysquare nunca publica una cifra sola. Dos nociones bastan para leer sus tablas.
 
 **Un punto es un punto porcentual de éxito.** `+agents+add_tests+well_crafted` alcanza el criterio 18 veces de 20, es decir, 90 %, y `nothing` 11 veces de 20, es decir, 55 %: la diferencia vale **+35 puntos**. Solo cuentan las ejecuciones válidas; las que no han entregado nada se retiran de ambos lados, lo que explica que un denominador pueda ser inferior al número de repeticiones.
 
-**El intervalo viene del bootstrap.** Se retiran al azar y con reemplazo veinte ejecuciones de cada grupo, se recalcula la diferencia, y se repite diez mil veces; los límites publicados son los percentiles 2,5 % y 97,5 % de las diez mil diferencias obtenidas. Ejecuciones que se parecen dan un intervalo estrecho, ejecuciones dispersas, uno amplio. La semilla está escrita en `trysquare.toml`, así que los límites se recalculan de forma idéntica.
+Las ejecuciones se sortean aleatoriamente, de modo que no se juega una experiencia veinte veces seguidas, sino de manera repartida.
 
 Leer una diferencia equivale entonces a plantear una sola pregunta: **¿este intervalo contiene el cero?** Si no lo contiene, la diferencia está marcada `*` y es **establecida**. Si lo contiene, está marcada `o` y **no es concluyente**, cualquiera que sea el valor en el centro.
 
@@ -369,31 +366,39 @@ Los `o` se muestran igualmente en las tablas, con un recordatorio bajo cada una 
 El número de repeticiones sigue siendo un parámetro, porque la elección correcta depende de lo que buscas. **Tres bastan para ver la dispersión**, que es el objetivo en sala. **Desempatar dos palancas cercanas requiere mucho más**, y las columnas que cuentan éxitos son las más exigentes: un 2/3 frente a 3/3 no quiere decir casi nada, mientras que un 8/20 frente a 20/20 se defiende. Las tablas publicadas más abajo tienen veinte repeticiones por esta razón.
 
 ::: info Ejercicio (en sala, luego en autonomía)
-Empieza por el plan completo, que no cuesta nada:
+Debes tener [uv](https://docs.astral.sh/uv/getting-started/installation/) instalado en tu máquina para poder continuar.
+
+Hemos extraído la experiencia en un repositorio dedicado fuera de los materiales de formación: [trysquare-starter](https://github.com/AI-for-dev/trysquare-starter).
 
 ```bash
-coa harness                        # l'environnement conda où vit trysquare
-cd scripts/trysquare-campaign
-trysquare run scenarios/issue1-contexte.toml --output resultats --dry-run
+git clone https://github.com/AI-for-dev/trysquare-starter
+cd trysquare-starter
+uv sync
 ```
 
-La config se toma del `trysquare.toml` más cercano, es decir, el de `scripts/trysquare-campaign/` siempre que lances desde ese directorio.
+Empieza por el plan completo, que no consume nada:
+
+```bash
+uv run trysquare run scenarios/issue1-contexte.toml --output results --dry-run
+```
+
+La configuración se toma del `trysquare.toml`.
 
 Luego lanza la matriz con tres repeticiones y déjala correr mientras hablas de los cursores:
 
 ```bash
-trysquare run scenarios/issue1-contexte.toml --output resultats --repetitions 3
+uv run trysquare run scenarios/issue1-contexte.toml --output results --repetitions 3
 ```
 
-Los subcomandos que no cuestan nada se ejecutan directamente, y sirven después:
+Dispones de un conjunto de subcomandos que no lanzan modelos y que sirven esencialmente para analizar los resultados:
 
 ```bash
 # refabriquer les tables
-trysquare render scenarios/issue1-contexte.toml --output resultats --repetitions 3
+uv run trysquare render scenarios/issue1-contexte.toml --output results --repetitions 3
 # renoter sans rejouer
-trysquare replay resultats/issue1-contexte_... --scenario scenarios/issue1-contexte.toml --rescore
+uv run trysquare replay results/issue1-contexte_... --scenario scenarios/issue1-contexte.toml --rescore
 # joindre deux matrices
-trysquare compare resultats/... resultats/...
+uv run trysquare compare results/... results/...
 ```
 
 **En autonomía**, copia `scenarios/issue1-contexte.toml`, cambia una configuración y vuelve a lanzar. No habrás tocado ni la herramienta, ni el validador, ni las demás configuraciones, y es el único artefacto de este módulo que no caducará.
@@ -427,20 +432,20 @@ Y las columnas de la sonda, con el criterio a la cabeza:
 | `+agents+well_crafted`       | 11/20     | **12/20**| 9/20     | 9/20     | 12/20    |
 | `+agents+add_tests+well_crafted` | **18/20** | **18/20** | **18/20** | **18/20** | 17/20 |
 
-Los denominadores de `+well_crafted` y `+thinking` valen 18 y 19 en las columnas de coste, porque ILaaS devolvió `Request timed out` durante la medición y las ejecuciones afectadas no produjeron nada que puntuar.
+Los denominadores de `+well_crafted` y `+thinking` valen 18 y 19 en las columnas de costo, porque ILaaS devolvió `Request timed out` durante la medición y las ejecuciones afectadas no produjeron nada.
 
-Sacamos cinco lecciones de estas dos tablas, y la última hará la transición con el siguiente módulo. Todas las diferencias citadas más abajo provienen de los intervalos descritos más arriba, con la misma marca `*` para una diferencia establecida y `o` para una diferencia no concluyente. Las comparaciones que no se hacen contra `nothing` se obtienen repitiendo el cálculo contra otra referencia, lo que no cuesta nada y no vuelve a medir nada. La columna del veredicto se refiere a la única métrica declarada por `[verdict].criterion`; leer una diferencia en otra columna exige cambiar esa línea del escenario antes de renderizar:
+Sacamos cinco enseñanzas de estas dos tablas, y la última hará la transición al módulo siguiente. Todas las diferencias citadas más abajo provienen de los intervalos descritos más arriba, con la misma marca `*` para una diferencia establecida y `o` para una diferencia no concluyente. Las comparaciones se hacen a partir de un experimento. Si no especificas, se elige el primer experimento (aquí `nothing`). Puedes volver a hacer los cálculos apoyándote en otra referencia. Eso solo cambia el puntero: no cuesta nada en términos de modelo y no vuelve a medir nada.
 
 ```bash
-trysquare render scenarios/issue1-contexte.toml --output results \
+uv run trysquare render scenarios/issue1-contexte.toml --output results \
   --repetitions 20 --reference "+agents+well_crafted"
 ```
 
-La salida va a un `synthesis_ref-<référence>.md` junto a la síntesis habitual, que no se toca.
+La salida va a un `synthesis_ref-<référence>.md` junto a la síntesis habitual que no se toca.
 
-**El prompt delimitado logra que se haga todo lo que el ticket nombra, y nada más.** `tests_ajoutes` pasa de 0/20 a 17/20 y `rebond_angles` de 0/20 a 14/20, dos columnas que estaban vacías y ahora se llenan. El prompt, sin embargo, no dice nada del mecanismo del rebote: nombra la salida, el alcance y el criterio de parada, y es `ISSUES.md` el que describe la esquina, la salida del rectángulo, la costura de la cuadrícula y el tunneling. La esquina sigue en **0/20 en las cuatro configuraciones que no encuadran el ticket**, es decir, ochenta ejecuciones consecutivas. Señalar un documento escrito basta, por tanto, para que se lea, y es el contenido de ese documento el que decide lo que se tratará.
+**El prompt enmarcado consigue que se haga todo lo que el ticket nombra, y nada más.** `tests_ajoutes` pasa de 0/20 a 17/20 y `rebond_angles` de 0/20 a 14/20, dos columnas que estaban vacías y que se llenan. El prompt, sin embargo, no dice nada del mecanismo del rebote: nombra el resultado, el alcance y el criterio de parada, y es `ISSUES.md` el que describe la esquina, la salida del rectángulo, los ladrillos vecinos y el tunneling. La esquina se mantiene en **0/20 en las cuatro configuraciones que no enmarcan el ticket**, es decir, ochenta ejecuciones consecutivas. Señalar un documento escrito basta, por tanto, para que se lea, y es el contenido de ese documento el que decide lo que se tratará.
 
-**El archivo de reglas no desplaza más que el procedimiento, y ya no desplaza nada en cuanto el ticket es correcto.** `+agents` hace pasar `suite_lancee` de 0/20 a 20/20, porque una de sus cuatro líneas nombra el comando. Sobre el criterio da 9/20 frente a 11/20 de la base, diferencia no concluyente, y sobre `tests_ajoutes` se queda en 0/20 puesto que ninguna de sus líneas habla de tests. Añadido por encima del prompt estructurado no aporta **absolutamente nada**: 11/20 frente a 13/20 sobre el criterio, 12/20 frente a 14/20 sobre la esquina, 17/20 frente a 17/20 sobre los tests añadidos, y ninguna de estas tres diferencias es distinguible de cero. El archivo de reglas es un sustituto del buen ticket más que un complemento, lo que da una regla de escritura directamente aplicable al presupuesto de cuarenta líneas: una línea que un ticket correcto diría de todos modos es una línea que hay que retirar.
+**El archivo de reglas solo mueve el procedimiento, y ya no mueve nada en cuanto el ticket es correcto.** `+agents` hace pasar `suite_lancee` de 0/20 a 20/20, porque una de sus cuatro líneas nombra el comando. En el criterio, da 9/20 frente a 11/20 de la base, diferencia no concluyente, y en `tests_ajoutes` se mantiene en 0/20 puesto que ninguna de sus líneas habla de pruebas. Cuando se añade al prompt enmarcado, no aporta estrictamente nada: 11/20 frente a 13/20 en el criterio, 12/20 frente a 14/20 en la esquina, 17/20 frente a 17/20 en las pruebas añadidas, sin que ninguna de estas tres diferencias sea distinguible. El archivo de reglas es más un sustituto del buen ticket que un complemento, lo que da una regla de escritura directamente aplicable al presupuesto de cuarenta líneas: una línea que un ticket correcto diría de todos modos es una línea a eliminar.
 
 **El razonamiento desplaza el criterio, y él solo no hace que se lea el ticket.** `+thinking` da 16/20 sobre `rebond_briques`, es decir, una diferencia de +29 puntos cuyo intervalo excluye el cero. Es la única palanca de la matriz, aparte de las que tocan el ticket, que desplaza la corrección en sí. Su columna de la esquina se queda en 0/20 y sus tests añadidos en 3/20: el razonamiento mejora lo que el modelo hace con lo que tiene delante, pero no lo lleva a ir a buscar lo que le falta.
 
@@ -629,28 +634,6 @@ Sabes citar una palanca que has medido como sin efecto sobre NÉON y decir bajo 
 
 Nuestro ejemplo es `AGENTS.md`: no mueve el criterio de corrección ni un punto, y se volvería decisivo en un ticket cuyo fallo habitual es de procedimiento más que de razonamiento, o en un repositorio cuyos tickets están mal escritos. El tuyo será diferente, y ese es el objetivo. Este criterio exige haber visto las cifras y haber comprendido que son la tarea y su material los que las determinan. Por tanto, no puede satisfacerse de memoria.
 :::
-
-## Las trampas
-
-**Concluir a partir de una sola ejecución**, que sigue siendo la trampa principal y la más costosa, ya que produce convicciones duraderas a partir de ruido.
-
-**Inyectar algo volátil en la zona cacheable.** Una fecha, un `git status` o un timestamp colocados al inicio del contexto invalidan toda la caché posterior y te hacen pagar caro un ahorro que creías adquirido.
-
-**Olvidar tu `AGENTS.md` personal**, cargado además del del proyecto, invisible en la interfaz y que falsea todas tus mediciones mientras no uses `-nc`.
-
-**Tomarse un flag al pie de la letra**, ya que `--thinking max` puede no tener ningún efecto sin que Pi te avise.
-
-**Tomar la ausencia de saturación por una ausencia de problema.** En una ventana amplia nada se desborda nunca, lo que solo significa que la señal de alarma no sonará y que el coste será tu único indicador.
-
-**Juzgar por un patrón cuando se puede juzgar por un comportamiento.** Buscar en un diff si se parece a la solución esperada responde a otra pregunta que «¿este diff resuelve el problema?», y es en ese desfase donde se alojan los falsos verdes. Busca la forma ejecutable antes de resignarte al patrón, y luego al juez.
-
-**No contar los reintentos.** Una matriz medida mientras el proveedor falla y reintenta no mide la configuración, y da la apariencia completa de medirla: tablas, intervalos, veredictos. El recuento de reintentos debe leerse como una columna de resultado por derecho propio.
-
-**Creer una columna uniformemente negra.** Cero en todas las configuraciones se parece a un comportamiento del modelo y puede ser un comparador demasiado estricto, como el que rechazaba `cd /tmp/x && npm test` porque solo conocía `npm test`. Verifica la razón asociada a un falso antes de sacar una conclusión de ello.
-
-**Confiar en un tag.** Se desplaza, y nada en una tabla te lo dirá. La única forma de saberlo a posteriori es el commit archivado por ejecución, y la única forma de evitarlo es anclar con ese commit.
-
-**Comparar costes entre dos proveedores.** No cuentan lo mismo: uno reporta la caché y el otro no, de modo que la columna «entrada» de uno es la suma de los prefijos completos y la del otro, la parte que no estaba ya en caché. La relación entre ambos no significa nada.
 
 ## Para ir más lejos
 
