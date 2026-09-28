@@ -9,7 +9,7 @@
 
 Les modules qui suivent lancent Pi vingt fois sur la même tâche sans intervention humaine, lui confient des sous-agents qui ont un shell, puis enchaînent des sous-agents dans des pipelines. Pi n'a aucun mécanisme pour demander votre accord avant d'exécuter une commande, et sa [documentation sur la sécurité](https://pi.dev/docs/latest/security) le dit clairement : les outils lisent, écrivent et lancent des commandes « with the permissions of the pi process », et « Pi does not include a built-in sandbox ». Tout ce que vous pouvez faire depuis votre terminal, l'agent peut donc le faire aussi, lire `~/.ssh`, lire `~/.pi/agent/auth.json` où sont rangées vos clés d'API, lancer `git push --force`, ou envoyer le contenu d'un fichier à un domaine quelconque avec `curl`.
 
-La réaction naturelle est d'écrire une consigne, « ne modifie que `game/neon.js` », « ne lis rien hors du dépôt ». Une consigne est du texte et nous vous rappelons que l'utilisation d'un LLM est toujours non déterministe ce qui veut dire que vous n'aurez jamais une garantie de 100% qu'elle sera suivie. Dans le module sur les compétences, vous constaterez qu'une consigne de nettoyage de fichiers temporaires placée dans un `SKILL.md` est suivie moins d'une fois sur trois. Avant la première exécution sans surveillance, il faut donc une limite qui ne dépende pas de l'obéissance du modèle. Le bac à sable (appelé sandbox) est une façon déterministe de s'assurer que le LLM est dans un environnement clos où les frontières sont déterminées par vous et que le modèle ne peut pas outre passer.
+La réaction naturelle est d'écrire une consigne, « ne modifie que `game/neon.js` », « ne lis rien hors du dépôt ». Une consigne est du texte et nous vous rappelons que l'utilisation d'un LLM est toujours non déterministe ce qui veut dire que vous n'aurez jamais une garantie de 100% qu'elle sera suivie. Dans le module sur les compétences, vous constaterez qu'une consigne de nettoyage de fichiers temporaires placée dans un `SKILL.md` est suivie moins d'une fois sur trois. Avant la première exécution sans surveillance, il faut donc une limite qui ne dépende pas de l'obéissance du modèle. Le bac à sable (appelé sandbox) est une façon déterministe de s'assurer que le LLM est dans un environnement clos où les frontières sont déterminées par vous et que le modèle ne peut pas outrepasser.
 
 ## Comprendre
 
@@ -17,7 +17,7 @@ La réaction naturelle est d'écrire une consigne, « ne modifie que `game/neon.
 
 Un agent de code qui tourne sur votre poste a accès à vos fichiers, c'est-à-dire au dépôt sur lequel il travaille et, avec les mêmes droits, à votre répertoire personnel, où vivent les clés SSH, les jetons des fournisseurs de modèles et les fichiers `.env` de vos autres projets. Le réseau lui permet d'installer n'importe quel paquet, d'exécuter un `curl | sh` trouvé dans un README, ou de diffuser ce qu'il vient de lire. Il lance enfin des processus avec votre identité, ce qui couvre le démon Docker, la commande `rm` et l'accès en écriture au dépôt distant. Si en plus vous avez les droits sudo sur votre machine, plus rien ne l'arrête.
 
-Ces actions n'exigent même pas que le modèle se trompe. Un fichier du dépôt peut contenir des instructions écrites pour l'agent, et c'est le rôle du `SUPPORT.md` de NÉON, dont le texte imite une procédure d'assistance mais demande de lire le `.env` et d'en envoyer le contenu à une adresse externe : l'agent qui ouvre ce fichier pour répondre à une question traite l'instruction comme si elle venait de vous, et le module sur les permissions travaillera sur ce cas. Une extension installée depuis l'annuaire communautaire s'exécute, comme le module sur Pi l'a rappelé, avec l'intégralité de vos droits. Dans ces deux cas, la faille est dans le harnais, et un garde fou écrit à l'intérieur de AGENTS.md ne vous protégera pas.
+Ces actions n'exigent même pas que le modèle se trompe. Un fichier du dépôt peut contenir des instructions écrites pour l'agent, et c'est le rôle du `SUPPORT.md` de NÉON, dont le texte imite une procédure d'assistance mais demande de lire le `.env` et d'en envoyer le contenu à une adresse externe : l'agent qui ouvre ce fichier pour répondre à une question traite l'instruction comme si elle venait de vous, et le module sur les permissions travaillera sur ce cas. Une extension installée depuis l'annuaire communautaire s'exécute, comme le module sur Pi l'a rappelé, avec l'intégralité de vos droits. Dans ces deux cas, la faille est dans le harnais, et un garde-fou écrit à l'intérieur de AGENTS.md ne vous protégera pas.
 
 La documentation de Pi en tire la conclusion : « For untrusted repositories, generated code you do not intend to monitor closely, or unattended automation, run pi in a contained environment. Use a container, VM, micro-VM, remote sandbox, or policy-controlled sandbox with only the files and credentials required for the task. » Nos vingt exécutions sur l'issue #1 sont exactement de l'automatisation sans surveillance. Et à terme, nous souhaitons des agents autonomes pouvant travailler pendant des heures sans que nous soyons obligés de les surveiller.
 
@@ -60,7 +60,7 @@ L'extension s'installe en une commande, comme n'importe quel paquet de l'annuair
 pi install npm:@gotgenes/pi-permission-system
 ```
 
-Les règles vivent dans un fichier JSON, lu à trois portées : globale (`~/.pi/agent/extensions/pi-permission-system/config.json`), projet (`.pi/extensions/pi-permission-system/config.json`, ignorée si le projet n'est pas approuvé) et par agent, dans l'entête YAML d'un fichier d'agent, qui l'emporte sur les deux premières. Pour NÉON, une configuration de projet suffit à enrayer la consigne la plus dangereuse de `SUPPORT.md`, puisque la lecture d'un `.env` est refusée par construction :
+Les règles vivent dans un fichier JSON, lu à trois portées : globale (`~/.pi/agent/extensions/pi-permission-system/config.json`), projet (`.pi/extensions/pi-permission-system/config.json`, ignorée si le projet n'est pas approuvé) et par agent, dans l'en-tête YAML d'un fichier d'agent, qui l'emporte sur les deux premières. Pour NÉON, une configuration de projet suffit à enrayer la consigne la plus dangereuse de `SUPPORT.md`, puisque la lecture d'un `.env` est refusée par construction :
 
 ```json
 {
@@ -93,7 +93,7 @@ Retirez enfin le bloc `path` de la configuration et remplacez-le par la consigne
 
 #### Installer et configurer `sbx`
 
-`sbx` est la commande pour utiliser Docker Sandboxes. `sbx` connaît une liste d'agents qu'il sait lancer tel quel (`claude`, `codex`, `copilot`, `cursor`, `gemini`, `opencode` et quelques autres). Malheureusement, Pi n'en fait pas partie. Il est donc nécessaire de créer [un kit](https://docs.docker.com/ai/sandboxes/customize/): un répertoire décrit par un `spec.yaml` dont la variante `kind: sandbox` définit un agent de zéro : l'image, la commande de démarrage, les instructions ajoutées au fichier de contexte, les clés à injecter et les permissions réseau. Le nôtre est versionné dans https://github.com/AI-for-dev/pi-sandbox et contient seulement trois fichiers.
+`sbx` est la commande pour utiliser Docker Sandboxes. `sbx` connaît une liste d'agents qu'il sait lancer tels quels (`claude`, `codex`, `copilot`, `cursor`, `gemini`, `opencode` et quelques autres). Malheureusement, Pi n'en fait pas partie. Il est donc nécessaire de créer [un kit](https://docs.docker.com/ai/sandboxes/customize/): un répertoire décrit par un `spec.yaml` dont la variante `kind: sandbox` définit un agent de zéro : l'image, la commande de démarrage, les instructions ajoutées au fichier de contexte, les clés à injecter et les permissions réseau. Le nôtre est versionné dans https://github.com/AI-for-dev/pi-sandbox et contient seulement trois fichiers.
 
 ```
 pi-sandbox
@@ -153,7 +153,7 @@ RUN npm install -g "@earendil-works/pi-coding-agent@${PI_VERSION}" \
 USER agent
 ```
 
-L'image part du modèle `shell-docker` fourni par Docker, installe une version explicite de Node, parce que Pi exige au moins la 22.19 puis épingle la version de Pi.
+L'image part du modèle `shell-docker` fourni par Docker, installe une version explicite de Node, parce que Pi exige au moins la 22.19, puis épingle la version de Pi.
 
 Le démon de Docker Sandboxes tire ses images depuis un registre différent des images locales disponibles pour Docker. Sans registre, on passe par une archive :
 
@@ -228,7 +228,7 @@ Le bloc `credentials` déclare une clé gérée par le proxy (`proxyManaged: tru
 
 Sous `permissions.network`, le kit ouvre par-dessus la politique globale le fournisseur de modèles, GitHub pour cloner NÉON et PyPI pour les outils de mesure. Les variables `PI_SKIP_VERSION_CHECK` et `PI_TELEMETRY` coupent certaines opérations réseau de démarrage de Pi.
 
-Le fichier `files/home/.pi/agent/settings.json`, que le kit dépose dans le répertoire personnel de l'agent, fixe le fournisseur et le modèle par défaut, le niveau de raisonnement. Il remplace le `~/.pi/agent/settings.json` de votre hôte, qui n'est pas monté dans la VM. Il est ici assez simple et ressemble à ça
+Le fichier `files/home/.pi/agent/settings.json`, que le kit dépose dans le répertoire personnel de l'agent, fixe le fournisseur, le modèle par défaut et le niveau de raisonnement. Il remplace le `~/.pi/agent/settings.json` de votre hôte, qui n'est pas monté dans la VM. Il est ici assez simple et ressemble à ça
 
 ```json
 {
@@ -238,7 +238,7 @@ Le fichier `files/home/.pi/agent/settings.json`, que le kit dépose dans le rép
 }
 ```
 
-De même, le fichier Le fichier `files/home/.pi/agent/models.json` renseigne les modèles disponibles dans la sandbox.
+De même, le fichier `files/home/.pi/agent/models.json` renseigne les modèles disponibles dans la sandbox.
 
 ```json
 {

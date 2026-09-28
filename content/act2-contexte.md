@@ -109,7 +109,7 @@ Le ticket est décrit dans `ISSUES.md`, à la racine du [dépôt NÉON](https://
 
 Cette issue comporte plusieurs subtilités difficiles à trouver pour un agent seul. Il verra rapidement le problème et proposera de calculer la distance de la balle aux côtés de la brique, pour inverser, selon le côté touché, l'une des deux vitesses. Le cas du coin, rare mais réel, et celui d'une vitesse assez grande pour que la balle franchisse la brique sans jamais la recouvrir, ont en revanche très peu de chances d'être traités.
 
-En plus de la correction du bug, nous souhaitons commencer à définir un cadre et vérifier que l'agent n'en sorte pas. Ce cadre tient en trois règles :
+En plus de la correction du bug, nous souhaitons commencer à définir un cadre et vérifier que l'agent n'en sort pas. Ce cadre tient en trois règles :
 
 - L'agent ne peut modifier que `game/neon.js` et `game/neon.test.js` et rien d'autre.
 - L'agent doit lancer les tests pour vérifier qu'il n'a rien cassé.
@@ -200,7 +200,7 @@ Voici la base de départ, à discuter et à amender. C'est le fichier même que 
 ::: warning Un `AGENTS.md` peut en cacher un autre
 Pi charge ces fichiers en cumulé, à partir de votre `~/.pi/agent/AGENTS.md` personnel, puis de chaque répertoire parent en remontant, puis du répertoire courant. Un fichier de règles personnel s'invite donc dans toutes vos mesures sans que vous en soyez informé.
 
-Le drapeau `--no-context-files`, abrégé `-nc`, désactive cette découverte, ce qui est indispensable pour mesurer proprement. L'outil de mesure plus bas travaille dans un clone jetable où seul le fichier `AGENTS.md` du répertoire courant (NEON) est déposé.
+Le drapeau `--no-context-files`, abrégé `-nc`, désactive cette découverte, ce qui est indispensable pour mesurer proprement. L'outil de mesure plus bas travaille dans un clone jetable où seul le fichier `AGENTS.md` du répertoire courant (NÉON) est déposé.
 :::
 
 #### Le prompt système
@@ -355,7 +355,7 @@ Face à cette dispersion, trysquare ne publie jamais un chiffre seul. Deux notio
 
 **Un point est un point de pourcentage de réussite.** `+agents+add_tests+well_crafted` atteint le critère 18 fois sur 20, soit 90 %, et `nothing` 11 fois sur 20, soit 55 % : l'écart vaut **+35 points**. Seules les exécutions valides comptent, celles qui n'ont rien livré étant retirées des deux côtés, ce qui explique qu'un dénominateur puisse être inférieur au nombre de répétitions.
 
-Les exécutions sont tirées aléatoirement faisant en sorte qu'on ne joue pas une expérience vingt fois d'affilée, mais de manière répartie.
+Les exécutions sont tirées aléatoirement, de sorte qu'on ne joue pas une expérience vingt fois d'affilée, mais de manière répartie.
 
 Lire un écart revient alors à poser une seule question : **cet intervalle contient-il zéro ?** S'il ne le contient pas, l'écart est marqué `*` et il est **établi**. S'il le contient, il est marqué `o` et n'est **pas concluant**, quelle que soit la valeur au centre.
 
@@ -390,7 +390,7 @@ Puis lancez la matrice à trois répétitions et laissez-la tourner pendant que 
 uv run trysquare run scenarios/issue1-contexte.toml --output results --repetitions 3
 ```
 
-Vous disposez d'un ensemble de sous-commandes qui ne lancent pas de modèles et qui servent essentiellement à ananlyser les résultats :
+Vous disposez d'un ensemble de sous-commandes qui ne lancent pas de modèles et qui servent essentiellement à analyser les résultats :
 
 ```bash
 # refabriquer les tables
@@ -434,7 +434,7 @@ Et les colonnes de la sonde, le critère en tête :
 
 Les dénominateurs de `+well_crafted` et `+thinking` valent 18 et 19 dans les colonnes de coût, parce qu'ILaaS a rendu des `Request timed out` pendant la mesure et que les exécutions concernées n'ont rien produit.
 
-Nous tirons cinq enseignements de ces deux tables, et le dernier fera la transition avec le module suivant. Tous les écarts cités plus bas viennent des intervalles décrits plus haut, avec la même marque `*` pour un écart établi et `o` pour un écart non concluant. Les comparaisons se font à partir d'une expérience. Si vous ne spécifiez pas, la première expérience est choisie (ici `nothing`). Il vous est possible de refaire les calculs en vous appuyant sur une autre référence. Ca ne fait que changer le pointeur : ça ne coûte rien en terme de modèle et ne remesure rien.
+Nous tirons cinq enseignements de ces deux tables, et le dernier fera la transition avec le module suivant. Tous les écarts cités plus bas viennent des intervalles décrits plus haut, avec la même marque `*` pour un écart établi et `o` pour un écart non concluant. Les comparaisons se font à partir d'une expérience. Si vous ne la spécifiez pas, la première expérience est choisie (ici `nothing`). Il vous est possible de refaire les calculs en vous appuyant sur une autre référence. Ça ne fait que changer le pointeur : ça ne coûte rien en termes de modèle et ne remesure rien.
 
 ```bash
 uv run trysquare render scenarios/issue1-contexte.toml --output results \
@@ -467,7 +467,7 @@ Les quatre colonnes de la correction montent, et les quatre écarts sont établi
 `sonde_intacte` vaut 20/20 ce qui veut dire que le modèle n'a pas essayé de changer les tests de référence. Et `tests_ajoutes` ne bouge pas, ce qui est cohérent avec un agent qui a déjà les cas sous les yeux et n'a aucune raison de les réécrire.
 
 ::: warning Aucune colonne de coût gemma n'est citable ici
-La matrice compte 1 151 reprises, c'est-à-dire de tours relancés parce que le fournisseur avait échoué, et l'encadré plus bas montre à quel point elles sont concentrées sur les configurations les plus lourdes. Une reprise rejoue le tour avec tout le contexte accumulé, donc elle gonfle les colonnes de coût et surtout elle re-pilote l'agent.
+La matrice compte 1 151 reprises, c'est-à-dire des tours relancés parce que le fournisseur avait échoué, et l'encadré plus bas montre à quel point elles sont concentrées sur les configurations les plus lourdes. Une reprise rejoue le tour avec tout le contexte accumulé, donc elle gonfle les colonnes de coût et surtout elle re-pilote l'agent.
 
 Le même scénario mesuré sur `opencode-go` et `deepseek-v4-flash` en compte **37**, ce qui rend les siennes lisibles :
 
