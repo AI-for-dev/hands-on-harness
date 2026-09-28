@@ -12,7 +12,7 @@ Nous avons eu la chance de réunir dans le comité d'organisation de cette ANF d
 
 Au moment où nous écrivons ces lignes, Linus Torvalds, le créateur de Linux, a fait une déclaration proche du positionnement de ce support, que nous traduisons ici :
 
-> L'IA est un outil, tout comme d'autres outils que nous utilisons. Et c'est clairement un outil utile.
+> […] L'IA est un outil, tout comme d'autres outils que nous utilisons. Et c'est clairement un outil utile.
 > Ce n'était peut-être pas aussi « clair » il y a seulement un an, mais ce n'est plus une question aujourd'hui.
 > Il y a d'autres questions autour de l'IA (comme ce à quoi l'économie de l'IA ressemblera réellement à la fin), mais « est-ce utile » n'est plus l'une de ces questions. Quiconque en doute n'a clairement pas réellement utilisé l'IA.
 > Oui, cela peut également être un outil quelque peu douloureux, tant pour la charge de travail des mainteneurs que du point de vue de « ça continue de trouver des bugs embarrassants ».
