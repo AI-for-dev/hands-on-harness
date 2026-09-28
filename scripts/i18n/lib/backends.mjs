@@ -1,12 +1,30 @@
 import { spawn } from 'node:child_process'
 
-// pi (https://pi.dev) est un harnais en ligne de commande qui sait parler à
-// de très nombreux providers (ilaas, github-copilot, opencode-go, etc.) et
-// modèles derrière une seule et même interface : plutôt que de réimplémenter
-// un client HTTP par provider, on lui délègue l'appel et on ne configure que
-// --provider/--model. Le prompt est passé par stdin (jamais par argv) pour
-// ne jamais buter sur une limite de taille de ligne de commande sur un
-// chapitre volumineux.
+// A model can run away into endless generation on an input that throws it off:
+// observed in practice, `pi` then produced enough output to exceed the maximum
+// V8 string length and bring the whole script down (`RangeError: Invalid string
+// length`) after several minutes of translating. So we cut off beyond a size and
+// a duration no legitimate translation reaches, and the caller retries.
+//
+// The size is proportional to the input: a translation is at most the order of
+// magnitude of its source, and the margin (x20, with a floor for very short
+// fragments) leaves room for a slightly verbose model. That is the difference
+// between cutting a runaway generation off after one second and waiting several
+// minutes for it to reach an absolute ceiling.
+const OUTPUT_SIZE_RATIO = 20
+const MIN_OUTPUT_BYTES = 64 * 1024
+const CALL_TIMEOUT_MS = 300_000
+
+function maxOutputBytes(userPrompt) {
+  return Math.max(MIN_OUTPUT_BYTES, userPrompt.length * OUTPUT_SIZE_RATIO)
+}
+
+// pi (https://pi.dev) is a command line harness able to talk to a great many
+// providers (ilaas, github-copilot, opencode-go, etc.) and models behind one
+// single interface: rather than reimplementing an HTTP client per provider, we
+// delegate the call to it and only configure --provider/--model. The prompt goes
+// through stdin (never through argv) so as never to hit a command line length
+// limit on a large chapter.
 function runPi(backendConfig, systemPrompt, userPrompt) {
   return new Promise((resolve, reject) => {
     const args = [
@@ -15,7 +33,15 @@ function runPi(backendConfig, systemPrompt, userPrompt) {
       '--no-tools',
       '--no-session',
       '--print',
-      '--mode', 'json',
+      // --mode text rather than json: in json mode, pi emits an NDJSON stream of
+      // streaming events, each of which reports the message so far, which makes
+      // the output quadratic in response length. Measured on this corpus: 531 kB
+      // of stdout for 450 translated characters, and several megabytes on a long
+      // paragraph - enough to trigger the safety cutoff below on perfectly
+      // normal translations. In text mode, pi only prints the assistant's final
+      // text: 444 bytes for the same translation, and the reasoning tokens of
+      // models that produce them stay excluded (verified with --thinking high).
+      '--mode', 'text',
       '--system-prompt', systemPrompt
     ]
     if (backendConfig.thinking) args.push('--thinking', backendConfig.thinking)
@@ -24,12 +50,42 @@ function runPi(backendConfig, systemPrompt, userPrompt) {
 
     let stdout = ''
     let stderr = ''
-    child.stdout.on('data', (chunk) => { stdout += chunk })
+    let aborted = null
+
+    const abort = (message) => {
+      if (aborted) return
+      aborted = message
+      child.kill('SIGKILL')
+      reject(new Error(message))
+    }
+
+    const timer = setTimeout(
+      () => abort(`pi did not answer within ${CALL_TIMEOUT_MS / 1000} s`),
+      CALL_TIMEOUT_MS
+    )
+    timer.unref()
+
+    const limit = maxOutputBytes(userPrompt)
+    child.stdout.on('data', (chunk) => {
+      if (aborted) return
+      stdout += chunk
+      if (stdout.length > limit) {
+        abort(
+          `pi produced more than ${Math.round(limit / 1024)} kB for ` +
+            `${Math.round(userPrompt.length / 1024)} kB of source (runaway generation?)`
+        )
+      }
+    })
     child.stderr.on('data', (chunk) => { stderr += chunk })
-    child.on('error', reject)
+    child.on('error', (err) => {
+      clearTimeout(timer)
+      reject(err)
+    })
     child.on('close', (code) => {
+      clearTimeout(timer)
+      if (aborted) return
       if (code !== 0) {
-        reject(new Error(`pi a quitté avec le code ${code}: ${stderr || stdout}`))
+        reject(new Error(`pi exited with code ${code}: ${stderr || stdout}`))
         return
       }
       resolve(stdout)
@@ -38,37 +94,6 @@ function runPi(backendConfig, systemPrompt, userPrompt) {
     child.stdin.write(userPrompt)
     child.stdin.end()
   })
-}
-
-// La sortie --mode json de pi est un flux NDJSON d'évènements (streaming
-// inclus) : on ne garde que le dernier évènement "turn_end", qui porte le
-// message assistant final déjà assemblé, et on n'en extrait que les blocs
-// de type "text" (ce qui exclut au passage tout bloc "thinking" pour les
-// modèles qui en produisent).
-function extractPiText(stdout) {
-  let lastTurn = null
-  for (const line of stdout.split('\n')) {
-    if (line.trim() === '') continue
-    let event
-    try {
-      event = JSON.parse(line)
-    } catch {
-      continue
-    }
-    if (event.type === 'turn_end') lastTurn = event
-  }
-  if (!lastTurn) {
-    throw new Error(`Impossible de trouver la réponse de pi dans sa sortie JSON:\n${stdout}`)
-  }
-  return lastTurn.message.content
-    .filter((block) => block.type === 'text')
-    .map((block) => block.text)
-    .join('')
-}
-
-async function callPi(backendConfig, systemPrompt, userPrompt) {
-  const stdout = await runPi(backendConfig, systemPrompt, userPrompt)
-  return extractPiText(stdout)
 }
 
 async function callOllama(backendConfig, systemPrompt, userPrompt) {
@@ -84,10 +109,11 @@ async function callOllama(backendConfig, systemPrompt, userPrompt) {
       ],
       stream: false,
       options
-    })
+    }),
+    signal: AbortSignal.timeout(CALL_TIMEOUT_MS)
   })
   if (!res.ok) {
-    throw new Error(`Ollama a répondu ${res.status}: ${await res.text()}`)
+    throw new Error(`Ollama answered ${res.status}: ${await res.text()}`)
   }
   const data = await res.json()
   return data.message.content
@@ -109,10 +135,11 @@ async function callOpenAICompatible(backendConfig, systemPrompt, userPrompt) {
         { role: 'system', content: systemPrompt },
         { role: 'user', content: userPrompt }
       ]
-    })
+    }),
+    signal: AbortSignal.timeout(CALL_TIMEOUT_MS)
   })
   if (!res.ok) {
-    throw new Error(`Backend OpenAI-compatible a répondu ${res.status}: ${await res.text()}`)
+    throw new Error(`OpenAI-compatible backend answered ${res.status}: ${await res.text()}`)
   }
   const data = await res.json()
   return data.choices[0].message.content
@@ -121,12 +148,12 @@ async function callOpenAICompatible(backendConfig, systemPrompt, userPrompt) {
 export async function translateText(config, systemPrompt, userPrompt) {
   const backendConfig = config.backends[config.backend]
   if (!backendConfig) {
-    throw new Error(`Backend inconnu dans i18n/config.json: "${config.backend}"`)
+    throw new Error(`Unknown backend in i18n/config.json: "${config.backend}"`)
   }
-  if (config.backend === 'pi') return callPi(backendConfig, systemPrompt, userPrompt)
+  if (config.backend === 'pi') return runPi(backendConfig, systemPrompt, userPrompt)
   if (config.backend === 'ollama') return callOllama(backendConfig, systemPrompt, userPrompt)
   if (config.backend === 'openai_compatible') return callOpenAICompatible(backendConfig, systemPrompt, userPrompt)
-  throw new Error(`Backend non supporté: "${config.backend}" (attendu: "pi", "ollama" ou "openai_compatible")`)
+  throw new Error(`Unsupported backend: "${config.backend}" (expected "pi", "ollama" or "openai_compatible")`)
 }
 
 export function currentModelId(config) {

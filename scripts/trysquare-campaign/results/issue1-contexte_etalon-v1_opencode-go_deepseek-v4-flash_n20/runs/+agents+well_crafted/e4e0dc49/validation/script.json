@@ -1,0 +1,27 @@
+{
+  "metrics": {
+    "delivered": true,
+    "in_scope": true,
+    "touched": [
+      "game/neon.js",
+      "game/neon.test.js"
+    ],
+    "tests_ajoutes": true,
+    "suite_lancee": true,
+    "skill_invoque": false,
+    "rebond_briques": true,
+    "rebond_angles": true,
+    "rebond_sortie": true,
+    "rebond_voisines": true,
+    "rebond_traversee": true
+  },
+  "reasons": {
+    "tests_ajoutes": "6 cas de plus qu'à l'étalon (12 contre 6)",
+    "suite_lancee": "cd /private/var/folders/hf/sz48238s7x98j_p98cqfxprc0000gp/T/trysquare/campaign/issue1-contexte_etalon-v1_opencode-go_deepseek-v4-flash_n20/e4e0dc49/repo && npm test 2>&1 | tail -12 ; cd /private/var/folders/hf/sz48238s7x98j_p98cqfxprc0000gp/T/trysquare/campaign/issue1-contexte_etalon-v1_opencode-go_deepseek-v4-flash_n20/e4e0dc49/repo && npm test 2>&1 | tail -20 ; cd /private/var/folders/hf/sz48238s7x98j_p98cqfxprc0000gp/T/trysquare/campaign/issue1-contexte_etalon-v1_opencode-go_deepseek-v4-flash_n20/e4e0dc49/repo && npm test 2>&1 | tail -22 && git status --short && git diff --stat ; cd /private/var/folders/hf/sz48238s7x98j_p98cqfxprc0000gp/T/trysquare/campaign/issue1-contexte_etalon-v1_opencode-go_deepseek-v4-flash_n20/e4e0dc49/repo && npm test 2>&1 | tail -25 ; cd /private/var/folders/hf/sz48238s7x98j_p98cqfxprc0000gp/T/trysquare/campaign/issue1-contexte_etalon-v1_opencode-go_deepseek-v4-flash_n20/e4e0dc49/repo && npm test 2>&1 | tail -30 ; cd /private/var/folders/hf/sz48238s7x98j_p98cqfxprc0000gp/T/trysquare/campaign/issue1-contexte_etalon-v1_opencode-go_deepseek-v4-flash_n20/e4e0dc49/repo && npm test 2>&1 | tail -8 && cat > /tmp/sim.mjs <<'EOF' import { createState, step, frame, WIDTH, HEIGHT } from './game/neon.js'; // Mock 2D context const ctx = new Proxy({}, { get: (t, k) => (...a) => {}, set: (t, k, v) => true }); // Scenario 1: head-on into a column of bricks — must bounce back down, not plow through { const state = createState(1); const b = state.ball; const target = state.bricks.find((x) => x.row === 0 && x.col === 4); b.x = target.x + target.w / 2; b.y = target.y + target.h + 100; b.vx = 0; b.vy = -500; for (let i = 0; i < 200 && b.vy < 0; i++) { step(state, 1 / 60); frame(ctx, state); } console.log('head-on:', b.vy > 0 ? 'BOUNCED BACK ✓' : 'plowed through ✗', '| score', state.score, '| vy', b.vy.toFixed(1)); } // Scenario 2: near-horizontal edge shot into a brick's side (the obvious side case) { const state = createState(1); const b = state.ball; const target = state.bricks.find((x) => x.row === 2 && x.col === 0); b.x = target.x - 40; b.y = target.y + target.h / 2; b.vx = 600; b.vy = -60; for (let i = 0; i < 120 && Math.abs(b.vx) > 0; i++) { step(state, 1 / 60); frame(ctx, state); } console.log('side shot:', b.vx < 0 ? 'BOUNCED LEFT ✓' : 'plowed through ✗', '| vy', b.vy.toFixed(1)); } // Scenario 3: level 6, max stutter (50ms) — no tunnelling { const state = createState(6); const b = state.ball; const target = state.bricks.find((x) => x.row === 0 && x.col === 4); b.x = target.x + target.w / 2; b.y = target.y + target.h + 60; b.vx = 0; b.vy = -710; let bounces = 0; for (let i = 0; i < 40; i++) { step(state, 0.05); // 35.5 px per frame frame(ctx, state); if (b.vy > 0 && i > 0) { bounces++; break; } } const broken = state.bricks.filter((x) => !x.alive).length; console.log('lvl6 50ms:', bounces > 0 ? 'BOUNCED ✓' : 'tunnelled ✗', '| bricks broken', broken, '| vy', b.vy.toFixed(1)); } EOF node /tmp/sim.mjs",
+    "skill_invoque": "aucune compétence développée dans le prompt, et aucun SKILL.md lu sur 24 appels d'outil",
+    "rebond_traversee": "balle rapide: la brique n_est pas franchie sans être touchée : dévié par frame() après le déplacement de step()"
+  },
+  "unjudged": {
+    "sonde_intacte": "aucune sonde n'a été fournie à cette cellule"
+  }
+}

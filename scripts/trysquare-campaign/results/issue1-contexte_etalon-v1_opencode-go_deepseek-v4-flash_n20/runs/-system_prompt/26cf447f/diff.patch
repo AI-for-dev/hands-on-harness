@@ -1,0 +1,89 @@
+diff --git a/game/neon.js b/game/neon.js
+index 6b4a133..fbde341 100644
+--- a/game/neon.js
++++ b/game/neon.js
+@@ -206,6 +206,64 @@ export function step(state, dt) {
+   return false;
+ }
+
++// Bounce a ball off a single brick. Determines which face was hit (the axis
++// with the *smaller* penetration), flips the matching velocity component(s),
++// and pushes the ball back OUTSIDE the brick so it does not stay overlapped on
++// the next frame (which would otherwise re-flip forever = sticky bounce).
++//
++//   side hit   -> smaller penetration on X: flip vx, push out along X
++//   top/bottom -> smaller penetration on Y: flip vy, push out along Y
++//   corner     -> equal penetration: flip BOTH components
++//
++// Call this once per frame: after the push-out the ball has a single new
++// velocity — the neighbour handling in frame() (break after the first hit)
++// guarantees vy is never flipped twice in the same pass.
++function bounceOffBrick(ball, brick) {
++  // Overlap distance on each side of the brick.
++  const dxLeft = ball.x + ball.r - brick.x;
++  const dxRight = brick.x + brick.w - (ball.x - ball.r);
++  const dyTop = ball.y + ball.r - brick.y;
++  const dyBottom = brick.y + brick.h - (ball.y - ball.r);
++
++  // Penetration per axis = the smallest overlap on that axis.
++  const penX = Math.min(dxLeft, dxRight);
++  const penY = Math.min(dyTop, dyBottom);
++
++  if (penX < penY) {
++    // Side hit: flip vx, push out along X.
++    if (dxLeft < dxRight) {
++      ball.x = brick.x - ball.r;
++      ball.vx = -Math.abs(ball.vx);
++    } else {
++      ball.x = brick.x + brick.w + ball.r;
++      ball.vx = Math.abs(ball.vx);
++    }
++  } else if (penY < penX) {
++    // Top/bottom hit: flip vy, push out along Y.
++    if (dyTop < dyBottom) {
++      ball.y = brick.y - ball.r;
++      ball.vy = -Math.abs(ball.vy);
++    } else {
++      ball.y = brick.y + brick.h + ball.r;
++      ball.vy = Math.abs(ball.vy);
++    }
++  } else {
++    // Corner hit (equal penetration): flip both components.
++    ball.vx = -ball.vx;
++    ball.vy = -ball.vy;
++    if (dxLeft < dxRight) {
++      ball.x = brick.x - ball.r;
++    } else {
++      ball.x = brick.x + brick.w + ball.r;
++    }
++    if (dyTop < dyBottom) {
++      ball.y = brick.y - ball.r;
++    } else {
++      ball.y = brick.y + brick.h + ball.r;
++    }
++  }
++}
++
+ // --- Rendering (DOM): brick collision logic STILL mixed in here ------------
+
+ // Main render loop. For each live brick we test collision AND draw in the same
+@@ -223,11 +281,14 @@ export function frame(ctx, state) {
+       brick.alive = false;
+       state.combo += 1;
+       state.score += scoreForBrick(brick, state.combo);
+-      // BUG (#1): the ball is NOT deflected here. Only the walls and the paddle
+-      // bounce (in step()); bricks were never given a bounce. So the ball plows
+-      // straight through a column head-on AND straight through the side of a
+-      // row. Fix = a real per-face bounce (flip vy on a top/bottom hit, vx on a
+-      // side hit) plus pushing the ball back out of the brick.
++      // Bounce the ball off the face it actually hit and push it clear of the
++      // brick. We resolve at most ONE brick per pass and stop there: after the
++      // push-out the ball either no longer overlaps its neighbours, or the
++      // remaining overlap is handled next frame. Resolving every overlapping
++      // brick here would flip vy (and/or vx) twice in the same pass, which
++      // cancels out and lets the ball plow straight through a column again.
++      bounceOffBrick(state.ball, brick);
++      break;
+     }
+
+     ctx.fillStyle = brickColor(brick.row);

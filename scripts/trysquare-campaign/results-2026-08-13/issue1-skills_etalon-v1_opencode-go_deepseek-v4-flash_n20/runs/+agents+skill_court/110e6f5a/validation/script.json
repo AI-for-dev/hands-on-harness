@@ -1,0 +1,31 @@
+{
+  "metrics": {
+    "delivered": true,
+    "in_scope": true,
+    "touched": [
+      "game/neon.js",
+      "game/neon.test.js"
+    ],
+    "tests_ajoutes": true,
+    "suite_lancee": true,
+    "skill_invoque": true,
+    "rebond_briques": false,
+    "rebond_angles": true,
+    "rebond_sortie": true,
+    "rebond_voisines": false,
+    "rebond_traversee": true
+  },
+  "reasons": {
+    "tests_ajoutes": "8 cas de plus qu'à l'étalon (14 contre 6)",
+    "suite_lancee": "cd /private/var/folders/hf/sz48238s7x98j_p98cqfxprc0000gp/T/trysquare/campaign/issue1-skills_etalon-v1_opencode-go_deepseek-v4-flash_n20/110e6f5a/repo && cp game/neon.js /tmp/neon.bak && python3 - <<'EOF' import re src = open('game/neon.js').read() # Temporarily make sweptEntry a discrete end-position check src = src.replace(\"\"\"function sweptEntry(ball, brick) { const { r } = ball;\"\"\", \"\"\"function sweptEntry(ball, brick) { if (!collides(ball, brick)) return null; // TEMP: discrete check const { r } = ball;\"\"\") open('game/neon.js','w').write(src) EOF npm test 2>&1 | grep -E \"tunneling|pass |fail \" | head -8; cp /tmp/neon.bak game/neon.js && npm test 2>&1 | tail -4 ; cd /private/var/folders/hf/sz48238s7x98j_p98cqfxprc0000gp/T/trysquare/campaign/issue1-skills_etalon-v1_opencode-go_deepseek-v4-flash_n20/110e6f5a/repo && npm test 2>&1 | tail -15 ; cd /private/var/folders/hf/sz48238s7x98j_p98cqfxprc0000gp/T/trysquare/campaign/issue1-skills_etalon-v1_opencode-go_deepseek-v4-flash_n20/110e6f5a/repo && npm test 2>&1 | tail -25 ; cd /private/var/folders/hf/sz48238s7x98j_p98cqfxprc0000gp/T/trysquare/campaign/issue1-skills_etalon-v1_opencode-go_deepseek-v4-flash_n20/110e6f5a/repo && npm test 2>&1 | tail -30 ; cd /private/var/folders/hf/sz48238s7x98j_p98cqfxprc0000gp/T/trysquare/campaign/issue1-skills_etalon-v1_opencode-go_deepseek-v4-flash_n20/110e6f5a/repo && npm test 2>&1 | tail -8 && echo \"--- git status ---\" && git status --short",
+    "skill_invoque": "playtest-court développée dans le prompt",
+    "rebond_briques": "flanc gauche: la balle repart vers la gauche : vx devait devenir négatif : 300 ; flanc droit: la balle repart vers la droite : vx devait devenir positif : -300",
+    "rebond_angles": "coin haut gauche: la balle repart en diagonale : dévié par frame() après le déplacement de step()",
+    "rebond_sortie": "face haute: la balle ressort par le haut : dévié par frame() après le déplacement de step() ; face basse: la balle ressort par le bas : dévié par frame() après le déplacement de step()",
+    "rebond_voisines": "couture verticale: un seul rebond sur deux briques superposées : vx devait s'inverser une seule fois : 60",
+    "rebond_traversee": "balle rapide: la brique n_est pas franchie sans être touchée : dévié par frame() après le déplacement de step()"
+  },
+  "unjudged": {
+    "sonde_intacte": "aucune sonde n'a été fournie à cette cellule"
+  }
+}

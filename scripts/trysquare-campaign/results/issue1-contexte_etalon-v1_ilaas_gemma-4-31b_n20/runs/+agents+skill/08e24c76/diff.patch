@@ -1,0 +1,47 @@
+diff --git a/game/neon.js b/game/neon.js
+index 6b4a133..098e083 100644
+--- a/game/neon.js
++++ b/game/neon.js
+@@ -223,11 +223,37 @@ export function frame(ctx, state) {
+       brick.alive = false;
+       state.combo += 1;
+       state.score += scoreForBrick(brick, state.combo);
+-      // BUG (#1): the ball is NOT deflected here. Only the walls and the paddle
+-      // bounce (in step()); bricks were never given a bounce. So the ball plows
+-      // straight through a column head-on AND straight through the side of a
+-      // row. Fix = a real per-face bounce (flip vy on a top/bottom hit, vx on a
+-      // side hit) plus pushing the ball back out of the brick.
++
++      // Resolution: Closest Point on AABB to Circle Center
++      const closestX = Math.max(brick.x, Math.min(state.ball.x, brick.x + brick.w));
++      const closestY = Math.max(brick.y, Math.min(state.ball.y, brick.y + brick.h));
++
++      const dx = state.ball.x - closestX;
++      const dy = state.ball.y - closestY;
++      const distance = Math.sqrt(dx * dx + dy * dy);
++
++      if (distance === 0) {
++        // Center is exactly on the edge or inside - use a fallback
++        if (Math.abs(state.ball.x - (brick.x + brick.w / 2)) < brick.w / 2) {
++          state.ball.vy = -state.ball.vy;
++          state.ball.y += (state.ball.y < brick.y + brick.h / 2) ? -brick.y : (brick.y + brick.h);
++        } else {
++          state.ball.vx = -state.ball.vx;
++        }
++      } else {
++        const nx = dx / distance;
++        const ny = dy / distance;
++
++        const dot = state.ball.vx * nx + state.ball.vy * ny;
++        if (dot < 0) {
++          state.ball.vx -= 2 * dot * nx;
++          state.ball.vy -= 2 * dot * ny;
++        }
++
++        state.ball.x = closestX + nx * state.ball.r;
++        state.ball.y = closestY + ny * state.ball.r;
++      }
++      break; // Prevent double-collision in the same frame
+     }
+
+     ctx.fillStyle = brickColor(brick.row);

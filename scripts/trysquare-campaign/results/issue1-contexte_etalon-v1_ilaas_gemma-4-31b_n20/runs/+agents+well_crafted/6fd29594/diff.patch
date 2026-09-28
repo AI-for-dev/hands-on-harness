@@ -1,0 +1,28 @@
+diff --git a/game/neon.js b/game/neon.js
+index 6b4a133..09dc249 100644
+--- a/game/neon.js
++++ b/game/neon.js
+@@ -156,6 +156,11 @@ export function saveBest(storage, score) {
+   return best;
+ }
+
++export function resolveBricks(state, dt) {
++  // TODO: implement full collision resolution
++  return;
++}
++
+ // --- Physics (movement + wall/paddle bounces) ------------------------------
+
+ // Advances the ball by a time step `dt` (in seconds) and handles bounces off
+diff --git a/game/neon.test.js b/game/neon.test.js
+index 250d6a9..4f86a9d 100644
+--- a/game/neon.test.js
++++ b/game/neon.test.js
+@@ -13,6 +13,7 @@ import assert from 'node:assert/strict';
+ import {
+   collides,
+   step,
++  resolveBricks,
+   makeBricks,
+   createState,
+   BRICK_ROWS,

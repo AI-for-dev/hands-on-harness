@@ -1,0 +1,31 @@
+{
+  "metrics": {
+    "delivered": true,
+    "in_scope": true,
+    "touched": [
+      "game/neon.js",
+      "game/neon.test.js"
+    ],
+    "tests_ajoutes": true,
+    "suite_lancee": true,
+    "skill_invoque": true,
+    "rebond_briques": true,
+    "rebond_angles": true,
+    "rebond_sortie": true,
+    "rebond_voisines": true,
+    "rebond_traversee": true
+  },
+  "reasons": {
+    "tests_ajoutes": "9 cas de plus qu'à l'étalon (15 contre 6)",
+    "suite_lancee": "cd /private/var/folders/hf/sz48238s7x98j_p98cqfxprc0000gp/T/trysquare/campaign/issue1-skills_etalon-v1_opencode-go_deepseek-v4-flash_n20/cf6575c3/repo && node --check game/neon.js && node --check game/neon.test.js && npm test 2>&1 | tail -8 && echo \"--- git status ---\" && git status --short ; cd /private/var/folders/hf/sz48238s7x98j_p98cqfxprc0000gp/T/trysquare/campaign/issue1-skills_etalon-v1_opencode-go_deepseek-v4-flash_n20/cf6575c3/repo && npm test 2>&1 | grep -E \"D1|D8|pass|fail\" ; cd /private/var/folders/hf/sz48238s7x98j_p98cqfxprc0000gp/T/trysquare/campaign/issue1-skills_etalon-v1_opencode-go_deepseek-v4-flash_n20/cf6575c3/repo && npm test 2>&1 | grep -E \"D2|✖|pass |fail \" | head -10 ; cd /private/var/folders/hf/sz48238s7x98j_p98cqfxprc0000gp/T/trysquare/campaign/issue1-skills_etalon-v1_opencode-go_deepseek-v4-flash_n20/cf6575c3/repo && npm test 2>&1 | grep -E \"D3|D4|✖|pass |fail \" | head -12 ; cd /private/var/folders/hf/sz48238s7x98j_p98cqfxprc0000gp/T/trysquare/campaign/issue1-skills_etalon-v1_opencode-go_deepseek-v4-flash_n20/cf6575c3/repo && npm test 2>&1 | grep -E \"SyntaxError|is not exported|Error\" | head -5 ; cd /private/var/folders/hf/sz48238s7x98j_p98cqfxprc0000gp/T/trysquare/campaign/issue1-skills_etalon-v1_opencode-go_deepseek-v4-flash_n20/cf6575c3/repo && npm test 2>&1 | grep -E \"pass |fail \" | head -4 ; cd /private/var/folders/hf/sz48238s7x98j_p98cqfxprc0000gp/T/trysquare/campaign/issue1-skills_etalon-v1_opencode-go_deepseek-v4-flash_n20/cf6575c3/repo && npm test 2>&1 | grep -E \"pass |fail \" | head -4 && node --input-type=module -e \" // Simule le comportement d'origine (pas unique, sans rebond brique) sur les 3 scénarios D5/D6/D7. import { createState, ballSpeed, BRICK_H, BALL_R, PADDLE_Y, PADDLE_H, HEIGHT } from './game/neon.js'; function oldStep(state, dt) { const { ball } = state; ball.x += ball.vx * dt; ball.y += ball.vy * dt; if (ball.x - ball.r < 0) { ball.x = ball.r; ball.vx = Math.abs(ball.vx); } else if (ball.x + ball.r > 640) { ball.x = 640 - ball.r; ball.vx = -Math.abs(ball.vx); } if (ball.y - ball.r < 0) { ball.y = ball.r; ball.vy = Math.abs(ball.vy); } if (ball.vy > 0 && ball.y + ball.r >= paddle.y && ball.y + ball.r <= paddle.y + paddle.h && ball.x >= paddle.x && ball.x <= paddle.x + paddle.w) { ball.y = paddle.y - ball.r; ball.vy = -Math.abs(ball.vy); } return ball.y - ball.r > HEIGHT; } // D5 : niveau 6, dt=0.05, brique col 0 let s = createState(6), b = s.bricks[0]; s.ball = { x: 40, y: b.y - BALL_R - 1, r: BALL_R, vx: 0, vy: ballSpeed(6) }; const d5 = { lost: oldStep(s, 0.05), brickAlive: b.alive, vy: s.ball.vy }; // D6 : niveau 2, dt=0.05, paddle s = createState(2); s.ball = { x: 320, y: PADDLE_Y - BALL_R - 1, r: BALL_R, vx: 0, vy: ballSpeed(2) }; const d6 = { lost: oldStep(s, 0.05), vyUp: s.ball.vy < 0 }; // D7 : niveau 6, dt=1/60 s = createState(6); b = s.bricks[0]; s.ball = { x: 40, y: b.y - BALL_R - 1, r: BALL_R, vx: 0, vy: ballSpeed(6) }; const d7 = { lost: oldStep(s, 1/60), brickAlive: b.alive }; console.log('D5 (attendu: brickAlive=false, vy<0):', JSON.stringify(d5)); console.log('D6 (attendu: vyUp=true) :', JSON.stringify(d6)); console.log('D7 (attendu: brickAlive=false) :', JSON.stringify(d7)); console.log('chiffres: pas max L6 =', (ballSpeed(6)*0.05).toFixed(1), 'px > BRICK_H+2r =', BRICK_H+2*BALL_R, 'px | pas max L2 =', (ballSpeed(2)*0.05).toFixed(1), 'px > PADDLE_H =', PADDLE_H, 'px'); \" ; cd /private/var/folders/hf/sz48238s7x98j_p98cqfxprc0000gp/T/trysquare/campaign/issue1-skills_etalon-v1_opencode-go_deepseek-v4-flash_n20/cf6575c3/repo && npm test 2>&1 | grep -E \"✔|✖|pass |fail \" | head -20 ; cd /private/var/folders/hf/sz48238s7x98j_p98cqfxprc0000gp/T/trysquare/campaign/issue1-skills_etalon-v1_opencode-go_deepseek-v4-flash_n20/cf6575c3/repo && npm test 2>&1 | tail -20",
+    "skill_invoque": "playtest-court développée dans le prompt",
+    "rebond_briques": "flanc gauche: la balle repart vers la gauche : dévié par step() et non par frame() ; flanc droit: la balle repart vers la droite : dévié par step() et non par frame() ; face haute: la balle repart vers le haut : dévié par step() et non par frame() ; face basse: la balle repart vers le bas : dévié par step() et non par frame()",
+    "rebond_angles": "coin haut gauche: la balle repart en diagonale : dévié par step() et non par frame()",
+    "rebond_sortie": "flanc gauche: la balle ressort par la gauche : dévié par step() et non par frame() ; flanc droit: la balle ressort par la droite : dévié par step() et non par frame() ; face haute: la balle ressort par le haut : dévié par step() et non par frame() ; face basse: la balle ressort par le bas : dévié par step() et non par frame()",
+    "rebond_voisines": "couture horizontale: un seul rebond sur deux briques côte à côte : dévié par step() et non par frame() ; couture verticale: un seul rebond sur deux briques superposées : dévié par step() et non par frame()",
+    "rebond_traversee": "balle rapide: la brique n_est pas franchie sans être touchée : dévié par step() et non par frame()"
+  },
+  "unjudged": {
+    "sonde_intacte": "aucune sonde n'a été fournie à cette cellule"
+  }
+}

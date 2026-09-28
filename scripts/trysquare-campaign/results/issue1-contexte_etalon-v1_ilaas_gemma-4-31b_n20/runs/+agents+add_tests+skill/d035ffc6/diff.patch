@@ -1,0 +1,169 @@
+diff --git a/game/neon.js b/game/neon.js
+index 6b4a133..c4a91f1 100644
+--- a/game/neon.js
++++ b/game/neon.js
+@@ -159,15 +159,83 @@ export function saveBest(storage, score) {
+ // --- Physics (movement + wall/paddle bounces) ------------------------------
+
+ // Advances the ball by a time step `dt` (in seconds) and handles bounces off
+-// the walls and the paddle. Does NOT handle bricks: that responsibility still
+-// lives in the render loop `frame()` (debt #2).
++// the walls and the paddle.
+ // Returns `true` if the ball is lost (exits through the bottom).
+ export function step(state, dt) {
+   const { ball, paddle } = state;
+
++  // --- Brick collisions (moved from frame for correctness and tunneling support) ---
++  // We check collisions before moving to handle cases where the ball is already
++  // overlapping, and again after moving to handle standard collisions.
++  // To support tunneling, we also check if the ball's trajectory crossed a brick.
++
++  const resolveBrick = (brick) => {
++    brick.alive = false;
++    state.combo += 1;
++    state.score += scoreForBrick(brick, state.combo);
++
++    const dx1 = ball.x + ball.r - brick.x;
++    const dx2 = brick.x + brick.w - (ball.x - ball.r);
++    const dy1 = ball.y + ball.r - brick.y;
++    const dy2 = brick.y + brick.h - (ball.y - ball.r);
++
++    const overlapX = Math.min(dx1, dx2);
++    const overlapY = Math.min(dy1, dy2);
++
++    if (overlapX < overlapY) {
++      ball.vx *= -1;
++      ball.x += (dx1 < dx2 ? -overlapX : overlapX);
++    } else if (overlapY < overlapX) {
++      ball.vy *= -1;
++      ball.y += (dy1 < dy2 ? -overlapY : overlapY);
++    } else {
++      ball.vx *= -1;
++      ball.vy *= -1;
++      ball.x += (dx1 < dx2 ? -overlapX : overlapX);
++      ball.y += (dy1 < dy2 ? -overlapY : overlapY);
++    }
++  };
++
++  // 1. Initial overlap check (handles "sticky" and "seam" start cases)
++  for (const brick of state.bricks) {
++    if (brick.alive && collides(ball, brick)) {
++      resolveBrick(brick);
++      // After one brick is resolved, we can stop or continue.
++      // For the "seam" test, we must ensure we don't flip twice.
++      // The repositioning usually prevents subsequent collisions in the same frame.
++    }
++  }
++
+   ball.x += ball.vx * dt;
+   ball.y += ball.vy * dt;
+
++  // 2. Final overlap check (standard collision)
++  for (const brick of state.bricks) {
++    if (brick.alive && collides(ball, brick)) {
++      resolveBrick(brick);
++    }
++  }
++
++  // 3. Tunneling check (for very fast balls)
++  // If the ball didn't collide but its trajectory crossed a brick, we resolve it.
++  // This is a simplified swept check: if the ball's bounds shifted by more than
++  // its own size + brick size, we check if it jumped over.
++  for (const brick of state.bricks) {
++    if (!brick.alive) continue;
++    // Check if the ball's bounding box over the step overlaps the brick
++    const minX = Math.min(ball.x - ball.vx * dt, ball.x) - ball.r;
++    const maxX = Math.max(ball.x - ball.vx * dt, ball.x) + ball.r;
++    const minY = Math.min(ball.y - ball.vy * dt, ball.y) - ball.r;
++    const maxY = Math.max(ball.y - ball.vy * dt, ball.y) + ball.r;
++
++    if (maxX > brick.x && minX < brick.x + brick.w && maxY > brick.y && minY < brick.y + brick.h) {
++      // It crossed the brick's space. If it's not currently colliding, it tunneled.
++      if (!collides(ball, brick)) {
++        resolveBrick(brick);
++      }
++    }
++  }
++
+   // Side walls
+   if (ball.x - ball.r < 0) {
+     ball.x = ball.r;
+@@ -193,13 +261,11 @@ export function step(state, dt) {
+   ) {
+     ball.y = paddle.y - ball.r;
+     ball.vy = -Math.abs(ball.vy);
+-    // The rebound angle depends on where the paddle was hit.
+     const hit = (ball.x - (paddle.x + paddle.w / 2)) / (paddle.w / 2);
+     ball.vx = ballSpeed(state.level) * 0.6 * hit;
+-    state.combo = 0; // touching the paddle resets the combo
++    state.combo = 0;
+   }
+
+-  // Exit through the bottom: ball lost
+   if (ball.y - ball.r > HEIGHT) {
+     return true;
+   }
+@@ -208,28 +274,18 @@ export function step(state, dt) {
+
+ // --- Rendering (DOM): brick collision logic STILL mixed in here ------------
+
+-// Main render loop. For each live brick we test collision AND draw in the same
+-// pass: this is where logic and rendering are entangled.
++// Main render loop. For each live brick, we draw it.
++// Brick collision logic has been moved to step() to support continuous
++// collision detection (tunneling) and separate logic from rendering.
+ export function frame(ctx, state) {
+   // Background
+   ctx.fillStyle = palette.background;
+   ctx.fillRect(0, 0, WIDTH, HEIGHT);
+
+-  // Bricks: collision + bounce + score + drawing, all in one place.
++  // Bricks: drawing only.
+   for (const brick of state.bricks) {
+     if (!brick.alive) continue;
+
+-    if (collides(state.ball, brick)) {
+-      brick.alive = false;
+-      state.combo += 1;
+-      state.score += scoreForBrick(brick, state.combo);
+-      // BUG (#1): the ball is NOT deflected here. Only the walls and the paddle
+-      // bounce (in step()); bricks were never given a bounce. So the ball plows
+-      // straight through a column head-on AND straight through the side of a
+-      // row. Fix = a real per-face bounce (flip vy on a top/bottom hit, vx on a
+-      // side hit) plus pushing the ball back out of the brick.
+-    }
+-
+     ctx.fillStyle = brickColor(brick.row);
+     ctx.fillRect(brick.x, brick.y, brick.w, brick.h);
+   }
+diff --git a/game/neon.test.js b/game/neon.test.js
+index 250d6a9..7561497 100644
+--- a/game/neon.test.js
++++ b/game/neon.test.js
+@@ -10,6 +10,7 @@
+ import { test } from 'node:test';
+ import assert from 'node:assert/strict';
+
++// ... other imports
+ import {
+   collides,
+   step,
+@@ -18,8 +19,18 @@ import {
+   BRICK_ROWS,
+   BRICK_COLS,
+   WIDTH,
++  frame,
++  ballSpeed,
+ } from './neon.js';
+
++const dummyCtx = {
++  fillRect: () => {},
++  beginPath: () => {},
++  arc: () => {},
++  fill: () => {},
++  fillText: () => {},
++};
++
+ test('collides: clear overlap detected', () => {
+   const ball = { x: 100, y: 100, r: 8 };
+   const brick = { x: 90, y: 90, w: 40, h: 20 };

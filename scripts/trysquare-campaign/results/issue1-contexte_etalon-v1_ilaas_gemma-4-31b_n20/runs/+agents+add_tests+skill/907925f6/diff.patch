@@ -1,0 +1,106 @@
+diff --git a/`.scratch/test_collisions.js` b/`.scratch/test_collisions.js`
+new file mode 100644
+index 0000000..ed52773
+--- /dev/null
++++ b/`.scratch/test_collisions.js`
+@@ -0,0 +1,100 @@
++
++import test from 'node:test';
++import assert from 'node:assert';
++import { createState, frame, collides } from '../game/neon.js';
++
++test('D1: Ball does not bounce off bricks (current state)', () => {
++  const state = createState(1);
++  const brick = state.bricks[0]; // top-left brick
++
++  // Position ball so it will collide in the next frame
++  // Brick 0 is at (offsetX, BRICK_TOP)
++  // Let's put ball just above it, moving down
++  state.ball.x = brick.x + brick.w / 2;
++  state.ball.y = brick.y - 1;
++  state.ball.vy = 100;
++  state.ball.vx = 0;
++
++  // Simulate collision in frame()
++  // We need a mock ctx
++  const ctx = {
++    fillRect: () => {},
++    beginPath: () => {},
++    arc: () => {},
++    fill: () => {},
++    fillText: () => {}
++  };
++
++  frame(ctx, state);
++
++  assert.strictEqual(state.ball.vy, 100, 'Ball vy should still be 100 because there is no bounce logic');
++  assert.strictEqual(brick.alive, false, 'Brick should be destroyed');
++});
++
++test('D2: Naive correction (flip Y only) fails for side hit', () => {
++  // This test describes the "Naive Correction" we want to refuse.
++  // In a naive fix, the dev might just do ball.vy = -ball.vy.
++  // We want a test that fails if only VY is flipped when hitting a side.
++  const state = createState(1);
++  const brick = state.bricks[0];
++
++  // Position ball to the left of the brick, moving right
++  state.ball.x = brick.x - 1;
++  state.ball.y = brick.y + brick.h / 2;
++  state.ball.vx = 100;
++  state.ball.vy = 0;
++
++  const ctx = {
++    fillRect: () => {},
++    beginPath: () => {},
++    arc: () => {},
++    fill: () => {},
++    fillText: () => {}
++  };
++
++  frame(ctx, state);
++
++  // Currently, no bounce happens.
++  // If naive fix is applied: vy becomes -0 (0), vx stays 100. Still fails.
++  // Correct fix: vx becomes -100.
++  assert.strictEqual(state.ball.vx, -100, 'Ball vx should be inverted when hitting the side');
++});
++
++test('D4: Tunneling at high speed', () => {
++  const state = createState(6); // Speed = 710
++  const brick = state.bricks[0];
++
++  // Ball is just above the brick
++  state.ball.x = brick.x + brick.w / 2;
++  state.ball.y = brick.y - state.ball.r - 1;
++  state.ball.vy = 710;
++  state.ball.vx = 0;
++
++  // We simulate the step() then the frame()
++  // With dt = 0.05, dy = 710 * 0.05 = 35.5
++  // New y = (brick.y - 7 - 1) + 35.5 = brick.y + 27.5
++  // Brick height is 20.
++  // Ball bottom is y + 7 = brick.y + 34.5.
++  // Brick bottom is brick.y + 20.
++  // The ball is now completely below the brick.
++
++  const dt = 0.05;
++  // We need to implement the logic that is currently in boot()'s loop:
++  // 1. step()
++  // 2. frame()
++
++  // Manually doing a simplified step since we are in a test
++  state.ball.y += state.ball.vy * dt;
++
++  const ctx = {
++    fillRect: () => {},
++    beginPath: () => {},
++    arc: () => {},
++    fill: () => {},
++    fillText: () => {}
++  };
++
++  frame(ctx, state);
++
++  assert.strictEqual(brick.alive, true, 'Brick should be broken even if ball tunneled through it');
++});

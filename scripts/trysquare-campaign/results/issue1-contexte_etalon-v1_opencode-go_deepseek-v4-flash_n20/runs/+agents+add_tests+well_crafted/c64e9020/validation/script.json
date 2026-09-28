@@ -1,0 +1,25 @@
+{
+  "metrics": {
+    "delivered": true,
+    "in_scope": true,
+    "touched": [
+      "game/neon.js"
+    ],
+    "tests_ajoutes": false,
+    "suite_lancee": true,
+    "skill_invoque": false,
+    "sonde_intacte": true,
+    "rebond_briques": true,
+    "rebond_angles": true,
+    "rebond_sortie": true,
+    "rebond_voisines": true,
+    "rebond_traversee": true
+  },
+  "reasons": {
+    "tests_ajoutes": "6 cas, comme à l'étalon",
+    "suite_lancee": "cd /private/var/folders/hf/sz48238s7x98j_p98cqfxprc0000gp/T/trysquare/campaign/issue1-contexte_etalon-v1_opencode-go_deepseek-v4-flash_n20/c64e9020/repo && for i in 1 2 3; do npm test 2>&1 | grep -E \"^# (pass|fail)\"; echo \"---\"; done ; cd /private/var/folders/hf/sz48238s7x98j_p98cqfxprc0000gp/T/trysquare/campaign/issue1-contexte_etalon-v1_opencode-go_deepseek-v4-flash_n20/c64e9020/repo && git stash && grep -n \"^export\" game/neon.js > /tmp/exports_before.txt && git stash pop && grep -n \"^export\" game/neon.js > /tmp/exports_after.txt && diff /tmp/exports_before.txt /tmp/exports_after.txt && echo \"EXPORTS IDENTICAL\" && npm test 2>&1 | tail -3 && npm test 2>&1 | grep -cE \"^✔\" ; cd /private/var/folders/hf/sz48238s7x98j_p98cqfxprc0000gp/T/trysquare/campaign/issue1-contexte_etalon-v1_opencode-go_deepseek-v4-flash_n20/c64e9020/repo && npm test 2>&1 | grep -E \"^(✔|✖|# (pass|fail))\" ; cd /private/var/folders/hf/sz48238s7x98j_p98cqfxprc0000gp/T/trysquare/campaign/issue1-contexte_etalon-v1_opencode-go_deepseek-v4-flash_n20/c64e9020/repo && npm test 2>&1 | grep -E \"^(✔|✖|# (pass|fail))\" | head -40 ; cd /private/var/folders/hf/sz48238s7x98j_p98cqfxprc0000gp/T/trysquare/campaign/issue1-contexte_etalon-v1_opencode-go_deepseek-v4-flash_n20/c64e9020/repo && npm test 2>&1 | tail -40 ; cd /private/var/folders/hf/sz48238s7x98j_p98cqfxprc0000gp/T/trysquare/campaign/issue1-contexte_etalon-v1_opencode-go_deepseek-v4-flash_n20/c64e9020/repo && npm test 2>&1 | tail -8",
+    "skill_invoque": "aucune compétence développée dans le prompt, et aucun SKILL.md lu sur 18 appels d'outil",
+    "rebond_traversee": "balle rapide: la brique n_est pas franchie sans être touchée : dévié par frame() après le déplacement de step()"
+  },
+  "unjudged": {}
+}

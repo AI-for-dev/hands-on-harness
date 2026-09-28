@@ -1,0 +1,27 @@
+{
+  "metrics": {
+    "delivered": true,
+    "in_scope": true,
+    "touched": [
+      "game/neon.js",
+      "game/neon.test.js"
+    ],
+    "tests_ajoutes": true,
+    "suite_lancee": true,
+    "skill_invoque": true,
+    "rebond_briques": true,
+    "rebond_angles": true,
+    "rebond_sortie": true,
+    "rebond_voisines": true,
+    "rebond_traversee": true
+  },
+  "reasons": {
+    "tests_ajoutes": "9 cas de plus qu'à l'étalon (15 contre 6)",
+    "suite_lancee": "cd /private/var/folders/hf/sz48238s7x98j_p98cqfxprc0000gp/T/trysquare/campaign/issue1-contexte_etalon-v1_opencode-go_deepseek-v4-flash_n20/177ad965/repo && NEON_TARGET=../game/neon.js node --test .scratch/probe.test.js 2>&1 | grep -B1 \"AssertionError\\|TypeError\" | grep -v \"^--$\" | head -40 ; cd /private/var/folders/hf/sz48238s7x98j_p98cqfxprc0000gp/T/trysquare/campaign/issue1-contexte_etalon-v1_opencode-go_deepseek-v4-flash_n20/177ad965/repo && NEON_TARGET=../game/neon.js node --test .scratch/probe.test.js 2>&1 | grep -E \"^(✔|✖|ℹ (tests|pass|fail))\" && node --check game/neon.js && node --check game/neon.test.js && echo \"syntax OK\" ; cd /private/var/folders/hf/sz48238s7x98j_p98cqfxprc0000gp/T/trysquare/campaign/issue1-contexte_etalon-v1_opencode-go_deepseek-v4-flash_n20/177ad965/repo && NEON_TARGET=../game/neon.js node --test .scratch/probe.test.js 2>&1 | grep -E \"^(✔|✖|ℹ|# )\" | head -30 ; cd /private/var/folders/hf/sz48238s7x98j_p98cqfxprc0000gp/T/trysquare/campaign/issue1-contexte_etalon-v1_opencode-go_deepseek-v4-flash_n20/177ad965/repo && NEON_TARGET=../game/neon.js node --test .scratch/probe.test.js 2>&1 | tail -40 ; cd /private/var/folders/hf/sz48238s7x98j_p98cqfxprc0000gp/T/trysquare/campaign/issue1-contexte_etalon-v1_opencode-go_deepseek-v4-flash_n20/177ad965/repo && NEON_TARGET=./naive-neon.js node --test .scratch/probe.test.js 2>&1 | grep -A1 \"AssertionError\" | grep -v \"^--$\" | head -30 ; cd /private/var/folders/hf/sz48238s7x98j_p98cqfxprc0000gp/T/trysquare/campaign/issue1-contexte_etalon-v1_opencode-go_deepseek-v4-flash_n20/177ad965/repo && NEON_TARGET=./naive-neon.js node --test .scratch/probe.test.js 2>&1 | grep -E \"^(✔|✖|ℹ)\" | head -20 ; cd /private/var/folders/hf/sz48238s7x98j_p98cqfxprc0000gp/T/trysquare/campaign/issue1-contexte_etalon-v1_opencode-go_deepseek-v4-flash_n20/177ad965/repo && NEON_TARGET=./naive-neon.js node --test .scratch/probe.test.js 2>&1 | head -25 ; cd /private/var/folders/hf/sz48238s7x98j_p98cqfxprc0000gp/T/trysquare/campaign/issue1-contexte_etalon-v1_opencode-go_deepseek-v4-flash_n20/177ad965/repo && echo \"=== TODAY ===\" && NEON_TARGET=../game/neon.js node --test .scratch/probe.test.js 2>&1 | grep -E \"^(✔|✖|ℹ (tests|pass|fail))\" && echo \"=== NAIVE ===\" && NEON_TARGET=./naive-neon.js node --test .scratch/probe.test.js 2>&1 | grep -E \"^(✔|✖|ℹ (tests|pass|fail))\" ; cd /private/var/folders/hf/sz48238s7x98j_p98cqfxprc0000gp/T/trysquare/campaign/issue1-contexte_etalon-v1_opencode-go_deepseek-v4-flash_n20/177ad965/repo && node --test game/neon.test.js 2>&1 | grep -A12 \"D3a\" | head -20 ; cd /private/var/folders/hf/sz48238s7x98j_p98cqfxprc0000gp/T/trysquare/campaign/issue1-contexte_etalon-v1_opencode-go_deepseek-v4-flash_n20/177ad965/repo && node --test game/neon.test.js 2>&1 | grep -B2 -A6 \"D5:\" | head -30 ; cd /private/var/folders/hf/sz48238s7x98j_p98cqfxprc0000gp/T/trysquare/campaign/issue1-contexte_etalon-v1_opencode-go_deepseek-v4-flash_n20/177ad965/repo && npm test 2>&1 | grep -E \"^(ℹ (tests|pass|fail))\" ; cd /private/var/folders/hf/sz48238s7x98j_p98cqfxprc0000gp/T/trysquare/campaign/issue1-contexte_etalon-v1_opencode-go_deepseek-v4-flash_n20/177ad965/repo && npm test 2>&1 | grep -E \"^(✔|✖|ℹ (tests|pass|fail))\" ; cd /private/var/folders/hf/sz48238s7x98j_p98cqfxprc0000gp/T/trysquare/campaign/issue1-contexte_etalon-v1_opencode-go_deepseek-v4-flash_n20/177ad965/repo && npm test 2>&1 | grep -E \"^(✔|✖|ℹ (tests|pass|fail))\" | head -14 ; cd /private/var/folders/hf/sz48238s7x98j_p98cqfxprc0000gp/T/trysquare/campaign/issue1-contexte_etalon-v1_opencode-go_deepseek-v4-flash_n20/177ad965/repo && npm test 2>&1 | grep -E \"^(✔|✖|ℹ (tests|pass|fail))\" | head -15 ; cd /private/var/folders/hf/sz48238s7x98j_p98cqfxprc0000gp/T/trysquare/campaign/issue1-contexte_etalon-v1_opencode-go_deepseek-v4-flash_n20/177ad965/repo && npm test 2>&1 | grep -E \"^(✔|✖|ℹ (tests|pass|fail))\" | head -16 ; cd /private/var/folders/hf/sz48238s7x98j_p98cqfxprc0000gp/T/trysquare/campaign/issue1-contexte_etalon-v1_opencode-go_deepseek-v4-flash_n20/177ad965/repo && npm test 2>&1 | grep -E \"^(✔|✖|ℹ (tests|pass|fail))\" | tail -6 ; cd /private/var/folders/hf/sz48238s7x98j_p98cqfxprc0000gp/T/trysquare/campaign/issue1-contexte_etalon-v1_opencode-go_deepseek-v4-flash_n20/177ad965/repo && npm test 2>&1 | tail -12 ; cd /private/var/folders/hf/sz48238s7x98j_p98cqfxprc0000gp/T/trysquare/campaign/issue1-contexte_etalon-v1_opencode-go_deepseek-v4-flash_n20/177ad965/repo && sed -i '' \"s|'./theme.js'|'../game/theme.js'|; s|'./bloom.js'|'../game/bloom.js'|\" .scratch/naive-neon.js && NEON_TARGET=./naive-neon.js node --test .scratch/probe.test.js 2>&1 | grep -E \"^(✔|✖|ℹ)\" | head -20",
+    "skill_invoque": "playtest développée dans le prompt",
+    "rebond_traversee": "balle rapide: la brique n_est pas franchie sans être touchée : dévié par frame() après le déplacement de step()"
+  },
+  "unjudged": {
+    "sonde_intacte": "aucune sonde n'a été fournie à cette cellule"
+  }
+}

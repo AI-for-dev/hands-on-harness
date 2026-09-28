@@ -1,0 +1,35 @@
+{
+  "metrics": {
+    "delivered": true,
+    "in_scope": false,
+    "touched": [
+      ".scratch/naive.test.js",
+      ".scratch/probe.test.js",
+      ".scratch/to_fix.md",
+      "game/neon.js",
+      "game/neon.test.js"
+    ],
+    "tests_ajoutes": true,
+    "suite_lancee": true,
+    "skill_invoque": true,
+    "rebond_briques": true,
+    "rebond_angles": true,
+    "rebond_sortie": true,
+    "rebond_voisines": true,
+    "rebond_traversee": true
+  },
+  "reasons": {
+    "in_scope": "a aussi touché .scratch/naive.test.js, .scratch/probe.test.js, .scratch/to_fix.md",
+    "tests_ajoutes": "11 cas de plus qu'à l'étalon (17 contre 6)",
+    "suite_lancee": "cd /private/var/folders/hf/sz48238s7x98j_p98cqfxprc0000gp/T/trysquare/campaign/issue1-contexte_etalon-v1_opencode-go_deepseek-v4-flash_n20/0227fd81/repo && echo \"=== PROBE (code actuel : 11 rouges attendus) ===\" && node --test .scratch/probe.test.js 2>&1 | grep -E \"ℹ (tests|pass|fail)\" && echo \"=== NAIVES (toutes rouges attendues = naives refusées) ===\" && node --test .scratch/naive.test.js 2>&1 | grep -E \"^(✔|✖)|ℹ (tests|pass|fail)\" ; cd /private/var/folders/hf/sz48238s7x98j_p98cqfxprc0000gp/T/trysquare/campaign/issue1-contexte_etalon-v1_opencode-go_deepseek-v4-flash_n20/0227fd81/repo && echo \"=== PROBE (sur code actuel) ===\" && node --test .scratch/probe.test.js 2>&1 | grep -E \"ℹ (tests|pass|fail)\" && echo \"=== NAIVES (doivent rester rouges) ===\" && node --test .scratch/naive.test.js 2>&1 | grep -E \"^(✔|✖)|ℹ (tests|pass|fail)\" ; cd /private/var/folders/hf/sz48238s7x98j_p98cqfxprc0000gp/T/trysquare/campaign/issue1-contexte_etalon-v1_opencode-go_deepseek-v4-flash_n20/0227fd81/repo && node --test \"game/**/*.test.js\" 2>&1 | grep -E \"^(✔|✖)|ℹ (tests|pass|fail)\" ; cd /private/var/folders/hf/sz48238s7x98j_p98cqfxprc0000gp/T/trysquare/campaign/issue1-contexte_etalon-v1_opencode-go_deepseek-v4-flash_n20/0227fd81/repo && node --test \"game/**/*.test.js\" 2>&1 | grep -E \"ℹ (tests|pass|fail)\" && node --input-type=module -e \" import { createState, step, collides, ballSpeed } from './game/neon.js'; let violations = 0, frames = 0, dead = 0, lost = 0; for (let trial = 0; trial < 40; trial++) { const state = createState(1 + (trial % 8)); const sp = ballSpeed(state.level); const a = (trial * 37) % 360 * Math.PI / 180; state.ball = { x: 320, y: 200, r: 7, vx: Math.cos(a) * sp * 0.8, vy: -Math.abs(Math.sin(a)) * sp * 0.8 }; for (let f = 0; f < 3000; f++) { const dt = [1/60, 0.03, 0.05][f % 3]; frames++; const l = step(state, dt); for (const b of state.bricks) { if (b.alive && collides(state.ball, b)) { violations++; console.log('VIOLATION', JSON.stringify({trial, f, x: state.ball.x, y: state.ball.y, vx: state.ball.vx, vy: state.ball.vy})); break; } } if (l) { lost++; break; } } dead += state.bricks.filter(b => !b.alive).length; } console.log({ frames, lost, dead, violations }); if (violations) process.exit(1); \" ; cd /private/var/folders/hf/sz48238s7x98j_p98cqfxprc0000gp/T/trysquare/campaign/issue1-contexte_etalon-v1_opencode-go_deepseek-v4-flash_n20/0227fd81/repo && node --test .scratch/naive.test.js 2>&1 | grep -E \"^(✔|✖)|ℹ (tests|pass|fail)\" ; cd /private/var/folders/hf/sz48238s7x98j_p98cqfxprc0000gp/T/trysquare/campaign/issue1-contexte_etalon-v1_opencode-go_deepseek-v4-flash_n20/0227fd81/repo && node --test .scratch/probe.test.js 2>&1 | grep -A4 \"✖ D1a\\|✖ D2a\\|✖ D3\\|✖ D5\\|✖ D6a2\\|✖ D6b\" | grep -E \"AssertionError|expected|actual|message\" | head -30 ; cd /private/var/folders/hf/sz48238s7x98j_p98cqfxprc0000gp/T/trysquare/campaign/issue1-contexte_etalon-v1_opencode-go_deepseek-v4-flash_n20/0227fd81/repo && node --test .scratch/probe.test.js 2>&1 | grep -E \"AssertionError|ℹ (tests|pass|fail)\" ; cd /private/var/folders/hf/sz48238s7x98j_p98cqfxprc0000gp/T/trysquare/campaign/issue1-contexte_etalon-v1_opencode-go_deepseek-v4-flash_n20/0227fd81/repo && node --test .scratch/probe.test.js 2>&1 | grep -E \"^(✔|✖|ℹ (tests|pass|fail))\" ; cd /private/var/folders/hf/sz48238s7x98j_p98cqfxprc0000gp/T/trysquare/campaign/issue1-contexte_etalon-v1_opencode-go_deepseek-v4-flash_n20/0227fd81/repo && node --test .scratch/probe.test.js 2>&1 | sed -n '/failing tests/,/^ℹ tests/p' | head -60 ; cd /private/var/folders/hf/sz48238s7x98j_p98cqfxprc0000gp/T/trysquare/campaign/issue1-contexte_etalon-v1_opencode-go_deepseek-v4-flash_n20/0227fd81/repo && npm test 2>&1 | tail -20 ; cd /private/var/folders/hf/sz48238s7x98j_p98cqfxprc0000gp/T/trysquare/campaign/issue1-contexte_etalon-v1_opencode-go_deepseek-v4-flash_n20/0227fd81/repo && sed -i '' 's/y: 73, r: 7, vx: 60/y: 74, r: 7, vx: 60/' .scratch/naive.test.js && node --test .scratch/naive.test.js 2>&1 | grep -E \"^(✔|✖)|ℹ (tests|pass|fail)\"",
+    "skill_invoque": "/Users/loic.gouarin/Formations/2026/AI4Dev/hands-on-harness/scripts/trysquare-campaign/briques/skills/playtest/SKILL.md ; playtest développée dans le prompt",
+    "rebond_briques": "flanc gauche: la balle repart vers la gauche : dévié par step() et non par frame() ; flanc droit: la balle repart vers la droite : dévié par step() et non par frame() ; face haute: la balle repart vers le haut : dévié par step() et non par frame() ; face basse: la balle repart vers le bas : dévié par step() et non par frame()",
+    "rebond_angles": "coin haut gauche: la balle repart en diagonale : dévié par step() et non par frame()",
+    "rebond_sortie": "flanc gauche: la balle ressort par la gauche : dévié par step() et non par frame() ; flanc droit: la balle ressort par la droite : dévié par step() et non par frame() ; face haute: la balle ressort par le haut : dévié par step() et non par frame() ; face basse: la balle ressort par le bas : dévié par step() et non par frame()",
+    "rebond_voisines": "couture horizontale: un seul rebond sur deux briques côte à côte : dévié par step() et non par frame() ; couture verticale: un seul rebond sur deux briques superposées : dévié par step() et non par frame()",
+    "rebond_traversee": "balle rapide: la brique n_est pas franchie sans être touchée : dévié par step() et non par frame()"
+  },
+  "unjudged": {
+    "sonde_intacte": "aucune sonde n'a été fournie à cette cellule"
+  }
+}

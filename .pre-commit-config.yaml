@@ -3,6 +3,9 @@ repos:
     rev: v5.0.0
     hooks:
       - id: trailing-whitespace
+        # Les fichiers .patch portent des espaces significatifs : une ligne de
+        # contexte vide y est un espace seul, que git apply attend tel quel.
+        exclude: '\.patch$'
       - id: end-of-file-fixer
       - id: check-merge-conflict
       - id: check-added-large-files
@@ -12,8 +15,18 @@ repos:
 
   - repo: local
     hooks:
+      - id: i18n-unit-tests
+        name: i18n script unit tests
+        description: >-
+          Runs the i18n unit tests (segmentation, segment index, integrity
+          checks) whenever the scripts themselves change.
+        entry: npm test --silent
+        language: system
+        pass_filenames: false
+        files: ^scripts/
+
       - id: i18n-translations-up-to-date
-        name: Traductions i18n à jour (fr -> en/es)
+        name: i18n translations up to date (fr -> en/es)
         description: >-
           Blocks the commit if a French page has not yet been
           retranslated, or if an already delivered translation is marked

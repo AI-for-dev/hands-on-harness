@@ -1,0 +1,17 @@
+{
+  "cell": "+agents+add_tests+well_crafted",
+  "repo": "https://github.com/AI-for-dev/neon.git",
+  "etalon": "etalon-v1",
+  "etalon_commit": "d62ccd1f3255c8286ff6b5856860f7635f4d324e",
+  "provider": "opencode-go",
+  "model": "deepseek-v4-flash",
+  "model_id": "deepseek-v4-flash",
+  "thinking": "high",
+  "injected": [
+    "AGENTS.md"
+  ],
+  "given": [
+    "game/sonde.test.js"
+  ],
+  "agents": {}
+}

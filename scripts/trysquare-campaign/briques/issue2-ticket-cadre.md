@@ -1,0 +1,1 @@
+Traite le ticket #2 d'`ISSUES.md` : la détection de collision des briques vit dans la boucle de rendu. Extrais-en une fonction pure et testable `brickHit(ball, bricks)`, sans changer l'API publique de `game/neon.js` : les fonctions déjà exportées gardent leur nom et leur signature. Ne modifie que `game/neon.js` et `game/neon.test.js`. Tu as fini quand `npm test` passe.

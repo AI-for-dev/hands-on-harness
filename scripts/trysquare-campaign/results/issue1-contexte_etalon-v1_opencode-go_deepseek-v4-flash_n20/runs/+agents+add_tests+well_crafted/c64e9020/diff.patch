@@ -1,0 +1,155 @@
+diff --git a/game/neon.js b/game/neon.js
+index 6b4a133..05870f2 100644
+--- a/game/neon.js
++++ b/game/neon.js
+@@ -165,6 +165,10 @@ export function saveBest(storage, score) {
+ export function step(state, dt) {
+   const { ball, paddle } = state;
+
++  // Remember where the ball was before this step: the brick sweep in frame()
++  // needs a path segment to detect tunnelling (see #1).
++  ball.px = ball.x;
++  ball.py = ball.y;
+   ball.x += ball.vx * dt;
+   ball.y += ball.vy * dt;
+
+@@ -206,30 +210,125 @@ export function step(state, dt) {
+   return false;
+ }
+
++// --- Brick collision resolution (#1) ---------------------------------------
++
++// The gap between bricks is 8 px and the ball is 14 px across, so a ball
++// resting on a seam overlaps two bricks in the SAME pass. Applying `vy = -vy`
++// per brick would flip twice and cancel out. The rules below follow the issue:
++//
++//   - per face:  the axis with the SMALLER penetration is the face that was
++//                hit — flip that component, leave the other untouched;
++//   - corner:    equal penetrations mean a diagonal hit — flip both;
++//   - push out:  reposition the ball outside the brick rectangle, otherwise it
++//                still overlaps on the next frame and re-flips forever;
++//   - neighbours:every brick touched in the pass is destroyed, but the bounce
++//                is applied exactly ONCE, from the shallowest penetration;
++//   - tunnelling:sweep the segment [previous position, current position]
++//                instead of sampling a single frame's position.
++
++const EPS = 1e-9;
++
++// Smallest of the four penetrations (how deep the ball sits in the brick).
++function penetration(ball, brick) {
++  return Math.min(
++    ball.x + ball.r - brick.x,
++    brick.x + brick.w - (ball.x - ball.r),
++    ball.y + ball.r - brick.y,
++    brick.y + brick.h - (ball.y - ball.r),
++  );
++}
++
++// First point along the ball's path (previous frame position -> current
++// position) where the ball overlaps the brick, or null if it never does.
++// Sampling the segment is the discrete answer to the tunnelling case: at
++// level 6 a stuttered frame moves the ball 35.5 px against a 34 px brick
++// crossing, so position-before / position-after never overlaps the brick.
++function sweptContact(ball, brick) {
++  const px = ball.px ?? ball.x;
++  const py = ball.py ?? ball.y;
++  const dx = ball.x - px;
++  const dy = ball.y - py;
++  const dist = Math.hypot(dx, dy);
++  if (dist < EPS) {
++    return collides(ball, brick)
++      ? { x: ball.x, y: ball.y, pen: penetration(ball, brick) }
++      : null;
++  }
++  const steps = Math.max(1, Math.ceil(dist / 2));
++  for (let i = 0; i <= steps; i++) {
++    const t = i / steps;
++    const probe = { x: px + dx * t, y: py + dy * t, r: ball.r };
++    if (collides(probe, brick)) {
++      return { x: probe.x, y: probe.y, pen: penetration(probe, brick) };
++    }
++  }
++  return null;
++}
++
++// Flips the ball's velocity according to the face of `brick` it hit and pushes
++// it back out of the rectangle. `at` is the contact point: for a swept hit the
++// current position is PAST the brick and its penetrations are meaningless.
++function bounceBall(ball, brick, at) {
++  const left = at.x + ball.r - brick.x;
++  const right = brick.x + brick.w - (at.x - ball.r);
++  const top = at.y + ball.r - brick.y;
++  const bottom = brick.y + brick.h - (at.y - ball.r);
++  const horizontal = Math.min(left, right);
++  const vertical = Math.min(top, bottom);
++
++  if (Math.abs(horizontal - vertical) <= EPS) {
++    // Diagonal hit: reflect both components and exit through the corner.
++    ball.vx = -ball.vx;
++    ball.vy = -ball.vy;
++    ball.x = left < right ? brick.x - ball.r : brick.x + brick.w + ball.r;
++    ball.y = top < bottom ? brick.y - ball.r : brick.y + brick.h + ball.r;
++  } else if (horizontal < vertical) {
++    // Side hit: flip vx, leave vy exactly as it was.
++    ball.vx = -ball.vx;
++    ball.x = left < right ? brick.x - ball.r : brick.x + brick.w + ball.r;
++  } else {
++    // Top/bottom hit: flip vy, leave vx exactly as it was.
++    ball.vy = -ball.vy;
++    ball.y = top < bottom ? brick.y - ball.r : brick.y + brick.h + ball.r;
++  }
++}
++
++// Destroys every brick the ball touched on its path this frame (swept, so fast
++// balls cannot skip one) and applies ONE bounce, from the shallowest hit.
++function resolveBricks(state) {
++  const ball = state.ball;
++  const touched = [];
++
++  for (const brick of state.bricks) {
++    if (!brick.alive) continue;
++    const contact = sweptContact(ball, brick);
++    if (!contact) continue;
++    brick.alive = false;
++    state.combo += 1;
++    state.score += scoreForBrick(brick, state.combo);
++    touched.push({ brick, ...contact });
++  }
++
++  if (touched.length === 0) return;
++  touched.sort((a, b) => a.pen - b.pen);
++  bounceBall(ball, touched[0].brick, touched[0]);
++}
++
+ // --- Rendering (DOM): brick collision logic STILL mixed in here ------------
+
+ // Main render loop. For each live brick we test collision AND draw in the same
+-// pass: this is where logic and rendering are entangled.
++// pass: this is where logic and rendering are entangled (debt #2, untouched).
+ export function frame(ctx, state) {
+   // Background
+   ctx.fillStyle = palette.background;
+   ctx.fillRect(0, 0, WIDTH, HEIGHT);
+
+-  // Bricks: collision + bounce + score + drawing, all in one place.
++  // Bricks: resolve collisions before drawing, so the bounce applies once and
++  // the ball is pushed out before the draw pass.
++  resolveBricks(state);
++
+   for (const brick of state.bricks) {
+     if (!brick.alive) continue;
+-
+-    if (collides(state.ball, brick)) {
+-      brick.alive = false;
+-      state.combo += 1;
+-      state.score += scoreForBrick(brick, state.combo);
+-      // BUG (#1): the ball is NOT deflected here. Only the walls and the paddle
+-      // bounce (in step()); bricks were never given a bounce. So the ball plows
+-      // straight through a column head-on AND straight through the side of a
+-      // row. Fix = a real per-face bounce (flip vy on a top/bottom hit, vx on a
+-      // side hit) plus pushing the ball back out of the brick.
+-    }
+-
+     ctx.fillStyle = brickColor(brick.row);
+     ctx.fillRect(brick.x, brick.y, brick.w, brick.h);
+   }

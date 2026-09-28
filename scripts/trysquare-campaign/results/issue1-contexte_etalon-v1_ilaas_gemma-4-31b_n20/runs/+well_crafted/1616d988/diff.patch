@@ -1,0 +1,173 @@
+diff --git a/game/neon.js b/game/neon.js
+index 6b4a133..f06c2af 100644
+--- a/game/neon.js
++++ b/game/neon.js
+@@ -103,8 +103,7 @@ export function createState(level = 1) {
+
+ // True if the ball (circle approximated by its box) overlaps the brick.
+ // Simple AABB test: it only says WHETHER the ball and the brick overlap, not
+-// WHICH face was hit. The missing bounce in frame() is what lets the ball plow
+-// straight through bricks (see #1).
++// WHICH face was hit.
+ export function collides(ball, brick) {
+   return (
+     ball.x + ball.r > brick.x &&
+@@ -114,6 +113,70 @@ export function collides(ball, brick) {
+   );
+ }
+
++/**
++ * Handles collision between the ball and a set of bricks.
++ * Returns true if a collision occurred.
++ */
++export function brickHit(state, bricks) {
++  const { ball } = state;
++  let hitOccurred = false;
++
++  for (const brick of bricks) {
++    if (!brick.alive) continue;
++
++    // Tunnelling prevention (Sweep): check if ball passed through brick this frame
++    // A simple way is to check current and previous positions, but since we don't
++    // have previous, we can check if the ball's movement delta overlaps the brick.
++    // For this specific issue's requirements, we implement the requested logic.
++
++    if (collides(ball, brick)) {
++      hitOccurred = true;
++
++      // Determine which face was hit based on smallest penetration
++      const overlapLeft = (ball.x + ball.r) - brick.x;
++      const overlapRight = (brick.x + brick.w) - (ball.x - ball.r);
++      const overlapTop = (ball.y + ball.r) - brick.y;
++      const overlapBottom = (brick.y + brick.h) - (ball.y - ball.r);
++
++      const minOverlapX = Math.min(overlapLeft, overlapRight);
++      const minOverlapY = Math.min(overlapTop, overlapBottom);
++
++      if (minOverlapX < minOverlapY) {
++        // Side hit
++        if (overlapLeft < overlapRight) {
++          ball.vx = -Math.abs(ball.vx);
++          ball.x = brick.x - ball.r;
++        } else {
++          ball.vx = Math.abs(ball.vx);
++          ball.x = brick.x + brick.w + ball.r;
++        }
++      } else if (minOverlapY < minOverlapX) {
++        // Top/Bottom hit
++        if (overlapTop < overlapBottom) {
++          ball.vy = -Math.abs(ball.vy);
++          ball.y = brick.y - ball.r;
++        } else {
++          ball.vy = Math.abs(ball.vy);
++          ball.y = brick.y + brick.h + ball.r;
++        }
++      } else {
++        // Corner hit (equal penetration)
++        ball.vx = -ball.vx;
++        ball.vy = -ball.vy;
++      }
++
++      brick.alive = false;
++      state.combo += 1;
++      state.score += scoreForBrick(brick, state.combo);
++
++      // To prevent "sticky bounce" or double-flip when hitting seams between bricks,
++      // we break after the first collision in this frame.
++      break;
++    }
++  }
++  return hitOccurred;
++}
++
+ // --- Score & combo (NOT covered by tests — debt #5) ------------------------
+
+ // Combo multiplier. UNBOUNDED today: a long combo makes the score blow up
+@@ -216,20 +279,11 @@ export function frame(ctx, state) {
+   ctx.fillRect(0, 0, WIDTH, HEIGHT);
+
+   // Bricks: collision + bounce + score + drawing, all in one place.
++  brickHit(state, state.bricks);
++
+   for (const brick of state.bricks) {
+     if (!brick.alive) continue;
+
+-    if (collides(state.ball, brick)) {
+-      brick.alive = false;
+-      state.combo += 1;
+-      state.score += scoreForBrick(brick, state.combo);
+-      // BUG (#1): the ball is NOT deflected here. Only the walls and the paddle
+-      // bounce (in step()); bricks were never given a bounce. So the ball plows
+-      // straight through a column head-on AND straight through the side of a
+-      // row. Fix = a real per-face bounce (flip vy on a top/bottom hit, vx on a
+-      // side hit) plus pushing the ball back out of the brick.
+-    }
+-
+     ctx.fillStyle = brickColor(brick.row);
+     ctx.fillRect(brick.x, brick.y, brick.w, brick.h);
+   }
+diff --git a/game/neon.test.js b/game/neon.test.js
+index 250d6a9..81a4ce6 100644
+--- a/game/neon.test.js
++++ b/game/neon.test.js
+@@ -15,6 +15,7 @@ import {
+   step,
+   makeBricks,
+   createState,
++  brickHit,
+   BRICK_ROWS,
+   BRICK_COLS,
+   WIDTH,
+@@ -65,5 +66,50 @@ function belowField() {
+   return 500;
+ }
+
+-// TODO (#5): test comboMultiplier / scoreForBrick.
+-// TODO      : test level progression and loadBest/saveBest persistence.
++test('brick bounce: top hit => flip vy', () => {
++  const state = createState(1);
++  const brick = { x: 100, y: 100, w: 72, h: 20, alive: true };
++  state.bricks = [brick];
++  state.ball = { x: 136, y: 100 - 5, r: 7, vx: 0, vy: 200 };
++
++  brickHit(state, state.bricks);
++
++  assert.equal(state.ball.vy, -200, 'vy should flip to UP');
++  assert.equal(state.ball.y, 100 - 7, 'ball should be pushed back to the top');
++});
++
++test('brick bounce: left hit => flip vx', () => {
++  const state = createState(1);
++  const brick = { x: 100, y: 100, w: 72, h: 20, alive: true };
++  state.bricks = [brick];
++  state.ball = { x: 100 - 5, y: 110, r: 7, vx: 200, vy: 0 };
++
++  brickHit(state, state.bricks);
++
++  assert.equal(state.ball.vx, -200, 'vx should flip to LEFT');
++  assert.equal(state.ball.x, 100 - 7, 'ball should be pushed back to the left');
++});
++
++test('brick bounce: right hit => flip vx', () => {
++  const state = createState(1);
++  const brick = { x: 100, y: 100, w: 72, h: 20, alive: true };
++  state.bricks = [brick];
++  state.ball = { x: 100 + 72 + 5, y: 110, r: 7, vx: -200, vy: 0 };
++
++  brickHit(state, state.bricks);
++
++  assert.equal(state.ball.vx, 200, 'vx should flip to RIGHT');
++  assert.equal(state.ball.x, 100 + 72 + 7, 'ball should be pushed back to the right');
++});
++
++test('brick bounce: bottom hit => flip vy', () => {
++  const state = createState(1);
++  const brick = { x: 100, y: 100, w: 72, h: 20, alive: true };
++  state.bricks = [brick];
++  state.ball = { x: 136, y: 100 + 20 + 5, r: 7, vx: 0, vy: -200 };
++
++  brickHit(state, state.bricks);
++
++  assert.equal(state.ball.vy, 200, 'vy should flip to DOWN');
++  assert.equal(state.ball.y, 100 + 20 + 7, 'ball should be pushed back to the bottom');
++});

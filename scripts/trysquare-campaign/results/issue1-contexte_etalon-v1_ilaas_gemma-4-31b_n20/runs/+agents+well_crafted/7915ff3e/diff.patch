@@ -1,0 +1,25 @@
+diff --git a/game/neon.test.js b/game/neon.test.js
+index 250d6a9..8d86691 100644
+--- a/game/neon.test.js
++++ b/game/neon.test.js
+@@ -18,8 +18,20 @@ import {
+   BRICK_ROWS,
+   BRICK_COLS,
+   WIDTH,
++  frame,
+ } from './neon.js';
+
++const mockCtx = {
++  fillRect: () => {},
++  beginPath: () => {},
++  arc: () => {},
++  fill: () => {},
++  fillText: () => {},
++};
++
++test('collides: clear overlap detected', () => {
++// ... (keep existing tests)
++
+ test('collides: clear overlap detected', () => {
+   const ball = { x: 100, y: 100, r: 8 };
+   const brick = { x: 90, y: 90, w: 40, h: 20 };

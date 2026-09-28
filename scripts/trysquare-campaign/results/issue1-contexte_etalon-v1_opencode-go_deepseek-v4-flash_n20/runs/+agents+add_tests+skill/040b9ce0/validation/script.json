@@ -1,0 +1,29 @@
+{
+  "metrics": {
+    "delivered": true,
+    "in_scope": true,
+    "touched": [
+      "game/neon.js"
+    ],
+    "tests_ajoutes": false,
+    "suite_lancee": true,
+    "skill_invoque": true,
+    "sonde_intacte": true,
+    "rebond_briques": true,
+    "rebond_angles": true,
+    "rebond_sortie": true,
+    "rebond_voisines": true,
+    "rebond_traversee": true
+  },
+  "reasons": {
+    "tests_ajoutes": "6 cas, comme à l'étalon",
+    "suite_lancee": "cd /private/var/folders/hf/sz48238s7x98j_p98cqfxprc0000gp/T/trysquare/campaign/issue1-contexte_etalon-v1_opencode-go_deepseek-v4-flash_n20/040b9ce0/repo && node --test game/probe.test.js 2>&1 | grep -E \"✔|✖|AssertionError|devait|ℹ (pass|fail)\" | head -20 ; cd /private/var/folders/hf/sz48238s7x98j_p98cqfxprc0000gp/T/trysquare/campaign/issue1-contexte_etalon-v1_opencode-go_deepseek-v4-flash_n20/040b9ce0/repo && npm test 2>&1 | grep -A4 \"AssertionError\\|Error \\[\" | head -80 ; cd /private/var/folders/hf/sz48238s7x98j_p98cqfxprc0000gp/T/trysquare/campaign/issue1-contexte_etalon-v1_opencode-go_deepseek-v4-flash_n20/040b9ce0/repo && npm test 2>&1 | grep -E \"✔|✖|ℹ (tests|pass|fail)|devait|la brique|le bord\" | head -40 ; cd /private/var/folders/hf/sz48238s7x98j_p98cqfxprc0000gp/T/trysquare/campaign/issue1-contexte_etalon-v1_opencode-go_deepseek-v4-flash_n20/040b9ce0/repo && npm test 2>&1 | grep -E \"✖|ℹ (tests|pass|fail)\" && echo \"=== scénarios ===\" && node --input-type=module -e \" import { step, createState, ballSpeed, PADDLE_Y, BALL_R } from './game/neon.js'; let s = createState(21); const brique = { x: 100, y: 100, w: 72, h: 20, row: 0, alive: true, points: 10 }; s.bricks = [brique]; s.ball = { x: 136, y: 128, r: BALL_R, vx: 0, vy: -ballSpeed(21) }; step(s, 1/60); console.log('2) tunneling L21 60fps :', !brique.alive && s.ball.vy > 0 ? 'OK vy=' + s.ball.vy + ' y=' + s.ball.y.toFixed(1) : 'ECHEC'); // la meme traversee horizontale au niveau 18 (89.5px > 86px a franchir) s = createState(18); const b2 = { x: 100, y: 100, w: 72, h: 20, row: 0, alive: true, points: 10 }; s.bricks = [b2]; s.ball = { x: 60, y: 110, r: BALL_R, vx: ballSpeed(18), vy: 0 }; step(s, 0.05); console.log(' tunneling horizontal L18 :', !b2.alive && s.ball.vx < 0 ? 'OK vx=' + s.ball.vx + ' x=' + s.ball.x.toFixed(1) : 'ECHEC'); \" ; cd /private/var/folders/hf/sz48238s7x98j_p98cqfxprc0000gp/T/trysquare/campaign/issue1-contexte_etalon-v1_opencode-go_deepseek-v4-flash_n20/040b9ce0/repo && npm test 2>&1 | head -60 ; cd /private/var/folders/hf/sz48238s7x98j_p98cqfxprc0000gp/T/trysquare/campaign/issue1-contexte_etalon-v1_opencode-go_deepseek-v4-flash_n20/040b9ce0/repo && rm -rf .scratch game/probe.test.js && git status --short && echo \"===npm test===\" && npm test 2>&1 | grep -E \"✔|✖|ℹ (tests|suites|pass|fail)\"",
+    "skill_invoque": "playtest développée dans le prompt",
+    "rebond_briques": "flanc gauche: la balle repart vers la gauche : dévié par step() et non par frame() ; flanc droit: la balle repart vers la droite : dévié par step() et non par frame() ; face haute: la balle repart vers le haut : dévié par step() et non par frame() ; face basse: la balle repart vers le bas : dévié par step() et non par frame()",
+    "rebond_angles": "coin haut gauche: la balle repart en diagonale : dévié par step() et non par frame()",
+    "rebond_sortie": "flanc gauche: la balle ressort par la gauche : dévié par step() et non par frame() ; flanc droit: la balle ressort par la droite : dévié par step() et non par frame() ; face haute: la balle ressort par le haut : dévié par step() et non par frame() ; face basse: la balle ressort par le bas : dévié par step() et non par frame()",
+    "rebond_voisines": "couture horizontale: un seul rebond sur deux briques côte à côte : dévié par step() et non par frame() ; couture verticale: un seul rebond sur deux briques superposées : dévié par step() et non par frame()",
+    "rebond_traversee": "balle rapide: la brique n_est pas franchie sans être touchée : dévié par step() et non par frame()"
+  },
+  "unjudged": {}
+}

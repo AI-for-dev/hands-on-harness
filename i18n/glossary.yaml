@@ -1,14 +1,18 @@
-# Glossaire de traduction
+# Translation glossary
 #
-# Ce fichier fait partie des "règles de traduction" : toute modification
-# invalide automatiquement les traductions déjà générées (voir manifest.json
-# et scripts/i18n/lib/config.mjs), qui seront donc régénérées au prochain
-# `npm run i18n:translate`.
+# This file is part of the "translation rules": any change to the terms below
+# automatically invalidates the translations already generated (see
+# manifest.json and scripts/i18n/lib/config.mjs), which will be regenerated on
+# the next `npm run i18n:translate`. Comments are not part of the rules and can
+# be reworded freely.
 #
-# Objectif : garantir qu'un terme technique est TOUJOURS traduit de la même
-# façon, quel que soit le modèle local utilisé.
+# Goal: guarantee that a technical term is ALWAYS translated the same way,
+# whichever local model is used.
+#
+# The values below are injected into a French system prompt: the `note` fields
+# are addressed to the model and stay in French.
 
-# Noms propres / produits à ne jamais traduire, à recopier tels quels.
+# Proper nouns and product names never to translate, to be copied as is.
 doNotTranslate:
   - VitePress
   - Ollama
@@ -17,9 +21,9 @@ doNotTranslate:
   - GitHub
   - Hands-on Harness
 
-# Traductions figées pour le vocabulaire technique du cours.
-# Complète cette liste au fur et à mesure des besoins : chaque entrée
-# ajoutée réduit la variance entre modèles.
+# Fixed translations for the technical vocabulary of the course.
+# Extend this list as the need arises: every entry added reduces the variance
+# between models.
 terms:
   - fr: harnais
     en: harness
@@ -27,6 +31,12 @@ terms:
     note: >-
       Terme technique du cours (harnais d'agent/LLM), à ne pas traduire
       littéralement par "arnés" (harnais physique).
+  - fr: formation
+    en: training
+    es: formación
+    note: >-
+      Désigne la formation que suit le lecteur. Ne pas traduire par "course"
+      en anglais : "cours" a sa propre traduction.
   - fr: invite système
     en: system prompt
     es: system prompt
@@ -36,3 +46,10 @@ terms:
   - fr: modèle de langage
     en: language model
     es: modelo de lenguaje
+  - fr: opérateur
+    en: combinator
+    es: combinador
+    note: >-
+      Dans le module workflows, désigne les fonctions de composition de combo
+      (chain, fanOut, loop, deliver...), que sa documentation nomme
+      "combinators". Ne pas traduire par "operator" ni par "operador".

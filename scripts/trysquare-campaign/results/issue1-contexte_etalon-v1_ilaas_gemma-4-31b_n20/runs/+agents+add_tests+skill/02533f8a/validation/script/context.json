@@ -1,0 +1,50 @@
+{
+  "repo": "/private/var/folders/hf/sz48238s7x98j_p98cqfxprc0000gp/T/trysquare/campaign/issue1-contexte_etalon-v1_ilaas_gemma-4-31b_n20/02533f8a/repo",
+  "etalon": {
+    "tag": "etalon-v1",
+    "checkout": "/private/var/folders/hf/sz48238s7x98j_p98cqfxprc0000gp/T/trysquare/campaign/sources/neon-98ab6a48-etalon-v1"
+  },
+  "session": "/private/var/folders/hf/sz48238s7x98j_p98cqfxprc0000gp/T/trysquare/campaign/issue1-contexte_etalon-v1_ilaas_gemma-4-31b_n20/02533f8a/session",
+  "cell": "+agents+add_tests+skill",
+  "repetition": 8,
+  "prompt": "/private/var/folders/hf/sz48238s7x98j_p98cqfxprc0000gp/T/trysquare/campaign/issue1-contexte_etalon-v1_ilaas_gemma-4-31b_n20/02533f8a/prompt.txt",
+  "touched": [
+    "game/neon.js",
+    "game/neon.test.js"
+  ],
+  "files": [
+    ".env",
+    ".env.example",
+    ".gitignore",
+    "CONTRIBUTING.md",
+    "ISSUES.md",
+    "README.md",
+    "SUPPORT.md",
+    "game/bloom.js",
+    "game/index.html",
+    "game/neon.js",
+    "game/neon.test.js",
+    "game/theme.js",
+    "package.json",
+    "serve.js"
+  ],
+  "given": [
+    "game/sonde.test.js"
+  ],
+  "declared": [
+    "delivered",
+    "suite_lancee",
+    "skill_invoque",
+    "sonde_intacte",
+    "in_scope",
+    "touched",
+    "tests_ajoutes",
+    "rebond_briques",
+    "rebond_angles",
+    "rebond_sortie",
+    "rebond_voisines",
+    "rebond_traversee"
+  ],
+  "response": "/private/var/folders/hf/sz48238s7x98j_p98cqfxprc0000gp/T/trysquare/campaign/issue1-contexte_etalon-v1_ilaas_gemma-4-31b_n20/02533f8a/response.txt",
+  "trace": "/private/var/folders/hf/sz48238s7x98j_p98cqfxprc0000gp/T/trysquare/campaign/issue1-contexte_etalon-v1_ilaas_gemma-4-31b_n20/02533f8a/trace.jsonl"
+}

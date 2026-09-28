@@ -1,0 +1,31 @@
+{
+  "metrics": {
+    "delivered": true,
+    "in_scope": false,
+    "touched": [
+      ".scratch/to_fix.md",
+      "game/neon.js"
+    ],
+    "tests_ajoutes": false,
+    "suite_lancee": true,
+    "skill_invoque": true,
+    "sonde_intacte": true,
+    "rebond_briques": true,
+    "rebond_angles": true,
+    "rebond_sortie": true,
+    "rebond_voisines": true,
+    "rebond_traversee": true
+  },
+  "reasons": {
+    "in_scope": "a aussi touché .scratch/to_fix.md",
+    "tests_ajoutes": "6 cas, comme à l'étalon",
+    "suite_lancee": "cd /private/var/folders/hf/sz48238s7x98j_p98cqfxprc0000gp/T/trysquare/campaign/issue1-contexte_etalon-v1_opencode-go_deepseek-v4-flash_n20/6045c38e/repo && cp game/neon.js /tmp/neon.js.bak && python3 - <<'EOF' import re src = open('game/neon.js').read() start = src.index('function sweepBrick(ball, brick, prevX, prevY) {') end = src.index('// --- Physics (movement', start) naive = '''function sweepBrick(ball, brick, prevX, prevY) { if (!collides(ball, brick)) return false; const r = ball.r; const dx = Math.min(ball.x + ball.r - brick.x, brick.x + brick.w - (ball.x - ball.r)); const dy = Math.min(ball.y + ball.r - brick.y, brick.y + brick.h - (ball.y - ball.r)); if (dx < dy) { if (ball.vx > 0) ball.x = brick.x - r; else ball.x = brick.x + brick.w + r; ball.vx = -ball.vx; } else if (dy < dx) { if (ball.vy > 0) ball.y = brick.y - r; else ball.y = brick.y + brick.h + r; ball.vy = -ball.vy; } else { if (ball.vx > 0) ball.x = brick.x - r; else ball.x = brick.x + brick.w + r; if (ball.vy > 0) ball.y = brick.y - r; else ball.y = brick.y + brick.h + r; ball.vx = -ball.vx; ball.vy = -ball.vy; } return true; } ''' open('game/neon.js','w').write(src[:start] + naive + src[end:]) EOF node --test --test-name-pattern \"traversee\" game/sonde.test.js 2>&1 | grep -E \"✖|AssertionError|fail\" | head -6; cp /tmp/neon.js.bak game/neon.js && echo \"--- restored ---\" && npm test 2>&1 | grep -E \"ℹ (tests|pass|fail)\" ; cd /private/var/folders/hf/sz48238s7x98j_p98cqfxprc0000gp/T/trysquare/campaign/issue1-contexte_etalon-v1_opencode-go_deepseek-v4-flash_n20/6045c38e/repo && for g in brique angle sortie voisines traversee; do echo \"=== $g ===\"; node --test --test-name-pattern \"$g\" game/sonde.test.js 2>&1 | grep -E \"✖|AssertionError|devait\" | head -8; done ; cd /private/var/folders/hf/sz48238s7x98j_p98cqfxprc0000gp/T/trysquare/campaign/issue1-contexte_etalon-v1_opencode-go_deepseek-v4-flash_n20/6045c38e/repo && npm test 2>&1 | grep -E \"^(✔|✖|ℹ)\" ; cd /private/var/folders/hf/sz48238s7x98j_p98cqfxprc0000gp/T/trysquare/campaign/issue1-contexte_etalon-v1_opencode-go_deepseek-v4-flash_n20/6045c38e/repo && npm test 2>&1 | grep -E \"ℹ (tests|pass|fail)\" && git diff --stat ; cd /private/var/folders/hf/sz48238s7x98j_p98cqfxprc0000gp/T/trysquare/campaign/issue1-contexte_etalon-v1_opencode-go_deepseek-v4-flash_n20/6045c38e/repo && npm test 2>&1 | tail -20 ; npm test 2>&1 | grep -E \"^(✔|✖|ℹ|# )\" | head -60",
+    "skill_invoque": "playtest développée dans le prompt",
+    "rebond_briques": "flanc gauche: la balle repart vers la gauche : dévié par step() et non par frame() ; flanc droit: la balle repart vers la droite : dévié par step() et non par frame() ; face haute: la balle repart vers le haut : dévié par step() et non par frame() ; face basse: la balle repart vers le bas : dévié par step() et non par frame()",
+    "rebond_angles": "coin haut gauche: la balle repart en diagonale : dévié par step() et non par frame()",
+    "rebond_sortie": "flanc gauche: la balle ressort par la gauche : dévié par step() et non par frame() ; flanc droit: la balle ressort par la droite : dévié par step() et non par frame() ; face haute: la balle ressort par le haut : dévié par step() et non par frame() ; face basse: la balle ressort par le bas : dévié par step() et non par frame()",
+    "rebond_voisines": "couture horizontale: un seul rebond sur deux briques côte à côte : dévié par step() et non par frame() ; couture verticale: un seul rebond sur deux briques superposées : dévié par step() et non par frame()",
+    "rebond_traversee": "balle rapide: la brique n_est pas franchie sans être touchée : dévié par step() et non par frame()"
+  },
+  "unjudged": {}
+}

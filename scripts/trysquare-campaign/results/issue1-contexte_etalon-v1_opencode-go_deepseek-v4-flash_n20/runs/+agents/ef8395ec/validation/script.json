@@ -1,0 +1,30 @@
+{
+  "metrics": {
+    "delivered": true,
+    "in_scope": true,
+    "touched": [
+      "game/neon.js",
+      "game/neon.test.js"
+    ],
+    "tests_ajoutes": true,
+    "suite_lancee": true,
+    "skill_invoque": false,
+    "rebond_briques": false,
+    "rebond_angles": false,
+    "rebond_sortie": false,
+    "rebond_voisines": true,
+    "rebond_traversee": true
+  },
+  "reasons": {
+    "tests_ajoutes": "5 cas de plus qu'à l'étalon (11 contre 6)",
+    "suite_lancee": "cd /private/var/folders/hf/sz48238s7x98j_p98cqfxprc0000gp/T/trysquare/campaign/issue1-contexte_etalon-v1_opencode-go_deepseek-v4-flash_n20/ef8395ec/repo && node -e \"import('./game/neon.js').then(m=>console.log('import OK, exports:', Object.keys(m).filter(k=>['brickCollision','resolveCollision','collides','step'].includes(k)).join(',')))\" && npm test 2>&1 | tail -6 ; cd /private/var/folders/hf/sz48238s7x98j_p98cqfxprc0000gp/T/trysquare/campaign/issue1-contexte_etalon-v1_opencode-go_deepseek-v4-flash_n20/ef8395ec/repo && npm test 2>&1 | grep -A5 \"SyntaxError\\|Cannot find\\|is not exported\" | head ; cd /private/var/folders/hf/sz48238s7x98j_p98cqfxprc0000gp/T/trysquare/campaign/issue1-contexte_etalon-v1_opencode-go_deepseek-v4-flash_n20/ef8395ec/repo && npm test 2>&1 | tail -15 ; cd /private/var/folders/hf/sz48238s7x98j_p98cqfxprc0000gp/T/trysquare/campaign/issue1-contexte_etalon-v1_opencode-go_deepseek-v4-flash_n20/ef8395ec/repo && npm test 2>&1 | tail -20 ; cd /private/var/folders/hf/sz48238s7x98j_p98cqfxprc0000gp/T/trysquare/campaign/issue1-contexte_etalon-v1_opencode-go_deepseek-v4-flash_n20/ef8395ec/repo && npm test 2>&1 | tail -25",
+    "skill_invoque": "aucune compétence développée dans le prompt, et aucun SKILL.md lu sur 13 appels d'outil",
+    "rebond_briques": "flanc gauche: la balle repart vers la gauche : vx devait devenir négatif : 300 ; flanc droit: la balle repart vers la droite : vx devait devenir positif : -300 ; face haute: la balle repart vers le haut : vy devait devenir négatif : 300",
+    "rebond_angles": "coin haut gauche: la balle repart en diagonale : vx devait devenir négatif : 300",
+    "rebond_sortie": "flanc gauche: la balle ressort par la gauche : le bord droit de la balle devait revenir à x <= 100 : 108 ; flanc droit: la balle ressort par la droite : le bord gauche de la balle devait revenir à x >= 172 : 164 ; face haute: la balle ressort par le haut : le bord bas de la balle devait revenir à y <= 100 : 139",
+    "rebond_voisines": "couture verticale: un seul rebond sur deux briques superposées : dévié par frame() après le déplacement de step()"
+  },
+  "unjudged": {
+    "sonde_intacte": "aucune sonde n'a été fournie à cette cellule"
+  }
+}

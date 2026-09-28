@@ -1,0 +1,27 @@
+{
+  "metrics": {
+    "delivered": true,
+    "in_scope": true,
+    "touched": [
+      "game/neon.js",
+      "game/neon.test.js"
+    ],
+    "tests_ajoutes": true,
+    "suite_lancee": true,
+    "skill_invoque": true,
+    "rebond_briques": true,
+    "rebond_angles": true,
+    "rebond_sortie": true,
+    "rebond_voisines": true,
+    "rebond_traversee": true
+  },
+  "reasons": {
+    "tests_ajoutes": "10 cas de plus qu'à l'étalon (16 contre 6)",
+    "suite_lancee": "cd /private/var/folders/hf/sz48238s7x98j_p98cqfxprc0000gp/T/trysquare/campaign/issue1-contexte_etalon-v1_opencode-go_deepseek-v4-flash_n20/06ddc291/repo && grep -n \"^export\" game/neon.js && echo \"---\" && git diff --stat && echo \"---\" && npm test 2>&1 | grep -E \"ℹ (tests|pass|fail)\" ; cd /private/var/folders/hf/sz48238s7x98j_p98cqfxprc0000gp/T/trysquare/campaign/issue1-contexte_etalon-v1_opencode-go_deepseek-v4-flash_n20/06ddc291/repo && node --test .scratch/defects.test.js 2>&1 | grep -A 4 \"AssertionError\" | grep -E \"message|actual|expected\" | head -30 ; cd /private/var/folders/hf/sz48238s7x98j_p98cqfxprc0000gp/T/trysquare/campaign/issue1-contexte_etalon-v1_opencode-go_deepseek-v4-flash_n20/06ddc291/repo && node --test .scratch/defects.test.js 2>&1 | grep -B1 -A2 \"AssertionError \\[ERR_ASSERTION\\]\" | head -40 ; cd /private/var/folders/hf/sz48238s7x98j_p98cqfxprc0000gp/T/trysquare/campaign/issue1-contexte_etalon-v1_opencode-go_deepseek-v4-flash_n20/06ddc291/repo && node --test .scratch/defects.test.js 2>&1 | grep -E \"AssertionError \\[ERR_ASSERTION\\]|assert.ok|assert.equal|generatedMessage|actual:|expected:|operator:\" | head -40 ; cd /private/var/folders/hf/sz48238s7x98j_p98cqfxprc0000gp/T/trysquare/campaign/issue1-contexte_etalon-v1_opencode-go_deepseek-v4-flash_n20/06ddc291/repo && node --test .scratch/defects.test.js 2>&1 | grep -E \"^(✔|✖|ℹ)\" | head -30 ; cd /private/var/folders/hf/sz48238s7x98j_p98cqfxprc0000gp/T/trysquare/campaign/issue1-contexte_etalon-v1_opencode-go_deepseek-v4-flash_n20/06ddc291/repo && node --test .scratch/defects.test.js 2>&1 | grep -E \"^(✖|ℹ (tests|pass|fail))\" ; cd /private/var/folders/hf/sz48238s7x98j_p98cqfxprc0000gp/T/trysquare/campaign/issue1-contexte_etalon-v1_opencode-go_deepseek-v4-flash_n20/06ddc291/repo && node --test .scratch/defects.test.js 2>&1 | sed -n '/D1: ball hitting/,/^$/p' | head -22 ; cd /private/var/folders/hf/sz48238s7x98j_p98cqfxprc0000gp/T/trysquare/campaign/issue1-contexte_etalon-v1_opencode-go_deepseek-v4-flash_n20/06ddc291/repo && node --test .scratch/defects.test.js 2>&1 | tail -60 ; cd /private/var/folders/hf/sz48238s7x98j_p98cqfxprc0000gp/T/trysquare/campaign/issue1-contexte_etalon-v1_opencode-go_deepseek-v4-flash_n20/06ddc291/repo && npm test 2>&1 | grep -E \"SyntaxError|does not provide\" | head -3 ; cd /private/var/folders/hf/sz48238s7x98j_p98cqfxprc0000gp/T/trysquare/campaign/issue1-contexte_etalon-v1_opencode-go_deepseek-v4-flash_n20/06ddc291/repo && npm test 2>&1 | grep -E \"^(✖|ℹ (tests|pass|fail))\" | head -8 ; cd /private/var/folders/hf/sz48238s7x98j_p98cqfxprc0000gp/T/trysquare/campaign/issue1-contexte_etalon-v1_opencode-go_deepseek-v4-flash_n20/06ddc291/repo && npm test 2>&1 | grep -E \"^(✖|✔|ℹ (tests|pass|fail))\" | head -20 ; cd /private/var/folders/hf/sz48238s7x98j_p98cqfxprc0000gp/T/trysquare/campaign/issue1-contexte_etalon-v1_opencode-go_deepseek-v4-flash_n20/06ddc291/repo && rm -rf .scratch && npm test 2>&1 | tail -8 && echo \"---\" && git status --short",
+    "skill_invoque": "playtest développée dans le prompt",
+    "rebond_traversee": "balle rapide: la brique n_est pas franchie sans être touchée : dévié par frame() après le déplacement de step()"
+  },
+  "unjudged": {
+    "sonde_intacte": "aucune sonde n'a été fournie à cette cellule"
+  }
+}

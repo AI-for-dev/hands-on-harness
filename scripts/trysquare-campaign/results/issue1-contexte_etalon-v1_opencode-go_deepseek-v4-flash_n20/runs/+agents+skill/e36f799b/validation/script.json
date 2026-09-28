@@ -1,0 +1,33 @@
+{
+  "metrics": {
+    "delivered": true,
+    "in_scope": false,
+    "touched": [
+      ".scratch/to_fix.md",
+      "game/neon.js",
+      "game/neon.test.js"
+    ],
+    "tests_ajoutes": true,
+    "suite_lancee": true,
+    "skill_invoque": true,
+    "rebond_briques": false,
+    "rebond_angles": false,
+    "rebond_sortie": false,
+    "rebond_voisines": false,
+    "rebond_traversee": false
+  },
+  "reasons": {
+    "in_scope": "a aussi touché .scratch/to_fix.md",
+    "tests_ajoutes": "6 cas de plus qu'à l'étalon (12 contre 6)",
+    "suite_lancee": "cd /private/var/folders/hf/sz48238s7x98j_p98cqfxprc0000gp/T/trysquare/campaign/issue1-contexte_etalon-v1_opencode-go_deepseek-v4-flash_n20/e36f799b/repo && grep -n \"^export\" game/neon.js && echo \"--- final test ---\" && npm test 2>&1 | grep -E \"^ℹ (tests|pass|fail)\" && echo \"--- livrable ---\" && ls .scratch/ ; cd /private/var/folders/hf/sz48238s7x98j_p98cqfxprc0000gp/T/trysquare/campaign/issue1-contexte_etalon-v1_opencode-go_deepseek-v4-flash_n20/e36f799b/repo && node --check game/neon.js && node --check game/neon.test.js && npm test 2>&1 | tail -6 && node -e \" import('./game/neon.js').then(({ createState, advance, makeBricks, ballSpeed }) => { // Simule la boucle de boot() sans DOM : 3000 frames à 60 fps. const state = createState(1); state.running = true; let lostTotal = 0, levels = 0, frames = 0; const bricks = { killed: 0 }; for (let i = 0; i < 3000; i++) { const before = state.bricks.filter(b => b.alive).length; const lost = advance(state, 1/60); const after = state.bricks.filter(b => b.alive).length; bricks.killed += before - after; frames++; if (lost) { lostTotal++; state.lives -= 1; if (state.lives <= 0) { state.lives = 3; state.ball = createState(state.level).ball; } else { state.ball = createState(state.level).ball; } } if (state.bricks.every(b => !b.alive)) { state.level += 1; state.bricks = makeBricks(state.level); state.ball = createState(state.level).ball; levels++; } } console.log(JSON.stringify({ frames, lostTotal, levels, bricksKilled: bricks.killed, level: state.level, speed: ballSpeed(state.level) })); }); \" ; cd /private/var/folders/hf/sz48238s7x98j_p98cqfxprc0000gp/T/trysquare/campaign/issue1-contexte_etalon-v1_opencode-go_deepseek-v4-flash_n20/e36f799b/repo && node --test .scratch/probe.test.js 2>&1 | head -80 ; cd /private/var/folders/hf/sz48238s7x98j_p98cqfxprc0000gp/T/trysquare/campaign/issue1-contexte_etalon-v1_opencode-go_deepseek-v4-flash_n20/e36f799b/repo && node --test .scratch/probe.test.js 2>&1 | sed -n '80,260p' ; cd /private/var/folders/hf/sz48238s7x98j_p98cqfxprc0000gp/T/trysquare/campaign/issue1-contexte_etalon-v1_opencode-go_deepseek-v4-flash_n20/e36f799b/repo && node --version && npm test 2>&1 | tail -15 && mkdir -p .scratch && cat game/theme.js | head -30 ; cd /private/var/folders/hf/sz48238s7x98j_p98cqfxprc0000gp/T/trysquare/campaign/issue1-contexte_etalon-v1_opencode-go_deepseek-v4-flash_n20/e36f799b/repo && npm test 2>&1 | grep -E \"✔ D2|✔ D4|✖ D2|✖ D4|fail [0-9]|pass [0-9]\" | head -8 ; cd /private/var/folders/hf/sz48238s7x98j_p98cqfxprc0000gp/T/trysquare/campaign/issue1-contexte_etalon-v1_opencode-go_deepseek-v4-flash_n20/e36f799b/repo && npm test 2>&1 | grep -E \"✔ D5|✖ D5|fail [0-9]|pass [0-9]|AssertionError|coin|flanc\" | head -12 ; cd /private/var/folders/hf/sz48238s7x98j_p98cqfxprc0000gp/T/trysquare/campaign/issue1-contexte_etalon-v1_opencode-go_deepseek-v4-flash_n20/e36f799b/repo && npm test 2>&1 | grep -E \"✔ D|✖ D|fail [0-9]|pass [0-9]\" | head -8 ; cd /private/var/folders/hf/sz48238s7x98j_p98cqfxprc0000gp/T/trysquare/campaign/issue1-contexte_etalon-v1_opencode-go_deepseek-v4-flash_n20/e36f799b/repo && npm test 2>&1 | grep -E \"✔|✖|fail [0-9]|pass [0-9]\" | head -15 ; cd /private/var/folders/hf/sz48238s7x98j_p98cqfxprc0000gp/T/trysquare/campaign/issue1-contexte_etalon-v1_opencode-go_deepseek-v4-flash_n20/e36f799b/repo && npm test 2>&1 | grep -E \"✖|✔ D1|not provide|fail [0-9]\" | head -10 ; cd /private/var/folders/hf/sz48238s7x98j_p98cqfxprc0000gp/T/trysquare/campaign/issue1-contexte_etalon-v1_opencode-go_deepseek-v4-flash_n20/e36f799b/repo && npm test 2>&1 | sed -n '/D5b/,/^ test at/p' | head -25 ; cd /private/var/folders/hf/sz48238s7x98j_p98cqfxprc0000gp/T/trysquare/campaign/issue1-contexte_etalon-v1_opencode-go_deepseek-v4-flash_n20/e36f799b/repo && npm test 2>&1 | tail -10 ; cd /private/var/folders/hf/sz48238s7x98j_p98cqfxprc0000gp/T/trysquare/campaign/issue1-contexte_etalon-v1_opencode-go_deepseek-v4-flash_n20/e36f799b/repo && npm test 2>&1 | tail -12 ; cd /private/var/folders/hf/sz48238s7x98j_p98cqfxprc0000gp/T/trysquare/campaign/issue1-contexte_etalon-v1_opencode-go_deepseek-v4-flash_n20/e36f799b/repo && npm test 2>&1 | tail -8 && echo \"--- git status ---\" && git status --short && echo \"--- diff stat ---\" && git diff --stat",
+    "skill_invoque": "playtest développée dans le prompt",
+    "rebond_briques": "flanc gauche: la balle repart vers la gauche : vx devait devenir négatif : 300 ; flanc droit: la balle repart vers la droite : vx devait devenir positif : -300 ; face haute: la balle repart vers le haut : vy devait devenir négatif : 300 ; face basse: la balle repart vers le bas : vy devait devenir positif : -300",
+    "rebond_angles": "coin haut gauche: la balle repart en diagonale : vx devait devenir négatif : 300",
+    "rebond_sortie": "flanc gauche: la balle ressort par la gauche : le bord droit de la balle devait revenir à x <= 100 : 108 ; flanc droit: la balle ressort par la droite : le bord gauche de la balle devait revenir à x >= 172 : 164 ; face haute: la balle ressort par le haut : le bord bas de la balle devait revenir à y <= 100 : 108 ; face basse: la balle ressort par le bas : le bord haut de la balle devait revenir à y >= 120 : 112",
+    "rebond_voisines": "couture horizontale: un seul rebond sur deux briques côte à côte : vy devait s'inverser une seule fois : -60 ; couture verticale: un seul rebond sur deux briques superposées : vx devait s'inverser une seule fois : 60",
+    "rebond_traversee": "balle rapide: la brique n_est pas franchie sans être touchée : la brique a survécu à une balle qui l_a traversée de part en part"
+  },
+  "unjudged": {
+    "sonde_intacte": "aucune sonde n'a été fournie à cette cellule"
+  }
+}

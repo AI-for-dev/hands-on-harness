@@ -1,0 +1,300 @@
+diff --git a/game/neon.js b/game/neon.js
+index 6b4a133..26c4483 100644
+--- a/game/neon.js
++++ b/game/neon.js
+@@ -1,8 +1,8 @@
+ // neon.js — NÉON, a minimalist brick breaker (zero dependencies).
+ //
+-// This file INTENTIONALLY mixes game logic and rendering in a few places
+-// (see ISSUES.md #2): brick collision detection currently lives inside the
+-// draw loop `frame()`. This is deliberate debt, ripe for a refactor.
++// Brick collision + bounce used to live inside the draw loop `frame()`
++// (ISSUES.md #2). The bounce itself has since moved into `step()`; a pure,
++// testable resolver `brickHit` is still a candidate refactor (#2).
+ //
+ // The module runs nothing on import: only `boot()` touches the DOM. Pure
+ // logic can therefore be imported from the tests (`node --test`) without a
+@@ -114,6 +114,124 @@ export function collides(ball, brick) {
+   );
+ }
+
++// --- Brick collision resolution (Issue #1) ---------------------------------
++
++// Swept collision: does the moving ball (a segment from the previous position
++// to the current one, fattened by the radius r) cross the expanded brick? If
++// so, returns the earliest time of impact t in [0,1] and the face normal
++// (nx, ny). Discrete endpoint checks alone would let a fast ball jump straight
++// over a brick — see the level-6 tunnelling case. Returns null when untouched.
++function sweptBrickHit(prevX, prevY, curX, curY, brick, r) {
++  const dx = curX - prevX;
++  const dy = curY - prevY;
++  // Expand the brick AABB by the ball radius so a circle maps to a rectangle.
++  const minX = brick.x - r;
++  const maxX = brick.x + brick.w + r;
++  const minY = brick.y - r;
++  const maxY = brick.y + brick.h + r;
++
++  let tmin = 0;
++  let tmax = 1;
++  let nx = 0;
++  let ny = 0;
++
++  // X slab.
++  if (Math.abs(dx) < 1e-9) {
++    if (prevX < minX || prevX > maxX) return null;
++  } else {
++    let t1 = (minX - prevX) / dx;
++    let t2 = (maxX - prevX) / dx;
++    let normal = -1;
++    if (t1 > t2) {
++      const tmp = t1;
++      t1 = t2;
++      t2 = tmp;
++      normal = 1;
++    }
++    if (t1 > tmin) {
++      tmin = t1;
++      nx = normal;
++    }
++    if (t2 < tmax) tmax = t2;
++    if (tmin > tmax) return null;
++  }
++
++  // Y slab.
++  if (Math.abs(dy) < 1e-9) {
++    if (prevY < minY || prevY > maxY) return null;
++  } else {
++    let t1 = (minY - prevY) / dy;
++    let t2 = (maxY - prevY) / dy;
++    let normal = -1;
++    if (t1 > t2) {
++      const tmp = t1;
++      t1 = t2;
++      t2 = tmp;
++      normal = 1;
++    }
++    if (t1 > tmin) {
++      tmin = t1;
++      ny = normal;
++    }
++    if (t2 < tmax) tmax = t2;
++    if (tmin > tmax) return null;
++  }
++
++  if (tmin >= 0 && tmin <= 1) return { t: tmin, nx, ny };
++  return null;
++}
++
++// Resolves the ball's bounce against every brick swept during the step, using
++// the previous frame's position for the sweep. Destroys the bricks hit, awards
++// score/combo, and deflects the ball once:
++//
++//   - per face: the axis entered later (the *smaller penetration*) owns the
++//     hit — flip vy on a top/bottom hit, vx on a side hit;
++//   - corner: equal penetrations flip both components;
++//   - push out: the ball is repositioned to the impact point and nudged clear
++//     of the brick so it can't re-trigger next frame (sticky bounce);
++//   - neighbours: only the EARLIEST hit drives the bounce, so the vertical
++//     flip is applied exactly once and never cancelled by an adjacent brick;
++//   - tunnelling: the sweep (above) catches fast shots that would otherwise
++//     skip a brick between two frames.
++//
++// The previous position is passed in so the step() caller owns the dt book-
++// keeping; this function stays a pure, testable brick resolver.
++export function resolveBrickCollision(state, prevX, prevY) {
++  const { ball, bricks } = state;
++
++  let earliest = null;
++  for (const brick of bricks) {
++    if (!brick.alive) continue;
++    const hit = sweptBrickHit(prevX, prevY, ball.x, ball.y, brick, ball.r);
++    if (!hit) continue;
++
++    brick.alive = false;
++    state.combo += 1;
++    state.score += scoreForBrick(brick, state.combo);
++
++    if (!earliest || hit.t < earliest.t) earliest = hit;
++  }
++
++  if (!earliest) return;
++
++  // Reposition the ball to the impact point, then flip along the hit normal
++  // and push it just clear of the brick rectangle.
++  const hitX = prevX + (ball.x - prevX) * earliest.t;
++  const hitY = prevY + (ball.y - prevY) * earliest.t;
++  ball.x = hitX;
++  ball.y = hitY;
++
++  if (earliest.nx !== 0) {
++    ball.vx = -ball.vx;
++    ball.x += (earliest.nx > 0 ? 1 : -1) * (ball.r + 0.01);
++  }
++  if (earliest.ny !== 0) {
++    ball.vy = -ball.vy;
++    ball.y += (earliest.ny > 0 ? 1 : -1) * (ball.r + 0.01);
++  }
++}
++
+ // --- Score & combo (NOT covered by tests — debt #5) ------------------------
+
+ // Combo multiplier. UNBOUNDED today: a long combo makes the score blow up
+@@ -156,15 +274,20 @@ export function saveBest(storage, score) {
+   return best;
+ }
+
+-// --- Physics (movement + wall/paddle bounces) ------------------------------
++// --- Physics (movement + wall/paddle/brick bounces) -----------------------
+
+ // Advances the ball by a time step `dt` (in seconds) and handles bounces off
+-// the walls and the paddle. Does NOT handle bricks: that responsibility still
+-// lives in the render loop `frame()` (debt #2).
++// the walls, the paddle and the bricks. The brick bounce is handled here too
++// (it needs dt and the previous position for the tunnelling-proof sweep).
+ // Returns `true` if the ball is lost (exits through the bottom).
+ export function step(state, dt) {
+   const { ball, paddle } = state;
+
++  // Remember where the ball was before this step: the sweep in the brick
++  // resolver needs it to catch fast shots that skip between two frames.
++  const prevX = ball.x;
++  const prevY = ball.y;
++
+   ball.x += ball.vx * dt;
+   ball.y += ball.vy * dt;
+
+@@ -199,6 +322,10 @@ export function step(state, dt) {
+     state.combo = 0; // touching the paddle resets the combo
+   }
+
++  // Bricks: sweep for the bounce. Runs after the wall/paddle bounces so the
++  // sweep always starts from the position framed at the start of the step.
++  resolveBrickCollision(state, prevX, prevY);
++
+   // Exit through the bottom: ball lost
+   if (ball.y - ball.r > HEIGHT) {
+     return true;
+@@ -206,30 +333,19 @@ export function step(state, dt) {
+   return false;
+ }
+
+-// --- Rendering (DOM): brick collision logic STILL mixed in here ------------
++// --- Rendering (DOM) -------------------------------------------------------
+
+-// Main render loop. For each live brick we test collision AND draw in the same
+-// pass: this is where logic and rendering are entangled.
++// Main render loop. Every logic decision (brick collision, bounce, score) is
++// made in `step()`; this function only draws the current state.
+ export function frame(ctx, state) {
+   // Background
+   ctx.fillStyle = palette.background;
+   ctx.fillRect(0, 0, WIDTH, HEIGHT);
+
+-  // Bricks: collision + bounce + score + drawing, all in one place.
++  // Bricks: just draw the ones still alive.
+   for (const brick of state.bricks) {
+     if (!brick.alive) continue;
+
+-    if (collides(state.ball, brick)) {
+-      brick.alive = false;
+-      state.combo += 1;
+-      state.score += scoreForBrick(brick, state.combo);
+-      // BUG (#1): the ball is NOT deflected here. Only the walls and the paddle
+-      // bounce (in step()); bricks were never given a bounce. So the ball plows
+-      // straight through a column head-on AND straight through the side of a
+-      // row. Fix = a real per-face bounce (flip vy on a top/bottom hit, vx on a
+-      // side hit) plus pushing the ball back out of the brick.
+-    }
+-
+     ctx.fillStyle = brickColor(brick.row);
+     ctx.fillRect(brick.x, brick.y, brick.w, brick.h);
+   }
+diff --git a/game/neon.test.js b/game/neon.test.js
+index 250d6a9..6e64dc9 100644
+--- a/game/neon.test.js
++++ b/game/neon.test.js
+@@ -15,6 +15,7 @@ import {
+   step,
+   makeBricks,
+   createState,
++  resolveBrickCollision,
+   BRICK_ROWS,
+   BRICK_COLS,
+   WIDTH,
+@@ -65,5 +66,76 @@ function belowField() {
+   return 500;
+ }
+
++// --- Issue #1: brick bounce resolution (see ISSUES.md) ---------------------
++
++test('brick bounce: top/bottom face flips vy, vx untouched', () => {
++  const ball = { x: 120, y: 126, r: 7, vx: 0, vy: -300 };
++  const brick = { x: 100, y: 100, w: 40, h: 20, alive: true };
++  const state = { score: 0, combo: 0, bricks: [brick], ball };
++  // Swept from one step of the current velocity: it rises into the brick.
++  const prevX = ball.x - ball.vx * (1 / 60); // 120
++  const prevY = ball.y - ball.vy * (1 / 60); // 131, below the expanded box
++  resolveBrickCollision(state, prevX, prevY, 1 / 60);
++  assert.equal(brick.alive, false, 'brick should be destroyed');
++  assert.ok(ball.vy > 0, 'vy flips sign (was moving up, now down)');
++  assert.equal(Math.abs(ball.vy), 300, 'speed magnitude is preserved');
++  assert.equal(ball.vx, 0, 'vx untouched on a vertical hit');
++  assert.ok(!collides(ball, brick), 'ball pushed out of the brick');
++});
++
++test('brick bounce: side face flips vx, vy untouched', () => {
++  const ball = { x: 96, y: 110, r: 7, vx: 300, vy: 0 };
++  const brick = { x: 100, y: 100, w: 40, h: 20, alive: true };
++  const state = { score: 0, combo: 0, bricks: [brick], ball };
++  const prevX = ball.x - ball.vx * (1 / 60);
++  const prevY = ball.y - ball.vy * (1 / 60);
++  resolveBrickCollision(state, prevX, prevY, 1 / 60);
++  assert.equal(brick.alive, false);
++  assert.ok(ball.vx < 0, 'vx flips sign (was moving right, now left)');
++  assert.equal(Math.abs(ball.vx), 300);
++  assert.equal(ball.vy, 0, 'vy untouched on a side hit');
++  assert.ok(!collides(ball, brick), 'ball pushed out of the brick');
++});
++
++test('brick bounce: corner (diagonal) flips both vx and vy', () => {
++  const ball = { x: 98, y: 124, r: 7, vx: 480, vy: -480 };
++  const brick = { x: 100, y: 100, w: 40, h: 20, alive: true };
++  const state = { score: 0, combo: 0, bricks: [brick], ball };
++  const prevX = ball.x - ball.vx * (1 / 60); // 90, below-left of the brick
++  const prevY = ball.y - ball.vy * (1 / 60); // 132
++  resolveBrickCollision(state, prevX, prevY, 1 / 60);
++  assert.equal(brick.alive, false);
++  assert.ok(ball.vx < 0, 'vx flips on a corner hit');
++  assert.ok(ball.vy > 0, 'vy flips on a corner hit');
++});
++
++test('brick bounce: two neighbouring bricks => bounce applied exactly once', () => {
++  // Ball rises through the seam between two adjacent bricks; a naive
++  // per-brick flip would reverse vy twice and cancel out (ball passes through).
++  const a = { x: 100, y: 100, w: 40, h: 20, alive: true };
++  const b = { x: 140, y: 100, w: 40, h: 20, alive: true }; // adjacent
++  const ball = { x: 139, y: 127, r: 7, vx: 0, vy: -300 };
++  const state = { score: 0, combo: 0, bricks: [a, b], ball };
++  const prevX = ball.x - ball.vx * (1 / 60);
++  const prevY = ball.y - ball.vy * (1 / 60);
++  resolveBrickCollision(state, prevX, prevY, 1 / 60);
++  assert.equal(a.alive, false);
++  assert.equal(b.alive, false);
++  assert.ok(ball.vy > 0, 'vy flipped exactly once (not cancelled out)');
++});
++
++test('brick bounce: fast shot does not tunnel through', () => {
++  // Level-6 speed with a large dt jumps 40px in one step — a discrete
++  // (endpoint-only) check would miss the brick entirely. The sweep catches it.
++  const brick = { x: 200, y: 200, w: 40, h: 20, alive: true };
++  const ball = { x: 220, y: 190, r: 7, vx: 0, vy: -2000 };
++  const state = { score: 0, combo: 0, bricks: [brick], ball };
++  const prevX = ball.x - ball.vx * 0.05; // 220
++  const prevY = ball.y - ball.vy * 0.05; // 290 (both endpoints outside the brick)
++  resolveBrickCollision(state, prevX, prevY, 0.05);
++  assert.equal(brick.alive, false, 'brick destroyed despite tunneling speed');
++  assert.ok(ball.vy > 0, 'ball bounced off instead of passing through');
++});
++
+ // TODO (#5): test comboMultiplier / scoreForBrick.
+ // TODO      : test level progression and loadBest/saveBest persistence.

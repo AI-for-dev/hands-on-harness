@@ -1,0 +1,26 @@
+{
+  "metrics": {
+    "delivered": true,
+    "in_scope": true,
+    "touched": [
+      "game/neon.js",
+      "game/neon.test.js"
+    ],
+    "tests_ajoutes": true,
+    "suite_lancee": true,
+    "skill_invoque": false,
+    "sonde_intacte": true,
+    "rebond_briques": true,
+    "rebond_angles": true,
+    "rebond_sortie": true,
+    "rebond_voisines": true,
+    "rebond_traversee": true
+  },
+  "reasons": {
+    "tests_ajoutes": "8 cas de plus qu'à l'étalon (14 contre 6)",
+    "suite_lancee": "npm test 2>&1 | grep -E \"^(✔|✖)\" ; echo \"---\"; npm test 2>&1 | grep -E \"pass [0-9]+|fail [0-9]+\" ; npm test 2>&1 | grep -E \"^(✔|✖|# (pass|fail))\" | grep -E \"neon.test|# (pass|fail)\" ; echo \"---\"; npm test 2>&1 | grep -E \"# (pass|fail)\" ; npm test 2>&1 | grep -E \"^(✔|✖|# (pass|fail))\" | head -40; npm test 2>&1 | grep -E \"^# (pass|fail)\" ; npm test 2>&1 | grep -E \"pass [0-9]+|fail [0-9]+\"; echo \"exit: $?\" ; npm test 2>&1 | grep -cE \"^✖\"; echo \"== pass count ==\"; npm test 2>&1 | grep -E \"pass [0-9]+|fail [0-9]+\" ; npm test 2>&1 | tail -20 ; npm test 2>&1 | tail -30",
+    "skill_invoque": "aucune compétence développée dans le prompt, et aucun SKILL.md lu sur 19 appels d'outil",
+    "rebond_traversee": "balle rapide: la brique n_est pas franchie sans être touchée : dévié par frame() après le déplacement de step()"
+  },
+  "unjudged": {}
+}

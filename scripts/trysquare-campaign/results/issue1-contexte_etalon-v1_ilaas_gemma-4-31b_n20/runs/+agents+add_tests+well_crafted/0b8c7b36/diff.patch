@@ -1,0 +1,217 @@
+diff --git a/game/neon.js b/game/neon.js
+index 6b4a133..09648fc 100644
+--- a/game/neon.js
++++ b/game/neon.js
+@@ -114,6 +114,94 @@ export function collides(ball, brick) {
+   );
+ }
+
++/**
++ * Resolves a collision between a ball and a brick.
++ * Handles face detection, bouncing, and pushing the ball out to avoid sticky bounces.
++ * Returns true if a collision occurred.
++ */
++export function resolveBrickCollision(ball, oldX, oldY, brick) {
++  const overlapLeft = (ball.x + ball.r) - brick.x;
++  const overlapRight = (brick.x + brick.w) - (ball.x - ball.r);
++  const overlapTop = (ball.y + ball.r) - brick.y;
++  const overlapBottom = (brick.y + brick.h) - (ball.y - ball.r);
++
++  const hasOverlap = overlapLeft > 0 && overlapRight > 0 && overlapTop > 0 && overlapBottom > 0;
++
++  // Tunnelling check
++  let tunneled = false;
++  if (oldX !== undefined && oldY !== undefined) {
++    const x1 = oldX, y1 = oldY, x2 = ball.x, y2 = ball.y;
++    const rx = brick.x - ball.r, ry = brick.y - ball.r, rw = brick.w + 2 * ball.r, rh = brick.h + 2 * ball.r;
++
++    let tmin = -Infinity, tmax = Infinity;
++    const dx = x2 - x1, dy = y2 - y1;
++
++    if (dx !== 0) {
++      const tx1 = (rx - x1) / dx, tx2 = (rx + rw - x1) / dx;
++      tmin = Math.max(tmin, Math.min(tx1, tx2));
++      tmax = Math.min(tmax, Math.max(tx1, tx2));
++    } else if (x1 < rx || x1 > rx + rw) {
++      tmin = Infinity;
++    }
++
++    if (dy !== 0) {
++      const ty1 = (ry - y1) / dy, ty2 = (ry + rh - y1) / dy;
++      tmin = Math.max(tmin, Math.min(ty1, ty2));
++      tmax = Math.min(tmax, Math.max(ty1, ty2));
++    } else if (y1 < ry || y1 > ry + rh) {
++      tmin = Infinity;
++    }
++
++    if (tmax >= tmin && tmax >= 0 && tmin <= 1) {
++      tunneled = true;
++    }
++  }
++
++  if (!hasOverlap && !tunneled) return false;
++
++  if (hasOverlap) {
++    const penX = Math.min(overlapLeft, overlapRight);
++    const penY = Math.min(overlapTop, overlapBottom);
++
++    if (Math.abs(penX - penY) < 1e-9) {
++      // Corner hit
++      ball.vx = -ball.vx;
++      ball.vy = -ball.vy;
++      if (overlapLeft < overlapRight) ball.x = brick.x - ball.r; else ball.x = brick.x + brick.w + ball.r;
++      if (overlapTop < overlapBottom) ball.y = brick.y - ball.r; else ball.y = brick.y + brick.h + ball.r;
++    } else if (penX < penY) {
++      // Side hit
++      ball.vx = -ball.vx;
++      if (overlapLeft < overlapRight) {
++        ball.x = brick.x - ball.r;
++      } else {
++        ball.x = brick.x + brick.w + ball.r;
++      }
++    } else {
++      // Top/bottom hit
++      ball.vy = -ball.vy;
++      if (overlapTop < overlapBottom) {
++        ball.y = brick.y - ball.r;
++      } else {
++        ball.y = brick.y + brick.h + ball.r;
++      }
++    }
++    return true;
++  }
++
++  if (tunneled) {
++    // For tunnelling, we just flip the primary velocity component
++    if (Math.abs(ball.vx) > Math.abs(ball.vy)) {
++      ball.vx = -ball.vx;
++    } else {
++      ball.vy = -ball.vy;
++    }
++    return true;
++  }
++
++  return false;
++}
++
+ // --- Score & combo (NOT covered by tests — debt #5) ------------------------
+
+ // Combo multiplier. UNBOUNDED today: a long combo makes the score blow up
+@@ -165,6 +253,8 @@ export function saveBest(storage, score) {
+ export function step(state, dt) {
+   const { ball, paddle } = state;
+
++  ball.oldX = ball.x;
++  ball.oldY = ball.y;
+   ball.x += ball.vx * dt;
+   ball.y += ball.vy * dt;
+
+@@ -219,15 +309,10 @@ export function frame(ctx, state) {
+   for (const brick of state.bricks) {
+     if (!brick.alive) continue;
+
+-    if (collides(state.ball, brick)) {
++    if (resolveBrickCollision(state.ball, state.ball.oldX, state.ball.oldY, brick)) {
+       brick.alive = false;
+       state.combo += 1;
+       state.score += scoreForBrick(brick, state.combo);
+-      // BUG (#1): the ball is NOT deflected here. Only the walls and the paddle
+-      // bounce (in step()); bricks were never given a bounce. So the ball plows
+-      // straight through a column head-on AND straight through the side of a
+-      // row. Fix = a real per-face bounce (flip vy on a top/bottom hit, vx on a
+-      // side hit) plus pushing the ball back out of the brick.
+     }
+
+     ctx.fillStyle = brickColor(brick.row);
+diff --git a/game/neon.test.js b/game/neon.test.js
+index 250d6a9..bfaecdc 100644
+--- a/game/neon.test.js
++++ b/game/neon.test.js
+@@ -18,9 +18,11 @@ import {
+   BRICK_ROWS,
+   BRICK_COLS,
+   WIDTH,
++  resolveBrickCollision,
+ } from './neon.js';
+
+ test('collides: clear overlap detected', () => {
++// ...
+   const ball = { x: 100, y: 100, r: 8 };
+   const brick = { x: 90, y: 90, w: 40, h: 20 };
+   assert.equal(collides(ball, brick), true);
+@@ -59,11 +61,75 @@ test('makeBricks: full, all-alive grid at start', () => {
+   assert.ok(bricks.every((b) => b.x >= 0 && b.x + b.w <= WIDTH));
+ });
+
++// ... (previous tests)
++
+ // Small local helper: place the ball below the field without importing the
+ // height (coverage intentionally light).
+ function belowField() {
+   return 500;
+ }
+
++test('resolveBrickCollision: top hit flip vy and push out', () => {
++// ...
++  const ball = { x: 100, y: 85, r: 7, vx: 0, vy: -100 };
++  const oldX = 100, oldY = 90;
++  const brick = { x: 80, y: 90, w: 40, h: 20 }; // Top edge at 90
++  const hit = resolveBrickCollision(ball, oldX, oldY, brick);
++  assert.ok(hit, 'should detect collision');
++  assert.equal(ball.vy, 100, 'vy should be flipped');
++  assert.ok(ball.y + ball.r <= brick.y, 'ball should be pushed out of the brick');
++});
++
++test('resolveBrickCollision: bottom hit flip vy and push out', () => {
++  const ball = { x: 100, y: 115, r: 7, vx: 0, vy: 100 };
++  const oldX = 100, oldY = 110;
++  const brick = { x: 80, y: 90, w: 40, h: 20 }; // Bottom edge at 110
++  const hit = resolveBrickCollision(ball, oldX, oldY, brick);
++  assert.ok(hit, 'should detect collision');
++  assert.equal(ball.vy, -100, 'vy should be flipped');
++  assert.ok(ball.y - ball.r >= brick.y + brick.h, 'ball should be pushed out of the brick');
++});
++
++test('resolveBrickCollision: left hit flip vx and push out', () => {
++  const ball = { x: 75, y: 100, r: 7, vx: 100, vy: 0 };
++  const oldX = 70, oldY = 100;
++  const brick = { x: 80, y: 90, w: 40, h: 20 }; // Left edge at 80
++  const hit = resolveBrickCollision(ball, oldX, oldY, brick);
++  assert.ok(hit, 'should detect collision');
++  assert.equal(ball.vx, -100, 'vx should be flipped');
++  assert.ok(ball.x + ball.r <= brick.x, 'ball should be pushed out of the brick');
++});
++
++test('resolveBrickCollision: right hit flip vx and push out', () => {
++  const ball = { x: 125, y: 100, r: 7, vx: -100, vy: 0 };
++  const oldX = 130, oldY = 100;
++  const brick = { x: 80, y: 90, w: 40, h: 20 }; // Right edge at 120
++  const hit = resolveBrickCollision(ball, oldX, oldY, brick);
++  assert.ok(hit, 'should detect collision');
++  assert.equal(ball.vx, 100, 'vx should be flipped');
++  assert.ok(ball.x - ball.r >= brick.x + brick.w, 'ball should be pushed out of the brick');
++});
++
++test('resolveBrickCollision: corner hit flip both and push out', () => {
++  // Hitting the top-left corner
++  const ball = { x: 75, y: 85, r: 7, vx: 100, vy: -100 };
++  const oldX = 70, oldY = 90;
++  const brick = { x: 80, y: 90, w: 40, h: 20 };
++  const hit = resolveBrickCollision(ball, oldX, oldY, brick);
++  assert.ok(hit, 'should detect collision');
++  assert.equal(ball.vx, -100, 'vx should be flipped');
++  assert.equal(ball.vy, 100, 'vy should be flipped');
++});
++
++test('resolveBrickCollision: tunnelling detection', () => {
++  // Ball is moving so fast it jumps over the brick
++  const ball = { x: 100, y: 110, r: 7, vx: 0, vy: -1000 }; // New pos:’y’ is 110 (below brick)
++  const oldX = 100, oldY = 60; // Old pos:’y’ is 60 (above brick)
++  // Brick is at y=90, h=20. Ball just jumped from 60 to 110, skipping the brick [90, 110].
++  const brick = { x: 80, y: 90, w: 40, h: 20 };
++  const hit = resolveBrickCollision(ball, oldX, oldY, brick);
++  assert.ok(hit, 'should detect collision even when tunnelling');
++});
++
+ // TODO (#5): test comboMultiplier / scoreForBrick.
+ // TODO      : test level progression and loadBest/saveBest persistence.

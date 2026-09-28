@@ -1,0 +1,33 @@
+{
+  "metrics": {
+    "delivered": true,
+    "in_scope": false,
+    "touched": [
+      ".scratch/d1_test.js",
+      ".scratch/d3_test.js",
+      ".scratch/d5_test.js",
+      ".scratch/to_fix.md",
+      "game/neon.js",
+      "game/neon.test.js"
+    ],
+    "tests_ajoutes": true,
+    "suite_lancee": true,
+    "skill_invoque": true,
+    "rebond_briques": true,
+    "rebond_angles": false,
+    "rebond_sortie": true,
+    "rebond_voisines": true,
+    "rebond_traversee": true
+  },
+  "reasons": {
+    "in_scope": "a aussi touché .scratch/d1_test.js, .scratch/d3_test.js, .scratch/d5_test.js, .scratch/to_fix.md",
+    "tests_ajoutes": "3 cas de plus qu'à l'étalon (9 contre 6)",
+    "suite_lancee": "node --test .scratch/d1_test.js ; node --test .scratch/d3_test.js ; node --test .scratch/d5_test.js ; node --test .scratch/test_collision.js ; node --test .scratch/tests.js ; npm test",
+    "skill_invoque": "playtest développée dans le prompt",
+    "rebond_angles": "coin haut gauche: la balle repart en diagonale : vy devait devenir négatif : 300",
+    "rebond_traversee": "balle rapide: la brique n_est pas franchie sans être touchée : dévié par frame() après le déplacement de step()"
+  },
+  "unjudged": {
+    "sonde_intacte": "aucune sonde n'a été fournie à cette cellule"
+  }
+}

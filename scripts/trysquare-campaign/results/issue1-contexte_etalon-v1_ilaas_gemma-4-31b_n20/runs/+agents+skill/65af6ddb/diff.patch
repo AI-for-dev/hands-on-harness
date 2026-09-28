@@ -1,0 +1,148 @@
+diff --git a/game/neon.js b/game/neon.js
+index 6b4a133..bbe5b45 100644
+--- a/game/neon.js
++++ b/game/neon.js
+@@ -216,22 +216,56 @@ export function frame(ctx, state) {
+   ctx.fillRect(0, 0, WIDTH, HEIGHT);
+
+   // Bricks: collision + bounce + score + drawing, all in one place.
++  let closestBrick = null;
++  let minPenetration = Infinity;
++
+   for (const brick of state.bricks) {
+     if (!brick.alive) continue;
+
+     if (collides(state.ball, brick)) {
+-      brick.alive = false;
+-      state.combo += 1;
+-      state.score += scoreForBrick(brick, state.combo);
+-      // BUG (#1): the ball is NOT deflected here. Only the walls and the paddle
+-      // bounce (in step()); bricks were never given a bounce. So the ball plows
+-      // straight through a column head-on AND straight through the side of a
+-      // row. Fix = a real per-face bounce (flip vy on a top/bottom hit, vx on a
+-      // side hit) plus pushing the ball back out of the brick.
++      const dx = state.ball.x - (brick.x + brick.w / 2);
++      const dy = state.ball.y - (brick.y + brick.h / 2);
++      const px = brick.w / 2 + state.ball.r - Math.abs(dx);
++      const py = brick.h / 2 + state.ball.r - Math.abs(dy);
++      const penetration = Math.min(px, py);
++
++      if (penetration < minPenetration) {
++        minPenetration = penetration;
++        closestBrick = brick;
++      }
++    }
++  }
++
++  if (closestBrick) {
++    const brick = closestBrick;
++    brick.alive = false;
++    state.combo += 1;
++    state.score += scoreForBrick(brick, state.combo);
++
++    const dx = state.ball.x - (brick.x + brick.w / 2);
++    const dy = state.ball.y - (brick.y + brick.h / 2);
++    const px = brick.w / 2 + state.ball.r - Math.abs(dx);
++    const py = brick.h / 2 + state.ball.r - Math.abs(dy);
++
++    if (px < py) {
++      state.ball.vx *= -1;
++      state.ball.x += (dx > 0) ? px : -px;
++    } else if (py < px) {
++      state.ball.vy *= -1;
++      state.ball.y += (dy > 0) ? py : -py;
++    } else {
++      state.ball.vx *= -1;
++      state.ball.vy *= -1;
++      state.ball.x += (dx > 0) ? px : -px;
++      state.ball.y += (dy > 0) ? py : -py;
+     }
++  }
+
+-    ctx.fillStyle = brickColor(brick.row);
+-    ctx.fillRect(brick.x, brick.y, brick.w, brick.h);
++  for (const brick of state.bricks) {
++    if (brick.alive) {
++      ctx.fillStyle = brickColor(brick.row);
++      ctx.fillRect(brick.x, brick.y, brick.w, brick.h);
++    }
+   }
+
+   // Paddle — color hard-coded instead of using the palette (inconsistency #6).
+diff --git a/game/neon.test.js b/game/neon.test.js
+index 250d6a9..516b562 100644
+--- a/game/neon.test.js
++++ b/game/neon.test.js
+@@ -15,11 +15,72 @@ import {
+   step,
+   makeBricks,
+   createState,
++  frame,
+   BRICK_ROWS,
+   BRICK_COLS,
+   WIDTH,
+ } from './neon.js';
+
++const mockCtx = {
++  fillRect: () => {},
++  arc: () => {},
++  fill: () => {},
++  beginPath: () => {},
++  fillText: () => {},
++};
++
++test('Ball should bounce off the bottom face of a brick', () => {
++  const state = createState(1);
++  const brick = state.bricks[0];
++  state.ball.x = brick.x + brick.w / 2;
++  state.ball.y = brick.y + brick.h + 1;
++  state.ball.vy = -100;
++  state.ball.vx = 0;
++
++  frame(mockCtx, state);
++
++  assert.strictEqual(state.ball.vy, 100, 'Ball vy should have flipped to positive (DOWN)');
++});
++
++test('Ball should bounce off the side face of a brick', () => {
++  const state = createState(1);
++  const brick = state.bricks[0];
++  state.ball.x = brick.x - 1;
++  state.ball.y = brick.y + brick.h / 2;
++  state.ball.vx = 100;
++  state.ball.vy = 0;
++
++  frame(mockCtx, state);
++
++  assert.strictEqual(state.ball.vx, -100, 'Ball vx should have flipped to negative (LEFT)');
++});
++
++test('Ball should not remain inside the brick after bounce (Anti-Sticky)', () => {
++  const state = createState(1);
++  const brick = state.bricks[0];
++  state.ball.x = brick.x + brick.w / 2;
++  state.ball.y = brick.y + brick.h + 1;
++  state.ball.vy = -100;
++
++  frame(mockCtx, state);
++
++  assert.equal(collides(state.ball, brick), false, 'Ball should be pushed out of the brick');
++});
++
++test('Ball should bounce off the corner (both axes)', () => {
++  const state = createState(1);
++  const brick = state.bricks[0];
++  state.ball.x = brick.x + brick.w + 1;
++  state.ball.y = brick.y + brick.h + 1;
++  state.ball.vx = -100;
++  state.ball.vy = -100;
++
++  frame(mockCtx, state);
++
++  assert.strictEqual(state.ball.vx, 100, 'Ball vx should flip on corner hit');
++  assert.strictEqual(state.ball.vy, 100, 'Ball vy should flip on corner hit');
++});
++
+ test('collides: clear overlap detected', () => {
+   const ball = { x: 100, y: 100, r: 8 };
+   const brick = { x: 90, y: 90, w: 40, h: 20 };

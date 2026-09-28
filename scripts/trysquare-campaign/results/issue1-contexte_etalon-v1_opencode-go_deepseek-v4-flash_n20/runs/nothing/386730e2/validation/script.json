@@ -1,0 +1,29 @@
+{
+  "metrics": {
+    "delivered": true,
+    "in_scope": false,
+    "touched": [
+      "ISSUES.md",
+      "game/neon.js",
+      "game/neon.test.js"
+    ],
+    "tests_ajoutes": true,
+    "suite_lancee": true,
+    "skill_invoque": false,
+    "rebond_briques": true,
+    "rebond_angles": true,
+    "rebond_sortie": true,
+    "rebond_voisines": true,
+    "rebond_traversee": false
+  },
+  "reasons": {
+    "in_scope": "a aussi touché ISSUES.md",
+    "tests_ajoutes": "6 cas de plus qu'à l'étalon (12 contre 6)",
+    "suite_lancee": "cd /private/var/folders/hf/sz48238s7x98j_p98cqfxprc0000gp/T/trysquare/campaign/issue1-contexte_etalon-v1_opencode-go_deepseek-v4-flash_n20/386730e2/repo && node --test \"game/**/*.test.js\" 2>&1 ; cd /private/var/folders/hf/sz48238s7x98j_p98cqfxprc0000gp/T/trysquare/campaign/issue1-contexte_etalon-v1_opencode-go_deepseek-v4-flash_n20/386730e2/repo && node --test \"game/**/*.test.js\" 2>&1 | tail -20 && echo \"--- syntax ---\" && node --check game/neon.js && echo \"neon.js OK\" && node --check game/neon.test.js && echo \"neon.test.js OK\" ; cd /private/var/folders/hf/sz48238s7x98j_p98cqfxprc0000gp/T/trysquare/campaign/issue1-contexte_etalon-v1_opencode-go_deepseek-v4-flash_n20/386730e2/repo && node --test \"game/**/*.test.js\" 2>&1 | tail -20 && echo \"--- syntax check ---\" && node --check game/neon.js && echo \"neon.js OK\" && node --check game/neon.test.js && echo \"neon.test.js OK\" ; cd /private/var/folders/hf/sz48238s7x98j_p98cqfxprc0000gp/T/trysquare/campaign/issue1-contexte_etalon-v1_opencode-go_deepseek-v4-flash_n20/386730e2/repo && npm test 2>&1 | tail -15",
+    "skill_invoque": "aucune compétence développée dans le prompt, et aucun SKILL.md lu sur 28 appels d'outil",
+    "rebond_traversee": "balle rapide: la brique n_est pas franchie sans être touchée : la brique a survécu à une balle qui l_a traversée de part en part"
+  },
+  "unjudged": {
+    "sonde_intacte": "aucune sonde n'a été fournie à cette cellule"
+  }
+}

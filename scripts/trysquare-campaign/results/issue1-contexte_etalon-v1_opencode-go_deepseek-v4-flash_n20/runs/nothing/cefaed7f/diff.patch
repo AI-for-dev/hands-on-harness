@@ -1,0 +1,70 @@
+diff --git a/game/neon.js b/game/neon.js
+index 6b4a133..b3d3f50 100644
+--- a/game/neon.js
++++ b/game/neon.js
+@@ -103,8 +103,7 @@ export function createState(level = 1) {
+
+ // True if the ball (circle approximated by its box) overlaps the brick.
+ // Simple AABB test: it only says WHETHER the ball and the brick overlap, not
+-// WHICH face was hit. The missing bounce in frame() is what lets the ball plow
+-// straight through bricks (see #1).
++// WHICH face was hit.
+ export function collides(ball, brick) {
+   return (
+     ball.x + ball.r > brick.x &&
+@@ -114,6 +113,40 @@ export function collides(ball, brick) {
+   );
+ }
+
++// Deflects the ball off the top/bottom or left/right face of a brick and
++// pushes it back out so it no longer overlaps. Returned as a pure function
++// operating on the given brick (fixes #1: the ball used to plow straight
++// through bricks, only ever deflected by walls and the paddle in step()).
++//
++// Which face was hit is decided by the axis with the SMALLEST penetration:
++// a head-on vertical hit overlaps mostly in x, so we flip vy; a side hit
++// overlaps mostly in y, so we flip vx. The ball is then nudged out along that
++// same axis by exactly the overlap.
++export function bounceBall(ball, brick) {
++  // Penetration depth on each axis (positive = how far the ball's edge digs in).
++  const overlapLeft = ball.x + ball.r - brick.x;
++  const overlapRight = brick.x + brick.w - (ball.x - ball.r);
++  const overlapTop = ball.y + ball.r - brick.y;
++  const overlapBottom = brick.y + brick.h - (ball.y - ball.r);
++
++  const overlapX = Math.min(overlapLeft, overlapRight);
++  const overlapY = Math.min(overlapTop, overlapBottom);
++
++  if (overlapX <= overlapY) {
++    // Vertical faces (sides of the brick): flip horizontal velocity.
++    const fromLeft = overlapLeft < overlapRight;
++    ball.vx = fromLeft ? Math.abs(ball.vx) : -Math.abs(ball.vx);
++    // Push the ball back out past the side it came from.
++    ball.x = fromLeft ? brick.x - ball.r : brick.x + brick.w + ball.r;
++  } else {
++    // Horizontal faces (top/bottom of the brick): flip vertical velocity.
++    const fromTop = overlapTop < overlapBottom;
++    ball.vy = fromTop ? Math.abs(ball.vy) : -Math.abs(ball.vy);
++    // Push the ball back out past the face it came from.
++    ball.y = fromTop ? brick.y - ball.r : brick.y + brick.h + ball.r;
++  }
++}
++
+ // --- Score & combo (NOT covered by tests — debt #5) ------------------------
+
+ // Combo multiplier. UNBOUNDED today: a long combo makes the score blow up
+@@ -223,11 +256,9 @@ export function frame(ctx, state) {
+       brick.alive = false;
+       state.combo += 1;
+       state.score += scoreForBrick(brick, state.combo);
+-      // BUG (#1): the ball is NOT deflected here. Only the walls and the paddle
+-      // bounce (in step()); bricks were never given a bounce. So the ball plows
+-      // straight through a column head-on AND straight through the side of a
+-      // row. Fix = a real per-face bounce (flip vy on a top/bottom hit, vx on a
+-      // side hit) plus pushing the ball back out of the brick.
++      // Deflect the ball off the hit face and push it back out of the brick so
++      // it can't plow straight through (fixes #1).
++      bounceBall(state.ball, brick);
+     }
+
+     ctx.fillStyle = brickColor(brick.row);

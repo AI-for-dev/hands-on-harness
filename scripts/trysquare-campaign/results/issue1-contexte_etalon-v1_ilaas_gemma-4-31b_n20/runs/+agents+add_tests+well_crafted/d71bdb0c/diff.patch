@@ -1,0 +1,158 @@
+diff --git a/game/neon.test.js b/game/neon.test.js
+index 250d6a9..1a68d60 100644
+--- a/game/neon.test.js
++++ b/game/neon.test.js
+@@ -15,9 +15,14 @@ import {
+   step,
+   makeBricks,
+   createState,
++  frame,
+   BRICK_ROWS,
+   BRICK_COLS,
+   WIDTH,
++  UP,
++  DOWN,
++  LEFT,
++  RIGHT,
+ } from './neon.js';
+
+ test('collides: clear overlap detected', () => {
+@@ -59,11 +64,134 @@ test('makeBricks: full, all-alive grid at start', () => {
+   assert.ok(bricks.every((b) => b.x >= 0 && b.x + b.w <= WIDTH));
+ });
+
+-// Small local helper: place the ball below the field without importing the
+-// height (coverage intentionally light).
+ function belowField() {
+   return 500;
+ }
+
+-// TODO (#5): test comboMultiplier / scoreForBrick.
+-// TODO      : test level progression and loadBest/saveBest persistence.
++// --- ISSUE #1: Brick Bounce Tests ---
++
++const mockCtx = {
++  fillRect: () => {},
++  arc: () => {},
++  fill: () => {},
++  beginPath: () => {},
++  fillText: () => {},
++};
++
++test('bounce: flip vy on top/bottom hit', () => {
++  const state = createState(1);
++  const brick = state.bricks[0];
++  // Ball moving UP, hitting the bottom face of the brick
++  state.ball = {
++    x: brick.x + brick.w / 2,
++    y: brick.y + brick.h + 2,
++    r: 7,
++    vx: 0,
++    vy: -100
++  };
++
++  // Simulate one step to put it inside
++  step(state, 0.05);
++  frame(mockCtx, state);
++
++  assert.equal(Math.sign(state.ball.vy), DOWN, 'should bounce DOWN');
++});
++
++test('bounce: flip vx on side hit', () => {
++  const state = createState(1);
++  const brick = state.bricks[0];
++  // Ball moving RIGHT, hitting the left face of the brick
++  state.ball = {
++    x: brick.x - 5,
++    y: brick.y + brick.h / 2,
++    r: 7,
++    vx: 100,
++    vy: 0
++  };
++
++  step(state, 0.05);
++  frame(mockCtx, state);
++
++  assert.equal(Math.sign(state.ball.vx), LEFT, 'should bounce LEFT');
++});
++
++test('bounce: flip both on corner hit', () => {
++  const state = createState(1);
++  const brick = state.bricks[0];
++  // Ball moving UP-RIGHT, hitting the bottom-left corner
++  state.ball = {
++    x: brick.x - 2,
++    y: brick.y + brick.h + 2,
++    r: 7,
++    vx: 100,
++    vy: -100
++  };
++
++  step(state, 0.05);
++  frame(mockCtx, state);
++
++  assert.equal(Math.sign(state.ball.vx), LEFT, 'vx should flip to LEFT');
++  assert.equal(Math.sign(state.ball.vy), DOWN, 'vy should flip to DOWN');
++});
++
++test('bounce: no sticky bounce (pushed out)', () => {
++  const state = createState(1);
++  const brick = state.bricks[0];
++  // Position ball deep inside the brick
++  state.ball = {
++    x: brick.x + brick.w / 2,
++    y: brick.y + brick.h / 2,
++    r: 7,
++    vx: 0,
++    vy: -100
++  };
++
++  frame(mockCtx, state);
++  const vyAfterFirst = state.ball.vy;
++
++  // It should have bounced once. If it's still inside,
++  // the next frame might flip it back if not pushed out.
++  frame(mockCtx, state);
++
++  assert.equal(state.ball.vy, vyAfterFirst, 'should not flip back and forth (sticky)');
++});
++
++test('bounce: no double bounce at seams', () => {
++  const state = createState(1);
++  const b1 = state.bricks[0];
++  const b2 = state.bricks[1];
++
++  // Ball hits the seam between two bricks
++  state.ball = {
++    x: (b1.x + b1.w + b2.x) / 2,
++    y: b1.y + b1.h / 2,
++    r: 7,
++    vx: 100,
++    vy: 0
++  };
++
++  frame(mockCtx, state);
++
++  assert.equal(Math.sign(state.ball.vx), LEFT, 'should bounce LEFT exactly once');
++});
++
++test('bounce: tunnelling prevention (sweep)', () => {
++  const state = createState(6); // High speed
++  const brick = state.bricks[0];
++
++  // Ball moving UP so fast it jumps over the brick in one step
++  state.ball = {
++    x: brick.x + brick.w / 2,
++    y: brick.y + brick.h + state.ball.r + 1,
++    r: 7,
++    vx: 0,
++    vy: -710
++  };
++
++  // One step should trigger the collision
++  step(state, 0.05); // moves 35.5px, should cross the brick
++  frame(mockCtx, state);
++
++  assert.equal(Math.sign(state.ball.vy), DOWN, 'should have bounced off the brick despite tunnelling speed');
++  assert.equal(brick.alive, false, 'brick should be destroyed');
++});

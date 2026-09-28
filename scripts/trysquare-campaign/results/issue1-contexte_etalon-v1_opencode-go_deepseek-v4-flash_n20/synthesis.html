@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Les leviers de contexte du module 2.1, contre le rebond de l&#x27;issue #1</title>
+<style>
+body { max-width: 60rem; margin: 2rem auto; padding: 0 1rem;
+       font: 16px/1.55 system-ui, sans-serif; color: #1a1a1a; background: #ffffff; }
+h1, h2, h3, h4 { line-height: 1.25; margin: 2.2rem 0 0.7rem; }
+h1 { font-size: 2.1rem; margin-top: 0; }
+h2 { font-size: 1.7rem; }
+h3 { font-size: 1.45rem; }
+h4 { font-size: 1.15rem; }
+a { color: #0b57d0; }
+table { border-collapse: collapse; margin: 1rem 0; }
+th, td { border: 1px solid #b5b5b5; padding: 0.35rem 0.7rem; text-align: left; }
+th { background: #efefef; }
+code { font-family: ui-monospace, monospace; background: #efefef;
+       padding: 0.05rem 0.3rem; border-radius: 3px; }
+.warning { border-left: 4px solid #b45309; padding-left: 0.8rem; }
+@media (prefers-color-scheme: dark) {
+  body { color: #e8e8e8; background: #121212; }
+  a { color: #9ec1ff; }
+  th { background: #232323; }
+  th, td { border-color: #4a4a4a; }
+  code { background: #232323; }
+}
+</style>
+</head>
+<body>
+<h1>Les leviers de contexte du module 2.1, contre le rebond de l'issue #1</h1>
+<ul><li>etalon <code>etalon-v1</code>, provider <code>opencode-go</code>, model <code>deepseek-v4-flash</code>, thinking <code>off</code></li><li>20 repetitions, concurrency 5, timeout 1800s</li></ul>
+<h3>Scores, cell by test</h3>
+<table><thead><tr><th>cell</th><th>delivered</th><th>suite_lancee</th><th>skill_invoque</th><th>sonde_intacte</th><th>in_scope</th><th>tests_ajoutes</th><th>rebond_briques</th><th>rebond_angles</th><th>rebond_sortie</th><th>rebond_voisines</th><th>rebond_traversee</th></tr></thead><tbody><tr><td>nothing</td><td>19/20</td><td>19/20</td><td>0/20</td><td>-</td><td>18/20</td><td>14/20</td><td>13/20</td><td>8/20</td><td>13/20</td><td>11/20</td><td>11/20</td></tr><tr><td>+thinking</td><td>20/20</td><td>20/20</td><td>0/20</td><td>-</td><td>12/20</td><td>20/20</td><td>15/20</td><td>15/20</td><td>15/20</td><td>15/20</td><td>16/20</td></tr><tr><td>+agents</td><td>20/20</td><td>20/20</td><td>0/20</td><td>-</td><td>20/20</td><td>11/20</td><td>17/20</td><td>8/20</td><td>18/20</td><td>17/20</td><td>7/20</td></tr><tr><td>+well_crafted</td><td>20/20</td><td>20/20</td><td>0/20</td><td>-</td><td>20/20</td><td>20/20</td><td>18/20</td><td>19/20</td><td>19/20</td><td>18/20</td><td>19/20</td></tr><tr><td>-system_prompt</td><td>20/20</td><td>20/20</td><td>0/20</td><td>-</td><td>20/20</td><td>12/20</td><td>19/20</td><td>15/20</td><td>19/20</td><td>19/20</td><td>6/20</td></tr><tr><td>+agents+well_crafted</td><td>19/20</td><td>19/20</td><td>0/20</td><td>-</td><td>19/20</td><td>19/20</td><td>19/20</td><td>19/20</td><td>19/20</td><td>19/20</td><td>19/20</td></tr><tr><td>+agents+skill</td><td>20/20</td><td>20/20</td><td>20/20</td><td>-</td><td>12/20</td><td>20/20</td><td>17/20</td><td>16/20</td><td>17/20</td><td>17/20</td><td>19/20</td></tr><tr><td>+agents+add_tests+well_crafted</td><td>20/20</td><td>20/20</td><td>0/20</td><td>20/20</td><td>20/20</td><td>18/20</td><td>20/20</td><td>20/20</td><td>20/20</td><td>20/20</td><td>20/20</td></tr><tr><td>+agents+add_tests+skill</td><td>19/20</td><td>20/20</td><td>20/20</td><td>20/20</td><td>7/20</td><td>10/20</td><td>19/20</td><td>19/20</td><td>19/20</td><td>19/20</td><td>19/20</td></tr></tbody></table>
+<p><code>x/n</code>: the test was true in <code>x</code> of the <code>n</code> runs that could judge it. A run that produced no measurement is in no denominator here. Declared but not scored here, having no <code>x/n</code> to show: <code>touched</code> - a number or a diagnostic, readable per run in <code>measures.json</code>.</p>
+<h3>Cost, median and 95% interval by resampling</h3>
+<p>10000 draws, seed 20260729: the interval is reproducible.</p>
+<table><thead><tr><th>cell</th><th>n</th><th>in</th><th>out</th><th>duration (s)</th></tr></thead><tbody><tr><td>nothing</td><td>19</td><td>17 292 [9 616, 20 681]</td><td>20 957 [14 050, 23 300]</td><td>177 [128, 211]</td></tr><tr><td>+thinking</td><td>20</td><td>13 225 [12 098, 15 730]</td><td>53 979 [44 871, 66 196]</td><td>490 [364, 565]</td></tr><tr><td>+agents</td><td>20</td><td>8 553 [6 426, 15 638]</td><td>6 917 [1 848, 19 424]</td><td>66 [21, 178]</td></tr><tr><td>+well_crafted</td><td>20</td><td>19 847 [17 236, 23 209]</td><td>26 665 [22 717, 32 509]</td><td>252 [192, 312]</td></tr><tr><td>-system_prompt</td><td>20</td><td>15 358 [10 842, 16 666]</td><td>15 656 [7 420, 20 744]</td><td>142 [72, 192]</td></tr><tr><td>+agents+well_crafted</td><td>19</td><td>9 878 [9 213, 10 982]</td><td>69 557 [56 049, 79 990]</td><td>553 [435, 609]</td></tr><tr><td>+agents+skill</td><td>20</td><td>36 002 [33 870, 58 106]</td><td>119 952 [111 884, 131 418]</td><td>1 068 [912, 1 148]</td></tr><tr><td>+agents+add_tests+well_crafted</td><td>20</td><td>15 465 [13 912, 16 716]</td><td>48 394 [39 626, 58 564]</td><td>410 [342, 448]</td></tr><tr><td>+agents+add_tests+skill</td><td>19</td><td>33 123 [29 644, 36 841]</td><td>81 326 [66 708, 86 413]</td><td>667 [574, 781]</td></tr></tbody></table>
+<p>Over the runs the verdict rests on: valid, and passing <code>[verdict].validity</code>. A level carries no verdict - two intervals that do not overlap are not a result, and the gap that would be one is in the table below.</p>
+<h3>Gap to <code>nothing</code>, 95% interval by resampling</h3>
+<p>10000 draws, seed 20260729: the verdict is reproducible.</p>
+<table><thead><tr><th>cell</th><th>in</th><th>out</th><th>turns</th><th>duration</th><th>rebond_briques</th></tr></thead><tbody><tr><td>+agents</td><td>-8 739 o</td><td>-14 040 o</td><td>-6 o</td><td>-112 o</td><td>+17 pts o</td></tr><tr><td>+agents+add_tests+skill</td><td>+15 831 *</td><td>+60 369 *</td><td>+7 *</td><td>+490 *</td><td>+32 pts *</td></tr><tr><td>+agents+add_tests+well_crafted</td><td>-1 827 o</td><td>+27 438 *</td><td>-6 *</td><td>+234 *</td><td>+32 pts *</td></tr><tr><td>+agents+skill</td><td>+18 710 *</td><td>+98 996 *</td><td>+26 *</td><td>+890 *</td><td>+17 pts o</td></tr><tr><td>+agents+well_crafted</td><td>-7 414 o</td><td>+48 600 *</td><td>-4 o</td><td>+376 *</td><td>+32 pts *</td></tr><tr><td>+thinking</td><td>-4 067 o</td><td>+33 022 *</td><td>+0 o</td><td>+313 *</td><td>+7 pts o</td></tr><tr><td>+well_crafted</td><td>+2 555 o</td><td>+5 708 *</td><td>-4 o</td><td>+75 *</td><td>+22 pts o</td></tr><tr><td>-system_prompt</td><td>-1 934 o</td><td>-5 302 o</td><td>-2 o</td><td>-34 o</td><td>+27 pts *</td></tr></tbody></table>
+<p><code>*</code> established, the interval excludes zero - <code>o</code> inconclusive.</p>
+<p><strong>No sentence may rest on an <code>o</code>.</strong> The table shows them anyway: hiding a measurement would be another dishonesty, and the dispersion is precisely what this is for.</p>
+<h4>What is publishable</h4>
+<ul><li><code>+agents+add_tests+skill</code>: <strong>in +15 831</strong>, interval [+9 844, +23 597]</li><li><code>+agents+add_tests+skill</code>: <strong>out +60 369</strong>, interval [+45 575, +70 684]</li><li><code>+agents+add_tests+skill</code>: <strong>turns +7</strong>, interval [+1, +11]</li><li><code>+agents+add_tests+skill</code>: <strong>duration +490</strong>, interval [+394, +628]</li><li><code>+agents+add_tests+skill</code>: <strong>rebond_briques +32 pts</strong>, interval [+11 pts, +53 pts]</li><li><code>+agents+add_tests+well_crafted</code>: <strong>out +27 438</strong>, interval [+18 309, +40 490]</li><li><code>+agents+add_tests+well_crafted</code>: <strong>turns -6</strong>, interval [-12, -3]</li><li><code>+agents+add_tests+well_crafted</code>: <strong>duration +234</strong>, interval [+162, +316]</li><li><code>+agents+add_tests+well_crafted</code>: <strong>rebond_briques +32 pts</strong>, interval [+11 pts, +53 pts]</li><li><code>+agents+skill</code>: <strong>in +18 710</strong>, interval [+13 996, +41 245]</li><li><code>+agents+skill</code>: <strong>out +98 996</strong>, interval [+90 238, +114 854]</li><li><code>+agents+skill</code>: <strong>turns +26</strong>, interval [+17, +32]</li><li><code>+agents+skill</code>: <strong>duration +890</strong>, interval [+730, +1 002]</li><li><code>+agents+well_crafted</code>: <strong>out +48 600</strong>, interval [+33 530, +63 578]</li><li><code>+agents+well_crafted</code>: <strong>duration +376</strong>, interval [+251, +459]</li><li><code>+agents+well_crafted</code>: <strong>rebond_briques +32 pts</strong>, interval [+11 pts, +53 pts]</li><li><code>+thinking</code>: <strong>out +33 022</strong>, interval [+23 864, +48 016]</li><li><code>+thinking</code>: <strong>duration +313</strong>, interval [+178, +416]</li><li><code>+well_crafted</code>: <strong>out +5 708</strong>, interval [+192, +15 974]</li><li><code>+well_crafted</code>: <strong>duration +75</strong>, interval [+4, +165]</li><li><code>-system_prompt</code>: <strong>rebond_briques +27 pts</strong>, interval [+6 pts, +48 pts]</li></ul>
+<p class="warning"><strong>The cost columns (in, out, turns, duration) must not be read here.</strong> 37 retries across the matrix, in +agents, +agents+add_tests+skill, +agents+add_tests+well_crafted, +agents+skill, +agents+well_crafted, +thinking, +well_crafted, -system_prompt, nothing. A retry replays the turn with the whole accumulated context, so these columns reflect our own load on the provider rather than the configuration - including any of them marked established.</p>
+</body>
+</html>

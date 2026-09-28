@@ -1,0 +1,144 @@
+diff --git a/game/neon.js b/game/neon.js
+index 6b4a133..cc75865 100644
+--- a/game/neon.js
++++ b/game/neon.js
+@@ -223,11 +223,34 @@ export function frame(ctx, state) {
+       brick.alive = false;
+       state.combo += 1;
+       state.score += scoreForBrick(brick, state.combo);
+-      // BUG (#1): the ball is NOT deflected here. Only the walls and the paddle
+-      // bounce (in step()); bricks were never given a bounce. So the ball plows
+-      // straight through a column head-on AND straight through the side of a
+-      // row. Fix = a real per-face bounce (flip vy on a top/bottom hit, vx on a
+-      // side hit) plus pushing the ball back out of the brick.
++
++      // Resolve collision: find the axis of minimum penetration
++      const overlapX = Math.min(
++        state.ball.x + state.ball.r - brick.x,
++        brick.x + brick.w - (state.ball.x - state.ball.r)
++      );
++      const overlapY = Math.min(
++        state.ball.y + state.ball.r - brick.y,
++        brick.y + brick.h - (state.ball.y - state.ball.r)
++      );
++
++      if (overlapX < overlapY) {
++        state.ball.vx *= -1;
++        // Reposition to avoid sticking or double-bounce
++        if (state.ball.x < brick.x + brick.w / 2) {
++          state.ball.x = brick.x - state.ball.r;
++        } else {
++          state.ball.x = brick.x + brick.w + state.ball.r;
++        }
++      } else {
++        state.ball.vy *= -1;
++        // Reposition to avoid sticking or double-bounce
++        if (state.ball.y < brick.y + brick.h / 2) {
++          state.ball.y = brick.y - state.ball.r;
++        } else {
++          state.ball.y = brick.y + brick.h + state.ball.r;
++        }
++      }
+     }
+
+     ctx.fillStyle = brickColor(brick.row);
+diff --git a/game/neon.test.js b/game/neon.test.js
+index 250d6a9..404c382 100644
+--- a/game/neon.test.js
++++ b/game/neon.test.js
+@@ -15,9 +15,18 @@ import {
+   step,
+   makeBricks,
+   createState,
++  frame,
+   BRICK_ROWS,
+   BRICK_COLS,
+   WIDTH,
++  UP,
++  DOWN,
++  LEFT,
++  RIGHT,
++  BRICK_W,
++  BRICK_H,
++  BRICK_GAP,
++  BRICK_TOP,
+ } from './neon.js';
+
+ test('collides: clear overlap detected', () => {
+@@ -67,3 +76,76 @@ function belowField() {
+
+ // TODO (#5): test comboMultiplier / scoreForBrick.
+ // TODO      : test level progression and loadBest/saveBest persistence.
++
++test('frame: ball bouncing off top of brick', () => {
++  const state = createState(1);
++  const brick = state.bricks[0]; // Top-left brick
++  state.ball = {
++    x: brick.x + brick.w / 2,
++    y: brick.y - 1, // r=7, so y+r = 6 (relative to y). It overlaps.
++    r: 7,
++    vx: 0,
++    vy: 100,
++  };
++  const ctx = {
++    fillRect: () => {},
++    arc: () => {},
++    fill: () => {},
++    fillText: () => {},
++    beginPath: () => {},
++    fillStyle: '',
++    font: '',
++  };
++  frame(ctx, state);
++  assert.equal(Math.sign(state.ball.vy), UP, 'ball should bounce up');
++});
++
++test('frame: ball bouncing off side of brick', () => {
++  const state = createState(1);
++  const brick = state.bricks[0];
++  state.ball = {
++    x: brick.x - 1, // r=7, so x+r = 6. Overlaps with brick.x.
++    y: brick.y + brick.h / 2,
++    r: 7,
++    vx: 100,
++    vy: 0,
++  };
++  const ctx = {
++    fillRect: () => {},
++    arc: () => {},
++    fill: () => {},
++    fillText: () => {},
++    beginPath: () => {},
++    fillStyle: '',
++    font: '',
++  };
++  frame(ctx, state);
++  assert.equal(Math.sign(state.ball.vx), LEFT, 'ball should bounce left');
++});
++
++test('frame: double inversion at brick seam', () => {
++  const state = createState(1);
++
++  const offsetX = (WIDTH - (BRICK_COLS * (BRICK_W + BRICK_GAP) - BRICK_GAP)) / 2;
++  state.ball = {
++    x: offsetX + BRICK_W + BRICK_GAP / 2,
++    y: BRICK_TOP - 7 + 2,
++    r: 7,
++    vx: 0,
++    vy: 100,
++  };
++
++  const ctx = {
++    fillRect: () => {},
++    arc: () => {},
++    fill: () => {},
++    fillText: () => {},
++    beginPath: () => {},
++    fillStyle: '',
++    font: '',
++  };
++
++  frame(ctx, state);
++
++  assert.equal(Math.sign(state.ball.vy), UP, 'ball should still bounce up even when hitting two bricks');
++});

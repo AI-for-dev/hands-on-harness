@@ -13,10 +13,28 @@ export const en: LocaleSpecificConfig<DefaultTheme.Config> = {
     nav: [{ text: 'Contents', link: '/en/' }],
     sidebar: [
       {
-        text: 'Contents',
+        text: 'Introduction',
         items: [
-          { text: 'Introduction', link: '/en/' },
-          { text: '1. What is a harness?', link: '/en/quest-ce-quun-harnais' }
+          { text: 'Overview', link: '/en/' },
+          { text: 'The Method', link: '/en/methode' },
+          { text: 'The Running Theme: NÉON', link: '/en/fil-rouge' }
+        ]
+      },
+      {
+        text: 'Act 1 - Foundations',
+        items: [
+          { text: 'History', link: '/en/historique' },
+          { text: 'LLMs in 2026', link: '/en/act1-llm' },
+          { text: 'Why a harness, and what is it made of?', link: '/en/act1-harness' },
+          { text: 'The starting harness: Pi', link: '/en/act1-pi' }
+        ]
+      },
+      {
+        text: 'Act 2 - Rebuilding',
+        items: [
+          { text: '2.0 The sandbox', link: '/en/act2-sandbox' },
+          { text: '2.1 Context and the window', link: '/en/act2-contexte' },
+          { text: '2.2 Skills', link: '/en/act2-skill' }
         ]
       }
     ],

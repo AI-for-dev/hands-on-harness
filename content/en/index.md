@@ -1,57 +1,54 @@
 # Hands-on Harness
 
-*A training course to help you discover and master harnesses*
+*A training to help you discover harnesses and tame them*
 
-## Context and positioning
+## Context
 
-This training material was created as part of the ANF IA4Dev held from October 19 to 22, 2026 [https://ia4dev-2026.sciencesconf.org/](https://ia4dev-2026.sciencesconf.org/). The use of Large Language Models (LLMs), whether for coding or other tasks, raises obvious significant issues from legal (code ownership...), social, and environmental perspectives. We chose to have several speakers address these topics during the ANF, but we did not develop these aspects in this material. Interested readers can, however, find some references on these questions in the appendix.
+The use of Large Language Models (LLMs) in our daily tasks is becoming increasingly important, whether for transcribing meetings, analyzing documents, or coding applications. In what follows, we focus on their impact in a software development setting.
 
-It is evident that building an AI training course to assist in software development raises questions. Is it implicitly promoting the use of AI for coding? Our choice not to develop legal, social, and environmental issues here raises the question even more critically: are we relegating to the appendix what should be the primary information and core of the training to position oneself with full knowledge of the situation?
+LLMs and their ecosystem have evolved at breakneck speed. Recall that ChatGPT was made available to the general public in late November 2022. Since then, techniques and tools have multiplied:
 
-We were lucky to have very different positions within the organizing committee of this ANF. This diversity was the source of numerous discussions, and this training course is in no way intended to convince anyone to use or not use AI.
-It is true that by showing how to do it through this material, we contribute to spreading the practice.
+- **2022: intelligent completion**. Models begin predicting and completing code on the fly, directly in the editor, like classic autocompletion, but powered by LLMs trained on billions of lines of public code.
+- **2022-2023: prompt engineering**. With ChatGPT accessible to the general public, developers discover that the way a question is phrased greatly changes the quality of the LLM's response. Prompt engineering consists of building very precise, structured instructions to get better results.
+- **2023-2024: RAG (Retrieval-Augmented Generation)**. The LLM alone does not know your specific codebase or your internal documentation. RAG augments the model's knowledge by providing it with relevant documents before answering.
+- **2023-2024: agent (LLM + tools)**. Instead of asking a question and receiving an answer, the model is given the means to act: run code, query a database, call an API, read files.
+- **Late 2024: MCP (Model Context Protocol)**. An open standard from Anthropic that standardizes how LLMs communicate with external tools. MCP defines a unified protocol: any LLM implementing the protocol can use any tool implementing MCP (files, APIs, databases, etc.).
+- **2025: context engineering**. An extension of prompt engineering: it is no longer just about phrasing the question well, but about optimizing the whole context provided to the model, from document selection to history management, including information structuring and the relevance of examples.
+- **2025: harness**. A framework that assembles all the previous concepts into a coherent system. The harness manages context, available tools, code execution, and permissions, with the goal of a system autonomous enough to work on complex, long-running tasks.
 
-At the time of writing these lines, Linus Torvalds, the founder of Linux, made a statement close to the positioning of this educational material:
+Tools have followed these advances: ChatGPT, Copilot, Claude Code, OpenCode, or, more recently, Pi.
 
-> "AI is a tool, like other tools we use. And it's clearly a useful tool.
-> It wasn't necessarily as 'clear' just a year ago, but it's no longer a question today.
-> There are other questions around AI (like what the AI economy will actually look like at the end), but 'is it useful' is no longer one of those questions. Anyone who doubts this clearly hasn't really used AI.
-> Yes, it can also be a somewhat painful tool, both for the workload of maintainers and from the perspective of 'it keeps finding embarrassing bugs'.
-> But the solution is not to bury our heads in the sand and sing 'La La La, I can't hear you' at full voice as some seem to be doing.
-> The solution is to ensure that these LLM tools *help* maintainers instead of causing them pain. There is no question on that side.
-> We are not forcing anyone to use it, but I will very loudly ignore people who try to contradict others on their use.
-> And no, AI is not perfect. But hell, anyone pointing out AI's problems had better look themselves in the mirror at the same time.
-> Because natural intelligence is not always so great either."
-> 
-> —— Linus Torvalds [https://www.phoronix.com/news/Linux-Is-Not-Anti-AI](https://www.phoronix.com/news/Linux-Is-Not-Anti-AI)
+## Stakes
 
+In four years, LLMs for coding have kept changing, gaining in performance and becoming more complex. Before you even master a concept or a tool, you already have to learn another one, and developers, like non-developers, follow this wave at the peril of software quality. Two questions now arise: how to use these tools effectively without losing control, and how can they help us on a daily basis?
 
-In our case, it is about helping not only maintainers but more globally AI users, those who would like to use it or even those who are not really sure they will use it but who want to better understand and know how it works. The organization of this ANF showed us that there is a strong demand in this direction. The question is therefore not: should you use AI or not? (as we really leave you to judge this one) but if I want to use it relevantly within the context of ESR, how can I do it?
+Big announcements dangled a productivity gain of at least 50&nbsp;% thanks to LLMs. The reality is much more nuanced: a METR study conducted on experienced developers concludes that, on complex codebases, the use of LLMs can be counterproductive [1], and the GitClear report on code quality observes that developers spend more time redoing work after realizing that what an LLM had added to the codebase was wrong [2]. Pull Requests of insufficient quality are multiplying on open source software, and the maintainer becomes a reviewer overwhelmed by verbose, often poorly structured work, produced by agents and not reviewed by a contributor who has not familiarized themselves with the code they claim to contribute to. When this review is done poorly, the ensuing rewrite in turn limits productivity, if it does not reduce it [3].
 
-It is evident that what will be mainly presented in this material, namely the use of a harness, corresponds to a somewhat advanced usage. In a way, it is possible to simply connect your development environment (IDE) to an AI provider and use commands often integrated or accessible via plugins: chat, edit, and agent. The question of which AI provider is fundamental? Here, depending on the frameworks in which you work, answers will vary. Moreover, they are likely to evolve over time, and we invite you to investigate this question.
+We increasingly see open source projects that close Pull Request submissions by default and require contributors to start a discussion before granting them the rights.
 
-In this training course, we will rely on the IlaaS offering [https://www.ilaas.fr/](https://www.ilaas.fr/) because it allows using larger and more performant models than what is possible for the majority of us to install locally [https://blog.stephane-robert.info/docs/developper/programmation/python/ollama/] (https://blog.stephane-robert.info/docs/developper/programmation/python/ollama/)). We are aware that not all universities are on IlaaS and for those in ESR who simply want access to a model to test without necessarily building a harness, we refer you to the Albert API from DINUM [https://ia.numerique.gouv.fr/outils-ia/albert-api/](https://ia.numerique.gouv.fr/outils-ia/albert-api/).
+The use of MCP is here again more nuanced than the initial promises. The context windows of new LLMs have grown, recently reaching one million tokens, but models react very poorly as soon as 40&nbsp;% of the overall context size is occupied [4]. Other, more alarming measurements place the threshold in absolute value rather than percentage, around 100K tokens [5]. You will see this zone referred to as "dumb zone" [6], "context-rot" or, as in the original article, "lost in the middle". MCP and all the tools that exist today add to the context a preamble that can bring you there before you have even asked your first question, and the answers you get will then no longer be reliable.
 
-Before diving into the core of the training course, namely the harness and its usage, we will detail a bit of the history, the models (those that are fairly easily accessible and those we aim for in the near future since this training course served as an opportunity to set in motion a dynamic in this direction) and some available harnesses and why we chose Pi.
+The remaining question is that of control: keeping a critical mind in the face of this ease of code generation, and becoming an orchestrator instead of remaining a simple observer. This is what this training seeks to build.
 
-In a second part, we will look at how Pi works and create a first extension. The notions of
+## Objectives
 
+Research and industry alike rely on software development; developers must therefore be supported in the face of the changes to the profession brought about by LLMs and AI agents.
 
-## Training plan
+This training provides an overview of the tools, the existing models, and their operating mechanisms. It also seeks to develop a critical mindset toward the possible misuse of these tools, to promote their ethical and responsible use.
 
-1. **Navigating the current landscape of LLMs and harnesses**
-   - [History](./historique)
-   - Models and providers
-   - Harnesses
-       - [What is a harness?](./quest-ce-quun-harnais)
-       - Some harnesses
+The program includes many hands-on segments, so that participants can, by the end of the training, integrate these tools into their daily practices.
 
-2. **Getting hands-on with Pi**
-   - Install and configure Pi
-   - Configure access to IlaaS
-   - Discover Herdr 
-   - Discover commands and some first Pi extensions
+## Target audience and prerequisites
 
-3. **Building and adapting your harness**
-   - Create a first extension
-   - ...
+- **Audience**: anyone with a software development activity.
+- **Prerequisites**: programming experience (at least 1-2 years); no AI expertise required, though minimal experience is a plus.
+- **Level**: from juniors to experienced developers.
+
+## References
+
+1. [https://metr.org/blog/2025-07-10-early-2025-ai-experienced-os-dev-study/](https://metr.org/blog/2025-07-10-early-2025-ai-experienced-os-dev-study/)
+2. [https://www.jonas.rs/2025/02/09/report-summary-gitclear-ai-code-quality-research-2025.html](https://www.jonas.rs/2025/02/09/report-summary-gitclear-ai-code-quality-research-2025.html)
+3. [https://youtu.be/tbDDYKRFjhk?t=549](https://youtu.be/tbDDYKRFjhk?t=549)
+4. [https://arxiv.org/abs/2307.03172](https://arxiv.org/abs/2307.03172)
+5. [https://agentpatterns.ai/context-engineering/context-window-dumb-zone/](https://agentpatterns.ai/context-engineering/context-window-dumb-zone/)
+6. [https://www.youtube.com/watch?v=rmvDxxNubIg](https://www.youtube.com/watch?v=rmvDxxNubIg)

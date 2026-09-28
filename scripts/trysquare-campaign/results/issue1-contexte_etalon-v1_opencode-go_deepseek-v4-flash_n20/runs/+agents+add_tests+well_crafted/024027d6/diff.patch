@@ -1,0 +1,363 @@
+diff --git a/game/neon.js b/game/neon.js
+index 6b4a133..05d947a 100644
+--- a/game/neon.js
++++ b/game/neon.js
+@@ -103,8 +103,7 @@ export function createState(level = 1) {
+
+ // True if the ball (circle approximated by its box) overlaps the brick.
+ // Simple AABB test: it only says WHETHER the ball and the brick overlap, not
+-// WHICH face was hit. The missing bounce in frame() is what lets the ball plow
+-// straight through bricks (see #1).
++// WHICH face was hit — the face is decided by bounceOffBricks() below.
+ export function collides(ball, brick) {
+   return (
+     ball.x + ball.r > brick.x &&
+@@ -114,6 +113,165 @@ export function collides(ball, brick) {
+   );
+ }
+
++// --- Brick collision resolution (issue #1) ---------------------------------
++
++// Continuous (swept) collision: the move from (px, py) to the ball's current
++// position is a segment; we test it against the brick grown by the ball radius
++// (the expanded AABB). Returns the entry time t in [0, 1] along that segment,
++// or null if the segment never touches the brick. t = 0 means the ball already
++// overlapped the brick at the start of the move.
++//
++// This is what defeats tunnelling: at `ballSpeed(6)` (710 px/s) a stuttered
++// frame (50 ms cap) moves the ball 35.5 px, more than the 34 px needed to
++// clear a brick (BRICK_H + diameter) — a discrete before/after test would
++// never see the overlap, the sweep does.
++function sweepHit(ball, px, py, brick) {
++  const ex = brick.x - ball.r;
++  const ey = brick.y - ball.r;
++  const ew = brick.w + 2 * ball.r;
++  const eh = brick.h + 2 * ball.r;
++  const dx = ball.x - px;
++  const dy = ball.y - py;
++
++  let tEntry = 0;
++  let tExit = 1;
++
++  // Slab test on x.
++  if (Math.abs(dx) < 1e-12) {
++    if (px <= ex || px >= ex + ew) return null;
++  } else {
++    let t1 = (ex - px) / dx;
++    let t2 = (ex + ew - px) / dx;
++    if (t1 > t2) [t1, t2] = [t2, t1];
++    tEntry = Math.max(tEntry, t1);
++    tExit = Math.min(tExit, t2);
++  }
++  // Slab test on y.
++  if (Math.abs(dy) < 1e-12) {
++    if (py <= ey || py >= ey + eh) return null;
++  } else {
++    let t1 = (ey - py) / dy;
++    let t2 = (ey + eh - py) / dy;
++    if (t1 > t2) [t1, t2] = [t2, t1];
++    tEntry = Math.max(tEntry, t1);
++    tExit = Math.min(tExit, t2);
++  }
++
++  if (tEntry <= tExit && tEntry <= 1 && tExit >= 0) return Math.max(0, tEntry);
++  return null;
++}
++
++// Bounces the ball off the face with the smallest penetration and pushes it
++// back out of the brick rectangle. `bricks` is the set of bricks the ball
++// overlaps in the SAME pass (a grid seam overlaps two bricks at once: the gap
++// is 8 px, the ball 14 px across). The bounce is applied exactly ONCE against
++// the shallowest axis — a `vy = -vy` repeated per brick would cancel out and
++// the ball would plow through the seam.
++//
++//   per face : the axis with the smaller penetration is the face hit — flip it,
++//              leave the other component exactly as it was;
++//   corner   : equal penetrations mean a diagonal hit — flip both;
++//   push out : reposition the ball outside the rectangle, otherwise the next
++//              frame still overlaps and re-flips forever (sticky bounce).
++function bounceOffBricks(ball, bricks) {
++  // The winning brick is the one with the shallowest penetration overall.
++  let win = null;
++  let winDX = Infinity;
++  let winDY = Infinity;
++  for (const brick of bricks) {
++    const dx = Math.min(
++      ball.x + ball.r - brick.x,
++      brick.x + brick.w - (ball.x - ball.r),
++    );
++    const dy = Math.min(
++      ball.y + ball.r - brick.y,
++      brick.y + brick.h - (ball.y - ball.r),
++    );
++    if (Math.min(dx, dy) < Math.min(winDX, winDY)) {
++      win = brick;
++      winDX = dx;
++      winDY = dy;
++    }
++  }
++  if (!win) return; // nothing overlaps (defensive)
++
++  const left = ball.x + ball.r - win.x < win.x + win.w - (ball.x - ball.r);
++  const top = ball.y + ball.r - win.y < win.y + win.h - (ball.y - ball.r);
++
++  if (winDX < winDY) {
++    // Vertical face: bounce horizontally, keep vy untouched.
++    ball.vx = left ? -Math.abs(ball.vx) : Math.abs(ball.vx);
++    ball.x = left ? win.x - ball.r : win.x + win.w + ball.r;
++  } else if (winDY < winDX) {
++    // Horizontal face: bounce vertically, keep vx untouched.
++    ball.vy = top ? -Math.abs(ball.vy) : Math.abs(ball.vy);
++    ball.y = top ? win.y - ball.r : win.y + win.h + ball.r;
++  } else {
++    // Corner: equal penetration — diagonal hit, flip both, exit both ways.
++    ball.vx = left ? -Math.abs(ball.vx) : Math.abs(ball.vx);
++    ball.vy = top ? -Math.abs(ball.vy) : Math.abs(ball.vy);
++    ball.x = left ? win.x - ball.r : win.x + win.w + ball.r;
++    ball.y = top ? win.y - ball.r : win.y + win.h + ball.r;
++  }
++}
++
++// Safety net after the main bounce: if the ball still overlaps a brick (a
++// multi-brick wedge), reposition it outside WITHOUT touching the velocity — the
++// bounce has already been applied exactly once for this pass.
++function pushOutRemaining(ball, bricks) {
++  for (const brick of bricks) {
++    if (!brick.alive || !collides(ball, brick)) continue;
++    const dxL = ball.x + ball.r - brick.x;
++    const dxR = brick.x + brick.w - (ball.x - ball.r);
++    const dyT = ball.y + ball.r - brick.y;
++    const dyB = brick.y + brick.h - (ball.y - ball.r);
++    if (Math.min(dxL, dxR) < Math.min(dyT, dyB)) {
++      ball.x = dxL < dxR ? brick.x - ball.r : brick.x + brick.w + ball.r;
++    } else {
++      ball.y = dyT < dyB ? brick.y - ball.r : brick.y + brick.h + ball.r;
++    }
++  }
++}
++
++// Breaks every brick the ball hit in this pass (score + combo), then applies
++// the bounce exactly once against the group. Shared by `step()` (swept hits
++// during the move) and `frame()` (static overlaps).
++function resolveBrickHits(state, hitBricks) {
++  for (const brick of hitBricks) {
++    brick.alive = false;
++    state.combo += 1;
++    state.score += scoreForBrick(brick, state.combo);
++  }
++  bounceOffBricks(state.ball, hitBricks);
++  pushOutRemaining(state.ball, state.bricks);
++}
++
++// Detects every brick the ball crossed during the move (prevX, prevY) -> ball,
++// keeps the earliest contact, and resolves it: brick destroyed, score awarded,
++// ball bounced off the right face and pushed out of the rectangle.
++function resolveBricksSwept(state, prevX, prevY) {
++  const ball = state.ball;
++  const hits = [];
++  let tMin = Infinity;
++  for (const brick of state.bricks) {
++    if (!brick.alive) continue;
++    const t = sweepHit(ball, prevX, prevY, brick);
++    if (t !== null) {
++      hits.push({ brick, t });
++      if (t < tMin) tMin = t;
++    }
++  }
++  if (hits.length === 0) return;
++
++  // The ball only ever reaches the earliest contact: every brick hit at that
++  // same moment (e.g. both halves of a seam) is destroyed, the ones crossed
++  // later on the phantom remainder of the move are not.
++  const group = hits.filter((h) => h.t <= tMin + 1e-9).map((h) => h.brick);
++  ball.x = prevX + (ball.x - prevX) * tMin;
++  ball.y = prevY + (ball.y - prevY) * tMin;
++  resolveBrickHits(state, group);
++}
++
+ // --- Score & combo (NOT covered by tests — debt #5) ------------------------
+
+ // Combo multiplier. UNBOUNDED today: a long combo makes the score blow up
+@@ -164,10 +322,16 @@ export function saveBest(storage, score) {
+ // Returns `true` if the ball is lost (exits through the bottom).
+ export function step(state, dt) {
+   const { ball, paddle } = state;
++  const prevX = ball.x;
++  const prevY = ball.y;
+
+   ball.x += ball.vx * dt;
+   ball.y += ball.vy * dt;
+
++  // Bricks: swept detection between the previous and the new position (catches
++  // tunnelling at high speed), resolved once: bounce + push out + destroy.
++  resolveBricksSwept(state, prevX, prevY);
++
+   // Side walls
+   if (ball.x - ball.r < 0) {
+     ball.x = ball.r;
+@@ -208,28 +372,23 @@ export function step(state, dt) {
+
+ // --- Rendering (DOM): brick collision logic STILL mixed in here ------------
+
+-// Main render loop. For each live brick we test collision AND draw in the same
+-// pass: this is where logic and rendering are entangled.
++// Main render loop. Brick collisions are normally resolved by `step()` before
++// this runs (swept detection); this pass still resolves any brick the ball
++// still overlaps (defensive, and the entry point the tests use), then draws
++// only the bricks that survived.
+ export function frame(ctx, state) {
+   // Background
+   ctx.fillStyle = palette.background;
+   ctx.fillRect(0, 0, WIDTH, HEIGHT);
+
+-  // Bricks: collision + bounce + score + drawing, all in one place.
++  // Bricks: static overlap -> bounce once + push out + destroy, then draw.
++  const overlapping = state.bricks.filter((b) => b.alive && collides(state.ball, b));
++  if (overlapping.length > 0) {
++    resolveBrickHits(state, overlapping);
++  }
++
+   for (const brick of state.bricks) {
+     if (!brick.alive) continue;
+-
+-    if (collides(state.ball, brick)) {
+-      brick.alive = false;
+-      state.combo += 1;
+-      state.score += scoreForBrick(brick, state.combo);
+-      // BUG (#1): the ball is NOT deflected here. Only the walls and the paddle
+-      // bounce (in step()); bricks were never given a bounce. So the ball plows
+-      // straight through a column head-on AND straight through the side of a
+-      // row. Fix = a real per-face bounce (flip vy on a top/bottom hit, vx on a
+-      // side hit) plus pushing the ball back out of the brick.
+-    }
+-
+     ctx.fillStyle = brickColor(brick.row);
+     ctx.fillRect(brick.x, brick.y, brick.w, brick.h);
+   }
+diff --git a/game/neon.test.js b/game/neon.test.js
+index 250d6a9..57aed02 100644
+--- a/game/neon.test.js
++++ b/game/neon.test.js
+@@ -13,11 +13,18 @@ import assert from 'node:assert/strict';
+ import {
+   collides,
+   step,
++  frame,
+   makeBricks,
+   createState,
++  ballSpeed,
+   BRICK_ROWS,
+   BRICK_COLS,
+   WIDTH,
++  HEIGHT,
++  BALL_R,
++  BRICK_W,
++  BRICK_H,
++  BRICK_GAP,
+ } from './neon.js';
+
+ test('collides: clear overlap detected', () => {
+@@ -59,6 +66,103 @@ test('makeBricks: full, all-alive grid at start', () => {
+   assert.ok(bricks.every((b) => b.x >= 0 && b.x + b.w <= WIDTH));
+ });
+
++// --- Issue #1: brick bounce -------------------------------------------------
++
++// A canvas context that swallows everything (frame() only draws).
++function fakeCtx() {
++  const noop = () => {};
++  return new Proxy(
++    {},
++    {
++      get: (_, prop) => (prop === 'canvas' ? { width: WIDTH, height: HEIGHT } : noop),
++      set: () => true,
++    },
++  );
++}
++
++// A single-brick field, ball already overlapping the brick's left face.
++function stateWithBrick(overrides = {}) {
++  const state = createState(1);
++  state.bricks = [{ x: 100, y: 100, w: BRICK_W, h: BRICK_H, row: 0, alive: true, points: 10 }];
++  Object.assign(state.ball, {
++    x: 96,
++    y: 110,
++    r: BALL_R,
++    vx: 300,
++    vy: 30,
++    ...overrides,
++  });
++  return state;
++}
++
++const DT = 1 / 60;
++
++// frame() must bounce the ball off the face with the smallest penetration,
++// leaving the other velocity component untouched.
++test('brick: side hit flips vx only, ball pushed out of the rectangle', () => {
++  const state = stateWithBrick(); // overlapping the left face
++  frame(fakeCtx(), state);
++  assert.ok(state.ball.vx < 0, 'vx should flip to the left');
++  assert.ok(state.ball.vy > 0, 'vy must stay untouched');
++  assert.ok(
++    state.ball.x + BALL_R <= 100,
++    `ball must be pushed left of the brick: x=${state.ball.x}`,
++  );
++  assert.equal(state.bricks[0].alive, false);
++});
++
++test('brick: top hit flips vy only', () => {
++  const state = stateWithBrick({ x: 136, y: 96, vx: 30, vy: 300 });
++  frame(fakeCtx(), state);
++  assert.ok(state.ball.vy < 0, 'vy should flip upward');
++  assert.ok(state.ball.vx > 0, 'vx must stay untouched');
++  assert.ok(
++    state.ball.y + BALL_R <= 100,
++    `ball must be pushed above the brick: y=${state.ball.y}`,
++  );
++});
++
++test('brick: corner hit flips both components', () => {
++  const state = stateWithBrick({ x: 96, y: 96, vx: 300, vy: 300 });
++  frame(fakeCtx(), state);
++  assert.ok(state.ball.vx < 0, 'vx should flip');
++  assert.ok(state.ball.vy < 0, 'vy should flip');
++  assert.ok(state.ball.x + BALL_R <= 100 && state.ball.y + BALL_R <= 100);
++});
++
++test('brick seam: two neighbours hit in one pass bounce exactly once', () => {
++  const state = createState(1);
++  state.bricks = [
++    { x: 100, y: 100, w: BRICK_W, h: BRICK_H, row: 0, alive: true, points: 10 },
++    { x: 100 + BRICK_W + BRICK_GAP, y: 100, w: BRICK_W, h: BRICK_H, row: 0, alive: true, points: 10 },
++  ];
++  // Centred on the horizontal seam, 1 px below both bricks' bottom face.
++  state.ball = { x: 176, y: 126, r: BALL_R, vx: 6, vy: -60 };
++  frame(fakeCtx(), state);
++  assert.ok(state.ball.vy > 0, 'vy must flip exactly once (a double flip cancels out)');
++  assert.ok(state.ball.vx > 0, 'vx must stay untouched');
++  assert.equal(state.bricks.filter((b) => !b.alive).length, 2, 'both bricks are destroyed');
++});
++
++test('brick tunnelling: fast ball cannot jump over a brick (swept detection in step)', () => {
++  const state = createState(6);
++  const brick = { x: 100, y: 100, w: BRICK_W, h: BRICK_H, row: 0, alive: true, points: 10 };
++  state.bricks = [brick];
++  // Below the brick before the move, fully above it after (35.5 px jump).
++  state.ball = { x: 136, y: 128, r: BALL_R, vx: 0, vy: -ballSpeed(6) };
++  step(state, 0.05);
++  assert.equal(brick.alive, false, 'the brick must be hit during the jump');
++  assert.ok(state.ball.vy > 0, 'the ball must bounce back down');
++});
++
++test('brick: ball exiting through the bottom is still lost after a brick bounce', () => {
++  const state = createState(1);
++  state.bricks = []; // empty field: only the loss-line check remains
++  state.ball = { x: 320, y: HEIGHT + 30, r: BALL_R, vx: 0, vy: 400 };
++  const lost = step(state, DT);
++  assert.equal(lost, true);
++});
++
+ // Small local helper: place the ball below the field without importing the
+ // height (coverage intentionally light).
+ function belowField() {

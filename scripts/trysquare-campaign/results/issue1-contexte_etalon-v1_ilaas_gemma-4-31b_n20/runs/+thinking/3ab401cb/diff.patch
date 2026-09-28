@@ -1,0 +1,94 @@
+diff --git a/game/neon.js b/game/neon.js
+index 6b4a133..4a56985 100644
+--- a/game/neon.js
++++ b/game/neon.js
+@@ -223,11 +223,19 @@ export function frame(ctx, state) {
+       brick.alive = false;
+       state.combo += 1;
+       state.score += scoreForBrick(brick, state.combo);
+-      // BUG (#1): the ball is NOT deflected here. Only the walls and the paddle
+-      // bounce (in step()); bricks were never given a bounce. So the ball plows
+-      // straight through a column head-on AND straight through the side of a
+-      // row. Fix = a real per-face bounce (flip vy on a top/bottom hit, vx on a
+-      // side hit) plus pushing the ball back out of the brick.
++
++      const dx = state.ball.x - (brick.x + brick.w / 2);
++      const dy = state.ball.y - (brick.y + brick.h / 2);
++      const nx = dx / (brick.w / 2);
++      const ny = dy / (brick.h / 2);
++
++      if (Math.abs(nx) > Math.abs(ny)) {
++        state.ball.vx = Math.sign(nx) * Math.abs(state.ball.vx);
++        state.ball.x = nx > 0 ? brick.x + brick.w + state.ball.r : brick.x - state.ball.r;
++      } else {
++        state.ball.vy = Math.sign(ny) * Math.abs(state.ball.vy);
++        state.ball.y = ny > 0 ? brick.y + brick.h + state.ball.r : brick.y - state.ball.r;
++      }
+     }
+
+     ctx.fillStyle = brickColor(brick.row);
+diff --git a/game/neon.test.js b/game/neon.test.js
+index 250d6a9..1cf423b 100644
+--- a/game/neon.test.js
++++ b/game/neon.test.js
+@@ -15,6 +15,7 @@ import {
+   step,
+   makeBricks,
+   createState,
++  frame,
+   BRICK_ROWS,
+   BRICK_COLS,
+   WIDTH,
+@@ -65,5 +66,50 @@ function belowField() {
+   return 500;
+ }
+
+-// TODO (#5): test comboMultiplier / scoreForBrick.
+-// TODO      : test level progression and loadBest/saveBest persistence.
++test('frame: ball bounces off the top of a brick', () => {
++  const state = createState(1);
++  state.bricks = []; // Clear other bricks
++  const brick = { x: 100, y: 100, w: 50, h: 20, alive: true, row: 0 };
++  state.bricks.push(brick);
++  // Ball is moving DOWN and hitting the top of the brick
++  state.ball = { x: 125, y: 95, r: 7, vx: 0, vy: 200 };
++
++  const ctx = {
++    fillStyle: '',
++    fillRect: () => {},
++    beginPath: () => {},
++    arc: () => {},
++    fill: () => {},
++    fillText: () => {},
++  };
++
++  frame(ctx, state);
++
++  assert.equal(brick.alive, false, 'brick should be destroyed');
++  assert.ok(state.ball.vy < 0, 'ball should bounce UP');
++  assert.equal(state.ball.y, 93, 'ball should be pushed out to y=93');
++});
++
++test('frame: ball bounces off the side of a brick', () => {
++  const state = createState(1);
++  state.bricks = []; // Clear other bricks
++  const brick = { x: 100, y: 100, w: 50, h: 20, alive: true, row: 0 };
++  state.bricks.push(brick);
++  // Ball is moving RIGHT and hitting the left side of the brick
++  state.ball = { x: 95, y: 110, r: 7, vx: 200, vy: 0 };
++
++  const ctx = {
++    fillStyle: '',
++    fillRect: () => {},
++    beginPath: () => {},
++    arc: () => {},
++    fill: () => {},
++    fillText: () => {},
++  };
++
++  frame(ctx, state);
++
++  assert.equal(brick.alive, false, 'brick should be destroyed');
++  assert.ok(state.ball.vx < 0, 'ball should bounce LEFT');
++  assert.equal(state.ball.x, 93, 'ball should be pushed out to x=93');
++});

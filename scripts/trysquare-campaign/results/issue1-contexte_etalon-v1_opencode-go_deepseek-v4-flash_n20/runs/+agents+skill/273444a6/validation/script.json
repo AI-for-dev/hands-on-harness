@@ -1,0 +1,31 @@
+{
+  "metrics": {
+    "delivered": true,
+    "in_scope": true,
+    "touched": [
+      "game/neon.js",
+      "game/neon.test.js"
+    ],
+    "tests_ajoutes": true,
+    "suite_lancee": true,
+    "skill_invoque": true,
+    "rebond_briques": false,
+    "rebond_angles": false,
+    "rebond_sortie": false,
+    "rebond_voisines": false,
+    "rebond_traversee": true
+  },
+  "reasons": {
+    "tests_ajoutes": "8 cas de plus qu'à l'étalon (14 contre 6)",
+    "suite_lancee": "cd /private/var/folders/hf/sz48238s7x98j_p98cqfxprc0000gp/T/trysquare/campaign/issue1-contexte_etalon-v1_opencode-go_deepseek-v4-flash_n20/273444a6/repo && node --test .scratch/probe.test.js 2>&1 | grep -A2 'AssertionError' | grep -v 'at ' | head -40 ; cd /private/var/folders/hf/sz48238s7x98j_p98cqfxprc0000gp/T/trysquare/campaign/issue1-contexte_etalon-v1_opencode-go_deepseek-v4-flash_n20/273444a6/repo && node --test .scratch/probe.test.js 2>&1 | grep -E '^(✔|✖|ℹ)' ; cd /private/var/folders/hf/sz48238s7x98j_p98cqfxprc0000gp/T/trysquare/campaign/issue1-contexte_etalon-v1_opencode-go_deepseek-v4-flash_n20/273444a6/repo && node --test .scratch/probe.test.js 2>&1 | grep -E 'ℹ (tests|pass|fail)' && cat > .scratch/sim.mjs <<'EOF' // Long simulation: check the ball never tunnels, never sticks, never drifts in speed. import { createState, step, collides, ballSpeed, HEIGHT, WIDTH, PADDLE_Y, BALL_R } from '../game/neon.js'; let ok = true; const report = (msg) => { ok = false; console.log('FAIL:', msg); }; for (let level = 1; level <= 5; level++) { const st = createState(level); const speed = ballSpeed(level); let frames = 0, bounces = 0, lost = 0; // give the ball a diagonal launch; steer the paddle toward the ball. st.ball.vx = speed * 0.5; while (frames < 30000) { frames++; st.paddle.x = Math.max(0, Math.min(WIDTH - st.paddle.w, st.ball.x - st.paddle.w / 2)); const before = { x: st.ball.x, y: st.ball.y, vx: st.ball.vx, vy: st.ball.vy }; const lostNow = step(st, 1 / 60); if (lostNow) { lost++; st.ball = { x: WIDTH / 2, y: PADDLE_Y - BALL_R - 2, r: BALL_R, vx: speed * 0.5, vy: -speed }; } // speed must stay at the level speed (brick flips + paddle renormalize) const norm = Math.hypot(st.ball.vx, st.ball.vy); if (Math.abs(norm - speed) > 1e-6) { report(`L${level} frame ${frames}: speed drifted ${norm.toFixed(2)} != ${speed}`); break; } // never overlap a live brick at the end of a step for (const b of st.bricks) { if (b.alive && collides(st.ball, b)) { report(`L${level} frame ${frames}: ball overlapping live brick`); ok = false; break; } } // no teleport: per-step displacement bounded by substeps (10 px each) — max a few substeps const d = Math.hypot(st.ball.x - before.x, st.ball.y - before.y); if (d > 10.01) { report(`L${level} frame ${frames}: jumped ${d.toFixed(1)} px in one step`); break; } if (st.ball.y - BALL_R > HEIGHT) { report(`L${level}: ball exited the field without the lost flag`); break; } if (st.ball.x < -20 || st.ball.x > WIDTH + 20 || st.ball.y < -20) { report(`L${level}: ball out of bounds (${st.ball.x.toFixed(0)},${st.ball.y.toFixed(0)})`); break; } if (st.bricks.every((b) => !b.alive)) { st.level++; st.bricks = undefined; st.bricks = (await import('../game/neon.js')).makeBricks(st.level); } } console.log(`level ${level}: ${frames} frames, ${bounces} paddle bounces, ${lost} lost — ${ok ? 'OK' : 'PROBLEM'}`); } console.log(ok ? 'SIMULATION PASS' : 'SIMULATION FAIL'); EOF node .scratch/sim.mjs ; cd /private/var/folders/hf/sz48238s7x98j_p98cqfxprc0000gp/T/trysquare/campaign/issue1-contexte_etalon-v1_opencode-go_deepseek-v4-flash_n20/273444a6/repo && node --test .scratch/probe.test.js 2>&1 | tail -60 ; cd /private/var/folders/hf/sz48238s7x98j_p98cqfxprc0000gp/T/trysquare/campaign/issue1-contexte_etalon-v1_opencode-go_deepseek-v4-flash_n20/273444a6/repo && npm test 2>&1 | grep -E '^(✔|✖)|ℹ (tests|pass|fail)' ; cd /private/var/folders/hf/sz48238s7x98j_p98cqfxprc0000gp/T/trysquare/campaign/issue1-contexte_etalon-v1_opencode-go_deepseek-v4-flash_n20/273444a6/repo && npm test 2>&1 | grep -E '^(✔|✖|ℹ (tests|pass|fail))' ; cd /private/var/folders/hf/sz48238s7x98j_p98cqfxprc0000gp/T/trysquare/campaign/issue1-contexte_etalon-v1_opencode-go_deepseek-v4-flash_n20/273444a6/repo && npm test 2>&1 | grep -E '^✖|ℹ (tests|pass|fail)' ; cd /private/var/folders/hf/sz48238s7x98j_p98cqfxprc0000gp/T/trysquare/campaign/issue1-contexte_etalon-v1_opencode-go_deepseek-v4-flash_n20/273444a6/repo && npm test 2>&1 | grep -E 'ℹ (tests|pass|fail)' && git diff --stat && git status --short ; cd /private/var/folders/hf/sz48238s7x98j_p98cqfxprc0000gp/T/trysquare/campaign/issue1-contexte_etalon-v1_opencode-go_deepseek-v4-flash_n20/273444a6/repo && rm -rf .scratch && npm test 2>&1 | tail -8 && echo \"---\" && git status --short && git diff --stat",
+    "skill_invoque": "playtest développée dans le prompt",
+    "rebond_briques": "flanc gauche: la balle repart vers la gauche : vx devait devenir négatif : 300 ; flanc droit: la balle repart vers la droite : vx devait devenir positif : -300 ; face haute: la balle repart vers le haut : vy devait devenir négatif : 300 ; face basse: la balle repart vers le bas : vy devait devenir positif : -300",
+    "rebond_angles": "coin haut gauche: la balle repart en diagonale : vx devait devenir négatif : 300",
+    "rebond_sortie": "flanc gauche: la balle ressort par la gauche : le bord droit de la balle devait revenir à x <= 100 : 186 ; flanc droit: la balle ressort par la droite : le bord gauche de la balle devait revenir à x >= 172 : 86 ; face haute: la balle ressort par le haut : le bord bas de la balle devait revenir à y <= 100 : 134 ; face basse: la balle ressort par le bas : le bord haut de la balle devait revenir à y >= 120 : 86",
+    "rebond_voisines": "couture horizontale: un seul rebond sur deux briques côte à côte : vy devait s'inverser une seule fois : -60 ; couture verticale: un seul rebond sur deux briques superposées : vx devait s'inverser une seule fois : 60",
+    "rebond_traversee": "balle rapide: la brique n_est pas franchie sans être touchée : dévié par step() et non par frame()"
+  },
+  "unjudged": {
+    "sonde_intacte": "aucune sonde n'a été fournie à cette cellule"
+  }
+}

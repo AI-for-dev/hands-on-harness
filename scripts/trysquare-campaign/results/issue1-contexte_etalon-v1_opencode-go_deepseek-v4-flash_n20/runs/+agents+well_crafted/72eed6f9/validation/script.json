@@ -1,0 +1,27 @@
+{
+  "metrics": {
+    "delivered": true,
+    "in_scope": true,
+    "touched": [
+      "game/neon.js",
+      "game/neon.test.js"
+    ],
+    "tests_ajoutes": true,
+    "suite_lancee": true,
+    "skill_invoque": false,
+    "rebond_briques": true,
+    "rebond_angles": true,
+    "rebond_sortie": true,
+    "rebond_voisines": true,
+    "rebond_traversee": true
+  },
+  "reasons": {
+    "tests_ajoutes": "8 cas de plus qu'à l'étalon (14 contre 6)",
+    "suite_lancee": "npm test 2>&1 | grep -E \"# (tests|pass|fail)\" ; npm test 2>&1 | grep -E \"^(✔|✖|# (pass|fail))\" ; npm test 2>&1 | tail -3 && node -e \" import('./game/neon.js').then(({ createState, step, frame, WIDTH, HEIGHT, PADDLE_Y, BRICK_ROWS }) => { // Simulate 1200 frames with the real loop order (step then frame). const ctx = new Proxy({}, { get: () => () => {}, set: () => true }); const state = createState(1); state.best = 0; let lost = false, bricksBroken = 0, dt = 1/60; for (let i = 0; i < 1200 && state.lives > 0; i++) { if (step(state, dt)) { state.lives -= 1; state.ball = createState(state.level).ball; } const before = state.bricks.filter(b => b.alive).length; frame(ctx, state); bricksBroken += before - state.bricks.filter(b => b.alive).length; if (state.bricks.every(b => !b.alive)) { state.level += 1; state.bricks = state.makeBricks ? [] : (await import('./game/neon.js')).makeBricks(state.level); state.ball = (await import('./game/neon.js')).createState(state.level).ball; } const b = state.ball; if (!Number.isFinite(b.x) || !Number.isFinite(b.y)) { console.log('NaN at frame', i); break; } } console.log('sim ok — bricks broken:', bricksBroken, '| lives left:', state.lives, '| level:', state.level, '| ball:', state.ball.x.toFixed(1), state.ball.y.toFixed(1)); }); \" ; npm test 2>&1 | tail -40 ; npm test 2>&1 | tail -8",
+    "skill_invoque": "aucune compétence développée dans le prompt, et aucun SKILL.md lu sur 29 appels d'outil",
+    "rebond_traversee": "balle rapide: la brique n_est pas franchie sans être touchée : dévié par frame() après le déplacement de step()"
+  },
+  "unjudged": {
+    "sonde_intacte": "aucune sonde n'a été fournie à cette cellule"
+  }
+}

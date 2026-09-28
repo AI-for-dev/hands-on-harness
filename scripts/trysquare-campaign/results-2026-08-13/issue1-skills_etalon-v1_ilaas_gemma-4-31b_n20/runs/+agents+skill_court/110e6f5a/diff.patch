@@ -1,0 +1,129 @@
+diff --git a/game/neon.js b/game/neon.js
+index 6b4a133..5d87698 100644
+--- a/game/neon.js
++++ b/game/neon.js
+@@ -215,6 +215,9 @@ export function frame(ctx, state) {
+   ctx.fillStyle = palette.background;
+   ctx.fillRect(0, 0, WIDTH, HEIGHT);
+
++  let bouncedX = false;
++  let bouncedY = false;
++
+   // Bricks: collision + bounce + score + drawing, all in one place.
+   for (const brick of state.bricks) {
+     if (!brick.alive) continue;
+@@ -223,11 +226,28 @@ export function frame(ctx, state) {
+       brick.alive = false;
+       state.combo += 1;
+       state.score += scoreForBrick(brick, state.combo);
+-      // BUG (#1): the ball is NOT deflected here. Only the walls and the paddle
+-      // bounce (in step()); bricks were never given a bounce. So the ball plows
+-      // straight through a column head-on AND straight through the side of a
+-      // row. Fix = a real per-face bounce (flip vy on a top/bottom hit, vx on a
+-      // side hit) plus pushing the ball back out of the brick.
++
++      // Calculate overlap to determine hit face
++      const overlapX = Math.min(
++        (state.ball.x + state.ball.r) - brick.x,
++        (brick.x + brick.w) - (state.ball.x - state.ball.r)
++      );
++      const overlapY = Math.min(
++        (state.ball.y + state.ball.r) - brick.y,
++        (brick.y + brick.h) - (state.ball.y - state.ball.r)
++      );
++
++      if (overlapX < overlapY) {
++        if (!bouncedX) {
++          state.ball.vx *= -1;
++          bouncedX = true;
++        }
++      } else {
++        if (!bouncedY) {
++          state.ball.vy *= -1;
++          bouncedY = true;
++        }
++      }
+     }
+
+     ctx.fillStyle = brickColor(brick.row);
+diff --git a/game/neon.test.js b/game/neon.test.js
+index 250d6a9..b01ecbd 100644
+--- a/game/neon.test.js
++++ b/game/neon.test.js
+@@ -18,6 +18,8 @@ import {
+   BRICK_ROWS,
+   BRICK_COLS,
+   WIDTH,
++  frame,
++  BRICK_GAP,
+ } from './neon.js';
+
+ test('collides: clear overlap detected', () => {
+@@ -59,8 +61,65 @@ test('makeBricks: full, all-alive grid at start', () => {
+   assert.ok(bricks.every((b) => b.x >= 0 && b.x + b.w <= WIDTH));
+ });
+
+-// Small local helper: place the ball below the field without importing the
+-// height (coverage intentionally light).
++test('frame: ball bounce off the top of a brick', () => {
++  const state = createState(1);
++  // Position ball so it hits the top of the first brick
++  const brick = state.bricks[0];
++  state.ball = { x: brick.x + brick.w / 2, y: brick.y - 1, r: 7, vx: 0, vy: 100 };
++
++  const dummyCtx = {
++    fillStyle: '',
++    fillRect: () => {},
++    beginPath: () => {},
++    arc: () => {},
++    fill: () => {},
++    font: '',
++    fillText: () => {},
++  };
++
++  frame(dummyCtx, state);
++
++  assert.ok(state.ball.vy < 0, 'ball should bounce UP after hitting the top of a brick');
++});
++
++test('frame: double inversion (seam)', () => {
++  const state = createState(1);
++  const bricks = state.bricks;
++  // Find two adjacent bricks
++  const brick1 = bricks[0];
++  const brick2 = bricks[1]; // adjacent horizontally
++
++  // Position ball so it overlaps both bricks
++  // brick1.x + brick1.w = brick2.x (approximately, given the gap)
++  // The gap is BRICK_GAP.
++  // brick1: x=offsetX, w=BRICK_W
++  // brick2: x=offsetX + BRICK_W + BRICK_GAP, w=BRICK_W
++  state.ball = {
++    x: brick1.x + brick1.w + (BRICK_GAP / 2),
++    y: brick1.y + brick1.h / 2,
++    r: 7,
++    vx: 100,
++    vy: 0
++  };
++
++  const dummyCtx = {
++    fillStyle: '',
++    fillRect: () => {},
++    beginPath: () => {},
++    arc: () => {},
++    fill: () => {},
++    font: '',
++    fillText: () => {},
++  };
++
++  frame(dummyCtx, state);
++
++  // It should have hit both bricks (since they are both alive and it overlaps both)
++  // vx should have been flipped twice, which means it's still positive.
++  // But it SHOULD have been flipped only once (or handled so it bounces).
++  assert.ok(state.ball.vx < 0, 'ball should bounce back after hitting the seam of two bricks');
++});
++
+ function belowField() {
+   return 500;
+ }

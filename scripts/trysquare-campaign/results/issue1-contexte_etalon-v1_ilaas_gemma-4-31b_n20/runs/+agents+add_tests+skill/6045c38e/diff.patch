@@ -1,0 +1,39 @@
+diff --git a/.scratch/sonde.test.js b/.scratch/sonde.test.js
+new file mode 100644
+index 0000000..ede1e71
+--- /dev/null
++++ b/.scratch/sonde.test.js
+@@ -0,0 +1,33 @@
++import test from 'node:test';
++import assert from 'node:assert';
++import { createState, frame, collides } from '../game/neon.js';
++
++test('D1: Ball should bounce off brick', (t) => {
++  const state = createState(1);
++  const ctx = {
++    fillRect: () => {},
++    beginPath: () => {},
++    arc: () => {},
++    fill: () => {},
++    fillText: () => {},
++  };
++
++  // Position ball so it's about to hit the first brick (top-left)
++  const brick = state.bricks[0];
++  state.ball.x = brick.x + brick.w / 2;
++  state.ball.y = brick.y - 1; // Just above
++  state.ball.vy = 100; // Moving down
++  state.ball.vx = 0;
++
++  // Ensure it's not colliding yet
++  assert.strictEqual(collides(state.ball, brick), false);
++
++  // Manually move the ball into the brick (simulating a frame)
++  state.ball.y += 2;
++  assert.strictEqual(collides(state.ball, brick), true);
++
++  const initialVy = state.ball.vy;
++  frame(ctx, state);
++
++  assert.notStrictEqual(state.ball.vy, initialVy, 'Ball vy should change after collision');
++});

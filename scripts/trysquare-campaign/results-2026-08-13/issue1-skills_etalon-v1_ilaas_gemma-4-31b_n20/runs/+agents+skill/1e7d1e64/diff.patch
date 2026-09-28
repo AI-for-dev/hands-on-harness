@@ -1,0 +1,86 @@
+diff --git a/game/neon.js b/game/neon.js
+index 6b4a133..7a997d1 100644
+--- a/game/neon.js
++++ b/game/neon.js
+@@ -206,33 +206,66 @@ export function step(state, dt) {
+   return false;
+ }
+
+-// --- Rendering (DOM): brick collision logic STILL mixed in here ------------
++// Handles brick collisions: updates score, combo, and ball velocity.
++export function handleBrickCollisions(state) {
++  const { ball } = state;
+
+-// Main render loop. For each live brick we test collision AND draw in the same
+-// pass: this is where logic and rendering are entangled.
+-export function frame(ctx, state) {
+-  // Background
+-  ctx.fillStyle = palette.background;
+-  ctx.fillRect(0, 0, WIDTH, HEIGHT);
+-
+-  // Bricks: collision + bounce + score + drawing, all in one place.
+   for (const brick of state.bricks) {
+     if (!brick.alive) continue;
+
+-    if (collides(state.ball, brick)) {
++    if (collides(ball, brick)) {
++      // Determine the axis of least penetration to find the hit face.
++      const overlapX = Math.min(
++        (ball.x + ball.r) - brick.x,
++        (brick.x + brick.w) - (ball.x - ball.r)
++      );
++      const overlapY = Math.min(
++        (ball.y + ball.r) - brick.y,
++        (brick.y + brick.h) - (ball.y - ball.r)
++      );
++
++      if (overlapX < overlapY) {
++        // Hit side (Left or Right)
++        ball.vx *= -1;
++        ball.x += (ball.vx > 0) ? (brick.x + brick.w - (ball.x - ball.r)) : (brick.x - (ball.x + ball.r));
++      } else if (overlapY < overlapX) {
++        // Hit top or bottom
++        ball.vy *= -1;
++        ball.y += (ball.vy > 0) ? (brick.y + brick.h - (ball.y - ball.r)) : (brick.y - (ball.y + ball.r));
++      } else {
++        // Corner hit: flip both
++        ball.vx *= -1;
++        ball.vy *= -1;
++        // Rough corner resolution: move ball just outside the brick
++        if (ball.vx > 0) ball.x = brick.x - ball.r - 0.1; else ball.x = brick.x + brick.w + 0.1;
++        if (ball.vy > 0) ball.y = brick.y - ball.r - 0.1; else ball.y = brick.y + brick.h + 0.1;
++      }
++
+       brick.alive = false;
+       state.combo += 1;
+       state.score += scoreForBrick(brick, state.combo);
+-      // BUG (#1): the ball is NOT deflected here. Only the walls and the paddle
+-      // bounce (in step()); bricks were never given a bounce. So the ball plows
+-      // straight through a column head-on AND straight through the side of a
+-      // row. Fix = a real per-face bounce (flip vy on a top/bottom hit, vx on a
+-      // side hit) plus pushing the ball back out of the brick.
+     }
++  }
++}
++
++// --- Rendering (DOM): brick collision logic NOW extracted ------------------
+
++// Main render loop.
++export function frame(ctx, state) {
++  // Background
++  ctx.fillStyle = palette.background;
++  ctx.fillRect(0, 0, WIDTH, HEIGHT);
++
++  // Bricks: collision logic extracted to handleBrickCollisions()
++  handleBrickCollisions(state);
++
++  for (const brick of state.bricks) {
++    if (!brick.alive) continue;
+     ctx.fillStyle = brickColor(brick.row);
+     ctx.fillRect(brick.x, brick.y, brick.w, brick.h);
+   }
++  // ...
++
+
+   // Paddle — color hard-coded instead of using the palette (inconsistency #6).
+   ctx.fillStyle = '#00e5ff';

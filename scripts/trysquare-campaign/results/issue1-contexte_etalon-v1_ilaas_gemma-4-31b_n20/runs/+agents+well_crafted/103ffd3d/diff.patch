@@ -1,0 +1,166 @@
+diff --git a/game/neon.js b/game/neon.js
+index 6b4a133..8c0f03d 100644
+--- a/game/neon.js
++++ b/game/neon.js
+@@ -114,7 +114,69 @@ export function collides(ball, brick) {
+   );
+ }
+
+-// --- Score & combo (NOT covered by tests — debt #5) ------------------------
++// --- Brick Collision Resolution ------------------------------------------
++
++// Handles brick collisions, including per-face bounce, push-out, and tunnelling.
++// This was extracted from frame() to resolve BUG #1 and facilitate testing.
++export function resolveBrickCollisions(state, dt) {
++  const { ball } = state;
++  const prevX = ball.x - ball.vx * dt;
++  const prevY = ball.y - ball.vy * dt;
++
++  for (const brick of state.bricks) {
++    if (!brick.alive) continue;
++
++    const minX = brick.x - ball.r;
++    const maxX = brick.x + brick.w + ball.r;
++    const minY = brick.y - ball.r;
++    const maxY = brick.y + brick.h + ball.r;
++
++    let tEntryX, tExitX;
++    if (ball.vx !== 0) {
++      tEntryX = ball.vx > 0 ? (minX - prevX) / ball.vx : (maxX - prevX) / ball.vx;
++      tExitX = ball.vx > 0 ? (maxX - prevX) / ball.vx : (minX - prevX) / ball.vx;
++    } else if (prevX < minX || prevX > maxX) {
++      continue;
++    } else {
++      tEntryX = -Infinity;
++      tExitX = Infinity;
++    }
++
++    let tEntryY, tExitY;
++    if (ball.vy !== 0) {
++      tEntryY = ball.vy > 0 ? (minY - prevY) / ball.vy : (maxY - prevY) / ball.vy;
++      tExitY = ball.vy > 0 ? (maxY - prevY) / ball.vy : (minY - prevY) / ball.vy;
++    } else if (prevY < minY || prevY > maxY) {
++      continue;
++    } else {
++      tEntryY = -Infinity;
++      tExitY = Infinity;
++    }
++
++    const tMin = Math.max(0, Math.max(tEntryX, tEntryY));
++    const tMax = Math.min(1, Math.min(tExitX, tExitY));
++
++    if (tMin <= tMax) {
++      brick.alive = false;
++      state.combo += 1;
++      state.score += scoreForBrick(brick, state.combo);
++
++      const epsilon = 1e-7;
++      if (Math.abs(tEntryX - tEntryY) < epsilon) {
++        ball.vx = -ball.vx;
++        ball.vy = -ball.vy;
++        ball.x = (ball.vx > 0) ? maxX : minX;
++        ball.y = (ball.vy > 0) ? maxY : minY;
++      } else if (tEntryX > tEntryY) {
++        ball.vx = -ball.vx;
++        ball.x = (ball.vx > 0) ? maxX : minX;
++      } else {
++        ball.vy = -ball.vy;
++        ball.y = (ball.vy > 0) ? maxY : minY;
++      }
++    }
++  }
++}
+
+ // Combo multiplier. UNBOUNDED today: a long combo makes the score blow up
+ // uncontrollably (see #5, expected improvement = clamp it).
+@@ -215,21 +277,10 @@ export function frame(ctx, state) {
+   ctx.fillStyle = palette.background;
+   ctx.fillRect(0, 0, WIDTH, HEIGHT);
+
+-  // Bricks: collision + bounce + score + drawing, all in one place.
++  // Bricks: only drawing.
+   for (const brick of state.bricks) {
+     if (!brick.alive) continue;
+
+-    if (collides(state.ball, brick)) {
+-      brick.alive = false;
+-      state.combo += 1;
+-      state.score += scoreForBrick(brick, state.combo);
+-      // BUG (#1): the ball is NOT deflected here. Only the walls and the paddle
+-      // bounce (in step()); bricks were never given a bounce. So the ball plows
+-      // straight through a column head-on AND straight through the side of a
+-      // row. Fix = a real per-face bounce (flip vy on a top/bottom hit, vx on a
+-      // side hit) plus pushing the ball back out of the brick.
+-    }
+-
+     ctx.fillStyle = brickColor(brick.row);
+     ctx.fillRect(brick.x, brick.y, brick.w, brick.h);
+   }
+@@ -302,6 +353,8 @@ export function boot(doc = document) {
+         }
+       }
+
++      resolveBrickCollisions(state, dt);
++
+       // Level cleared: all bricks broken
+       if (state.bricks.every((b) => !b.alive)) {
+         state.level += 1;
+diff --git a/game/neon.test.js b/game/neon.test.js
+index 250d6a9..fa30c98 100644
+--- a/game/neon.test.js
++++ b/game/neon.test.js
+@@ -18,6 +18,7 @@ import {
+   BRICK_ROWS,
+   BRICK_COLS,
+   WIDTH,
++  resolveBrickCollisions,
+ } from './neon.js';
+
+ test('collides: clear overlap detected', () => {
+@@ -66,4 +67,45 @@ function belowField() {
+ }
+
+ // TODO (#5): test comboMultiplier / scoreForBrick.
+-// TODO      : test level progression and loadBest/saveBest persistence.
++
++test('resolveBrickCollisions: horizontal hit flips vx', () => {
++  const state = createState(1);
++  state.ball = { x: 100, y: 100, r: 7, vx: 300, vy: 0 };
++  state.bricks = [{ x: 110, y: 80, w: 72, h: 20, alive: true, points: 10 }];
++  resolveBrickCollisions(state, 1/60);
++  assert.ok(state.ball.vx < 0, 'vx should flip to negative');
++});
++
++test('resolveBrickCollisions: vertical hit flips vy', () => {
++  const state = createState(1);
++  state.ball = { x: 100, y: 100, r: 7, vx: 0, vy: -300 };
++  state.bricks = [{ x: 80, y: 110, w: 72, h: 20, alive: true, points: 10 }];
++  resolveBrickCollisions(state, 1/60);
++  assert.ok(state.ball.vy > 0, 'vy should flip to positive');
++});
++
++test('resolveBrickCollisions: corner hit flips both', () => {
++  const state = createState(1);
++  // tEntryX = (100 - 95) / 300 = 5/300
++  // tEntryY = (120 - 125) / -300 = 5/300
++  state.ball = { x: 100, y: 120, r: 7, vx: 300, vy: -300 };
++  state.bricks = [{ x: 107, y: 93, w: 72, h: 20, alive: true, points: 10 }];
++  resolveBrickCollisions(state, 1/60);
++  assert.ok(state.ball.vx < 0 && state.ball.vy > 0, 'both vx and vy should flip');
++});
++
++test('resolveBrickCollisions: push-out prevents sticky bounce', () => {
++  const state = createState(1);
++  state.ball = { x: 100, y: 100, r: 7, vx: 300, vy: 0 };
++  state.bricks = [{ x: 105, y: 80, w: 72, h: 20, alive: true, points: 10 }];
++  resolveBrickCollisions(state, 1/60);
++  assert.ok(state.ball.x <= 98, 'ball should be pushed out of the brick');
++});
++
++test('resolveBrickCollisions: tunnelling detected (sweep)', () => {
++  const state = createState(1);
++  state.ball = { x: 100, y: 80, r: 7, vx: 0, vy: -700 };
++  state.bricks = [{ x: 80, y: 60, w: 100, h: 20, alive: true, points: 10 }];
++  resolveBrickCollisions(state, 0.05);
++  assert.ok(state.ball.vy > 0, 'vy should flip even if ball tunneled');
++});

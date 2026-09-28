@@ -1,12 +1,24 @@
-// Filet de sécurité indépendant du modèle : certains modèles locaux,
-// notamment les plus petits, n'obéissent pas toujours à la consigne
-// "réponds uniquement avec le Markdown traduit" et enrobent leur réponse
-// dans un unique bloc de code, parfois précédé d'une phrase d'introduction
-// ("Voici la traduction :"). On ne désenveloppe que si la fence couvre
-// (quasi) toute la réponse, pour ne jamais toucher un vrai bloc de code
-// qui ferait partie du contenu traduit.
+// Model-agnostic safety net: some local models, the smaller ones especially,
+// do not always obey "answer with the translated Markdown only" and wrap their
+// answer in a single code block, sometimes preceded by an introductory sentence
+// ("Here is the translation:"). We only unwrap when the fence covers (almost)
+// the entire answer, so as never to touch a real code block that is part of the
+// translated content.
+// A code block marker alone on its line must stay that way: the model sometimes
+// aligns that line with the indentation of the neighbouring paragraph, and the
+// block restored in its place then ends up shifted - an indented fence is not
+// the same thing in Markdown. The repair is mechanical, hence preferable to
+// another call: we put the marker back alone on its line. The block's own
+// indentation is part of the protected block and comes back with it.
+function unindentMarkerLines(text) {
+  return text.replaceAll(/^[ \t]+(%%%PROTECTED_\d+%%%)[ \t]*$/gm, '$1')
+}
+
+// Only blank lines are stripped at the start: the first segment of a chunk can
+// be an indented list continuation, and losing its indentation moves it out of
+// the list.
 export function cleanupTranslationResponse(raw) {
-  const text = raw.trim()
+  const text = unindentMarkerLines(raw.replace(/^(?:[ \t]*\n)+/, '').trimEnd())
   const lines = text.split('\n')
 
   const openIdx = lines.findIndex((line) => /^```[\w-]*\s*$/.test(line.trim()))
@@ -27,4 +39,34 @@ export function cleanupTranslationResponse(raw) {
   if (preamble.length > MAX_PREAMBLE_LENGTH || trailer.length > 0) return text
 
   return lines.slice(openIdx + 1, closeIdx).join('\n')
+}
+
+// A `:::` container often spans several segments: the one that opens it carries
+// no closing fence, which invites the model to add one, shutting the box several
+// paragraphs early. Observed on "::: info Exercice (en salle)", where the
+// exercise lost its starting-point file. The repair is mechanical, hence
+// preferable to another call: we drop the fence the source did not have. Only a
+// trailing one is dropped, and only when the count is off by exactly one, so a
+// container the source really closes is never touched. Fences are counted
+// whatever their indentation, since a container can sit inside a list item.
+export function dropAddedContainerFence(sourceSegment, translatedSegment) {
+  const fences = (text) => (text.match(/^[ \t]*:::/gm) ?? []).length
+  if (fences(translatedSegment) !== fences(sourceSegment) + 1) return translatedSegment
+
+  const lines = translatedSegment.split('\n')
+  if (lines.at(-1).trim() !== ':::') return translatedSegment
+  return lines.slice(0, -1).join('\n').trimEnd()
+}
+
+// A model answer never starts with spaces: when an indented list continuation
+// opens a chunk, its first line comes back flush left and leaves the list.
+// Observed with gemma-4-31b and deepseek-v4-flash on the same segment. The
+// indentation of a segment's first line is structure, not wording, so we take
+// it from the source whenever the translation has less.
+export function restoreFirstLineIndent(sourceSegment, translatedSegment) {
+  const indentOf = (text) => text.match(/^[ \t]*/)[0]
+  const sourceIndent = indentOf(sourceSegment)
+  const translatedIndent = indentOf(translatedSegment)
+  if (translatedIndent.length >= sourceIndent.length) return translatedSegment
+  return sourceIndent + translatedSegment.slice(translatedIndent.length)
 }

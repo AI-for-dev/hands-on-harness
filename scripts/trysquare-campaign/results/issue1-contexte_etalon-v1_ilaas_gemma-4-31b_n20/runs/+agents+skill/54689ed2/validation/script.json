@@ -1,0 +1,32 @@
+{
+  "metrics": {
+    "delivered": true,
+    "in_scope": false,
+    "touched": [
+      ".scratch/repro_bounce.test.js",
+      ".scratch/repro_tunnel.test.js",
+      ".scratch/to_fix.md",
+      "game/neon.js",
+      "game/neon.test.js"
+    ],
+    "tests_ajoutes": true,
+    "suite_lancee": true,
+    "skill_invoque": true,
+    "rebond_briques": true,
+    "rebond_angles": false,
+    "rebond_sortie": true,
+    "rebond_voisines": true,
+    "rebond_traversee": false
+  },
+  "reasons": {
+    "in_scope": "a aussi touché .scratch/repro_bounce.test.js, .scratch/repro_tunnel.test.js, .scratch/to_fix.md",
+    "tests_ajoutes": "4 cas de plus qu'à l'étalon (10 contre 6)",
+    "suite_lancee": "node --test .scratch/repro.test.js ; node --test .scratch/repro_bounce.test.js ; node --test .scratch/repro_tunnel.test.js ; node --test .scratch/test_collision.js ; node --test .scratch/to_fix.test.js ; npm test",
+    "skill_invoque": "/Users/loic.gouarin/Formations/2026/AI4Dev/hands-on-harness/scripts/trysquare-campaign/briques/skills/playtest/SKILL.md ; playtest développée dans le prompt",
+    "rebond_angles": "coin haut gauche: la balle repart en diagonale : vx devait devenir négatif : 300",
+    "rebond_traversee": "balle rapide: la brique n_est pas franchie sans être touchée : la brique a survécu à une balle qui l_a traversée de part en part"
+  },
+  "unjudged": {
+    "sonde_intacte": "aucune sonde n'a été fournie à cette cellule"
+  }
+}
