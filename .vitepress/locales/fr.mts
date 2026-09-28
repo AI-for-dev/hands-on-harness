@@ -26,6 +26,7 @@ export const fr: LocaleSpecificConfig<DefaultTheme.Config> = {
       {
         text: 'Acte 1 — Fondations',
         items: [
+          { text: 'Historique', link: '/historique' },
           { text: 'Les LLM en 2026', link: '/act1-llm' },
           { text: 'Pourquoi un harnais, et de quoi est-il fait ?', link: '/act1-harness' },
           { text: 'Le harnais de départ : Pi', link: '/act1-pi' }

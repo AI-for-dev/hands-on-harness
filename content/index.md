@@ -2,53 +2,46 @@
 
 *Une formation pour vous faire découvrir les harnais et les dompter*
 
-## Contexte
+## Contexte et positionnement
 
-L'utilisation des Large Language Models (LLM) dans nos tâches quotidiennes devient de plus en plus importante, que ce soit dans la retranscription de réunions, l'analyse de documents ou encore le codage d'applications. Nous nous concentrerons dans la suite sur leur impact dans un cadre de développement logiciel.
+Ce support a été créé pour la [formation IA4Dev](https://ia4dev-2026.sciencesconf.org/), qui se tient du 19 au 22 octobre 2026. L'utilisation des Large Language Models (LLM), pour coder comme pour d'autres tâches, pose des questions juridiques (la propriété du code produit, par exemple), sociales et environnementales importantes. Pendant la formation, nous avons fait intervenir plusieurs personnes sur ces sujets, mais nous ne les développons pas dans ce support ; les personnes intéressées trouveront toutefois quelques références sur ces questions en annexe.
 
-Les LLM et leur écosystème ont évolué à une vitesse folle. Rappelons que ChatGPT a été proposé au grand public fin novembre 2022. Depuis, les techniques et les outils se sont multipliés :
+Construire une formation sur l'IA appliquée au développement logiciel pose donc une question : fait-on, de manière implicite, la promotion de l'usage de l'IA pour coder ? Notre choix de ne pas traiter ici les aspects juridiques, sociaux et environnementaux la rend plus critique encore, puisqu'il relègue en annexe ce qui devrait peut-être constituer l'information première, celle qui permet à chacun de se positionner en connaissance de cause.
 
-- **2022 : complétion intelligente**. Les modèles commencent à prédire et compléter le code à la volée, directement dans l'éditeur, comme l'autocomplétion classique, mais alimentée par des LLM entraînés sur des milliards de lignes de code public.
-- **2022-2023 : prompt engineering**. Avec ChatGPT accessible au grand public, les développeurs découvrent que la formulation de la question change énormément la qualité de la réponse du LLM. Le prompt engineering consiste à construire des instructions très précises et structurées pour obtenir de meilleurs résultats.
-- **2023-2024 : RAG (Retrieval-Augmented Generation)**. Le LLM seul ne connaît pas votre base de code spécifique ou votre documentation interne. Un RAG augmente les connaissances du modèle en lui fournissant des documents pertinents avant de répondre.
-- **2023-2024 : agent (LLM + outils)**. Au lieu de poser une question et de recevoir une réponse, on donne au modèle les moyens d'agir : exécuter du code, consulter une base de données, appeler une API, lire des fichiers.
-- **Fin 2024 : MCP (Model Context Protocol)**. Un standard ouvert d'Anthropic qui normalise la façon dont les LLM communiquent avec les outils externes. MCP définit un protocole unifié : tout LLM implémentant le protocole peut utiliser n'importe quel outil implémentant MCP (fichiers, APIs, bases de données, etc.).
-- **2025 : context engineering**. Prolongement du prompt engineering : il ne s'agit plus seulement de bien formuler la question, mais d'optimiser tout le contexte fourni au modèle, du choix des documents à la gestion de l'historique, en passant par la structuration des informations et la pertinence des exemples.
-- **2025 : harnais (harness)**. Un cadre qui assemble tous les concepts précédents en un système cohérent. Le harnais gère le contexte, les outils disponibles, l'exécution du code et les permissions, avec pour but un système assez autonome pour travailler sur des tâches complexes et longues.
+Nous avons eu la chance de réunir dans le comité d'organisation de cette formation des positionnements très différents, et cette diversité a nourri de nombreuses discussions. Cette formation n'a aucunement pour objectif de convaincre quiconque d'utiliser ou de ne pas utiliser l'IA, même si, en montrant comment faire, nous participons à la diffusion de cette pratique.
 
-Les outils ont suivi ces avancées : ChatGPT, Copilot, Claude Code, OpenCode ou plus récemment Pi.
+Le 14 juillet 2026, dans un message à une liste de diffusion du noyau, Linus Torvalds, le créateur de Linux, a fait une déclaration proche du positionnement de ce support, que nous traduisons ici :
 
-## Enjeux
+> […] L'IA est un outil, tout comme d'autres outils que nous utilisons. Et c'est clairement un outil utile.
+> Ce n'était peut-être pas aussi « clair » il y a seulement un an, mais ce n'est plus une question aujourd'hui.
+> Il y a d'autres questions autour de l'IA (comme ce à quoi l'économie de l'IA ressemblera réellement à la fin), mais « est-ce utile » n'est plus l'une de ces questions. Quiconque en doute n'a clairement pas réellement utilisé l'IA.
+> Oui, cela peut également être un outil quelque peu douloureux, tant pour la charge de travail des mainteneurs que du point de vue de « ça continue de trouver des bugs embarrassants ».
+> Mais la solution n'est pas de mettre la tête dans le sable et de chanter « La La La, je ne t'entends pas » à pleine voix comme certains semblent le faire.
+> La solution est de s'assurer que ces outils LLM *aident* les mainteneurs au lieu de simplement leur causer de la douleur. Il n'y a pas de question de ce côté-là.
+> Nous ne forçons personne à l'utiliser, mais j'ignorerai très bruyamment les personnes qui essaient de dissuader les autres de l'utiliser.
+> Et non, l'IA n'est pas parfaite. Mais bordel, quiconque souligne les problèmes de l'IA ferait mieux de se regarder dans le miroir et de se montrer du doigt en même temps.
+> Parce que ce n'est pas comme si l'intelligence naturelle était toujours si géniale non plus.
+>
+> Linus Torvalds, [Re: Linking Patchwork with Sashiko?](https://lore.kernel.org/linux-media/CAHk-=wi4zC+Ze8e+p3tMv8TtG_80KzsZ1syL9anBtmEh5Z40vg@mail.gmail.com/)
 
-En quatre ans, les LLM pour le codage n'ont cessé de changer, de gagner en performance et de se complexifier. Avant même que vous maîtrisiez un concept ou un outil, vous devez déjà en apprendre un autre, et les développeurs, comme les non-développeurs, suivent cette vague au péril de la qualité logicielle. Deux questions se posent désormais : comment utiliser efficacement ces outils sans perdre la maîtrise, et en quoi peuvent-ils nous aider au quotidien ?
+```quote en
+[…] AI is a tool, just like other tools we use. And it's clearly a useful one.
+It may not have been that "clearly" even just a year ago, but it's no longer in question today.
+There are other questions around AI (like what the economy of it will actually look like in the end), but "is it useful" is no longer one of those questions. Anybody who doubts that clearly hasn't actually used it.
+Yes, it can also be a somewhat painful tool, both for maintainer workloads and just from a "it keeps finding embarrassing bugs" standpoint.
+But the solution is not to put your head in the sand and sing "La La La, I can't hear you" at the top of your voice like some people seem to do.
+The solution is to make sure those LLM tools *help* maintainers instead of just causing them pain. There's no question on that side.
+We're not forcing anybody to use it, but I will very loudly ignore people who try to argue against other people from using it.
+And no, AI isn't perfect. But Christ, anybody who points to the problems at AI had better be looking in the mirror and pointing at themselves at the same time.
+Because it's not like natural intelligence is always all that great either.
 
-De grandes annonces nous faisaient miroiter un gain de productivité d'au moins 50&nbsp;% grâce aux LLM. Le constat est beaucoup plus nuancé : une étude du METR menée sur des développeurs expérimentés conclut que, sur des codes complexes, l'usage des LLM peut être contre-productif [1], et le rapport GitClear sur la qualité du code observe que les développeurs passent plus de temps à refaire le travail après s'être aperçus que ce qu'un LLM avait ajouté à la base de code était erroné [2]. Les Pull Requests de qualité insuffisante se multiplient sur les logiciels open source, et le mainteneur devient un relecteur accaparé par un travail verbeux, souvent mal structuré, produit par des agents et non relu par un contributeur qui ne s'est pas familiarisé avec le code auquel il prétend contribuer. Quand cette relecture est mal faite, la refonte qui suit limite à son tour la productivité, quand elle ne la réduit pas [3].
+Linus Torvalds, [Re: Linking Patchwork with Sashiko?](https://lore.kernel.org/linux-media/CAHk-=wi4zC+Ze8e+p3tMv8TtG_80KzsZ1syL9anBtmEh5Z40vg@mail.gmail.com/)
+```
 
-Nous observons de plus en plus de projets open source qui ferment par défaut l'ouverture de Pull Requests et demandent aux contributeurs d'engager une discussion avant de leur donner les droits.
+Nous voulons aider au-delà des seuls mainteneurs : les personnes qui utilisent déjà l'IA, celles qui aimeraient l'utiliser, et même celles qui ne sont pas certaines de s'en servir mais qui ont envie de comprendre comment elle fonctionne. L'organisation de cette formation nous a montré que cette demande est forte. Nous vous laissons donc vraiment juges de la question de savoir si vous devez vous servir de l'IA, et nous traitons celle qui vient ensuite : comment l'utiliser de manière pertinente dans le cadre de l'enseignement supérieur et de la recherche (ESR) si vous le souhaitez.
 
-L'usage du MCP est là encore plus nuancé que les promesses initiales. Les fenêtres de contexte des nouveaux LLM ont grandi, jusqu'à atteindre récemment le million de tokens, mais les modèles réagissent très mal dès que 40&nbsp;% de la taille globale du contexte est occupée [4]. D'autres mesures, plus alarmistes, situent le seuil en valeur absolue plutôt qu'en pourcentage, autour de 100K tokens [5]. Vous verrez cette zone sous le nom de « dumb zone » [6], de « context-rot » ou, comme dans l'article original, de « lost in the middle ». Les MCP et tous les outils qui existent aujourd'hui ajoutent au contexte un préambule qui peut vous y faire arriver avant même d'avoir posé votre première question, et les réponses que vous obtiendrez ne seront alors plus fiables.
+L'utilisation d'un harnais, qui occupe l'essentiel de ce support, correspond à un usage plutôt avancé. On peut déjà connecter son environnement de développement (IDE) à un fournisseur d'IA et utiliser les commandes chat, edit et agent, souvent intégrées ou accessibles via des plugins. Le choix du fournisseur est une question de fond, dont la réponse varie selon le cadre dans lequel vous travaillez et risque d'évoluer avec le temps ; nous vous invitons à vous renseigner sur ce point.
 
-La question qui reste est celle de la maîtrise : garder un esprit critique face à cette facilité de génération de code, et devenir orchestrateur au lieu de rester simple observateur. C'est ce que cette formation cherche à construire.
+Dans cette formation, nous nous appuyons sur l'offre d'[ILaaS](https://www.ilaas.fr/), qui donne accès à des modèles plus gros et plus performants que ceux que la grande majorité d'entre nous peut [installer en local](https://blog.stephane-robert.info/docs/developper/programmation/python/ollama/). Toutes les universités ne font pas partie d'ILaaS, et pour les personnes de l'ESR qui souhaitent simplement accéder à un modèle pour tester, sans forcément construire de harnais, nous renvoyons vers l'[API Albert](https://ia.numerique.gouv.fr/outils-ia/albert-api/) de la DINUM.
 
-## Objectifs
-
-La recherche comme l'industrie reposent sur le développement logiciel ; les personnes qui développent doivent donc être accompagnées face aux évolutions du métier qu'induisent les LLM et les agents IA.
-
-Cette formation dresse un panorama des outils, des modèles existants et de leurs mécanismes de fonctionnement. Elle cherche aussi à développer un esprit critique face aux dérives possibles de leur usage, pour en promouvoir une utilisation éthique et responsable.
-
-Le programme comporte de nombreuses parties pratiques, pour que les participants puissent, à l'issue de la formation, intégrer ces outils dans leurs pratiques quotidiennes.
-
-## Public cible et pré-requis
-
-- **Public** : toute personne ayant une activité de développement logiciel.
-- **Pré-requis** : expérience en programmation (au minimum 1-2 ans) ; aucune expertise IA requise, même si une expérience minimale est un plus.
-- **Niveau** : juniors aux confirmés.
-
-## Références
-
-1. [https://metr.org/blog/2025-07-10-early-2025-ai-experienced-os-dev-study/](https://metr.org/blog/2025-07-10-early-2025-ai-experienced-os-dev-study/)
-2. [https://www.jonas.rs/2025/02/09/report-summary-gitclear-ai-code-quality-research-2025.html](https://www.jonas.rs/2025/02/09/report-summary-gitclear-ai-code-quality-research-2025.html)
-3. [https://youtu.be/tbDDYKRFjhk?t=549](https://youtu.be/tbDDYKRFjhk?t=549)
-4. [https://arxiv.org/abs/2307.03172](https://arxiv.org/abs/2307.03172)
-5. [https://agentpatterns.ai/context-engineering/context-window-dumb-zone/](https://agentpatterns.ai/context-engineering/context-window-dumb-zone/)
-6. [https://www.youtube.com/watch?v=rmvDxxNubIg](https://www.youtube.com/watch?v=rmvDxxNubIg)
+Avant d'entrer dans le cœur de la formation, le harnais et son utilisation, l'Acte 1 revient sur l'[historique](./historique) des techniques, sur [les modèles](./act1-llm), ceux qui sont assez facilement accessibles comme ceux que nous visons dans un futur proche, cette formation ayant été l'occasion d'impulser une dynamique dans ce sens, puis sur [ce qu'est un harnais](./act1-harness) et sur les raisons qui nous ont fait choisir [Pi](./act1-pi).

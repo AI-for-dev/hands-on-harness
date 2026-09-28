@@ -23,6 +23,7 @@ export const es: LocaleSpecificConfig<DefaultTheme.Config> = {
       {
         text: 'Acto 1 - Fundamentos',
         items: [
+          { text: 'Historia', link: '/es/historique' },
           { text: 'Los LLM en 2026', link: '/es/act1-llm' },
           { text: '¿Por qué un harness y de qué está hecho?', link: '/es/act1-harness' },
           { text: 'El harness de partida: Pi', link: '/es/act1-pi' }
