@@ -6,7 +6,7 @@
 - Saber enumerar las piezas indispensables de un harness y, para cada una, a qué problema responde
 :::
 
-La página [Historial](./historique) presentó una cronología de las técnicas aparecidas desde finales de 2022. La retomamos aquí desde otro ángulo, ya no para contar una historia, sino para comprender una mecánica. Cada etapa de esta cronología responde a una carencia de la etapa anterior y, sobre todo, cada una se apila sobre las demás en lugar de reemplazarlas. Un harness no vuelve obsoleto el *prompt engineering*; siempre lo necesita, pero lo organiza.
+El comienzo de este acto presentó una [cronología de las técnicas](./historique) aparecidas desde finales de 2022. La retomamos aquí desde otro ángulo, ya no para contar una historia, sino para comprender un mecanismo. Cada etapa de esta cronología responde a una carencia de la etapa anterior y, sobre todo, cada una se apila sobre las demás en lugar de reemplazarlas. Un harness no vuelve obsoleto el *prompt engineering*; siempre lo necesita, pero lo organiza.
 
 Al principio está el prompt. Uno se da cuenta rápido de que la forma de formular una petición cambia radicalmente la respuesta, y el *prompt engineering* consiste en formular mejor. Pero un modelo bien interrogado sigue ignorando tu base de código y tu documentación interna. El RAG cubre esa carencia: va a buscar los documentos pertinentes y se los proporciona al modelo antes de que responda, al precio de un montaje que puede ser tedioso.
 

@@ -22,7 +22,7 @@ On July 14, 2026, in a message to a kernel mailing list, Linus Torvalds, the cre
 > And no, AI isn't perfect. But Christ, anybody who points to the problems at AI had better be looking in the mirror and pointing at themselves at the same time.
 > Because it's not like natural intelligence is always all that great either.
 >
-> Linus Torvalds, [Re: Linking Patchwork with Sashiko?](https://lore.kernel.org/all/CAHk-=wi4zC+Ze8e+p3tMv8TtG_80KzsZ1syL9anBtmEh5Z40vg@mail.gmail.com/)
+> Linus Torvalds, [Re: Linking Patchwork with Sashiko?](https://lore.kernel.org/linux-media/CAHk-=wi4zC+Ze8e+p3tMv8TtG_80KzsZ1syL9anBtmEh5Z40vg@mail.gmail.com/)
 
 ```quote en
 […] AI is a tool, just like other tools we use. And it's clearly a useful one.
@@ -35,7 +35,7 @@ We're not forcing anybody to use it, but I will very loudly ignore people who tr
 And no, AI isn't perfect. But Christ, anybody who points to the problems at AI had better be looking in the mirror and pointing at themselves at the same time.
 Because it's not like natural intelligence is always all that great either.
 
-Linus Torvalds, [Re: Linking Patchwork with Sashiko?](https://lore.kernel.org/all/CAHk-=wi4zC+Ze8e+p3tMv8TtG_80KzsZ1syL9anBtmEh5Z40vg@mail.gmail.com/)
+Linus Torvalds, [Re: Linking Patchwork with Sashiko?](https://lore.kernel.org/linux-media/CAHk-=wi4zC+Ze8e+p3tMv8TtG_80KzsZ1syL9anBtmEh5Z40vg@mail.gmail.com/)
 ```
 
 We want to help beyond just the maintainers: people who already use AI, those who would like to use it, and even those who aren't sure they will use it but want to understand how it works. Organizing this training has shown us that this demand is strong. We therefore truly leave it to you to judge whether you should use AI, and we address the question that follows: how to use it appropriately in higher education and research (ESR) if you wish.
