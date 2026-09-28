@@ -8,9 +8,9 @@
 - Leave with the journal of what the orchestration taught you, which the next module needs to automate the loop
 :::
 
-The previous two modules ended with two findings. The first finding is that carefully wording the prompt, explicitly stating the desired behavior, improves results on some columns. Our framed ticket brings the corner case from 0/20 to 14/20 because ISSUES.md describes it. Nevertheless, with or without the fine-grained description of issue #1's bugs, the "bricks" fix sits at 11/20 and 13/20 respectively, which is not a fundamental change. By contrast, laying down the unit tests you want up front moves this result from 11/20 to 18/20 without changing a line of the prompt. The second finding is that a skill is only text, with no input schema, no execution function, and no permission guard, so nothing it asks for is guaranteed: its instruction to clean up at the end remained a dead letter in eleven out of twenty runs, and its only established effects were moving work around, never an improvement in correctness.
+The two previous modules ended on two findings. The first is that polishing the prompt text by explicitly stating the expected behavior improves results on certain columns. Our scoped ticket takes the corner case from 0/20 to 14/20 because ISSUES.md describes it. Nevertheless, with or without the fine-grained description of the bugs in issue #1, the "bricks" correction is respectively 11/20 and 13/20, which is not a fundamental change. In contrast, submitting the unit tests we want upfront moves this result from 11/20 to 18/20 without changing a line of the prompt. The second finding is that a skill only has text, with no input schema, no execution function and no permission guard, so nothing it asks for is guaranteed: its instruction to clean up at the end remained a dead letter in eleven runs out of twenty, and its only established effects were shifts of work, never an improvement in the correction.
 
-A single agent has its limits, and we can only observe that it does not necessarily get there on its own. But imagine a sub-agent that adds relevant unit tests for this agent: would we be able to reproduce that 18/20 result? So we will try to split the work across agents specialized in certain tasks.
+The agent alone has its limits, and we can only note that it does not necessarily succeed on its own. But imagine a sub-agent that adds relevant unit tests for this agent: would we be able to recover this 18/20 result? We will therefore try to split the work across agents specialized in certain tasks.
 
 This module splits the work into four roles (**explore**, **plan**, **code**, and **evaluate**), each run in a separate context, with its own tool list and model. You will use no orchestration mechanism: you launch each role yourself, decide what passes from one to the next, and run the tests in between. A command transports the deliverables for you, but no code chooses the next step. The next module will automate this loop. But before automating, you first have to know which moves to replace or sequence differently. This list is built by running the loop yourself, and it is part of the module's deliverables.
 
@@ -35,7 +35,7 @@ On Pi, delegation is not at the core of the tool: it comes through [combo](https
 ::: info Where combo comes from, and which extensions to prefer over it
 combo was born from the needs of this course, and that explains its choices. We cannot say that this tool is a jewel of design for driving sub-agents. We shaped it our own way, and it will certainly evolve according to our future uses, perhaps one day becoming useful for building complex pipelines. Above all, we wanted you to be able to dive into the sub-agents' discussions, and to write complex workflows easily.
 
-Its integration into [herdr](https://herdr.dev) gives a panel per subagent, to watch the work being done instead of waiting in front of a counter. We have also added an orchestration set to create pipelines composed of richer forms than an isolated call. And like all the rest of the training, it measures: an execution there counts the time and tokens of each subagent, and exports entirely as readable HTML and replayable JSONL. If these measurements are possible without instrumenting child processes, it is because the subagents run inside Pi's process, via the SDK, and Pi already has all the information.
+Its [herdr](https://herdr.dev) integration gives one panel per subagent, so you can watch the work being done instead of waiting in front of a counter. We also added an orchestration toolkit to create pipelines made of richer shapes than an isolated call. And like everything else the training measures, an execution here records the time and tokens of each subagent and exports entirely as readable HTML and replayable JSONL. These measurements are possible without instrumenting child processes because the subagents run inside Pi's process, through the SDK, and Pi already holds all its information.
 
 We recall that combo is not, for now, a production library, and several extensions of the Pi ecosystem are more battle-tested for everyday use.
 
@@ -64,7 +64,7 @@ You read the file you are given and list its exported symbols,
 one per line, with the line number. Nothing else.
 ```
 
-The header carries the name, the description, the **toolkit** (`tools:`) and the **model**. The body becomes the sub-agent's **system prompt**: every `reader` session starts with this text as its only framing, whereas a skill remains a procedure that the model decides whether or not to open.
+The header carries the name, the description, the **toolset** (`tools:`) and the **model**. The body becomes the **system prompt** of the sub-agent: every `reader` session starts with this text as its only frame, whereas a skill remains a procedure that the model decides whether to open or not.
 
 The difference from a skill is therefore twofold. The body is always read, and the `tools:` line decides which tools the sub-agent's session registers, so an agent without `write` has no way to write, whatever task it receives.
 
@@ -83,13 +83,13 @@ A sub-agent inherits nothing from your environment: no extensions, no skills, no
 The project's agent files live in `.pi/agents/`, those on your machine in `~/.pi/agent/agents/`, and the extension ships its own demo agents. You can have the same agent name globally and locally, and combo lets you choose which one you want to use. We will see this later.
 
 ::: warning An agent without `model:` runs on today's settings
-A subagent's model is never inherited from the parent session. It comes from an argument passed at the call, failing that from the pipeline file, failing that from the agent header, and as a last resort from Pi's settings: the closest to the task wins. An agent that declares nothing and is launched without an argument therefore runs on your `~/.pi/agent/settings.json`, in other words, on whatever is in there that day.
+A sub-agent's model is never inherited from its parent session. It comes from an argument passed to the call, otherwise from the pipeline file, otherwise from the agent header, and as a last resort from Pi's settings: the closest to the work wins. An agent that declares nothing and is run without an argument therefore runs on your `~/.pi/agent/settings.json`, that is, on whatever is in there that day.
 :::
 
 ::: warning Your project agents are never loaded by default
 `.pi/agents/` is content controlled by the repository, so its instructions are third-party instructions: combo refuses to load them unless you ask. The scope is requested at each tool call.
 
-You can get the list of your agents with the command:
+You can get the list of your agents via the command:
 
 ```
 /agents
@@ -97,15 +97,15 @@ You can get the list of your agents with the command:
 :::
 
 ::: warning See your agents' activity
-The idea of this module is to break down orchestration and watch subagents work. Even though combo lets you inspect the Pi session trace afterwards, it is still more pleasant to see events happen live. For that, you can use herdr.
+The idea of this module is to break down orchestration and watch sub-agents work. Even though with combo you can see the Pi session trace afterwards, it is always more pleasant to watch events happen live. To do that, you can use herdr.
 
-You will then need to launch your Pi session in herdr and type this line
+You will then need to launch your Pi session in herdr and type this line:
 
 ```
 /herdr on
 ```
 
-so that every subagent in combo opens its own window.
+so that every sub-agent in combo opens its own window.
 :::
 
 ## Rebuilding
@@ -131,7 +131,7 @@ The four files are versioned in `scripts/agents/` and copied into the `.pi/agent
 
 <<<@/../scripts/agents/explorer.md{md}
 
-The explorer turns in a note and not an opinion, and its last section reminds it of that: a note that also contains the fix stops being a note. Its prompt also tells it that the tickets in this repository are written by a maintainer who has sometimes been wrong about the code's location, which is true, and enough to make the note verify instead of copy.
+The explorer produces a note, not an opinion, and its last section reminds it of that: a note that also contains the fix ceases to be a note. Its system prompt also tells it that the tickets in this repo are written by a maintainer who has sometimes been wrong about where the code lives, which is true, and enough to make the note verify rather than copy.
 
 <<<@/../scripts/agents/planner.md{md}
 
@@ -149,7 +149,7 @@ Two other files, `tester.md` and `auditor.md`, live alongside the four roles and
 
 
 ::: warning Using herdr
-To follow the activities of the sub-agents, we strongly encourage you to launch Pi from herdr (https://herdr.dev/). combo can open herdr windows to see the sub-agents at work and close them automatically when they have finished.
+To keep track of subagent activity, we strongly encourage you to launch Pi from herdr (https://herdr.dev/). combo can open herdr windows to watch subagents work and close them automatically once they are done.
 :::
 
 ::: info Exercise (in class)
@@ -162,7 +162,7 @@ mkdir -p .pi/agents && cp /chemin/vers/hands-on-harness/scripts/agents/*.md .pi/
 pi
 ```
 
-The extension does not add an explicit command to call an agent: `subagent` is a tool that the main session model calls when you ask it to. You only need to name the agent and say what you want it to do. So ask the explorer like this:
+The extension does not add an explicit command to call an agent: `subagent` is a tool that the main session model calls when you ask it to. You just need to name the agent and what you want it to do. So ask the explorer this way:
 
 ```
 utilise le subagent "explorer" pour la tâche "Nomme exactement les outils dont tu disposes."
@@ -186,8 +186,8 @@ utilise le subagent "coder" pour la tâche "Lance `npm test` et rapporte le rés
 These two quotes are the outputs of two runs, and yours will be different: a model rephrases from one run to the next, and the context module has quantified this dispersion. What recurs is the substance: the explorer listing four read tools and the coder returning the tests to the orchestrator.
 :::
 
-::: warning Model choice
-You can also say in your request which model you want to use, as in the following prompt:
+::: warning Choosing the model
+You can also specify in your request the model you want to use, as in the following prompt:
 
 ```
 utilise le subagent "coder" avec le modèle deepseek-v4-flash d'opencode-go pour la tâche "Lance npm test et rapporte le résultat."
@@ -198,7 +198,7 @@ utilise le subagent "coder" avec le modèle deepseek-v4-flash d'opencode-go pour
 
 You now play the role of orchestrator that the next module will automate. Open the main session with the extension loaded, and walk through the chain one step at a time with `/step`.
 
-This `/step <agent> <instruction>` command runs the agent you name on what you type, plus the output of the previous step. Its response is **written into the transcript without entering the model context**: the main session watches the reports scroll by without reading them, so it cannot act on them. That is the difference that matters here. A session that reads an exploration report becomes an orchestrator you do not control, one that picks what comes next against conclusions you have not validated. We want you to be the one deciding what the next step is. The main window is therefore your console, not a conversational partner as you have seen so far. The `/quote` command lets you pull the result of the previous step into the context, giving you a quick copy-paste when there is something to discuss.
+The `/step <agent> <instruction>` command runs the agent you name on what you type, plus the output of the previous step. Its response is **written into the transcript without entering the model's context**: the main session sees the reports scroll by without reading them, so it cannot act on them. That is the difference that matters here. A session that reads an exploration report becomes an orchestrator you do not control, one that decides what comes next based on conclusions you have not validated. We want you to be the one deciding what the next step is. The main window is therefore your console, not a conversational partner as you have seen so far. The `/quote` command lets you bring the result of the previous step into the context, for a quick copy-paste when there is something to discuss.
 
 The loop has six steps:
 
@@ -240,7 +240,7 @@ Export the main session with `\export` and find each call of the `subagent` tool
 
 The two previous modules based their claims on twenty repetitions, and this one publishes none. This absence is deliberate. We wanted above all to show you how delegation works and what it can bring you regarding the size of your context or the verification of changes in a fresh context.
 
-You have also been able to see that it is easy to finely control what an agent can do through its tools and to define the model you want for it.
+You also saw that it is easy to finely control what an agent can do via its tools, and to define the model you want for it.
 
 This module therefore cannot yet guarantee that splitting into roles improves the result, that is, that ticket #2 handled by this loop would be fixed better than the same ticket handled by a single agent. The question is legitimate, and it is a matter of measurement. The next module sets out the protocol that makes this measurement possible. We will automate the loop you ran by hand and observe the quality of the results.
 
@@ -270,8 +270,8 @@ You can now test many combinations and try to see their influence on the results
 
 This module produces three artifacts.
 
-1. The four agents, versioned in your repository, each with its minimal toolset and its declared `model:`. These are the ones the next module will plug into the orchestrator, without modifying them.
-2. The log of one loop turn: the exported trace of the main session, the diff delivered for the first step, the output of `npm test` that the reviewer read, and your log.
+1. The four agents, versioned in your repository, each with its minimal toolkit and its declared `model:`. These are the ones the next module will connect to the orchestrator, without modifying them.
+2. The journal of one loop iteration: the exported trace of the main session, the diff delivered by the first step, the `npm test` output the reviewer read, and your journal.
 3. The choices to make between each step: you played the role of the main agent and organized the workflow. You now know what to expect for the full automation of the loop.
 
 ::: tip Success criterion

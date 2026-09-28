@@ -167,13 +167,13 @@ For the rest of the training, you will only have to install one extension specia
 :::
 
 ::: info Exercise (in class)
-Install the combo extension locally (`-l`)
+Install the combo extension locally (`-l`):
 
 ```bash
 pi install -l npm:@ai-for-dev/combo
 ```
 
-check that it appears in `.pi/npm/`. Launch Pi: you should see it in the extensions section. You can then try to remove it with `pi remove`.
+then check that it shows up in `.pi/npm/`. Launch Pi: you should see it in the extensions section. You can then try removing it with `pi remove`.
 :::
 
 ## Going further

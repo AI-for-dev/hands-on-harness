@@ -166,14 +166,14 @@ Es el reflejo que hay que adoptar antes de comprometerte con una extensión enco
 En el resto de la formación, solo tendrás que instalar una extensión especialmente diseñada para esta. Te animamos encarecidamente a mirar lo que existe, a probar y a tomar distancia de tus experimentos. Puede ocurrir que una extensión nos haga perder el control de nuestro harness y desencadene eventos que degradan los resultados.
 :::
 
-::: info Ejercicio (en clase)
-Instala en local (`-l`) la extensión combo
+::: info Ejercicio (en sala)
+Instala en local (`-l`) la extensión combo:
 
 ```bash
 pi install -l npm:@ai-for-dev/combo
 ```
 
-verifica que aparece correctamente en `.pi/npm/`. Lanza Pi: deberías verla en la sección de extensiones. Luego puedes intentar quitarla con `pi remove`.
+después verifica que aparece bien en `.pi/npm/`. Lanza Pi: deberías verla en la sección de extensiones. Luego puedes intentar quitarla con `pi remove`.
 :::
 
 ## Para saber más

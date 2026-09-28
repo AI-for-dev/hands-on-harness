@@ -109,7 +109,7 @@ The issue is described in `ISSUES.md`, at the root of the [NÉON repository](htt
 
 This issue has several subtleties that are hard for an agent to spot on its own. The agent will quickly identify the problem and suggest computing the distance from the ball to the brick's sides, so as to reverse one of the two speeds depending on which side is hit. The corner case, rare but real, and the case of a speed large enough for the ball to cross the brick without ever overlapping it, however, have very little chance of being handled.
 
-In addition to fixing the bug, we want to start defining a framework and verifying that the agent doesn't step outside it. This framework comes down to three rules:
+In addition to fixing the bug, we want to start defining a framework and check that the agent does not step out of it. This framework comes down to three rules:
 
 - The agent may only modify `game/neon.js` and `game/neon.test.js` and nothing else.
 - The agent must run the tests to check it hasn't broken anything.
@@ -200,7 +200,7 @@ Here is the starting base, to discuss and amend. It is the very file our measure
 ::: warning One `AGENTS.md` can hide another
 Pi loads these files cumulatively, starting from your personal `~/.pi/agent/AGENTS.md`, then from each parent directory going up, then from the current directory. A personal rules file thus slips into all your measurements without you being informed.
 
-The `--no-context-files` flag, abbreviated `-nc`, disables this discovery, which is essential for measuring cleanly. The measurement tool below works in a disposable clone where only the `AGENTS.md` file from the current directory (NEON) is placed.
+The `--no-context-files` flag, abbreviated `-nc`, disables this discovery, which is essential for measuring cleanly. The measurement tool below works in a disposable clone where only the `AGENTS.md` file of the current directory (NÉON) is placed.
 :::
 
 #### The system prompt
@@ -355,7 +355,7 @@ Faced with this dispersion, trysquare never publishes a single number. Two conce
 
 **A point is a percentage point of success.** `+agents+add_tests+well_crafted` meets the criterion 18 times out of 20, i.e. 90%, and `nothing` 11 times out of 20, i.e. 55%: the gap is **+35 points**. Only valid runs count, those that delivered nothing being removed from both sides, which is why a denominator can be lower than the number of repetitions.
 
-The runs are drawn randomly, so the same experiment is not run twenty times in a row but is spread out across the session.
+The runs are drawn randomly, so you don't run an experiment twenty times in a row, but in a distributed manner.
 
 Reading a gap then comes down to a single question: **does this interval contain zero?** If it does not, the gap is marked `*` and is **established**. If it does, it is marked `o` and is **not conclusive**, whatever the value at the center.
 
@@ -390,7 +390,7 @@ Then launch the matrix with three repetitions and let it run while you discuss t
 uv run trysquare run scenarios/issue1-contexte.toml --output results --repetitions 3
 ```
 
-You have a set of subcommands that do not launch models and are mainly used to analyze the results:
+You have a set of subcommands that don't launch models and are mainly used to analyze results:
 
 ```bash
 # refabriquer les tables
@@ -434,7 +434,7 @@ And the probe columns, with the criterion at the top:
 
 The denominators of `+well_crafted` and `+thinking` are 18 and 19 in the cost columns, because ILaaS returned `Request timed out` during the measurement and the affected runs produced nothing.
 
-We draw five lessons from these two tables, and the last one will transition into the next module. All the differences cited below come from the intervals described above, with the same mark `*` for an established difference and `o` for an inconclusive difference. Comparisons are made from one experiment. If you do not specify one, the first experiment is chosen (here `nothing`). You can redo the calculations based on another reference. It only changes the pointer: it costs nothing in terms of the model and re-measures nothing.
+We draw five lessons from these two tables, and the last one will make the transition to the next module. All the differences cited below come from the intervals described above, with the same `*` mark for an established difference and `o` for a non-conclusive one. Comparisons are based on an experiment. If you don't specify one, the first experiment is chosen (here `nothing`). You can redo the calculations based on another reference. It only changes the pointer: it costs nothing in terms of model usage and re-measures nothing.
 
 ```bash
 uv run trysquare render scenarios/issue1-contexte.toml --output results \
@@ -466,8 +466,8 @@ The four correction columns all rise, and the four gaps are established. So the 
 
 `sonde_intacte` scores 20/20, meaning the model did not try to change the reference tests. And `tests_ajoutes` does not move, which is consistent with an agent that already has the cases in front of it and has no reason to rewrite them.
 
-::: warning No gemma cost column can be cited here
-The matrix contains 1,151 retries, that is, turns restarted because the provider failed, and the box below shows how heavily they are concentrated on the heaviest configurations. A retry replays the turn with all the accumulated context, so it inflates the cost columns and, above all, it re-drives the agent.
+::: warning No gemma cost column is citable here
+The matrix counts 1,151 retries, i.e. turns relaunched because the provider had failed, and the inset below shows how concentrated they are on the heaviest configurations. A retry replays the turn with all the accumulated context, so it inflates the cost columns and, above all, it re-drives the agent.
 
 The same scenario measured on `opencode-go` and `deepseek-v4-flash` has **37** of them, which makes theirs readable:
 

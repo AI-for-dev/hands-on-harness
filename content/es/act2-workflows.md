@@ -34,7 +34,7 @@ flowchart TD
     V -- "APPROVED, último paso" --> F([ticket entregado])
 ```
 
-Este grafo se descompone en algunos patrones que se encuentran en la mayoría de los sistemas multiagente. Cada figura indica arriba a la derecha cómo se escribe en un flow. Dos patrones tienen su propio nodo: el fan-out y el bucle. Los otros tres son simplemente nodos puestos uno tras otro.
+Este grafo se descompone en algunos patrones que se encuentran en la mayoría de los sistemas multiagente. Cada figura indica en la parte superior derecha cómo se escribe el patrón en un flow. Dos patrones tienen su propio nodo: el fan-out y el bucle. Los otros tres son simplemente nodos puestos uno tras otro.
 
 - **chain**: el planner recibe la nota del explorer, el coder recibe el plan.
 
@@ -104,7 +104,7 @@ Añade este archivo a `.pi/flows/impact-plan.md` y pruébalo en la issue #2. Pue
 
 ### Automatización del orquestador
 
-En la sesión anterior dirigiste la orquestación de las diferentes etapas que constituyen la resolución de un bug. Aquí vamos a automatizar este proceso de la siguiente manera:
+En la sesión anterior llevaste la orquestación de las distintas etapas que componen la resolución de un bug. Aquí vamos a automatizar este proceso de la siguiente manera:
 
 | en el módulo anterior                       | en el flow                                                                    |
 | ------------------------------------------- | ----------------------------------------------------------------------------- |
@@ -120,7 +120,7 @@ Hemos visto en los módulos anteriores que era importante hacer cada paso de un 
 
 ### Los tests tienen la última palabra
 
-Necesitamos un paso fiable para saber si los cambios realizados responden claramente a nuestras necesidades. Podríamos pedirlo en el prompt, pero bien has visto que no tienes una certeza al 100 % de que se haga. Por eso preferimos definir un script bash que represente las acciones a realizar después de cada cambio. En un flow, el nodo `check` permite precisamente hacer eso lanzando un script de tu proyecto. Su resultado es un valor que el bucle lee: con `loop: tests.output.passed && review.output.approved`, el coder sabe lo que debe hacer si el código que ha generado es incorrecto o si no sigue exactamente el marco de desarrollo (el linter, por ejemplo).
+Necesitamos un paso fiable para saber si los cambios realizados responden claramente a nuestras necesidades. Podríamos pedirlo en el prompt, pero ya has visto que no tienes una certeza al 100 % de que se haga. Preferimos entonces definir un script bash que represente las acciones a realizar después de cada cambio. En un flow, el nodo `check` permite justamente hacer eso lanzando un script de tu proyecto. Su resultado es un valor que el bucle lee: con `loop: tests.output.passed && review.output.approved`, el coder sabe lo que debe hacer si el código que ha generado es incorrecto o si no sigue exactamente el marco de desarrollo (el linter, por ejemplo).
 
 ![gate](/figures/workflows/gate-light.es.svg){.only-light}
 ![gate](/figures/workflows/gate-dark.es.svg){.only-dark}
@@ -269,8 +269,8 @@ Algunas observaciones sobre este flow
 
 Aquí se añaden dos roles. El tester (`scripts/agents/tester.md`) permite verificar si los tests existen y si hay que añadir más. El auditor (`scripts/agents/auditor.md`) se asegura de que el trabajo se realiza en su totalidad y de que no se haya olvidado nada, mientras que el reviewer solo ve un paso. Lo que plantea permanece abierto mientras nadie lo haya tratado, y el flow arranca una segunda ronda.
 
-::: warning Un punto sobre estas decisiones
-Te recordamos que el objetivo de esta formación es darte todos los elementos para construir tu harness. Las decisiones tomadas aquí son, por tanto, discutibles y quizá no sean óptimas para obtener los mejores resultados. Pero tienes toda la comprensión necesaria para quitar nodos, añadirlos o modificarlos.
+::: warning  Un apunte sobre estas decisiones
+Te recordamos que el objetivo de esta formación es darte todos los elementos para construir tu harness. Las decisiones tomadas aquí son, por tanto, discutibles y quizá no óptimas para obtener los mejores resultados. Pero tienes toda la comprensión necesaria para quitar nodos, añadirlos o modificarlos.
 :::
 
 ::: info Ejercicio (en clase)
@@ -376,7 +376,7 @@ El resto sigue la misma lógica. Un modelo más grande para el planner y el audi
 Añade la parada antes del commit y vuelve a ejecutar el ticket. Prueba luego una modificación propia : otro reparto de roles, un modelo más grande donde se considere, un flow para otro tipo de ticket. La pregunta que debes hacerte es siempre la misma : ¿qué gesto repetías a mano, y qué línea lo escribiría ?
 :::
 
-### ¿Y la medición ? (Para hacer con trysquare)
+### ¿Y la medida? (Para hacer con trysquare)
 
 
 ## Generalizar
@@ -400,7 +400,7 @@ Este módulo produce tres piezas.
 3. La línea «workflows» de la ficha de decisión, a continuación.
 
 ::: tip Criterio de éxito
-Sabes explicar, con la traza en mano, por qué un run llegó a buen término o no: qué paso no convergió, si la suite estaba en rojo, qué dejó abierto el auditor. Puedes hacer evolucionar tu flujo de trabajo para intentar obtener un harness que siga tu forma de trabajar y tener confianza en el resultado.
+Puedes explicar, con la traza en mano, por qué una ejecución terminó o no: qué paso no convergió, si la suite de pruebas estaba en rojo, qué dejó abierto el auditor. Puedes hacer evolucionar tu flujo de trabajo para intentar conseguir un harness que siga tu forma de trabajar y confiar en el resultado.
 :::
 
 

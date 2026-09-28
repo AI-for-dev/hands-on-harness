@@ -34,7 +34,7 @@ flowchart TD
     V -- "APPROVED, final step" --> F([ticket delivered])
 ```
 
-This graph breaks down into a few patterns found in most multi-agent systems. Each figure shows in the top right how it is written in a flow. Two patterns have their own node: fan-out and loop. The other three are simply nodes placed end to end.
+This graph breaks down into a few patterns found in most multi-agent systems. Each figure shows in the top right corner how the pattern is written in a flow. Two patterns have their own node: fan-out and loop. The other three are simply nodes chained end to end.
 
 - **chain**: the planner receives the explorer's note, the coder receives the plan.
 
@@ -104,7 +104,7 @@ Add this file to `.pi/flows/impact-plan.md` and test it on issue #2. You can wat
 
 ### Automating the orchestrator
 
-In the previous session, you orchestrated the different steps that make up a bug fix. Here, we will automate this process as follows:
+In the previous session, you orchestrated the different steps involved in resolving a bug. Here, we will automate this process as follows:
 
 | in the previous module                         | in the flow                                                                    |
 | -------------------------------------------- | ------------------------------------------------------------------------------- |
@@ -120,7 +120,7 @@ We saw in previous modules that it was important to carry out each step of a pla
 
 ### Tests have the last word
 
-We need a reliable step to know whether the applied changes clearly meet our needs. We could ask for it in the prompt, but you've seen that you can't be 100% sure it's done. So we prefer to define a bash script that represents the actions to take after each change. In a flow, the `check` node does exactly this by running a script from your project. Its result is a value the loop reads: with `loop: tests.output.passed && review.output.approved`, the coder knows what to do if the code it generated is wrong or doesn't follow the development framework exactly (linter, for example).
+We need a reliable step to know whether the changes made clearly meet our needs. We could ask for it in the prompt, but you've seen that you don't have 100% certainty that it will be done. We therefore prefer to define a bash script that represents the actions to take after each change. In a flow, the `check` node is precisely there to do this by launching a script from your project. Its result is a value that the loop reads: with `loop: tests.output.passed && review.output.approved`, the coder knows what it must do if the code it generated is wrong or if it doesn't strictly follow the development framework (linter for example).
 
 ![gate](/figures/workflows/gate-light.en.svg){.only-light}
 ![gate](/figures/workflows/gate-dark.en.svg){.only-dark}
@@ -269,8 +269,8 @@ A few remarks on this flow
 
 Two roles are added here. The tester (`scripts/agents/tester.md`) checks whether tests exist and whether more are needed. The auditor (`scripts/agents/auditor.md`) ensures the work is completed in full and nothing has been forgotten, while the reviewer only sees one step. What it raises stays open until someone addresses it, and the flow starts a second round.
 
-::: warning A note on these choices
-We remind you that the goal of this training is to give you all the elements you need to build your harness. The choices made here are therefore debatable and maybe not optimal for getting the best results. But you have all the understanding required to remove nodes, add some, or modify them.
+::: warning  A note on these choices
+We remind you that the objective of this training is to give you all the elements needed to build your harness. The choices made here are therefore debatable and perhaps not optimal for getting the best results. But you have all the understanding required to remove nodes, add new ones, or modify them.
 :::
 
 ::: info Exercise (in class)
@@ -376,7 +376,7 @@ The rest follows the same logic. A larger model for the planner and the auditor 
 Add the stop before the commit and replay the ticket. Then try a modification of your own: a different split of the roles, a larger model where you judge it useful, a flow for another type of ticket. The question to ask yourself is always the same: what gesture were you repeating by hand, and which line would write it?
 :::
 
-### And the measurement? (To do with trysquare)
+### What about the measurement? (To do with trysquare)
 
 
 ## Generalizing
@@ -400,7 +400,7 @@ This module produces three pieces.
 3. The "workflows" line of the decision sheet, below.
 
 ::: tip Success criterion
-You can say, with the trace in hand, why a run succeeded or not: which step did not converge, whether the suite was red, what the auditor left open. You can evolve your workflow to try to get a harness that follows the way you work and be confident about the result.
+With the trace in hand, you can explain why a run succeeded or failed: which step did not converge, whether the suite was red, what the auditor left open. You can evolve your workflow to try to obtain a harness that follows your way of working and be confident in the result.
 :::
 
 

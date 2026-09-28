@@ -109,7 +109,7 @@ El ticket se describe en `ISSUES.md`, en la raíz del [repositorio NÉON](https:
 
 Este ticket tiene varias sutilezas difíciles de encontrar para un agente solo. Verá rápidamente el problema y propondrá calcular la distancia de la bola a los lados del ladrillo, para invertir, según el lado tocado, una de las dos velocidades. El caso de la esquina, raro pero real, y el de una velocidad lo bastante alta para que la bola cruce el ladrillo sin superponerse nunca a él, tienen en cambio muy pocas posibilidades de ser tratados.
 
-Además de corregir el bug, queremos empezar a definir un marco y comprobar que el agente no se salga de él. Este marco consta de tres reglas:
+Además de la corrección del bug, queremos empezar a definir un marco y verificar que el agente no se salga de él. Este marco se resume en tres reglas:
 
 - El agente solo puede modificar `game/neon.js` y `game/neon.test.js` y nada más.
 - El agente debe lanzar los tests para comprobar que no ha roto nada.
@@ -200,7 +200,7 @@ Esta es la base de partida, para discutir y enmendar. Es el mismo archivo que us
 ::: warning Un `AGENTS.md` puede esconder a otro
 Pi carga estos archivos de forma acumulativa: desde tu `~/.pi/agent/AGENTS.md` personal, luego desde cada directorio padre al subir, y por último desde el directorio actual. Un archivo de reglas personal se cuela así en todas tus mediciones sin que estés informado.
 
-La bandera `--no-context-files`, abreviada `-nc`, desactiva esta detección, lo que es indispensable para medir correctamente. La herramienta de medición más abajo trabaja en un clon desechable donde solo se deposita el archivo `AGENTS.md` del directorio actual (NEON).
+El indicador `--no-context-files`, abreviado `-nc`, desactiva este descubrimiento, lo que es indispensable para medir correctamente. La herramienta de medición más abajo trabaja en un clon desechable donde solo se deposita el archivo `AGENTS.md` del directorio actual (NÉON).
 :::
 
 #### El prompt de sistema
@@ -355,7 +355,7 @@ Ante esta dispersión, trysquare nunca publica una cifra sola. Dos nociones bast
 
 **Un punto es un punto porcentual de éxito.** `+agents+add_tests+well_crafted` alcanza el criterio 18 veces de 20, es decir, 90 %, y `nothing` 11 veces de 20, es decir, 55 %: la diferencia vale **+35 puntos**. Solo cuentan las ejecuciones válidas; las que no han entregado nada se retiran de ambos lados, lo que explica que un denominador pueda ser inferior al número de repeticiones.
 
-Las ejecuciones se sortean aleatoriamente, de modo que no se juega una experiencia veinte veces seguidas, sino de manera repartida.
+Las ejecuciones se sortean aleatoriamente, de modo que no se realiza un experimento veinte veces seguidas, sino de forma repartida.
 
 Leer una diferencia equivale entonces a plantear una sola pregunta: **¿este intervalo contiene el cero?** Si no lo contiene, la diferencia está marcada `*` y es **establecida**. Si lo contiene, está marcada `o` y **no es concluyente**, cualquiera que sea el valor en el centro.
 
@@ -434,7 +434,7 @@ Y las columnas de la sonda, con el criterio a la cabeza:
 
 Los denominadores de `+well_crafted` y `+thinking` valen 18 y 19 en las columnas de costo, porque ILaaS devolvió `Request timed out` durante la medición y las ejecuciones afectadas no produjeron nada.
 
-Sacamos cinco enseñanzas de estas dos tablas, y la última hará la transición al módulo siguiente. Todas las diferencias citadas más abajo provienen de los intervalos descritos más arriba, con la misma marca `*` para una diferencia establecida y `o` para una diferencia no concluyente. Las comparaciones se hacen a partir de un experimento. Si no especificas, se elige el primer experimento (aquí `nothing`). Puedes volver a hacer los cálculos apoyándote en otra referencia. Eso solo cambia el puntero: no cuesta nada en términos de modelo y no vuelve a medir nada.
+Extraemos cinco enseñanzas de estas dos tablas, y la última hará la transición con el siguiente módulo. Todas las diferencias citadas más abajo provienen de los intervalos descritos más arriba, con la misma marca `*` para una diferencia establecida y `o` para una diferencia no concluyente. Las comparaciones se hacen a partir de un experimento. Si no lo especificas, se elige el primer experimento (aquí `nothing`). Puedes rehacer los cálculos apoyándote en otra referencia. Eso solo cambia el puntero: no cuesta nada en términos de modelo y no vuelve a medir nada.
 
 ```bash
 uv run trysquare render scenarios/issue1-contexte.toml --output results \
@@ -466,8 +466,8 @@ Las cuatro columnas de la evaluación suben, y las cuatro diferencias quedan est
 
 `sonde_intacte` obtiene 20/20, lo que significa que el modelo no ha intentado modificar las pruebas de referencia. Y `tests_ajoutes` no varía, lo que es coherente con un agente que ya tiene los casos a la vista y no tiene ninguna razón para reescribirlos.
 
-::: warning Ninguna columna de coste de gemma puede citarse aquí
-La matriz cuenta 1 151 reintentos, es decir, turnos relanzados porque el proveedor había fallado, y el recuadro de más abajo muestra hasta qué punto se concentran en las configuraciones más pesadas. Un reintento vuelve a ejecutar el turno con todo el contexto acumulado, por lo que infla las columnas de coste y, sobre todo, vuelve a pilotar al agente.
+::: warning Ninguna columna de coste gemma es citable aquí
+La matriz cuenta 1 151 reintentos, es decir, turnos relanzados porque el proveedor había fallado, y el recuadro más abajo muestra hasta qué punto se concentran en las configuraciones más pesadas. Un reintento vuelve a reproducir el turno con todo el contexto acumulado, por lo que infla las columnas de coste y, sobre todo, vuelve a pilotar al agente.
 
 El mismo escenario, medido sobre `opencode-go` y `deepseek-v4-flash`, registra **37**, lo que hace legibles las suyas:
 
