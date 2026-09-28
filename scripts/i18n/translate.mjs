@@ -36,6 +36,7 @@ import { splitBody, joinSegments, isPassthrough, buildChunks } from './lib/segme
 import { mapWithConcurrency } from './lib/pool.mjs'
 import { containsMermaid, translateMermaidBlocks } from './lib/mermaid.mjs'
 import { localizeAssetLinks, localizedAssets } from './lib/assets.mjs'
+import { originalQuotes } from './lib/quotes.mjs'
 import {
   loadSegmentIndex,
   saveSegmentIndex,
@@ -360,8 +361,16 @@ function planFile(sourceFile, relPath, ctx, lang, segmentIndex, force) {
   // Segments whose only text is the labels of a diagram: they skip the chunks
   // and go straight to the label translation.
   const diagramPending = []
+  // A quote whose original is written in this language is the original itself,
+  // never a translation (see lib/quotes.mjs).
+  const originals = originalQuotes(segments, lang.code)
   let passthroughCount = 0
   for (const [i, segment] of segments.entries()) {
+    if (originals.has(i)) {
+      translations[i] = originals.get(i)
+      passthroughCount += 1
+      continue
+    }
     if (isPassthrough(segment) && !containsMermaid(segment)) {
       // Code block, horizontal rule...: copied as is, never sent to the model,
       // even when a neighbouring chunk carries it along as context.
