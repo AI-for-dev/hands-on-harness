@@ -13,6 +13,12 @@ Ce module écrit ces gestes dans un fichier. combo appelle ce fichier un **flow*
 
 Nous vous rappelons que l'outil combo a été écrit spécifiquement pour cette formation et qu'il n'est peut-être pas souhaitable de l'utiliser en production aujourd'hui. Ce ne sera peut-être plus le cas à terme. L'idée est toujours de vous permettre d'expérimenter rapidement et facilement.
 
+::: info Pourquoi combo plutôt qu'Archon ou Fabro ?
+D'autres outils écrivent déjà la boucle d'un agent de code dans un fichier et servent au quotidien. [Archon](https://github.com/coleam00/Archon) décrit un workflow comme un graphe YAML rangé dans `.archon/workflows/`, y mêle des nœuds déterministes (bash, tests, git) et des nœuds confiés à Claude Code, Codex ou Pi, et gère boucles et validations humaines ; il en livre une vingtaine prêts à l'emploi, de la correction d'une issue GitHub à la construction d'une application. [Fabro](https://github.com/fabro-sh/fabro), distribué en un seul binaire Rust, décrit le graphe en DOT (le langage de [Graphviz](https://graphviz.org/)), attribue un modèle à chaque nœud par une feuille de style et suspend le run à des portes d'approbation.
+
+Ces deux outils sont des moteurs qui lancent les agents depuis l'extérieur du harnais, alors qu'un flow combo se lance avec `/run` depuis la session Pi : ses nœuds sont les sous-agents du module précédent, et la trace de chacun se lit au même endroit. Nous gardons combo pour cette raison, et parce que son code reste assez court pour être lu. Les motifs de ce module (chaîne, boucle plafonnée, tests comme juge, arrêt humain) ont un équivalent direct dans Archon, qui a des nœuds bash, des boucles et des validations humaines, si bien qu'un flow écrit ici s'y transpose nœud par nœud.
+:::
+
 ## Comprendre
 
 ### Qu'est-ce qu'un flux de travail ?
@@ -409,3 +415,4 @@ Vous savez dire, trace en main, pourquoi un run a abouti ou non : quel pas n'a p
 - Anthropic, [Building Effective Agents](https://www.anthropic.com/engineering/building-effective-agents), la distinction workflows / agents et les motifs de ce module dans leur forme générale.
 - [La documentation de combo](https://github.com/AI-for-dev/combo/tree/main/docs), en particulier la page sur les flows et les flows `build` et `build-attended` livrés avec combo, qui font en plus générique ce que ce module fait sur un ticket.
 - [herdr](https://herdr.dev), pour regarder un flow travailler, un volet par agent.
+- [Archon](https://github.com/coleam00/Archon) et [Fabro](https://github.com/fabro-sh/fabro), deux moteurs de workflows pour agents de code plus aboutis que combo, où les flows de ce module se transposent.
