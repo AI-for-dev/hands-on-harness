@@ -1,5 +1,13 @@
 # Les hooks ou événements déterministes
 
+::: tip Objectifs de ce module
+- Savoir à quels moments de la boucle de l'agent Pi permet d'exécuter du code, et ce que ce code peut y changer
+- Écrire une extension qui refuse les commandes shell décrites dans un fichier de règles
+- Écrire une extension qui lance les tests quand l'agent s'apprête à rendre la main, et qui lui renvoie les échecs à corriger
+- Distinguer une règle qu'un hook peut vérifier d'une règle qui demande le jugement d'un modèle
+- Repartir avec deux extensions pour votre projet et la ligne « hooks » de la fiche de décision
+:::
+
 Dans les modules précédents, nous avons surtout travaillé sur des fichiers écrits en markdown qui étaient lus (ou pas) par des agents. Dans ces fichiers, nous avons essayé de décrire des cadres de développement pour aider les agents à aller là où nous souhaitions qu'ils aillent. Nous rappelons que le caractère aléatoire des LLM fait qu'il n'est pas sûr à 100% que les directives données dans ces fichiers texte soient réellement effectuées. Elles peuvent se perdre dans le contexte.
 
 Dans ce module, nous allons nous intéresser à rendre déterministe les actions que nous décrivions dans les fichiers markdown. Ces actions peuvent apparaître à différent moment du flux de travail et nous verrons que Pi est capable de vous donner la main à tous les étages du harnais. Cela passe par la construction d'extensions. Vous en avez déjà installé certaines, vous allez maintenant les construire. C'est là que l'on voit toute la puissance et flexibilité de Pi.
@@ -16,7 +24,7 @@ L'agent est obligé de l'exécuter, ce n'est pas du texte. La réponse donnée p
 
 Nous rappelons que ces événements déterministes sont complémentaires aux événements d'inférence vus dans les précédents modules. L'idée est donc de trouver le bon équilibre entre ces deux façons d'interagir avec l'agent.
 
-### A quel moment cela intervient ?
+### À quel moment cela intervient-il ?
 
 Ces événements peuvent intervenir à n'importe quel moment du processus de développement
 
