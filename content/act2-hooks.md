@@ -8,9 +8,9 @@
 - Distinguer une règle qu'un hook peut vérifier d'une règle qui demande le jugement d'un modèle
 :::
 
-Dans les modules précédents, nous avons surtout travaillé sur des fichiers écrits en markdown qui étaient lus (ou pas) par des agents. Dans ces fichiers, nous avons essayé de décrire des cadres de développement pour aider les agents à aller là où nous souhaitions qu'ils aillent. Nous rappelons que le caractère aléatoire des LLM fait qu'il n'est pas sûr à 100% que les directives données dans ces fichiers texte soient réellement effectuées. Elles peuvent se perdre dans le contexte.
+Dans les modules précédents, nous avons surtout travaillé sur des fichiers écrits en markdown qui étaient lus (ou pas) par des agents. Dans ces fichiers, nous avons essayé de décrire des cadres de développement pour aider les agents à aller là où nous souhaitions qu'ils aillent. Nous rappelons que le caractère aléatoire des LLM fait qu'il n'est pas sûr à 100 % que les directives données dans ces fichiers texte soient réellement effectuées. Elles peuvent se perdre dans le contexte.
 
-Dans ce module, nous allons nous intéresser à rendre déterministe les actions que nous décrivions dans les fichiers markdown. Ces actions peuvent apparaître à différent moment du flux de travail et nous verrons que Pi est capable de vous donner la main à tous les étages du harnais. Cela passe par la construction d'extensions. Vous en avez déjà installé certaines, vous allez maintenant les construire. C'est là que l'on voit toute la puissance et flexibilité de Pi.
+Dans ce module, nous allons nous intéresser à rendre déterministes les actions que nous décrivions dans les fichiers markdown. Ces actions peuvent apparaître à différents moments du flux de travail et nous verrons que Pi est capable de vous donner la main à tous les étages du harnais. Cela passe par la construction d'extensions. Vous en avez déjà installé certaines, vous allez maintenant les construire. C'est là que l'on voit toute la puissance et la flexibilité de Pi.
 
 Ces événements peuvent avoir le nom de hooks.
 
@@ -18,18 +18,18 @@ Ces événements peuvent avoir le nom de hooks.
 
 ### Pourquoi ajouter des événements déterministes ?
 
-Comme nous l'avons mentionné en introduction, rien n'empêche le LLM de ne pas suivre une directive qui se trouve dans les fichiers agents ou dans les skills. Il y a donc plusieurs intérêts à mettre des événements déterministes. Nous avons pu en voir un au tout début de cette formation lors du module sur le bac à sable. L'utilisation d'une extension peut permettre d'éviter certaines commandes qu'on ne voudrait pas que le LLM lance dans la session: lecture d'un fichier `.env`, `rm -rf` malencontreux... Un autre avantage est de pouvoir guider l'agent selon des règles pré-établies notamment au niveau du linter et au niveau des tests unitaires.
+Comme nous l'avons mentionné en introduction, rien n'empêche le LLM de ne pas suivre une directive qui se trouve dans les fichiers agents ou dans les skills. Il y a donc plusieurs intérêts à mettre des événements déterministes. Nous avons pu en voir un au tout début de cette formation lors du module sur le bac à sable. L'utilisation d'une extension peut permettre d'éviter certaines commandes qu'on ne voudrait pas que le LLM lance dans la session : lecture d'un fichier `.env`, `rm -rf` malencontreux... Un autre avantage est de pouvoir guider l'agent selon des règles préétablies notamment au niveau du linter et au niveau des tests unitaires.
 
-L'agent est obligé de l'exécuter, ce n'est pas du texte. La réponse donnée par cette action déterministe est ensuite injectée dans le contexte et peut aiguiller l'agent à résoudre des problèmes de la bonne manière (ou plutôt à votre manière). Nous voyons bien ici que c'est une nouvelle pièce du puzzle qui permet d'avoir une meilleure confiance et laisser le modèle travailler en toute autonomie. L'idée est d'avoir une phase finale qui correspond à nos attentes et qui est plus facile à relire et à valider.
+L'agent est obligé de l'exécuter, ce n'est pas du texte. La réponse donnée par cette action déterministe est ensuite injectée dans le contexte et peut amener l'agent à résoudre des problèmes de la bonne manière (ou plutôt à votre manière). Nous voyons bien ici que c'est une nouvelle pièce du puzzle qui permet d'avoir une meilleure confiance et de laisser le modèle travailler en toute autonomie. L'idée est d'avoir une phase finale qui correspond à nos attentes et qui est plus facile à relire et à valider.
 
 Nous rappelons que ces événements déterministes sont complémentaires aux événements d'inférence vus dans les précédents modules. L'idée est donc de trouver le bon équilibre entre ces deux façons d'interagir avec l'agent.
 
 ### À quel moment cela intervient-il ?
 
-Ces événements peuvent intervenir à n'importe quel moment du processus de développement
+Ces événements peuvent intervenir à n'importe quel moment du processus de développement :
 
-- au début de la session pour mettre en place l'environnement de développement : uv, conda, ....
-- à la fin du travail de l'agent pour vérifier que le code produit vérifie correctement le cadre de développement du projet : linter, tests.
+- au début de la session pour mettre en place l'environnement de développement : uv, conda...
+- à la fin du travail de l'agent pour vérifier que le code produit respecte le cadre de développement du projet : linter, tests.
 - au moment de la revue pour vérifier qu'il n'y a pas de code dupliqué, que la qualité du code produit est bonne...
 
 Dans Pi, un hook est une fonction TypeScript enregistrée avec `pi.on("<événement>", handler)` dans une extension. Pi n'a pas de fichier de configuration JSON qui lance des scripts shell avec des codes de sortie, comme `settings.json` dans Claude Code (voir la [documentation des hooks de Claude Code](https://code.claude.com/docs/en/hooks)).
@@ -95,12 +95,12 @@ Nous proposons ici de construire deux extensions pour NÉON, chacune branchée s
 
 ### Comment refuser une commande exécutée par l'agent ?
 
-Nous voulons ici reproduire des comportements similaires à [`pi-permission-system`](https://www.npmjs.com/package/@gotgenes/pi-permission-system). L'idée est de pouvoir décrire des règles des commandes interdites dans `.pi/forbidden-commands.json`, à la racine de NÉON. Chaque règle associe
+Nous voulons ici reproduire des comportements similaires à [`pi-permission-system`](https://www.npmjs.com/package/@gotgenes/pi-permission-system). L'idée est de pouvoir décrire des règles des commandes interdites dans `.pi/forbidden-commands.json`, à la racine de NÉON. Chaque règle associe :
 
 - un motif qui est une [expression régulière JavaScript](https://developer.mozilla.org/fr/docs/Web/JavaScript/Guide/Regular_expressions) cherchée dans la commande
 - une raison que l'agent recevra si sa commande correspond au motif
 
-Voici à quoi ressemble le fichier de règles
+Voici à quoi ressemble le fichier de règles :
 
 ```json
 {
