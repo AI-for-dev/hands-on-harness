@@ -145,14 +145,14 @@
   },
   "act2-hooks.md": {
     "en": {
-      "unitHash": "5ad60ee2c4714d4fc42f084fea037b318ca3dd50fea1ea84dfa27e9429aaf0ee",
+      "unitHash": "802847dce1155233c4b21b4c9f3e606c64018449b0472cba5e4cf7d7f7b9e48a",
       "model": "pi:opencode-go/deepseek-v4-flash",
-      "translatedAt": "2026-10-07T14:29:11.857Z"
+      "translatedAt": "2026-10-07T14:44:39.487Z"
     },
     "es": {
-      "unitHash": "5ad60ee2c4714d4fc42f084fea037b318ca3dd50fea1ea84dfa27e9429aaf0ee",
+      "unitHash": "802847dce1155233c4b21b4c9f3e606c64018449b0472cba5e4cf7d7f7b9e48a",
       "model": "pi:opencode-go/deepseek-v4-flash",
-      "translatedAt": "2026-10-07T14:30:00.135Z"
+      "translatedAt": "2026-10-07T14:44:44.646Z"
     }
   }
 }

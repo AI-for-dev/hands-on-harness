@@ -1,5 +1,13 @@
 # Los hooks o eventos deterministas
 
+::: tip Objetivos de este módulo
+- Entender qué es un evento determinista en el harness
+- Saber en qué momentos del bucle del agente Pi permite ejecutar código, y qué puede cambiar ese código
+- Escribir una extensión que rechace los comandos shell descritos en un archivo de reglas
+- Escribir una extensión que lance las pruebas cuando el agente está a punto de devolver el control, y que le devuelva los fallos para corregir
+- Distinguir una regla que un hook puede verificar de una regla que requiere el juicio de un modelo
+:::
+
 En los módulos anteriores, trabajamos sobre todo con archivos escritos en Markdown que los agentes leían (o no). En esos archivos intentamos describir marcos de desarrollo para ayudar a los agentes a ir adonde queríamos que fueran. Recordemos que el carácter aleatorio de los LLM hace que no sea 100% seguro que las directrices dadas en esos archivos de texto se cumplan realmente. Pueden perderse en el contexto.
 
 En este módulo nos vamos a interesar en hacer deterministas las acciones que describíamos en los archivos Markdown. Estas acciones pueden aparecer en distintos momentos del flujo de trabajo y veremos que Pi es capaz de darte el control en todos los niveles del harness. Eso pasa por la construcción de extensiones. Ya has instalado algunas, ahora las vas a construir. Aquí es donde se ve toda la potencia y flexibilidad de Pi.

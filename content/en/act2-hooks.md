@@ -1,5 +1,13 @@
 # Hooks or deterministic events
 
+::: tip Objectives of this module
+- Understand what a deterministic event is in the harness
+- Know at which points in the agent loop Pi lets you run code, and what that code can change there
+- Write an extension that rejects the shell commands described in a rules file
+- Write an extension that runs the tests when the agent is about to hand back control, and returns the failures to it to fix
+- Tell apart a rule a hook can check from a rule that requires a model's judgment
+:::
+
 In the previous modules, we mostly worked on files written in Markdown that were read (or not) by agents. In these files, we tried to describe development frameworks to help agents go where we wanted them to go. We recall that the randomness of LLMs means that it is not 100% certain that the directives given in these text files are actually carried out. They can get lost in the context.
 
 In this module, we will look at making the actions we described in Markdown files deterministic. These actions can appear at different points in the workflow, and we will see that Pi can give you control at every level of the harness. This is done by building extensions. You have already installed some, and now you are going to build them. This is where we see all the power and flexibility of Pi.

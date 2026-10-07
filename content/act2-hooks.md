@@ -1,11 +1,11 @@
 # Les hooks ou événements déterministes
 
 ::: tip Objectifs de ce module
+- Comprendre ce qu'est un événement déterministe dans le harnais
 - Savoir à quels moments de la boucle de l'agent Pi permet d'exécuter du code, et ce que ce code peut y changer
 - Écrire une extension qui refuse les commandes shell décrites dans un fichier de règles
 - Écrire une extension qui lance les tests quand l'agent s'apprête à rendre la main, et qui lui renvoie les échecs à corriger
 - Distinguer une règle qu'un hook peut vérifier d'une règle qui demande le jugement d'un modèle
-- Repartir avec deux extensions pour votre projet et la ligne « hooks » de la fiche de décision
 :::
 
 Dans les modules précédents, nous avons surtout travaillé sur des fichiers écrits en markdown qui étaient lus (ou pas) par des agents. Dans ces fichiers, nous avons essayé de décrire des cadres de développement pour aider les agents à aller là où nous souhaitions qu'ils aillent. Nous rappelons que le caractère aléatoire des LLM fait qu'il n'est pas sûr à 100% que les directives données dans ces fichiers texte soient réellement effectuées. Elles peuvent se perdre dans le contexte.
