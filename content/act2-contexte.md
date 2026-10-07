@@ -285,6 +285,12 @@ scripts/trysquare-campaign/
 
 Nous ne rentrerons pas dans les détails de conception et d'usage, pour lesquels vous pouvez vous reporter à la [documentation](https://ai-for-dev.github.io/trysquare/). Retenez pour cette formation que le répertoire `scenarios/` décrit les expériences : chaque fichier déclare le modèle utilisé (au sens où Pi le nomme), le nombre de répétitions, les configurations de l'expérience et les tests de validation.
 
+::: info Pourquoi trysquare plutôt qu'Inspect ou Harbor ?
+Des outils d'évaluation plus mûrs savent déjà répéter une exécution et en tirer une incertitude. [Inspect](https://inspect.aisi.org.uk/), le framework de l'AI Security Institute britannique, rejoue chaque échantillon avec `--epochs`, agrège les répétitions (`mean`, `pass_at_k`, `at_least_k`) et publie une erreur standard, et son paquet [Inspect SWE](https://meridianlabs-ai.github.io/inspect_swe/) y fait tourner Claude Code ou Codex CLI dans un bac à sable. [Harbor](https://github.com/harbor-framework/harbor), écrit par l'équipe de Terminal-Bench, lance des agents sur des tâches en conteneurs avec `--n-attempts` et répartit la charge chez des fournisseurs de bacs à sable distants comme Daytona ou Modal. Pour évaluer un modèle ou un agent sur un jeu de tâches, ce sont eux qu'il faut prendre, au prix d'une installation Docker ou d'un compte chez un de ces fournisseurs, et d'un scénario qui devient une tâche empaquetée avec son conteneur.
+
+trysquare en fait moins et s'installe avec [uv](https://docs.astral.sh/uv/). Il garde la tâche fixe et fait varier le harnais (prompt, `AGENTS.md`, prompt système, raisonnement, compétences), il lit les journaux de session de Pi pour noter la procédure suivie en plus du résultat, et il travaille sur des clones jetables sans conteneur, ce qui tient sur un portable en salle. La lecture que ce module vous apprend, une proportion sur n exécutions accompagnée de son intervalle, s'applique telle quelle aux rapports d'Inspect et de Harbor.
+:::
+
 #### Le plan d'expérience
 
 Le plan retenu est le plus simple qui reste lisible : une **base**, puis un ensemble de variantes qui changent chacune peu de chose.
@@ -642,4 +648,5 @@ Notre exemple est `AGENTS.md` : il ne déplace pas d'un point le critère de cor
 - Addy Osmani, [Agent Harness Engineering](https://addyosmani.com/blog/agent-harness-engineering/), dont la thèse est celle que la comparaison de la pile à la base met à l'épreuve.
 - [La documentation de Pi](https://github.com/earendil-works/pi/tree/main/packages/coding-agent/docs), et en particulier ses pages sur la compaction, les modèles et les réglages.
 - [trysquare](https://github.com/AI-for-dev/trysquare), l'outil de mesure utilisé dans ce module, et son guide d'écriture de scénario.
+- [Inspect](https://inspect.aisi.org.uk/) et [Harbor](https://github.com/harbor-framework/harbor), les frameworks d'évaluation à prendre quand la question porte sur un modèle ou un agent face à un jeu de tâches, et non sur une variante de harnais.
 - La campagne trysquare de la formation, `scripts/trysquare-campaign/`, avec ses hypothèses écrites avant mesure et ses matrices archivées. C'est le seul endroit où les chiffres de cette page sont vérifiables.
