@@ -34,7 +34,10 @@ export const en: LocaleSpecificConfig<DefaultTheme.Config> = {
         items: [
           { text: '2.0 The sandbox', link: '/en/act2-sandbox' },
           { text: '2.1 Context and the window', link: '/en/act2-contexte' },
-          { text: '2.2 Skills', link: '/en/act2-skill' }
+          { text: '2.2 Skills', link: '/en/act2-skill' },
+          { text: '2.3 Delegation', link: '/en/act2-delegation' },
+          { text: '2.4 Workflows', link: '/en/act2-workflows' },
+          { text: '2.5 Hooks', link: '/en/act2-hooks' }
         ]
       }
     ],
