@@ -39,7 +39,8 @@ export const fr: LocaleSpecificConfig<DefaultTheme.Config> = {
           { text: '2.1 Le contexte et la fenêtre', link: '/act2-contexte' },
           { text: '2.2 Les compétences', link: '/act2-skill' },
           { text: '2.3 La délégation', link: '/act2-delegation' },
-          { text: '2.4 Les workflows', link: '/act2-workflows' }
+          { text: '2.4 Les workflows', link: '/act2-workflows' },
+          { text: '2.5 Les hooks', link: '/act2-hooks' }
         ]
       },
       // {

@@ -142,5 +142,17 @@
       "model": "pi:opencode-go/deepseek-v4-flash",
       "translatedAt": "2026-09-28T14:56:11.310Z"
     }
+  },
+  "act2-hooks.md": {
+    "en": {
+      "unitHash": "5ad60ee2c4714d4fc42f084fea037b318ca3dd50fea1ea84dfa27e9429aaf0ee",
+      "model": "pi:opencode-go/deepseek-v4-flash",
+      "translatedAt": "2026-10-07T14:29:11.857Z"
+    },
+    "es": {
+      "unitHash": "5ad60ee2c4714d4fc42f084fea037b318ca3dd50fea1ea84dfa27e9429aaf0ee",
+      "model": "pi:opencode-go/deepseek-v4-flash",
+      "translatedAt": "2026-10-07T14:30:00.135Z"
+    }
   }
 }

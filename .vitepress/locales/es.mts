@@ -34,7 +34,10 @@ export const es: LocaleSpecificConfig<DefaultTheme.Config> = {
         items: [
           { text: '2.0 El entorno aislado', link: '/es/act2-sandbox' },
           { text: '2.1 El contexto y la ventana', link: '/es/act2-contexte' },
-          { text: '2.2 Las habilidades', link: '/es/act2-skill' }
+          { text: '2.2 Las habilidades', link: '/es/act2-skill' },
+          { text: '2.3 La delegación', link: '/es/act2-delegation' },
+          { text: '2.4 Los flujos de trabajo', link: '/es/act2-workflows' },
+          { text: '2.5 Los hooks', link: '/es/act2-hooks' }
         ]
       }
     ],
