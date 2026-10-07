@@ -8,9 +8,9 @@
 - Tell apart a rule a hook can check from a rule that requires a model's judgment
 :::
 
-In the previous modules, we mostly worked on files written in Markdown that were read (or not) by agents. In these files, we tried to describe development frameworks to help agents go where we wanted them to go. We recall that the randomness of LLMs means that it is not 100% certain that the directives given in these text files are actually carried out. They can get lost in the context.
+In the previous modules, we mostly worked on files written in Markdown that were read (or not) by agents. In those files, we tried to describe development frameworks to help agents go where we wanted them to go. We recall that the random nature of LLMs means it is not 100% certain that the directives given in these text files are actually carried out. They can get lost in the context.
 
-In this module, we will look at making the actions we described in Markdown files deterministic. These actions can appear at different points in the workflow, and we will see that Pi can give you control at every level of the harness. This is done by building extensions. You have already installed some, and now you are going to build them. This is where we see all the power and flexibility of Pi.
+In this module, we are going to focus on making deterministic the actions we described in the markdown files. These actions can appear at different points in the workflow, and we will see that Pi is able to give you control at every level of the harness. This goes through building extensions. You have already installed some of them, and now you are going to build them. This is where we see all the power and flexibility of Pi.
 
 These events can be called hooks.
 
@@ -18,18 +18,18 @@ These events can be called hooks.
 
 ### Why add deterministic events?
 
-As we mentioned in the introduction, nothing prevents the LLM from ignoring a directive found in agent files or skills. There are therefore several benefits to adding deterministic events. We saw one at the very beginning of this training, in the sandbox module. Using an extension can prevent certain commands that we would not want the LLM to run in the session: reading a `.env` file, an ill-timed `rm -rf`... Another advantage is being able to guide the agent according to pre-established rules, particularly for the linter and unit tests.
+As we mentioned in the introduction, nothing prevents the LLM from not following a directive found in the agent files or in the skills. There are therefore several benefits to putting deterministic events in place. We saw one at the very beginning of this training during the module on the sandbox. Using an extension can make it possible to avoid certain commands we would not want the LLM to launch in the session: reading a `.env` file, an ill-timed `rm -rf`... Another advantage is being able to guide the agent according to pre-established rules, particularly at the linter level and the unit test level.
 
-The agent is forced to run it; it is not text. The response given by this deterministic action is then injected into the context and can steer the agent toward solving problems the right way (or rather your way). We can clearly see here that this is a new piece of the puzzle that allows for greater confidence and lets the model work fully autonomously. The idea is to have a final phase that matches our expectations and is easier to review and validate.
+The agent is forced to run it, it is not text. The response given by this deterministic action is then injected into the context and can lead the agent to solve problems in the right way (or rather in your way). We can clearly see here that this is a new piece of the puzzle that allows for better trust and lets the model work in full autonomy. The idea is to have a final phase that matches our expectations and is easier to review and validate.
 
 We recall that these deterministic events are complementary to the inference events seen in the previous modules. The idea is therefore to find the right balance between these two ways of interacting with the agent.
 
 ### When does this come into play?
 
-These events can occur at any point in the development process
+These events can come into play at any point in the development process:
 
-- at the start of the session to set up the development environment: uv, conda, ....
-- at the end of the agent's work to check that the code produced correctly meets the project's development framework: linter, tests.
+- at the start of the session to set up the development environment: uv, conda...
+- at the end of the agent's work to check that the code produced respects the project's development framework: linter, tests.
 - at review time to check that there is no duplicated code, that the quality of the code produced is good...
 
 In Pi, a hook is a TypeScript function registered with `pi.on("<event>", handler)` in an extension. Pi has no JSON configuration file that launches shell scripts with exit codes, like `settings.json` in Claude Code (see the [Claude Code hooks documentation](https://code.claude.com/docs/en/hooks)).
@@ -95,12 +95,12 @@ Here we propose to build two extensions for NÉON, each hooked into a different 
 
 ### How to reject a command run by the agent?
 
-We want here to reproduce behaviours similar to [`pi-permission-system`](https://www.npmjs.com/package/@gotgenes/pi-permission-system). The idea is to be able to describe rules for forbidden commands in `.pi/forbidden-commands.json`, at the root of NÉON. Each rule associates
+Here we want to reproduce behaviors similar to [`pi-permission-system`](https://www.npmjs.com/package/@gotgenes/pi-permission-system). The idea is to be able to describe rules for forbidden commands in `.pi/forbidden-commands.json`, at the root of NÉON. Each rule pairs:
 
 - a pattern, which is a [JavaScript regular expression](https://developer.mozilla.org/fr/docs/Web/JavaScript/Guide/Regular_expressions) searched in the command
 - a reason the agent will receive if its command matches the pattern
 
-Here is what the rules file looks like
+Here is what the rules file looks like:
 
 ```json
 {

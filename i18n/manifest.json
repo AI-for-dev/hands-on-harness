@@ -145,9 +145,9 @@
   },
   "act2-hooks.md": {
     "en": {
-      "unitHash": "802847dce1155233c4b21b4c9f3e606c64018449b0472cba5e4cf7d7f7b9e48a",
+      "unitHash": "e5a4c494115dcc63667957d86653327ccf8a4cd514c60d246d283b965a0289f0",
       "model": "pi:opencode-go/deepseek-v4-flash",
-      "translatedAt": "2026-10-07T14:44:39.487Z"
+      "translatedAt": "2026-10-07T18:12:56.889Z"
     },
     "es": {
       "unitHash": "e5a4c494115dcc63667957d86653327ccf8a4cd514c60d246d283b965a0289f0",
