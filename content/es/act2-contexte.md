@@ -285,6 +285,12 @@ scripts/trysquare-campaign/
 
 No entraremos en los detalles de diseño y de uso, para los cuales puedes remitirte a la [documentación](https://ai-for-dev.github.io/trysquare/). Para esta formación, recuerda que el directorio `scenarios/` describe los experimentos: cada archivo declara el modelo utilizado (en el sentido en que Pi lo nombra), el número de repeticiones, las configuraciones del experimento y las pruebas de validación.
 
+::: info ¿Por qué trysquare en lugar de Inspect o Harbor?
+Herramientas de evaluación más maduras ya saben repetir una ejecución y extraer de ella una incertidumbre. [Inspect](https://inspect.aisi.org.uk/), el framework del AI Security Institute británico, reejecuta cada muestra con `--epochs`, agrega las repeticiones (`mean`, `pass_at_k`, `at_least_k`) y publica un error estándar, y su paquete [Inspect SWE](https://meridianlabs-ai.github.io/inspect_swe/) hace correr Claude Code o Codex CLI en un sandbox. [Harbor](https://github.com/harbor-framework/harbor), escrito por el equipo de Terminal-Bench, lanza agentes sobre tareas en contenedores con `--n-attempts` y reparte la carga entre proveedores de sandbox remotos como Daytona o Modal. Para evaluar un modelo o un agente sobre un conjunto de tareas, son ellos los que hay que tomar, a costa de una instalación de Docker o de una cuenta en uno de esos proveedores, y de un escenario que se convierte en una tarea empaquetada con su contenedor.
+
+trysquare hace menos y se instala con [uv](https://docs.astral.sh/uv/). Mantiene la tarea fija y hace variar el harness (prompt, `AGENTS.md`, system prompt, razonamiento, habilidades), lee los registros de sesión de Pi para puntuar el procedimiento seguido además del resultado, y trabaja sobre clones desechables sin contenedor, lo que cabe en un portátil en el aula. La lectura que este módulo te enseña, una proporción sobre n ejecuciones acompañada de su intervalo, se aplica tal cual a los informes de Inspect y de Harbor.
+:::
+
 #### El plan del experimento
 
 El plan elegido es el más simple que sigue siendo legible: una **base** y luego un conjunto de variantes que cambian cada una pocas cosas.
@@ -638,8 +644,9 @@ Nuestro ejemplo es `AGENTS.md`: no mueve el criterio de corrección ni un punto,
 ## Para ir más lejos
 
 - Liu et al., [Lost in the Middle](https://arxiv.org/abs/2307.03172), el estudio que justifica que no nos conformemos con llenar la ventana.
-- Philipp Schmid, [The New Skill in AI is Not Prompting, It's Context Engineering](https://www.philschmid.de/context-engineering), sobre el paso del prompt aislado hacia la arquitectura del contexto.
+- Philipp Schmid, [The New Skill in AI is Not Prompting, It's Context Engineering](https://www.philschmid.de/context-engineering), sobre el desplazamiento del prompt aislado hacia la arquitectura del contexto.
 - Addy Osmani, [Agent Harness Engineering](https://addyosmani.com/blog/agent-harness-engineering/), cuya tesis es la que la comparación de la pila con la base pone a prueba.
 - [La documentación de Pi](https://github.com/earendil-works/pi/tree/main/packages/coding-agent/docs), y en particular sus páginas sobre la compactación, los modelos y los ajustes.
 - [trysquare](https://github.com/AI-for-dev/trysquare), la herramienta de medición utilizada en este módulo, y su guía de escritura de escenarios.
+- [Inspect](https://inspect.aisi.org.uk/) y [Harbor](https://github.com/harbor-framework/harbor), los frameworks de evaluación que hay que tomar cuando la pregunta se refiere a un modelo o un agente frente a un conjunto de tareas, y no a una variante de harness.
 - La campaña trysquare de la formación, `scripts/trysquare-campaign/`, con sus hipótesis escritas antes de la medición y sus matrices archivadas. Es el único lugar donde las cifras de esta página son verificables.

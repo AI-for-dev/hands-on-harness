@@ -285,6 +285,12 @@ scripts/trysquare-campaign/
 
 We will not go into the design and usage details, which you can find in the [documentation](https://ai-for-dev.github.io/trysquare/). For this training, remember that the `scenarios/` directory describes the experiments: each file declares the model used (as Pi calls it), the number of repetitions, the experiment configurations, and the validation tests.
 
+::: info Why trysquare rather than Inspect or Harbor?
+More mature evaluation tools already know how to repeat a run and derive an uncertainty from it. [Inspect](https://inspect.aisi.org.uk/), the framework from the UK AI Security Institute, replays each sample with `--epochs`, aggregates the repetitions (`mean`, `pass_at_k`, `at_least_k`) and reports a standard error, and its [Inspect SWE](https://meridianlabs-ai.github.io/inspect_swe/) package runs Claude Code or Codex CLI inside a sandbox on top of it. [Harbor](https://github.com/harbor-framework/harbor), written by the Terminal-Bench team, runs agents on containerized tasks with `--n-attempts` and spreads the load across remote sandbox providers such as Daytona or Modal. To evaluate a language model or an agent on a task set, these are the ones to pick, at the cost of a Docker install or an account with one of those providers, and of a scenario that becomes a packaged task with its container.
+
+trysquare does less and installs with [uv](https://docs.astral.sh/uv/). It keeps the task fixed and varies the harness (prompt, `AGENTS.md`, system prompt, reasoning, skills), it reads Pi's session logs to score the procedure followed in addition to the result, and it works on disposable clones without a container, which fits on a laptop in a classroom. The reading this module teaches you, a proportion over n runs together with its interval, applies as is to Inspect and Harbor reports.
+:::
+
 #### The experiment plan
 
 The plan we kept is the simplest that stays readable: a **baseline**, then a set of variants that each change little.
@@ -637,9 +643,10 @@ Our example is `AGENTS.md`: it does not move the grading criterion by a single p
 
 ## To go further
 
-- Liu et al., [Lost in the Middle](https://arxiv.org/abs/2307.03172), the study that justifies not just filling the window.
-- Philipp Schmid, [The New Skill in AI is Not Prompting, It's Context Engineering](https://www.philschmid.de/context-engineering), on the shift from the isolated prompt toward context architecture.
-- Addy Osmani, [Agent Harness Engineering](https://addyosmani.com/blog/agent-harness-engineering/), whose thesis is the one that comparing the stack to the base puts to the test.
-- [Pi's documentation](https://github.com/earendil-works/pi/tree/main/packages/coding-agent/docs), and in particular its pages on compaction, models, and settings.
-- [trysquare](https://github.com/AI-for-dev/trysquare), the measurement tool used in this module, and its scenario writing guide.
-- The training's trysquare campaign, `scripts/trysquare-campaign/`, with its hypotheses written before measurement and its archived matrices. It's the only place where this page's figures can be verified.
+- Liu et al., [Lost in the Middle](https://arxiv.org/abs/2307.03172), the study that justifies not settling for filling the window.
+- Philipp Schmid, [The New Skill in AI is Not Prompting, It's Context Engineering](https://www.philschmid.de/context-engineering), on the shift from the isolated prompt to the architecture of context.
+- Addy Osmani, [Agent Harness Engineering](https://addyosmani.com/blog/agent-harness-engineering/), whose thesis is the one that comparing the stack to the baseline puts to the test.
+- [The Pi documentation](https://github.com/earendil-works/pi/tree/main/packages/coding-agent/docs), and in particular its pages on compaction, models and settings.
+- [trysquare](https://github.com/AI-for-dev/trysquare), the measurement tool used in this module, and its guide to writing scenarios.
+- [Inspect](https://inspect.aisi.org.uk/) and [Harbor](https://github.com/harbor-framework/harbor), the evaluation frameworks to reach for when the question is about a model or an agent facing a set of tasks, and not about a variant of harness.
+- The training's trysquare campaign, `scripts/trysquare-campaign/`, with its hypotheses written before measurement and its archived matrices. This is the only place where the figures on this page can be checked.

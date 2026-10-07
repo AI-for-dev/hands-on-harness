@@ -13,6 +13,12 @@ Este módulo escribe estos gestos en un archivo. combo llama a este archivo un *
 
 Te recordamos que la herramienta combo fue escrita específicamente para esta formación y que quizá no sea recomendable utilizarla en producción hoy en día. Quizá deje de ser el caso con el tiempo. La idea es siempre permitirte experimentar rápida y fácilmente.
 
+::: info ¿Por qué combo en lugar de Archon o Fabro?
+Otras herramientas ya escriben el bucle de un agente de código en un archivo y sirven para el día a día. [Archon](https://github.com/coleam00/Archon) describe un workflow como un grafo YAML guardado en `.archon/workflows/`, mezcla nodos deterministas (bash, tests, git) y nodos confiados a Claude Code, Codex o Pi, y gestiona bucles y validaciones humanas; entrega una veintena listos para usar, desde la corrección de un issue de GitHub hasta la construcción de una aplicación. [Fabro](https://github.com/fabro-sh/fabro), distribuido en un único binario Rust, describe el grafo en DOT (el lenguaje de [Graphviz](https://graphviz.org/)), asigna un modelo a cada nodo mediante una hoja de estilo y suspende la ejecución en puertas de aprobación.
+
+Estas dos herramientas son motores que lanzan los agentes desde fuera del harness, mientras que un flow combo se lanza con `/run` desde la sesión Pi: sus nodos son los subagentes del módulo anterior, y la traza de cada uno se lee en el mismo lugar. Mantenemos combo por esta razón, y porque su código sigue siendo lo bastante corto para leerlo. Los motivos de este módulo (cadena, bucle acotado, tests como juez, parada humana) tienen un equivalente directo en Archon, que tiene nodos bash, bucles y validaciones humanas, así que un flow escrito aquí se traslada allí nodo por nodo.
+:::
+
 ## Comprender
 
 ### ¿Qué es un flujo de trabajo?
@@ -406,6 +412,7 @@ Puedes explicar, con la traza en mano, por qué una ejecución terminó o no: qu
 
 ## Para profundizar
 
-- Anthropic, [Building Effective Agents](https://www.anthropic.com/engineering/building-effective-agents), la distinción entre workflows y agentes, y los patrones de este módulo en su forma general.
-- [La documentación de combo](https://github.com/AI-for-dev/combo/tree/main/docs), en particular la página sobre los flows y los flows `build` y `build-attended` incluidos con combo, que generalizan lo que este módulo hace sobre un ticket.
-- [herdr](https://herdr.dev), para ver un flow trabajar, un panel por agente.
+- Anthropic, [Building Effective Agents](https://www.anthropic.com/engineering/building-effective-agents), la distinción entre workflows y agentes y los patrones de este módulo en su forma general.
+- [La documentación de combo](https://github.com/AI-for-dev/combo/tree/main/docs), en particular la página sobre los flujos y los flujos `build` y `build-attended` que se entregan con combo, que hacen de forma más genérica lo que este módulo hace sobre un ticket.
+- [herdr](https://herdr.dev), para ver trabajar un flujo, un panel por agente.
+- [Archon](https://github.com/coleam00/Archon) y [Fabro](https://github.com/fabro-sh/fabro), dos motores de workflows para agentes de código más completos que combo, donde se trasladan los flujos de este módulo.
