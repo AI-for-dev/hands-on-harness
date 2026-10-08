@@ -97,14 +97,14 @@
   },
   "act2-sandbox.md": {
     "en": {
-      "unitHash": "2d90d2c45fbeb6edcb5d2ac40a1335953d929b6d164d33fd0401586656051cdf",
-      "model": "pi:opencode-go/deepseek-v4-flash",
-      "translatedAt": "2026-09-28T14:50:21.668Z"
+      "unitHash": "e4f00a102070935843db54c6dd503e9e0ece0ab21fb323d3246168739d538fca",
+      "model": "pi:GRICAD/ARES/DeepSeek-V4.1-Flash",
+      "translatedAt": "2026-10-08T11:16:29.210Z"
     },
     "es": {
-      "unitHash": "2d90d2c45fbeb6edcb5d2ac40a1335953d929b6d164d33fd0401586656051cdf",
-      "model": "pi:opencode-go/deepseek-v4-flash",
-      "translatedAt": "2026-09-28T14:51:27.140Z"
+      "unitHash": "e4f00a102070935843db54c6dd503e9e0ece0ab21fb323d3246168739d538fca",
+      "model": "pi:GRICAD/ARES/DeepSeek-V4.1-Flash",
+      "translatedAt": "2026-10-08T11:16:53.154Z"
     }
   },
   "act2-delegation.md": {
