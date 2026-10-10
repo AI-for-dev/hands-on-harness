@@ -165,4 +165,3 @@ Les autres sous-commandes travaillent sur une matrice déjà mesurée et n'appel
 - La [documentation de trysquare](https://ai-for-dev.github.io/trysquare/), en particulier ses pages sur l'écriture d'un scénario, l'écriture d'une validation et les invariants de mesure.
 - [trysquare-starter](https://github.com/AI-for-dev/trysquare-starter), le dépôt d'exercice de cet acte.
 - [Inspect](https://inspect.aisi.org.uk/) et [Harbor](https://github.com/harbor-framework/harbor), les frameworks d'évaluation à prendre quand la question porte sur un modèle ou un agent face à un jeu de tâches, et non sur une variante de harnais.
-

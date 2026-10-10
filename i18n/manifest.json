@@ -169,12 +169,12 @@
   },
   "act3-trysquare.md": {
     "en": {
-      "unitHash": "bcfe46366a1492de2fc5ddff57935931f1f9bb63bf9d316f230aa4b51edcd6c5",
+      "unitHash": "419f482ba5a936491a8f66eeb5b5acb6229ec7a592cebd611297e25876d85374",
       "model": "pi:opencode-go/deepseek-v4.1-flash",
       "translatedAt": "2026-10-10T17:43:43.408Z"
     },
     "es": {
-      "unitHash": "bcfe46366a1492de2fc5ddff57935931f1f9bb63bf9d316f230aa4b51edcd6c5",
+      "unitHash": "419f482ba5a936491a8f66eeb5b5acb6229ec7a592cebd611297e25876d85374",
       "model": "pi:opencode-go/deepseek-v4.1-flash",
       "translatedAt": "2026-10-10T17:44:25.839Z"
     }
