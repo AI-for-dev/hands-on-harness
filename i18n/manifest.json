@@ -37,14 +37,14 @@
   },
   "act1-pi.md": {
     "en": {
-      "unitHash": "62faf8d7abab6de20cf1c54037e3179527b33a5d515057ed914ac69e105ad7d1",
-      "model": "pi:opencode-go/deepseek-v4-flash",
-      "translatedAt": "2026-09-28T14:44:29.727Z"
+      "unitHash": "5b81f59694fa1386b6b798acde5b35dd1ba68f1d17320b5d8c845fc6dd358d9d",
+      "model": "pi:ilaas/gemma-4-31b",
+      "translatedAt": "2026-10-10T17:14:01.014Z"
     },
     "es": {
-      "unitHash": "62faf8d7abab6de20cf1c54037e3179527b33a5d515057ed914ac69e105ad7d1",
-      "model": "pi:opencode-go/deepseek-v4-flash",
-      "translatedAt": "2026-09-28T14:45:11.446Z"
+      "unitHash": "5b81f59694fa1386b6b798acde5b35dd1ba68f1d17320b5d8c845fc6dd358d9d",
+      "model": "pi:ilaas/gemma-4-31b",
+      "translatedAt": "2026-10-10T17:14:01.017Z"
     }
   },
   "fil-rouge.md": {
@@ -73,26 +73,26 @@
   },
   "act2-contexte.md": {
     "en": {
-      "unitHash": "d6f3e3526b8100f4c62b4448158c44f9ad24c43be140568c0b3636c54b459488",
-      "model": "pi:opencode-go/deepseek-v4-flash",
-      "translatedAt": "2026-09-28T14:45:44.788Z"
+      "unitHash": "068d5d326f0059690d6ba25982fa0ab25363f9e8e2f0b01420515859ff09f98a",
+      "model": "pi:opencode-go/deepseek-v4.1-flash",
+      "translatedAt": "2026-10-10T17:14:58.170Z"
     },
     "es": {
-      "unitHash": "d6f3e3526b8100f4c62b4448158c44f9ad24c43be140568c0b3636c54b459488",
-      "model": "pi:opencode-go/deepseek-v4-flash",
-      "translatedAt": "2026-09-28T14:46:14.371Z"
+      "unitHash": "068d5d326f0059690d6ba25982fa0ab25363f9e8e2f0b01420515859ff09f98a",
+      "model": "pi:opencode-go/deepseek-v4.1-flash",
+      "translatedAt": "2026-10-10T17:15:04.888Z"
     }
   },
   "act2-skill.md": {
     "en": {
-      "unitHash": "51186ed18dc3aa0fd6a4d1be780bbece6100b88e589eaa73d90c4e39a8af344f",
-      "model": "pi:opencode-go/deepseek-v4-flash",
-      "translatedAt": "2026-09-28T04:31:59.543Z"
+      "unitHash": "ea6da346e23b73dd2104af0867b566a073a0032e6acdc56c34980ec85f67aa3b",
+      "model": "pi:opencode-go/deepseek-v4.1-flash",
+      "translatedAt": "2026-10-10T17:15:49.867Z"
     },
     "es": {
-      "unitHash": "51186ed18dc3aa0fd6a4d1be780bbece6100b88e589eaa73d90c4e39a8af344f",
-      "model": "pi:opencode-go/deepseek-v4-flash",
-      "translatedAt": "2026-09-28T04:32:06.124Z"
+      "unitHash": "ea6da346e23b73dd2104af0867b566a073a0032e6acdc56c34980ec85f67aa3b",
+      "model": "pi:opencode-go/deepseek-v4.1-flash",
+      "translatedAt": "2026-10-10T17:16:28.246Z"
     }
   },
   "act2-sandbox.md": {
@@ -109,14 +109,14 @@
   },
   "act2-delegation.md": {
     "en": {
-      "unitHash": "1ae7ff28559c4ae656b4f516418812f39c6a9207930de6d6341b5f6c3c8374c3",
-      "model": "pi:opencode-go/deepseek-v4-flash",
-      "translatedAt": "2026-09-28T14:47:19.274Z"
+      "unitHash": "2beef0555e219c568816e022344bd4ea76c0b6d856a471230a74cb39647b9187",
+      "model": "pi:opencode-go/deepseek-v4.1-flash",
+      "translatedAt": "2026-10-10T17:15:12.325Z"
     },
     "es": {
-      "unitHash": "1ae7ff28559c4ae656b4f516418812f39c6a9207930de6d6341b5f6c3c8374c3",
-      "model": "pi:opencode-go/deepseek-v4-flash",
-      "translatedAt": "2026-09-28T14:48:55.100Z"
+      "unitHash": "2beef0555e219c568816e022344bd4ea76c0b6d856a471230a74cb39647b9187",
+      "model": "pi:opencode-go/deepseek-v4.1-flash",
+      "translatedAt": "2026-10-10T17:15:23.286Z"
     }
   },
   "act2-workflows.md": {

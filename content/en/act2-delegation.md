@@ -224,7 +224,7 @@ If the session allows, continue to the end of the plan. The final criterion is t
 ### What isolation changes in your window
 
 ::: info Exercise (in class)
-Right after the explorer returns its note, type `/session` in the main session and note what it contains: your frame, the tool call, the note. Then open a new session without the extension and ask the model to produce the same impact note itself, by reading the repository. Compare the two `/session` outputs, then the two `\tree` outputs.
+Just after the explorer's note comes back, type `/session` in the main session and note what it contains: your frame, the tool call, the note. Then open a fresh session without the extension and ask the model to produce the same impact note itself, reading the repository. Compare the two `/session`, then the two `/tree`.
 
 In the second session, each file read stayed in the window and will stay there until the end, whereas the first one only brought the note in. Delegation pays for the exploration in a context that disappears once the task is returned, instead of paying for it at every turn in the main window. The argument is the same as for cache reading in the context module: work is paid at every turn as long as it stays in the window, and only once when it does not enter it.
 :::
@@ -232,7 +232,7 @@ In the second session, each file read stayed in the window and will stay there u
 ### Verify in the trace who ran
 
 ::: info Exercise (in class)
-Export the main session with `\export` and find each call of the `subagent` tool: the agent's name, the scope, the model, the task passed. It is the only reliable answer to the question of who ran if you have not seen your agents' activity via herdr.
+Export the main session with `/export` and find each call to the `subagent` tool: the agent name, the scope, the model, the task passed. It is the only reliable answer to the question of who ran if you have not seen your agents' activity through herdr.
 :::
 
 

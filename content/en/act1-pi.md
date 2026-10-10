@@ -95,7 +95,7 @@ You can play with it by asking questions, observing the loop and seeing how it r
     It can be useful to navigate your session and restart from one of the steps of your discussion. To do this, use the command
 
     ```
-    \tree
+    /tree
     ```
 
     ::: info Exercise (in class)
@@ -107,7 +107,7 @@ You can play with it by asking questions, observing the loop and seeing how it r
     You can restart from any previous session using the command
 
     ```
-    \resume
+    /resume
     ```
 
     ::: info Exercise (in class)
@@ -119,7 +119,7 @@ You can play with it by asking questions, observing the loop and seeing how it r
     Finally, you can export your session to HTML or JSON format via the command
 
     ```
-    \export
+    /export
     ```
 
     ::: info Exercise (in class)
