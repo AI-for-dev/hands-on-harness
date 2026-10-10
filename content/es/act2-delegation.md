@@ -135,7 +135,7 @@ El explorador entrega una nota y no una opinión, y su última sección se lo re
 
 <<<@/../scripts/agents/planner.md{md}
 
-El planificador aplica la lección del módulo sobre el contexto: un modelo tiene un presupuesto, y describir más trabajo no lo agranda. Cada paso del plan debe caber entonces en una invocación del coder, con su regla de división explícita, «si dudas, divide». Cada paso comienza por su test en rojo, y los tests van directamente a la suite, que es el corte exacto que la revisión del procedimiento del módulo anterior había tenido que hacer para vaciar sus columnas en fallo.
+El planificador aplica la lección de las [mediciones sobre el contexto](./act3-contexte): un modelo tiene un presupuesto, y describir más trabajo no lo agranda. Cada paso del plan debe caber por tanto en una invocación del coder, con su regla de corte explícita, «si dudas, divide». Cada paso empieza por su test rojo, y los tests van directamente a la suite, que es el corte exacto que la revisión del procedimiento del módulo anterior había tenido que hacer para vaciar sus columnas en fallo.
 
 <<<@/../scripts/agents/coder.md{md}
 
@@ -183,7 +183,7 @@ utilise le subagent "coder" pour la tâche "Lance `npm test` et rapporte le rés
 
 > « El subagente "coder" indica que no dispone de una herramienta que le permita ejecutar comandos shell y, por tanto, no puede lanzar npm test. »
 
-Estas dos citas son las salidas de dos ejecuciones, y las tuyas serán diferentes: un modelo reformula de una ejecución a otra, y el módulo sobre el contexto ha cuantificado esta dispersión. Lo que se repite es el fondo: el explorador enumera cuatro herramientas de lectura y el programador remite los tests al orquestador.
+Estas dos citas son las salidas de dos ejecuciones, y las tuyas serán distintas: un modelo reformula de una vez a otra, y el [módulo 3.0](./act3-trysquare) cifró esa dispersión. Lo que se reproduce es el fondo, el explorador enumerando cuatro herramientas de lectura y el coder devolviendo los tests al orquestador.
 :::
 
 ::: warning Elección del modelo
@@ -254,7 +254,7 @@ Un generador no se evalúa a sí mismo. El valor de un revisor separado proviene
 
 Un campo que no declaras se decide en otro lugar. Un agente sin `model:` se ejecuta con los ajustes actuales de la máquina, un archivo sin `tools:` obtiene el conjunto de herramientas en modo de solo lectura, un archivo sin `name` no existe. La regla se aplica más allá de los agentes: para cada campo de una configuración, pregúntate qué sucede cuando está ausente y quién decide entonces en tu lugar.
 
-La división en roles reparte el trabajo del modelo sin aumentarlo. El modelo que perdía el hilo con el ticket largo lo perderá igualmente con un plan completo pasado de una sola vez. El hecho de avanzar en pequeños pasos permite obtener un trabajo de mejor calidad. Un planner que divide en trozos demasiado grandes reproduce exactamente la pérdida de hilo que el módulo sobre el contexto midió.
+La división en roles reparte el trabajo del modelo sin aumentarlo. El modelo que perdía el hilo con el ticket largo lo perderá igual con un plan entero pasado de una sola vez. Trabajar en pequeños pasos permite obtener un trabajo de mejor calidad. Un planner que divide en trozos demasiado grandes reproduce exactamente la pérdida de hilo medida en el [módulo 3.1](./act3-contexte).
 
 Automatizar un bucle exige haberlo ejecutado a mano. Tu diario dice lo que el orquestador deberá enrutar, en qué orden y según qué criterios decidiste los retornos. Te recordamos que construir tu propio harness requiere experiencia, y es a medida que adquieres esa experiencia que irás perfeccionando tu harness para que se establezca la confianza.
 

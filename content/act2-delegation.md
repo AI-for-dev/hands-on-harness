@@ -135,7 +135,7 @@ L'explorateur rend une note et non un avis, et sa dernière section le lui rappe
 
 <<<@/../scripts/agents/planner.md{md}
 
-Le planificateur applique la leçon du module sur le contexte : un modèle a un budget, et décrire plus de travail ne l'agrandit pas. Chaque pas du plan doit donc tenir dans une invocation du coder, avec sa règle de découpe explicite, « si tu hésites, découpe ». Chaque pas commence par son test rouge, et les tests vont directement dans la suite, ce qui est la coupe exacte que la révision de la procédure du module précédent avait dû faire pour vider ses colonnes en échec.
+Le planificateur applique la leçon des [mesures sur le contexte](./act3-contexte) : un modèle a un budget, et décrire plus de travail ne l'agrandit pas. Chaque pas du plan doit donc tenir dans une invocation du coder, avec sa règle de découpe explicite, « si tu hésites, découpe ». Chaque pas commence par son test rouge, et les tests vont directement dans la suite, ce qui est la coupe exacte que la révision de la procédure du module précédent avait dû faire pour vider ses colonnes en échec.
 
 <<<@/../scripts/agents/coder.md{md}
 
@@ -183,7 +183,7 @@ utilise le subagent "coder" pour la tâche "Lance `npm test` et rapporte le rés
 
 > « Le subagent "coder" indique qu'il ne dispose pas d'un outil lui permettant d'exécuter des commandes shell, et ne peut donc pas lancer npm test. »
 
-Ces deux citations sont les sorties de deux exécutions, et les vôtres seront différentes : un modèle reformule d'une fois sur l'autre, et le module sur le contexte a chiffré cette dispersion. Ce qui se reproduit est le fond, l'explorateur énumérant quatre outils de lecture et le codeur renvoyant les tests à l'orchestrateur.
+Ces deux citations sont les sorties de deux exécutions, et les vôtres seront différentes : un modèle reformule d'une fois sur l'autre, et le [module 3.0](./act3-trysquare) a chiffré cette dispersion. Ce qui se reproduit est le fond, l'explorateur énumérant quatre outils de lecture et le codeur renvoyant les tests à l'orchestrateur.
 :::
 
 ::: warning Choix du modèle
@@ -254,7 +254,7 @@ Un générateur ne s'évalue pas lui-même. La valeur d'un relecteur séparé vi
 
 Un champ que vous ne déclarez pas est décidé ailleurs. Un agent sans `model:` tourne sur les réglages du jour de la machine, un fichier sans `tools:` obtient la panoplie en lecture seule, un fichier sans `name` n'existe pas. La règle vaut au-delà des agents : pour chaque champ d'une configuration, demandez-vous ce qui se passe quand il est absent, et qui décide alors à votre place.
 
-Le découpage en rôles répartit le travail du modèle sans l'augmenter. Le modèle qui décrochait sur le ticket long décrochera tout autant sur un plan entier passé en une fois. Le fait de faire par petits pas permet d'avoir un travail de meilleure qualité. Un planner qui découpe trop gros reproduit exactement le décrochage que le module sur le contexte a mesuré.
+Le découpage en rôles répartit le travail du modèle sans l'augmenter. Le modèle qui décrochait sur le ticket long décrochera tout autant sur un plan entier passé en une fois. Le fait de faire par petits pas permet d'avoir un travail de meilleure qualité. Un planner qui découpe trop gros reproduit exactement le décrochage mesuré au [module 3.1](./act3-contexte).
 
 Automatiser une boucle demande de l'avoir tenue à la main. Votre journal dit ce que l'orchestrateur devra router, dans quel ordre, et sur quels critères vous avez décidé des retours. Nous vous rappelons que construire son propre harnais demande de l'expérience et c'est au fur et à mesure de l'acquisition de cette expérience que vous allez peaufiner votre harnais pour qu'une confiance s'instaure.
 

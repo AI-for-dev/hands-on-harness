@@ -43,6 +43,13 @@ export const fr: LocaleSpecificConfig<DefaultTheme.Config> = {
           { text: '2.5 Les hooks', link: '/act2-hooks' }
         ]
       },
+      {
+        text: 'Acte 3 - Évaluer',
+        items: [
+          { text: '3.0 Mesurer un agent : trysquare', link: '/act3-trysquare' },
+          { text: '3.1 Les leviers du contexte, mesurés', link: '/act3-contexte' }
+        ]
+      },
       // {
       //   text: 'Acte 2 — Reconstruction (suite)',
       //   items: [
@@ -51,14 +58,6 @@ export const fr: LocaleSpecificConfig<DefaultTheme.Config> = {
       //     { text: '2.4 Les workflows', link: '/act2-workflows' },
       //     { text: '2.5 La mémoire persistante', link: '/act2-memoire' },
       //     { text: '2.6 Les permissions et la sûreté', link: '/act2-securite' }
-      //   ]
-      // },
-      // {
-      //   text: 'Acte 3 — Vérifier, évaluer, observer',
-      //   items: [
-      //     { text: '3.1 Tester les briques', link: '/act3-tester' },
-      //     { text: '3.2 Évaluer le harnais', link: '/act3-evaluer' },
-      //     { text: '3.3 Observabilité et coût', link: '/act3-observabilite' }
       //   ]
       // },
       // {
