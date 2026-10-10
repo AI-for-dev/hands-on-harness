@@ -135,7 +135,7 @@ The explorer produces a note, not an opinion, and its last section reminds it of
 
 <<<@/../scripts/agents/planner.md{md}
 
-The planner applies the lesson from the module on context: a model has a budget, and describing more work does not enlarge it. Each step of the plan must therefore fit in a single invocation of the coder, with its explicit split rule, "if you hesitate, split". Each step starts with its red test, and the tests go directly into the suite, which is exactly the cut that the review of the previous module's procedure had to make to empty its failing columns.
+The planner applies the lesson from the [measurements on context](./act3-contexte): a model has a budget, and describing more work does not enlarge it. Each step of the plan must therefore fit in one invocation of the coder, with its explicit splitting rule, "if you hesitate, split". Each step starts with its red test, and the tests go straight into the suite, which is the exact cut that the revision of the previous module's procedure had to make to empty its failing columns.
 
 <<<@/../scripts/agents/coder.md{md}
 
@@ -183,7 +183,7 @@ utilise le subagent "coder" pour la tâche "Lance `npm test` et rapporte le rés
 
 > "The subagent 'coder' indicates that it does not have a tool allowing it to execute shell commands, and therefore cannot run npm test."
 
-These two quotes are the outputs of two runs, and yours will be different: a model rephrases from one run to the next, and the context module has quantified this dispersion. What recurs is the substance: the explorer listing four read tools and the coder returning the tests to the orchestrator.
+These two quotes are the output of two runs, and yours will differ: a model reformulates from one run to the next, and [module 3.0](./act3-trysquare) quantified this dispersion. What reproduces is the substance, the explorer listing four read tools and the coder handing the tests back to the orchestrator.
 :::
 
 ::: warning Choosing the model
@@ -254,7 +254,7 @@ A generator does not evaluate itself. The value of a separate reviewer comes fro
 
 A field you do not declare is decided elsewhere. An agent without `model:` runs on whatever the machine is set to that day, a file without `tools:` gets the read-only toolkit, a file without `name` does not exist. The rule holds beyond agents: for every field of a configuration, ask yourself what happens when it is absent, and who then decides in your place.
 
-Splitting into roles distributes the model's work without increasing it. The model that lost track on the long ticket will lose track just as much on an entire plan passed in one go. Working in small steps allows for better-quality work. A planner that splits too coarsely reproduces exactly the loss of track that the context module measured.
+Splitting into roles distributes the model's work without increasing it. The model that lost the thread on the long ticket will lose it just as much on an entire plan fed in one go. Working in small steps produces better-quality work. A planner that splits too coarsely reproduces exactly the drop-off measured in [module 3.1](./act3-contexte).
 
 Automating a loop requires having run it by hand. Your journal says what the orchestrator will have to route, in what order, and on what criteria you decided to send work back. We remind you that building your own harness requires experience, and it is as you gain this experience that you will refine your harness so that trust takes hold.
 

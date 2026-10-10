@@ -73,14 +73,14 @@
   },
   "act2-contexte.md": {
     "en": {
-      "unitHash": "068d5d326f0059690d6ba25982fa0ab25363f9e8e2f0b01420515859ff09f98a",
+      "unitHash": "e3a8d3bf48a305c168503cd2bd8a6956ad59ca77d70f5c66c332775e3daef9e1",
       "model": "pi:opencode-go/deepseek-v4.1-flash",
-      "translatedAt": "2026-10-10T17:14:58.170Z"
+      "translatedAt": "2026-10-10T17:39:31.309Z"
     },
     "es": {
-      "unitHash": "068d5d326f0059690d6ba25982fa0ab25363f9e8e2f0b01420515859ff09f98a",
+      "unitHash": "e3a8d3bf48a305c168503cd2bd8a6956ad59ca77d70f5c66c332775e3daef9e1",
       "model": "pi:opencode-go/deepseek-v4.1-flash",
-      "translatedAt": "2026-10-10T17:15:04.888Z"
+      "translatedAt": "2026-10-10T17:40:47.884Z"
     }
   },
   "act2-skill.md": {
@@ -109,14 +109,14 @@
   },
   "act2-delegation.md": {
     "en": {
-      "unitHash": "2beef0555e219c568816e022344bd4ea76c0b6d856a471230a74cb39647b9187",
+      "unitHash": "9435bbbd6a27dbbef286d0170428cae81f1f1c7c9fa52074ccedbd65113bd71d",
       "model": "pi:opencode-go/deepseek-v4.1-flash",
-      "translatedAt": "2026-10-10T17:15:12.325Z"
+      "translatedAt": "2026-10-10T17:40:59.027Z"
     },
     "es": {
-      "unitHash": "2beef0555e219c568816e022344bd4ea76c0b6d856a471230a74cb39647b9187",
+      "unitHash": "9435bbbd6a27dbbef286d0170428cae81f1f1c7c9fa52074ccedbd65113bd71d",
       "model": "pi:opencode-go/deepseek-v4.1-flash",
-      "translatedAt": "2026-10-10T17:15:23.286Z"
+      "translatedAt": "2026-10-10T17:41:16.432Z"
     }
   },
   "act2-workflows.md": {
@@ -153,6 +153,30 @@
       "unitHash": "e5a4c494115dcc63667957d86653327ccf8a4cd514c60d246d283b965a0289f0",
       "model": "pi:opencode-go/deepseek-v4-flash",
       "translatedAt": "2026-10-07T18:04:06.867Z"
+    }
+  },
+  "act3-contexte.md": {
+    "en": {
+      "unitHash": "506bd0d18928da68d7d2a89f6f2711bcc1abc8639d327a1ec09513bf1eabebd9",
+      "model": "pi:opencode-go/deepseek-v4.1-flash",
+      "translatedAt": "2026-10-10T17:42:25.995Z"
+    },
+    "es": {
+      "unitHash": "506bd0d18928da68d7d2a89f6f2711bcc1abc8639d327a1ec09513bf1eabebd9",
+      "model": "pi:opencode-go/deepseek-v4.1-flash",
+      "translatedAt": "2026-10-10T17:43:24.587Z"
+    }
+  },
+  "act3-trysquare.md": {
+    "en": {
+      "unitHash": "419f482ba5a936491a8f66eeb5b5acb6229ec7a592cebd611297e25876d85374",
+      "model": "pi:opencode-go/deepseek-v4.1-flash",
+      "translatedAt": "2026-10-10T17:43:43.408Z"
+    },
+    "es": {
+      "unitHash": "419f482ba5a936491a8f66eeb5b5acb6229ec7a592cebd611297e25876d85374",
+      "model": "pi:opencode-go/deepseek-v4.1-flash",
+      "translatedAt": "2026-10-10T17:44:25.839Z"
     }
   }
 }

@@ -39,6 +39,13 @@ export const es: LocaleSpecificConfig<DefaultTheme.Config> = {
           { text: '2.4 Los flujos de trabajo', link: '/es/act2-workflows' },
           { text: '2.5 Los hooks', link: '/es/act2-hooks' }
         ]
+      },
+      {
+        text: 'Acto 3 - Evaluar',
+        items: [
+          { text: '3.0 Medir un agente: trysquare', link: '/es/act3-trysquare' },
+          { text: '3.1 Las palancas del contexto, medidas', link: '/es/act3-contexte' }
+        ]
       }
     ],
     outline: { level: [2, 3], label: 'En esta página' },

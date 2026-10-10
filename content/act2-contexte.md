@@ -1,10 +1,9 @@
-# Le contexte et la fenêtre : ce qu'on y met, ce que ça coûte
+# Le contexte et la fenêtre principale
 
 ::: tip Objectifs de ce module
 - Savoir dire ce qu'il y a réellement dans la fenêtre de contexte, et ce que chaque partie coûte
-- Manipuler les leviers qui la remplissent : modèle, effort de raisonnement, prompt, `AGENTS.md`, prompt système
-- Monter un dispositif de mesure reproductible et s'en servir pour trancher
-- Repartir avec un `AGENTS.md` court et une décision motivée sur chaque levier
+- Manipuler les leviers qui la remplissent : modèle, effort de raisonnement, prompt, `AGENTS.md`, prompt système, `codemode`
+- Savoir construire et faire évoluer son `AGENTS.md`
 :::
 
 La gestion du contexte est la brique dont dépendent toutes les autres, puisqu'un sous-agent sert à ne pas polluer le contexte principal, une mémoire à ne pas le remplir de ce qu'on saurait retrouver, et une permission à ne pas y déverser un fichier qu'on n'aurait pas dû lire. Il faut donc commencer par savoir ce que contient la fenêtre et comment elle est alimentée au fil du temps. Les modules suivants présenteront des outils qui interviendront dans le processus de remplissage du contexte.
@@ -25,7 +24,7 @@ Quand vous tapez une question dans Pi, le modèle reçoit un empilement dont vot
 2. les **fichiers de contexte**, `AGENTS.md` et `CLAUDE.md`, chargés depuis votre répertoire personnel, puis depuis chaque répertoire parent en remontant, puis depuis le répertoire courant ;
 3. les **descriptions des outils**, en JSON, une par outil disponible ;
 4. **votre question** ;
-5. et, à mesure que la boucle tourne, l'**historique**, c'est-à-dire chaque réponse du modèle dont la phase de raisonnement, chaque appel d'outil et chaque sortie d'outil.
+5. et, à mesure que la boucle tourne, l'**historique**, c'est-à-dire chaque réponse du modèle, y compris la phase de raisonnement, chaque appel d'outil et chaque sortie d'outil.
 
 Les quatre premières sources sont stables d'un tour à l'autre, alors que la cinquième grossit à chaque tour, ce qui en fait presque toujours la responsable des débordements.
 
@@ -46,7 +45,7 @@ Un appel au modèle se facture en trois postes, exprimés au million de tokens. 
 | `deepseek-v4-flash` | 0,14 $ | 0,28 $ | 0,0028 $         |
 | `deepseek-v4-pro`   | 1,74 $ | 3,48 $ | 0,0145 $         |
 
-Ces tarifs sont ceux publiés par [opencode Zen](https://opencode.ai/docs/zen/). Nos mesures plus bas tournent sur ILaaS, qui ne facture rien aux participants de cette formation, et comptent donc des tokens plutôt que des euros. Les deux se lisent de la même façon, à ceci près qu'un compteur de tokens ne vous prévient pas quand vous dépensez.
+Ces tarifs sont ceux publiés par [opencode Zen](https://opencode.ai/docs/zen/). Les mesures de l'[acte 3](./act3-trysquare) tournent sur ILaaS, qui ne facture rien aux participants de cette formation, et comptent donc des tokens plutôt que des euros. Les deux se lisent de la même façon, à ceci près qu'un compteur de tokens ne vous prévient pas quand vous dépensez.
 
 Deux écarts en ressortent. Le premier sépare les deux modèles, puisque le `pro` coûte 12,4 fois plus cher que le `flash` à tarif nominal. C'est une première manière de se rendre compte qu'un modèle possède plus de capacités qu'un autre. Le second écart, bien plus large, sépare l'entrée de la lecture de cache : un facteur **50** sur `flash` et **120** sur `pro`.
 
@@ -101,9 +100,9 @@ Retenez aussi que changer de modèle en cours de session n'est pas gratuit, ce q
 
 ## Reconstruire
 
-### La tâche, et ce qui compte comme réussite
+### La tâche
 
-Toutes les mesures de ce module portent sur la même tâche, l'**issue #1** de NÉON : la balle traverse les briques au lieu de rebondir.
+Toutes les manipulations de ce module portent sur la même tâche, l'**issue #1** de NÉON : la balle traverse les briques au lieu de rebondir.
 
 Le ticket est décrit dans `ISSUES.md`, à la racine du [dépôt NÉON](https://github.com/AI-for-dev/neon) : la balle passe à travers les briques, et le ticket détaille les comportements attendus après correction. Nous pourrions le donner directement à l'agent, mais nous ne le ferons pas pour le moment : nous voulons d'abord voir comment il se comporte selon le prompt qu'on lui fournit et le cadre qui l'entoure.
 
@@ -115,25 +114,9 @@ En plus de la correction du bug, nous souhaitons commencer à définir un cadre 
 - L'agent doit lancer les tests pour vérifier qu'il n'a rien cassé.
 - L'agent doit ajouter des tests si la couverture n'est pas bonne. C'est notre cas ici : il n'y a pas de tests qui vérifient le comportement de la balle avec la brique.
 
-Voici ce que nous proposons de mesurer sur chaque exécution :
+La première contrainte est trop forte dans un cadre général. L'idée ici est surtout de voir comment se comporte le modèle et s'il respecte cette contrainte écrite.
 
-| métrique             | ce qu'elle dit                                                                                |
-| -------------------- | --------------------------------------------------------------------------------------------- |
-| `delivered`          | l'agent a modifié au moins un fichier                                                         |
-| `in_scope`           | il n'a touché que `game/neon.js` et `game/neon.test.js`                                       |
-| `suite_lancee`       | il a lancé `npm test` lui-même, lu dans sa session                                            |
-| `tests_ajoutes`      | la suite compte plus de cas qu'à l'étalon                                                     |
-| **`rebond_briques`** | **le critère** : sur chacune des quatre faces, l'axe touché s'inverse et l'autre ne bouge pas |
-| `rebond_angles`      | dans le coin, les deux composantes s'inversent                                                |
-| `rebond_sortie`      | après le rebond, la balle est ressortie du rectangle de la brique                             |
-| `rebond_voisines`    | sur une couture de la grille, le rebond s'applique une fois et pas deux                       |
-| `rebond_traversee`   | une balle rapide ne franchit plus la brique sans la toucher                                   |
-
-Nous testons l'ensemble de ces points de manière déterministe, sans LLM-as-a-judge : les tests qu'il faudrait avoir sont écrits dans un fichier sonde. Un test exécutable est plus sûr qu'un LLM chargé de confirmer un comportement souhaité, dont le verdict probabiliste peut vous faire croire que c'est bon alors que ça ne l'est pas.
-
-::: warning Chaque exécution travaille sur un clone jeté
-Si le dispositif travaillait directement dans l'arbre de travail, chaque exécution modifierait le dépôt et la suivante mesurerait ces modifications plutôt que la configuration. L'outil que nous utilisons plus bas clone donc NÉON **à un tag**, `etalon-v1`, dans un répertoire temporaire, à chaque exécution.
-:::
+Ce module vous fait manipuler les leviers à la main, sur une ou deux exécutions, pour voir ce que chacun change dans la session et dans le diff. Le [module 3.1](./act3-contexte) reprend la même tâche et les mêmes leviers avec vingt répétitions par configuration, ce qui permet de dire lesquels changent réellement le résultat.
 
 ### Les curseurs, à la main
 
@@ -153,7 +136,7 @@ git clone --branch etalon-v1 git@github.com:AI-for-dev/neon.git neon-model-yyy
 
 puis travaillez dans le répertoire correspondant au modèle testé.
 
-Lisez les deux diffs, puis les deux `/session`. Notez vos observations sans en tirer de conclusion : la section sur les répétitions expliquera pourquoi deux exécutions ne suffisent pas à départager deux modèles.
+Lisez les deux diffs, puis les deux `/session`. Notez vos observations sans en tirer de conclusion : le [module 3.0](./act3-trysquare) explique pourquoi deux exécutions ne suffisent pas à départager deux modèles.
 :::
 
 #### L'effort de raisonnement
@@ -168,7 +151,7 @@ Pour ce modèle, il n'y a que deux modes : le thinking `on` ou `off`.
 Refaites la comparaison entre deux niveaux réellement distincts sur votre modèle, par exemple `off` et `high`, et mesurez l'écart.
 :::
 
-Le raisonnement a bien un effet quand on le mesure entre deux niveaux réels, et nos mesures plus bas en donneront la taille. La leçon générale porte plutôt sur la confiance à accorder aux réglages : **un réglage exposé par le harnais n'est pas forcément transmis au modèle**, parce qu'entre la configuration que vous tapez et la requête qui part se trouve une table de correspondance écrite par quelqu'un, qui peut être incomplète. Vous rencontrerez cette situation plusieurs fois dans la formation, et régulièrement dans votre travail. Prenez l'habitude de chercher où atterrit une configuration ou un flag avant de lui faire confiance.
+Le raisonnement a bien un effet quand on le mesure entre deux niveaux réels. La leçon générale porte plutôt sur la confiance à accorder aux réglages : **un réglage exposé par le harnais n'est pas forcément transmis au modèle**, parce qu'entre la configuration que vous tapez et la requête qui part sur le serveur d'inférence se trouve une table de correspondance écrite par quelqu'un, qui peut être incomplète. Vous rencontrerez cette situation plusieurs fois dans la formation, et régulièrement dans votre travail. Prenez l'habitude de chercher où atterrit une configuration ou un flag avant de lui faire confiance.
 
 ### Ce qu'on écrit
 
@@ -186,21 +169,21 @@ Cette contrainte vous oblige à faire le travail de refactoring continu décrit 
 
 Nous pouvons également nous appuyer sur d'autres fichiers et le dire dans `AGENTS.md`, pour que l'agent aille les lire au besoin. Par exemple, nous pouvons lui indiquer que les conventions sont dans `CONTRIBUTING.md`, l'architecture dans le `README.md` et l'historique dans git.
 
-Sur nos vingt exécutions de l'issue #1 avec la demande négligée, **aucune n'a lancé la suite de tests** et **aucune n'a ajouté un cas**.
+Sur les vingt exécutions de l'issue #1 avec la demande négligée que mesure le [module 3.1](./act3-contexte), **aucune n'a lancé la suite de tests** et **aucune n'a ajouté un cas**.
 
 ::: info Exercice (en salle)
 Écrivez l'`AGENTS.md` de NÉON en partant de vos propres exécutions plutôt que des nôtres : relisez les diffs que vous venez de produire et cherchez ce que l'agent a fait sans qu'on le lui demande, ou omis alors qu'on le lui demandait. Faites en sorte qu'il lance les tests à chaque fois qu'il modifie le code et qu'il en ajoute s'il n'y a pas de couverture.
 
-Voici la base de départ, à discuter et à amender. C'est le fichier même que nos mesures utilisent, et il est versionné dans les expériences plus bas :
+Voici la base de départ, à discuter et à amender. C'est le fichier même que les mesures du [module 3.1](./act3-contexte) utilisent, versionné avec l'expérience :
 
 <<<@/../scripts/trysquare-campaign/briques/AGENTS.md{md}
 
 :::
 
 ::: warning Un `AGENTS.md` peut en cacher un autre
-Pi charge ces fichiers en cumulé, à partir de votre `~/.pi/agent/AGENTS.md` personnel, puis de chaque répertoire parent en remontant, puis du répertoire courant. Un fichier de règles personnel s'invite donc dans toutes vos mesures sans que vous en soyez informé.
+Pi cumule ces fichiers, à partir de votre `~/.pi/agent/AGENTS.md` personnel, puis de chaque répertoire parent en remontant, puis du répertoire courant. Un fichier de règles personnel s'invite donc dans toutes vos mesures sans que vous en soyez informé.
 
-Le drapeau `--no-context-files`, abrégé `-nc`, désactive cette découverte, ce qui est indispensable pour mesurer proprement. L'outil de mesure plus bas travaille dans un clone jetable où seul le fichier `AGENTS.md` du répertoire courant (NÉON) est déposé.
+Le drapeau `--no-context-files`, abrégé `-nc`, désactive cette découverte, ce qui est indispensable pour mesurer proprement. L'outil de mesure de l'acte 3 travaille dans un clone jetable où seul le fichier `AGENTS.md` du répertoire courant (NÉON) est déposé.
 :::
 
 #### Le prompt système
@@ -208,13 +191,12 @@ Le drapeau `--no-context-files`, abrégé `-nc`, désactive cette découverte, c
 Pi permet de remplacer entièrement son prompt système par un `.pi/SYSTEM.md` à la racine du projet ou un `~/.pi/agent/SYSTEM.md` global. L'option `--system-prompt` obéit à une règle légèrement différente, puisque les fichiers de contexte et les skills continuent d'être ajoutés par-dessus, si bien qu'on ne repart jamais tout à fait d'une page blanche.
 
 ::: info Exercice (en autonomie)
-Créez un `.pi/SYSTEM.md` de trois lignes. C'est la brique que nos mesures déposent dans le clone pour la configuration `-system_prompt` :
+Créez un `.pi/SYSTEM.md` de trois lignes. C'est la brique que les mesures du [module 3.1](./act3-contexte) déposent dans le clone pour la configuration `-system_prompt` :
 
 <<<@/../scripts/trysquare-campaign/briques/SYSTEM-minimal.md
 
 Relancez la même tâche et comparez les tokens d'entrée, les tours, la durée, et ce que le diff contient.
 :::
-
 
 Le prompt système de Pi tient en 550 tokens. Tout le reste du travail se joue ailleurs et nous vous encourageons à ne le modifier que pour de bonnes raisons. Nous vous le montrons ici pour illustrer la flexibilité qu'offre Pi.
 
@@ -225,421 +207,155 @@ Quand le contexte approche de la limite, Pi compacte, c'est-à-dire qu'il résum
 Sur NÉON, selon le modèle, la compaction ne se déclenchera jamais. Le dépôt fait 617 lignes, `gemma-4-31b` annonce une fenêtre d'environ 128 000 tokens, ce qui place le seuil aux alentours de 112 000, et notre expérience la plus dépensière n'atteint ce total qu'en cumulant treize tours dont aucun ne pèse plus d'une dizaine de milliers de tokens. Observer le mécanisme suppose donc de fabriquer la contrainte pour voir ses effets plus rapidement.
 
 ::: info Exercice (en autonomie)
-Déclarez dans `~/.pi/agent/models.json` une seconde entrée, pointant sur le même service, mais annonçant une fenêtre de 32 000 tokens :
+Déclarez dans `~/.pi/agent/models.json` un second fournisseur, `ilaas-bride`, qui pointe sur le même service mais annonce une fenêtre de 32 000 tokens. Ajoutez-le dans `providers`, à côté du fournisseur `ilaas` que vous avez déclaré en [installant Pi](./act1-pi), sans toucher à celui-ci :
+
+```jsonc
+// à ajouter dans "providers", à côté de "ilaas"
+"ilaas-bride": {
+  "baseUrl": "https://llm.ilaas.fr/v1",
+  "api": "openai-completions",
+  "apiKey": "XXXXX",
+  "models": [
+    {
+      "id": "gemma-4-31b",
+      "name": "Gemma 4 31B (fenêtre bridée)",
+      "reasoning": true,
+      "contextWindow": 32000,
+      "maxTokens": 8000
+    }
+  ]
+}
+```
+
+Un second fournisseur est nécessaire parce que Pi identifie un modèle par son fournisseur et son `id`. Une entrée qui reprend le même `id` chez le même fournisseur remplace la première au lieu de s'y ajouter, et l'`id` ne peut pas changer puisque c'est lui que Pi envoie au service.
+
+Ajoutez dans le `.pi/settings.json` de NÉON des seuils cohérents avec cette petite fenêtre, réservés au modèle bridé :
 
 ```json
 {
-  "providers": {
-    "ilaas": {
-      "baseUrl": "https://llm.ilaas.fr/v1",
-      "api": "openai-completions",
-      "apiKey": "XXXXX",
-      "models": [
-        {
-          "id": "gemma-4-31b",
-          "name": "Gemma 4 31B (fenêtre bridée)",
-          "reasoning": true,
-          "contextWindow": 32000,
-          "maxTokens": 8000,
-          "cost": {
-            "input": 0.14, "output": 0.28,
-            "cacheRead": 0.0028, "cacheWrite": 0
-          }
-        }
-      ]
+  "compaction": {
+    "modelOverrides": {
+      "ilaas-bride/gemma-4-31b": { "reserveTokens": 8000, "keepRecentTokens": 8000 }
     }
   }
 }
 ```
 
-Ajoutez dans le `.pi/settings.json` de NÉON des seuils cohérents avec cette petite fenêtre :
+La compaction se déclenche alors au-delà de 24 000 tokens (32 000 moins 8 000) et garde intacts les 8 000 derniers tokens. `reserveTokens` vaut le `maxTokens` déclaré, pour que la place réservée corresponde à la plus longue réponse permise. La clé `ilaas-bride/gemma-4-31b` limite ces réglages au modèle bridé, et le modèle à 128K garde les valeurs par défaut. Pi ne lit ce fichier que si vous faites confiance au projet : acceptez la question qu'il pose au lancement, ou tapez `/trust`. En mode `pi -p`, où il ne peut pas poser la question, il ignore le fichier sans prévenir.
 
-```json
-{ "compaction": { "reserveTokens": 4000, "keepRecentTokens": 8000 } }
-```
-
-Vous disposez alors des deux régimes dans `/model`, le modèle réel à 128K et le même bridé à 32K. Faites travailler l'agent sur plusieurs fichiers avec le second jusqu'au déclenchement, lisez le résumé produit, puis vérifiez dans `/tree` où la coupure a eu lieu et si l'agent sait encore ce qu'on lui avait demandé au départ.
+Vous disposez alors des deux régimes dans `/model`, `ilaas/gemma-4-31b` à 128K et `ilaas-bride/gemma-4-31b` bridé à 32K. Faites travailler l'agent sur plusieurs fichiers avec le second jusqu'au déclenchement, lisez le résumé produit, puis vérifiez dans `/tree` où la coupure a eu lieu et si l'agent sait encore ce qu'on lui avait demandé au départ.
 :::
 
-Cette manipulation montre également que Pi compacte à 32 000 tokens non pas parce que le modèle sature, mais parce que vous le lui avez déclaré. La fenêtre que connaît un harnais est une ligne de configuration et non une propriété du modèle. Ce constat vous servira le jour où un agent se mettra à compacter trop tôt sans raison apparente.
+Cette manipulation montre également que Pi compacte vers 24 000 tokens non pas parce que le modèle sature, mais parce que vous lui avez déclaré une fenêtre de 32 000. La fenêtre que connaît un harnais est une ligne de configuration et non une propriété du modèle. Ce constat vous servira le jour où un agent se mettra à compacter trop tôt sans raison apparente.
 
-### Une expérience plus complète
+### Que faire quand les sorties d'outils remplissent la fenêtre ?
 
-#### Le dispositif
+La cinquième source de la fenêtre, l'historique, grossit surtout par les sorties d'outils. Quand l'agent lit dix fichiers pour trouver la fonction qui l'intéresse, ou lance un `grep` qui rend trois cents lignes pour en garder deux, tout ce qu'il a lu reste dans le contexte et se relit à chaque tour jusqu'à la fin de la session, y compris ce qui ne lui a servi à rien. La compaction ne traite ce problème qu'après coup, en résumant ce qui a été utile.
 
-Nous étudions maintenant plus finement l'influence des différentes parties du contexte, en exécutant chaque configuration plusieurs fois pour tenir compte de la dispersion des résultats.
+À son lancement, Pi n'avait pas d'outil pour appeler un serveur MCP, parce que son auteur estimait que ces serveurs remplissaient trop facilement la fenêtre de contexte. Le discours a évolué avec la version 1.0, notamment avec l'arrivée de `codemode`, qui simplifie l'utilisation des MCP et réduit leur poids dans la fenêtre ([You Said No MCP!](https://earendil.com/posts/you-said-no-mcp/)).
 
-Pour ce faire, nous allons utiliser [trysquare](https://github.com/AI-for-dev/trysquare), un outil écrit en Python et spécialement conçu pour cette formation. Il lance les configurations d'un scénario, note chaque exécution, agrège, et offre une synthèse des résultats. Il ne sait rien de NÉON, rien de l'issue #1, rien de cette formation.
+Au lieu d'appeler les outils un par un et de recevoir chaque résultat dans la fenêtre, `codemode` permet au modèle d'écrire un programme qui fait les appels, filtre et combine les résultats, et seule la sortie du programme revient dans le contexte. [Cloudflare](https://blog.cloudflare.com/code-mode-mcp/) et [Anthropic](https://www.anthropic.com/engineering/code-execution-with-mcp) ont décrit cette approche fin 2025 pour les serveurs MCP qui exposent des centaines d'outils. Leurs chiffres, comme les 150 000 tokens ramenés à 2 000 qu'annonce Anthropic, décrivent le meilleur cas, un workflow qui fait transiter de gros volumes de données entre deux services. Mario Zechner, l'auteur de Pi, défendait la même idée dans [What if you don't need MCP at all?](https://mariozechner.at/posts/2025-11-02-what-if-you-dont-need-mcp/) : un agent qui dispose de `bash` et sait écrire du code n'a pas besoin de faire passer chaque résultat intermédiaire par son contexte.
 
-`scripts/trysquare-campaign/` est le répertoire contenant l'expérience. En voici le contenu :
+Pi propose ce mode depuis sa version 1.0 sous la forme d'un outil, [`codemode`](https://github.com/earendil-works/pi/blob/main/packages/coding-agent/docs/codemode.md), livré avec Pi mais inactif par défaut. On l'ajoute aux outils de base pour une session avec `pi --tools +codemode`, ou pour un projet avec `"defaultTools": ["+codemode"]` dans `.pi/settings.json`. Le modèle écrit alors un script JavaScript qui appelle les autres outils (`tools.read(...)`, `tools.bash(...)`, les outils des serveurs MCP) et rend ce qu'il juge utile avec `text()` ou `return`. Le script tourne dans un bac à sable [QuickJS](https://bellard.org/quickjs/), sans accès au réseau ni au système de fichiers autrement que par les outils, et sa sortie est plafonnée à 10 000 tokens par défaut : au-delà, Pi garde le début et la fin et écrit le texte complet dans un fichier temporaire dont il donne le chemin.
 
-```
-scripts/trysquare-campaign/
-  trysquare.toml     chemins machine : où est NÉON, où vivent les clones jetables
-  scenarios/         une expérience = un fichier TOML autonome
-  hypotheses/        ce qui est prédit, écrit avant de mesurer
-  briques/           tickets, AGENTS.md, prompt système, compétences : le matériau
-  validateurs/       ce qui note
-  results/           une matrice par répertoire
-```
+Ce levier a un coût fixe, celui de la description de l'outil, qui entre dans le préfixe stable à chaque tour. Le journal des modifications de Pi 1.0 indique qu'une requête GPT-5.6 avec les outils par défaut et `codemode` actif est passée d'environ 5 300 à 3 300 tokens après un allègement de cette description, ce qui donne l'ordre de grandeur à amortir. Sur une tâche qui lit peu, comme l'issue #1 de NÉON (un fichier source de quelques centaines de lignes et quatre outils), il y a donc de bonnes chances que `codemode` augmente les tokens d'entrée au lieu de les réduire. Il devient intéressant quand les sorties sont volumineuses et que l'essentiel peut être filtré dans le script : chercher un motif dans tout un dépôt, agréger la sortie d'une suite de tests, interroger un serveur MCP qui renvoie des documents entiers.
 
-Nous ne rentrerons pas dans les détails de conception et d'usage, pour lesquels vous pouvez vous reporter à la [documentation](https://ai-for-dev.github.io/trysquare/). Retenez pour cette formation que le répertoire `scenarios/` décrit les expériences : chaque fichier déclare le modèle utilisé (au sens où Pi le nomme), le nombre de répétitions, les configurations de l'expérience et les tests de validation.
+::: warning Ce que `codemode` ne change pas
+Les appels d'outils faits depuis un script sont réels : un `tools.bash(...)` ou un `tools.edit(...)` modifie le dépôt exactement comme s'il avait été appelé directement, et un script qui échoue en cours de route n'annule pas les appels déjà faits. Le bac à sable QuickJS isole le script et non les outils qu'il appelle, et le [module 2.0](./act2-sandbox) reste ce qui borne ce que l'agent peut toucher.
 
-#### Le plan d'expérience
+Activez-le aussi en début de session plutôt qu'en cours de route : la liste des outils fait partie du préfixe mis en cache, et la modifier fait repayer tout ce qui suit au tarif plein, comme un changement de modèle.
+:::
 
-Le plan retenu est le plus simple qui reste lisible : une **base**, puis un ensemble de variantes qui changent chacune peu de chose.
-
-La base, appelée `nothing`, reproduit ce que fait quelqu'un le premier jour : la demande négligée fournie plus haut lors de vos premiers essais, pas de fichier de règles, le prompt système de l'agent et le raisonnement coupé. Chaque autre configuration ajoute un élément pour en voir l'effet sur la réponse.
-
-| configuration                    | ce qui change                                                      |
-| -------------------------------- | ------------------------------------------------------------------ |
-| `nothing`                        | rien, c'est la référence                                           |
-| `+thinking`                      | `thinking = "high"`                                                |
-| `+agents`                        | `brick/AGENTS.md` est déposé dans le clone                         |
-| `+well_crafted`                  | le prompt décrit proprement le problème et se réfère à `ISSUES.md` |
-| `-system_prompt`                 | le prompt système est remplacé par trois lignes                    |
-| `+agents+well_crafted`           | `AGENTS.md` + prompt bien écrit                                    |
-| `+agents+add_tests+well_crafted` | on ajoute en plus ici les tests que l'on souhaite voir passer      |
-
-Une expérience tient dans un fichier : `scripts/trysquare-campaign/scenarios/issue1-contexte.toml`.
-
-<!-- <<<@/../scripts/trysquare-campaign/scenarios/issue1-contexte.toml{toml} -->
-
-Le répertoire de l'expérience contient d'autres configurations que celles du tableau ci-dessus ; elles appartiennent à d'autres modules, et nous en discuterons plus tard.
-
-Le prompt bien écrit ne recopie pas le contenu du ticket. `ISSUES.md` décrit déjà comment corriger le bug, dans le dépôt que l'agent a sous la main. Le prompt nomme donc l'issue, le périmètre et le critère d'arrêt, et rien de plus :
-
-<<<@/../scripts/trysquare-campaign/briques/issue1-well-crafted-prompt.md
-
-Cette configuration mesure donc si pointer un document écrit suffit à ce que l'agent aille le lire et en tienne compte. Si le prompt recopiait la solution, nous mesurerions uniquement la capacité de l'agent à suivre une consigne qu'on vient de lui donner.
-
-#### Les tests de validation
-
-Pour juger la qualité des résultats, le scénario déclare des tests de validation :
-
-- **delivered** : l'exécution est allée au bout, sans interruption.
-- **suite_lancee** : l'agent a pensé à lancer les tests qui se trouvent dans le répertoire `game`.
-- **in_scope** : l'agent n'a modifié que les fichiers qu'on lui a demandé de modifier, et seulement les lignes qui correspondent au problème.
-- **tests_ajoutes** : l'agent a pensé à ajouter des tests sur les rebonds de la balle contre les briques.
-- **`sonde.test.js`** : à la fin de l'exécution, cette sonde vérifie que les modifications du code corrigent le problème dans sa globalité, tel que décrit dans `ISSUES.md`. Elle est aussi déposée dès le départ dans la configuration `+add_tests`, pour voir si l'agent est en mesure de réparer ses erreurs en fonction des tests.
-
-#### Les traces
-
-L'expérience sauvegarde des traces qui permettent d'analyser après coup ce qui s'est passé. Pour chaque run, vous avez accès à :
-
-- un export de la session Pi au format JSONL, qu'il est possible de repasser au format HTML (nous en parlerons un peu plus tard) ;
-- un répertoire `validation` qui donne l'état des tests de validation ;
-- un fichier `configuration.json` qui rappelle le cadre du run (modèle, harnais, tests...) ;
-- un patch (`diff.patch`) qui dit ce qui a été modifié dans le code de NÉON pendant le run.
-
-À la fin de l'expérience, une synthèse aux formats HTML et Markdown donne les réussites des validations pour chaque configuration, ainsi que des moyennes sur les coûts en tokens et la durée des runs.
-
-#### Combien de répétitions, et pourquoi
-
-Chaque configuration est exécutée plusieurs fois et la raison se voit déjà très bien sur la configuration de base.
-
-Voici les six premières exécutions de `nothing`, strictement identiques dans leur configuration : même modèle, même effort, même prompt, même dépôt au même commit.
-
-| exécution       | 1      | 2      | 3      | 4       | 5      | 6       |
-| --------------- | ------ | ------ | ------ | ------- | ------ | ------- |
-| tokens d'entrée | 13 126 | 16 035 | 13 060 | 13 144  | 14 771 | 13 188  |
-| tours           | 4      | 5      | 4      | 4       | 5      | 4       |
-| durée           | 16 s   | 38 s   | 50 s   | 31 s    | 20 s   | 9 s     |
-| critère atteint | oui    | oui    | oui    | **non** | oui    | **non** |
-
-Le coût varie de moins d'un quart, le nombre de tours prend deux valeurs, et la réponse change une fois sur trois. Une exécution unique de cette configuration vous aurait donné, selon le tirage, « la base corrige le bug » ou « la base ne le corrige pas ».
-
-La configuration la mieux outillée déplace sa dispersion sur le coût plutôt que sur la réponse. Sur `+agents+add_tests+well_crafted`, les tokens d'entrée vont de 42 731 à 2 420 677, soit une étendue de **×57**, et trois exécutions consécutives donnent 2 420 677, 2 147 526 puis 594 786.
-
-Face à cette dispersion, trysquare ne publie jamais un chiffre seul. Deux notions suffisent pour lire ses tables.
-
-**Un point est un point de pourcentage de réussite.** `+agents+add_tests+well_crafted` atteint le critère 18 fois sur 20, soit 90 %, et `nothing` 11 fois sur 20, soit 55 % : l'écart vaut **+35 points**. Seules les exécutions valides comptent, celles qui n'ont rien livré étant retirées des deux côtés, ce qui explique qu'un dénominateur puisse être inférieur au nombre de répétitions.
-
-Les exécutions sont tirées aléatoirement, de sorte qu'on ne joue pas une expérience vingt fois d'affilée, mais de manière répartie.
-
-Lire un écart revient alors à poser une seule question : **cet intervalle contient-il zéro ?** S'il ne le contient pas, l'écart est marqué `*` et il est **établi**. S'il le contient, il est marqué `o` et n'est **pas concluant**, quelle que soit la valeur au centre.
-
-Les deux cas sont dans la matrice. Les +35 points ci-dessus viennent avec un intervalle de +10 à +60, donc le gain est certainement positif sans qu'on puisse dire s'il vaut dix points ou soixante. La configuration `+well_crafted` affiche +17 points sur ce même critère, mais son intervalle contient zéro : ces exécutions restent compatibles avec un levier qui aide comme avec un levier qui nuit.
-
-Les `o` sont tout de même affichés dans les tables, avec un rappel sous chacune d'elles : aucune conclusion ne peut s'appuyer sur un écart marqué `o`.
-
-Le nombre de répétitions reste un paramètre, parce que le bon choix dépend de ce que vous cherchez. **Trois suffisent à voir la dispersion**, ce qui est l'objectif en salle. **Départager deux leviers proches en demande beaucoup plus**, et les colonnes qui comptent des succès sont les plus gourmandes : un 2/3 contre 3/3 ne veut à peu près rien dire, là où un 8/20 contre 20/20 se défend. Les tableaux publiés plus bas sont à vingt répétitions pour cette raison.
-
-::: info Exercice (en salle, puis en autonomie)
-Vous devez avoir [uv](https://docs.astral.sh/uv/getting-started/installation/) installé sur votre machine pour pouvoir continuer.
-
-Nous avons extrait l'expérience dans un dépôt dédié en dehors des supports de formation : [trysquare-starter](https://github.com/AI-for-dev/trysquare-starter).
+::: info Exercice (en autonomie)
+Dans un clone de NÉON, posez deux fois la même question qui oblige à parcourir le dépôt, une fois avec les outils par défaut et une fois avec `--tools +codemode`, par exemple :
 
 ```bash
-git clone https://github.com/AI-for-dev/trysquare-starter
-cd trysquare-starter
-uv sync
+pi -p -nc --session-dir ./runs/without-codemode --provider opencode-go --model deepseek-v4-flash \
+  "Pour chaque fichier de game/, \
+   donne le nombre de lignes, la liste des imports, \
+   la liste des fonctions exportées avec leur ligne, et les fonctions exportées \
+   qui ne sont utilisées dans aucun autre fichier de game/." < /dev/null
+
+pi -p -nc --session-dir ./runs/with-codemode --tools +codemode --provider opencode-go --model deepseek-v4-flash \
+  "Pour chaque fichier de game/, \
+   donne le nombre de lignes, la liste des imports, \
+   la liste des fonctions exportées avec leur ligne, et les fonctions exportées \
+   qui ne sont utilisées dans aucun autre fichier de game/." < /dev/null
+
+pi -p -nc --session-dir ./runs/with-codemode --tools +codemode --provider opencode-go --model deepseek-v4-flash \
+  "Utilise l'outil codemode. Pour chaque fichier de game/, \
+   donne le nombre de lignes, la liste des imports, \
+   la liste des fonctions exportées avec leur ligne, et les fonctions exportées \
+   qui ne sont utilisées dans aucun autre fichier de game/." < /dev/null
+
+pi -p -nc --session-dir ./runs/with-codemode --tools +codemode --provider opencode-go --model deepseek-v4-flash \
+  "Utilise l'outil codemode, en une seule commande. Pour chaque fichier de game/, \
+   donne le nombre de lignes, la liste des imports, \
+   la liste des fonctions exportées avec leur ligne, et les fonctions exportées \
+   qui ne sont utilisées dans aucun autre fichier de game/." < /dev/null
+
 ```
 
-Commencez par le plan complet, qui ne dépense rien :
+Comparez les tokens d'entrée de chaque appel dans l'export HTML des quatre sessions, puis lisez ce que le script a réellement renvoyé au modèle.
+:::
+
+Pour exporter une session, il suffit de lancer :
 
 ```bash
-uv run trysquare run scenarios/issue1-contexte.toml --output results --dry-run
+pi --export runs/--path--/session.jsonl
 ```
 
-La config est prise dans le `trysquare.toml`.
+Dans l'exercice précédent, vous devriez constater que si vous ne demandez pas explicitement d'utiliser `codemode`, le modèle se dit qu'il n'y a pas assez de travail pour lancer cet outil. Vérifiez qu'il est bien dans la liste.
 
-Puis lancez la matrice à trois répétitions et laissez-la tourner pendant que vous discutez des curseurs :
+Dans le troisième cas, le modèle appelle `codemode` plusieurs fois, ce qui demande beaucoup plus de tokens et de temps que dans le premier cas.
 
-```bash
-uv run trysquare run scenarios/issue1-contexte.toml --output results --repetitions 3
-```
+Enfin, le dernier cas devrait vous montrer que vous gagnez du temps et des tokens si vous n'effectuez qu'une seule commande.
 
-Vous disposez d'un ensemble de sous-commandes qui ne lancent pas de modèles et qui servent essentiellement à analyser les résultats :
+::: info D'autres outils pour réduire ce que l'agent lit
+D'autres outils s'attaquent au même problème par un autre côté. Les cartes de dépôt comme celle d'[Aider](https://aider.chat/docs/repomap.html), les serveurs fondés sur un serveur de langage (LSP) comme [Serena](https://github.com/oraios/serena) et les graphes de code exposés en MCP comme [codebase-memory-mcp](https://github.com/DeusData/codebase-memory-mcp) aident l'agent à trouver les bonnes lignes sans ouvrir les fichiers entiers ; [RTK](https://github.com/rtk-ai/rtk) compresse la sortie des commandes avant que l'agent ne la lise.
 
-```bash
-# refabriquer les tables
-uv run trysquare render scenarios/issue1-contexte.toml --output results --repetitions 3
-# renoter sans rejouer
-uv run trysquare replay results/issue1-contexte_... --scenario scenarios/issue1-contexte.toml --rescore
-# joindre deux matrices
-uv run trysquare compare results/... results/...
-```
-
-**En autonomie**, copiez `scenarios/issue1-contexte.toml`, changez une configuration, et relancez. Vous n'aurez touché ni l'outil, ni le validateur, ni les autres configurations, et c'est le seul artefact de ce module qui ne périmera pas.
+Il faut prendre ces outils avec des pincettes, et vous constaterez qu'ils dépendent fortement de votre cas d'usage. Dans certains cas, ils seront utiles, et dans d'autres, réellement contre-productifs. Là encore, l'expérimentation est votre seule arme pour juger de leur pertinence.
 :::
 
-#### Nos mesures
-
-Vous avez dû vous en rendre compte lors de vos premiers essais avec `trysquare` : faire des mesures prend du temps. Pour une vingtaine de répétitions, il vous faudra entre 2 h et 3 h pour avoir l'ensemble des résultats avec ceux du module suivant. Nous avons donc préféré vous donner une campagne complète réalisée en amont dans laquelle vous pouvez naviguer dans les répertoires de chaque exécution comme vous l'avez fait précédemment.
-
-Voici ce que nous avons obtenu en août 2026, sur `ilaas` et `gemma-4-31b`, contre le commit `d62ccd1f` de NÉON, avec **vingt répétitions par configuration**. Les deux configurations à compétence figurent dans l'archive et appartiennent au module suivant ; elles sont écartées des tables ci-dessous, à l'exception d'une remarque à la fin.
-
-| configuration                    | `delivered` | `suite_lancee` | `tests_ajoutes` | `in_scope` |
-| -------------------------------- | ----------- | -------------- | --------------- | ---------- |
-| `nothing`                        | 20/20       | 0/20           | 0/20            | 20/20      |
-| `+thinking`                      | 19/20       | 15/20          | 3/20            | 19/20      |
-| `+agents`                        | 20/20       | **20/20**      | 0/20            | 20/20      |
-| `+well_crafted`                  | **18/20**   | 20/20          | 17/20           | 18/20      |
-| `-system_prompt`                 | 20/20       | 0/20           | 0/20            | 20/20      |
-| `+agents+well_crafted`           | 19/20       | 20/20          | 17/20           | 19/20      |
-| `+agents+add_tests+well_crafted` | 20/20       | 20/20          | 17/20           | 20/20      |
-
-Et les colonnes de la sonde, le critère en tête :
-
-| configuration                    | briques   | angles    | sortie    | voisines  | traversée |
-| -------------------------------- | --------- | --------- | --------- | --------- | --------- |
-| `nothing`                        | 11/20     | **0/20**  | 9/20      | 7/20      | 0/20      |
-| `+thinking`                      | 16/20     | **0/20**  | 17/20     | 15/20     | 0/20      |
-| `+agents`                        | 9/20      | **0/20**  | 8/20      | 6/20      | 0/20      |
-| `+well_crafted`                  | 13/20     | **14/20** | 13/20     | 13/20     | 4/20      |
-| `-system_prompt`                 | 14/20     | **0/20**  | 14/20     | 13/20     | 0/20      |
-| `+agents+well_crafted`           | 11/20     | **12/20** | 9/20      | 9/20      | 12/20     |
-| `+agents+add_tests+well_crafted` | **18/20** | **18/20** | **18/20** | **18/20** | 17/20     |
-
-Les dénominateurs de `+well_crafted` et `+thinking` valent 18 et 19 dans les colonnes de coût, parce qu'ILaaS a rendu des `Request timed out` pendant la mesure et que les exécutions concernées n'ont rien produit.
-
-Nous tirons cinq enseignements de ces deux tables, et le dernier fera la transition avec le module suivant. Tous les écarts cités plus bas viennent des intervalles décrits plus haut, avec la même marque `*` pour un écart établi et `o` pour un écart non concluant. Les comparaisons se font à partir d'une expérience. Si vous ne la spécifiez pas, la première expérience est choisie (ici `nothing`). Il vous est possible de refaire les calculs en vous appuyant sur une autre référence. Ça ne fait que changer le pointeur : ça ne coûte rien en termes de modèle et ne remesure rien.
-
-```bash
-uv run trysquare render scenarios/issue1-contexte.toml --output results \
-  --repetitions 20 --reference "+agents+well_crafted"
-```
-
-La sortie va dans un `synthesis_ref-<référence>.md` à côté de la synthèse habituelle qui n'est pas touchée.
-
-**Le prompt cadré fait faire tout ce que le ticket nomme, et rien de plus.** `tests_ajoutes` passe de 0/20 à 17/20 et `rebond_angles` de 0/20 à 14/20, deux colonnes qui étaient vides et qui se remplissent. Le prompt ne dit pourtant rien du mécanisme du rebond : il nomme l'issue, le périmètre et le critère d'arrêt, et c'est `ISSUES.md` qui décrit le coin, la sortie du rectangle, les briques voisines et le tunneling. Le coin reste à **0/20 dans les quatre configurations qui ne cadrent pas le ticket**, soit quatre-vingts exécutions consécutives. Pointer un document écrit suffit donc à ce qu'il soit lu, et c'est le contenu de ce document qui décide de ce qui sera traité.
-
-**Le fichier de règles ne déplace que le procédé, et il ne déplace plus rien dès que le ticket est correct.** `+agents` fait passer `suite_lancee` de 0/20 à 20/20, parce qu'une de ses quatre lignes nomme la commande. Sur le critère, il donne 9/20 contre 11/20 à la base, écart non concluant, et sur `tests_ajoutes` il reste à 0/20 puisqu'aucune de ses lignes ne parle de tests. Ajouté par-dessus le prompt cadré, il n'apporte **strictement rien** : 11/20 contre 13/20 sur le critère, 12/20 contre 14/20 sur le coin, 17/20 contre 17/20 sur les tests ajoutés, aucun de ces trois écarts n'étant distinguable. Le fichier de règles est un substitut du bon ticket plutôt qu'un complément, ce qui donne une règle d'écriture directement applicable au budget de quarante lignes : une ligne qu'un ticket correct dirait de toute façon est une ligne à retirer.
-
-**Le raisonnement déplace le critère, et lui seul ne fait pas lire le ticket.** `+thinking` donne 16/20 sur `rebond_briques`, soit un écart de +29 points dont l'intervalle exclut zéro. C'est le seul levier de la matrice, hors ceux qui touchent au ticket, à déplacer la correction elle-même. Sa colonne du coin reste à 0/20 et ses tests ajoutés à 3/20 : le raisonnement améliore ce que le modèle fait de ce qu'il a sous les yeux, mais ne l'amène pas à aller chercher ce qui lui manque.
-
-**Le prompt cadré fait écrire les tests rouges, et une exécution sur cinq s'arrête là.** La colonne `touched` le dit sans ambiguïté : sur `+well_crafted` et `+agents+well_crafted`, quatre exécutions sur vingt n'ouvrent jamais `game/neon.js`, dont deux ou trois qui écrivent uniquement dans `game/neon.test.js` et une ou deux qui ne livrent rien du tout. Aucune autre configuration ne montre ce comportement, `nothing`, `+agents` et `-system_prompt` touchant la source dans vingt exécutions sur vingt. L'explication est dans le ticket, qui énumère cinq sous-cas et se termine par « each case above added **first as a red test**, then green » : `gemma-4-31b` écrit les rouges et s'arrête là, faute de pouvoir traiter la spécification entière. C'est aussi pourquoi le critère de correction ne monte pas alors que le coin monte : le modèle a un budget de travail, et décrire plus de travail dans le ticket ne l'agrandit pas.
-
-**Donner les tests répare ce décrochage.** La configuration `+agents+add_tests+well_crafted` se lit contre `+agents+well_crafted`, la seule dont elle ne diffère que par la sonde déposée dans l'arbre :
-
-| colonne           | `+agents+well_crafted` | `+add_tests` | écart                  |
-| ----------------- | ---------------------- | ------------ | ---------------------- |
-| `rebond_sortie`   | 9/20                   | **18/20**    | +43 pts `*` [+17, +69] |
-| `rebond_voisines` | 9/20                   | **18/20**    | +43 pts `*` [+17, +69] |
-| `rebond_briques`  | 11/20                  | **18/20**    | +32 pts `*` [+6, +58]  |
-| `rebond_angles`   | 12/20                  | **18/20**    | +27 pts `*` [+1, +53]  |
-| `tests_ajoutes`   | 17/20                  | 17/20        | -4 pts `o`             |
-| `sonde_intacte`   | sans objet             | **20/20**    |                        |
-
-Les quatre colonnes de la correction montent, et les quatre écarts sont établis. Le levier ne fait donc pas que gagner des cas limites, il rattrape aussi le critère lui-même. Notez la largeur des intervalles, et en particulier celui du coin qui commence à un seul point : ces écarts sont établis au sens où ils sont positifs, sans qu'on puisse en donner la taille à mieux qu'un facteur cinquante.
-
-`sonde_intacte` vaut 20/20 ce qui veut dire que le modèle n'a pas essayé de changer les tests de référence. Et `tests_ajoutes` ne bouge pas, ce qui est cohérent avec un agent qui a déjà les cas sous les yeux et n'a aucune raison de les réécrire.
-
-::: warning Aucune colonne de coût gemma n'est citable ici
-La matrice compte 1 151 reprises, c'est-à-dire des tours relancés parce que le fournisseur avait échoué, et l'encadré plus bas montre à quel point elles sont concentrées sur les configurations les plus lourdes. Une reprise rejoue le tour avec tout le contexte accumulé, donc elle gonfle les colonnes de coût et surtout elle re-pilote l'agent.
-
-Le même scénario mesuré sur `opencode-go` et `deepseek-v4-flash` en compte **37**, ce qui rend les siennes lisibles :
-
-| configuration                    | tours | durée |
-| -------------------------------- | ----- | ----- |
-| `nothing`                        | 19    | 163 s |
-| `+agents`                        | 12    | 65 s  |
-| `-system_prompt`                 | 17    | 142 s |
-| `+well_crafted`                  | 15    | 252 s |
-| `+thinking`                      | 19    | 490 s |
-| `+agents+well_crafted`           | 14    | 561 s |
-| `+agents+add_tests+well_crafted` | 13    | 410 s |
-
-Les tokens d'entrée des deux matrices ne se mettent pas dans le même tableau, pour une raison qui n'a rien à voir avec le modèle : ILaaS ne rapporte aucun cache, `cacheRead` valant zéro sur ses cent quatre-vingts exécutions, si bien que sa colonne d'entrée est la somme des préfixes complets relus à chaque tour. opencode Zen rapporte le cache, jusqu'à cinq millions de tokens lus sur une seule exécution. La même configuration affiche donc 558 000 tokens d'entrée d'un côté et 15 000 de l'autre sans qu'aucun des deux ne soit faux. C'est la moitié pratique de ce que la première partie de ce module explique sur le cache : le coût des entrées dépend de la configuration du fournisseur de modèle et l'activation du cache permet de réduire drastiquement la note.
-:::
-
-#### Trois vérifications avant de citer une table
-
-Une matrice publie des tables, des intervalles et des verdicts, ce qui peut donner l'impression de conclusions solides. Néanmoins, lors de l'élaboration de cette formation, nous avons fait face à plusieurs phénomènes qui peuvent discréditer certains résultats.
-
-::: warning Le compte de reprises
-Une reprise est un tour que l'outil a dû relancer parce que le fournisseur avait échoué. Elle rejoue ce tour avec tout le contexte accumulé, donc elle gonfle les colonnes de coût, et surtout, elle re-pilote l'agent : ce n'est plus la même conduite de travail.
-
-Sur la matrice `gemma-4-31b`, le compte vaut **1 151**, et il n'est pas réparti :
-
-| configuration                    | reprises |
-| -------------------------------- | -------- |
-| `nothing`                        | 1        |
-| `+agents`                        | 2        |
-| `-system_prompt`                 | 1        |
-| `+well_crafted`                  | 24       |
-| `+thinking`                      | 81       |
-| `+agents+well_crafted`           | 205      |
-| `+agents+add_tests+well_crafted` | 205      |
-| `+agents+add_tests+skill`        | 287      |
-| `+agents+skill`                  | 345      |
-
-Rien sur les configurations à contexte court, tout sur celles à raisonnement élevé, et d'autant plus que le contexte accumulé grossit : une seule exécution de `+agents+add_tests+well_crafted` a consommé 2,4 millions de tokens d'entrée sur soixante-trois tours et accumulé dix-huit reprises. Le même scénario mesuré sur `opencode-go` et `deepseek-v4-flash` en compte **trente-sept** au total.
-:::
-
-::: warning L'importance du test de validation
-Une colonne uniformément noire ressemble à un comportement de l'agent et peut être un défaut du validateur. Le seul moyen de les distinguer est que la métrique dise **pourquoi** elle a répondu faux, et non seulement qu'elle a répondu faux.
-
-Notre validateur le fait pour `suite_lancee` : quand il ne reconnaît aucun lancement de la suite, il recopie dans sa raison toutes les commandes que l'agent a passées. Cette précaution est importante, parce que la forme de la commande varie d'un modèle à l'autre bien plus que la commande elle-même. `deepseek-v4-flash` préfixe chaque appel du répertoire de travail (`cd .../repo && npm test`, 664 fois sur la matrice) et redirige volontiers la sortie (`npm test 2>&1 | tail -30`, 80 fois), là où `gemma-4-31b` tape `npm test` nu. Un test de validation qui ne connaîtrait que la dernière forme noterait le premier modèle à zéro sur toute la matrice.
-
-En conclusion, **écrivez vos métriques avec précaution et éprouvez-les sur un ensemble de tests**. Il faut qu'elles soient fiables. Notez tout comportement étrange avant d'en tirer des conclusions hâtives.
-:::
-
-::: warning Ce que la comparaison des deux modèles permet de dire, et ce qu'elle ne permet pas
-Les deux matrices (`gemma-4-31b` et `deepseek-v4-flash`) portent sur le même scénario, les mêmes neuf configurations et le même commit de NÉON, si bien que leurs colonnes de score se lisent l'une contre l'autre. Le modèle et le fournisseur ont changé ensemble, ce qui interdit d'attribuer un écart à l'un plutôt qu'à l'autre, et laisse quand même voir ceci sur la colonne du coin :
-
-| configuration          | `gemma-4-31b` | `deepseek-v4-flash` |
-| ---------------------- | ------------- | ------------------- |
-| `nothing`              | 0/20          | 8/20                |
-| `+agents`              | 0/20          | 8/20                |
-| `+well_crafted`        | 14/20         | 19/20               |
-| `+agents+well_crafted` | 12/20         | 19/20               |
-
-Les deux modèles réagissent au même levier et dans le même sens, le plus capable partant de plus haut et montant plus haut.
-:::
-
-Ces chiffres n'ont pas vocation à être crus sur parole ni recopiés dans un an. Relancez la matrice : c'est précisément ce à quoi elle sert, et celle que vous obtiendrez remplacera celle-ci.
-
-Le contexte bien tenu rend l'agent discipliné et complet sur ce que le ticket nomme, sans le rendre exhaustif : le coin de la brique n'est jamais atteint là où le ticket ne le décrit pas, et le tunneling reste la colonne la plus basse de toutes celles que la sonde mesure. Aller au-delà de ce que le matériau écrit contient demandera un relecteur indépendant et une boucle de vérification, ce qui est le sujet des modules sur la délégation et les workflows.
-
-::: warning Trois conclusions tentantes que les intervalles ne permettent pas
-Chacune des phrases suivantes s'appuie sur un chiffre exact de la campagne publiée sur cette page, et aucune ne tient.
-
-**« Le fichier de règles casse la correction. »** `+agents` donne 9/20 sur le critère contre 11/20 à la base. L'écart vaut -10 points mais son intervalle contient zéro : nous ne pouvons rien en dire, ni dans un sens ni dans l'autre.
-
-**« Retirer le prompt système améliore le rebond. »** `-system_prompt` donne 14/20 contre 11/20, soit +15 points, et l'intervalle contient zéro là aussi. Avec seulement trois exécutions bien tirées, nous aurions obtenu 3/3 contre 1/3 et nous aurions pu y croire durablement.
-
-**« Le prompt cadré corrige mieux le bug. »** `+well_crafted` donne +17 points sur le critère, non concluant. L'effet réel de ce levier se voit ailleurs, sur les tests ajoutés et sur le coin, où les écarts se comptent en dizaines de points et ne laissent aucun doute.
-
-Répéter trois fois ne suffit donc pas : un effet qui ne dépasse pas la dispersion de sa propre configuration n'est pas un effet. Et un effet établi sur cette tâche, avec ce ticket et ce modèle, n'est établi que dans ce cadre.
-:::
-
-Vous venez de pratiquer une évaluation, au sens où l'on compare des comportements sur une même tâche, avec des répétitions et en sachant la mesure bruitée, là où un test répond par oui ou par non à une question fermée. Le module 3.2 formalisera cette pratique avec des fichiers d'évaluation et un LLM-juge, pour les critères que la sonde de ce module n'aurait pas pu prendre en charge.
-
-### La pile contre la base
-
-Les leviers de ce module demandent de l'attention et du temps, alors qu'un modèle plus capable s'obtient simplement en payant plus cher. Il est donc légitime de se demander s'il est plus rentable de soigner son contexte ou de changer de modèle. La seconde moitié de cette question n'est pas mesurée ici, et nous disons plus bas pourquoi. La première l'est, à modèle constant, en mettant face à face les deux configurations extrêmes de la matrice.
-
-::: info Exercice (en salle)
-Comparez la configuration `nothing`, qui reçoit une demande d'une ligne et rien d'autre, et la configuration `+agents+add_tests+well_crafted`, qui dispose du raisonnement, du ticket cadré, de l'`AGENTS.md` et de la sonde déposée dans l'arbre. Regardez d'abord les diffs, puis les colonnes de la sonde, puis seulement à la fin ce que chacune a coûté.
-:::
-
-|                    | `nothing` | `+agents+add_tests+well_crafted` |
-| ------------------ | --------- | -------------------------------- |
-| `rebond_briques`   | 11/20     | **18/20**, écart +35 points      |
-| `rebond_sortie`    | 9/20      | **18/20**                        |
-| `rebond_voisines`  | 7/20      | **18/20**                        |
-| `rebond_angles`    | 0/20      | **18/20**                        |
-| `rebond_traversee` | 0/20      | **17/20**                        |
-| `suite_lancee`     | 0/20      | 20/20                            |
-| `tests_ajoutes`    | 0/20      | 17/20                            |
-| tours médians      | 19        | 13                               |
-| durée médiane      | 163 s     | 410 s                            |
-
-Les deux dernières lignes sont prises sur la matrice `deepseek-v4-flash`, dont les trente-sept reprises rendent les colonnes de coût lisibles, et les colonnes de score sur `gemma-4-31b`.
-
-Le harnais complet atteint dix-huit sur vingt sur un critère où la base plafonne à onze, et la colonne la plus sévère de la sonde passe de 7/20 à 18/20. C'est la thèse d'Addy Osmani, *« a decent model with a great harness beats a great model with a bad harness »*, vérifiée sur sa moitié la plus facile à établir : à modèle rigoureusement constant, le harnais seul fait la différence entre une correction qui marche une fois sur deux et une correction qui marche neuf fois sur dix.
-
-Le coin passe de 0/20 à 18/20, et le prompt cadré seul en obtenait déjà quatorze : l'essentiel du gain vient du fait que le prompt fait référence à un ticket dans `ISSUES.md` qui nomme le cas, et la sonde ajoute par-dessus la persévérance qui manquait pour finir le travail.
-
-### Ce que ce module ne sait pas obtenir
-
-Le seul levier qui ait amené le modèle à traiter l'ensemble de ce que le ticket demande est celui qui lui a mis les tests sous les yeux. Cette configuration a cependant quelque chose d'artificiel : les cas limites étaient écrits d'avance, par nous, dans le fichier même qui note. Sur un vrai ticket, personne ne vous les fournira.
-
-Ce que cette configuration apporte en réalité, c'est de la persévérance. Le modèle décroche sur un ticket long parce qu'il épuise son budget à formuler les cas au lieu de les corriger ; recevoir les cas déjà formulés lui rend ce budget. La question du module suivant est donc de savoir si une **compétence**, c'est-à-dire une procédure de travail écrite une fois et rechargée à la demande, peut produire la même persévérance sans fournir les tests.
-
+Les manipulations de ce module vous ont montré ce que chaque levier change sur une exécution, et une exécution ne dit pas si ce changement se reproduit. Le [module 3.1](./act3-contexte) reprend les mêmes leviers sur la même tâche, avec vingt répétitions par configuration et un critère exécutable, pour séparer ce qui déplace précisément le résultat de ce qui relève de la dispersion du modèle.
 
 ## Généraliser
 
-Huit principes de ce module restent valables au-delà de Pi, d'`ilaas` et de la version des paquets que vous venez d'installer.
+Ce que nous avons fait sur NÉON vaut pour n'importe quel agent de code, et pas seulement pour Pi.
 
-**Ce qui est stable devant, ce qui varie derrière.** Le cache ne fonctionne que sur un préfixe inchangé et coûte cinquante fois moins cher que l'entrée, si bien que toute donnée volatile placée tôt dans le contexte, qu'il s'agisse d'un horodatage, d'un état git ou d'une date, invalide tout ce qui suit.
+Le contexte se relit à chaque tour, et le cache facture cinquante fois moins cher, sur `deepseek-v4-flash`, la partie qui n'a pas changé depuis le tour précédent. Placez donc au début ce qui reste stable, le prompt système, les fichiers de contexte et les outils, et à la fin ce qui varie. Un horodatage ou un `git status` ajouté au prompt système fait repayer tout ce qui suit au tarif plein, à chaque tour.
 
-**Pointer un document écrit suffit à ce qu'il soit lu, et ce qui y est écrit décide du résultat.** Notre ticket cadré ne décrit pas le mécanisme du rebond : il nomme l'issue, le périmètre et le critère d'arrêt. Dix-sept exécutions sur vingt sont allées lire `ISSUES.md`, y ont trouvé la demande de cas limites en tests rouges, et l'ont exécutée, là où la demande négligée n'en avait obtenu aucune. Le coin de la brique en donne la version la plus nette : il est décrit dans `ISSUES.md` et dans aucun de nos prompts, et il vaut 0/20 dans les quatre configurations qui ne nomment pas l'issue contre 14/20 dans celle qui la nomme. Écrivez ce que vous attendez dans un document que vous pouvez pointer, et relisez ce document avant de conclure quoi que ce soit sur l'agent.
+Changer de modèle ou de liste d'outils en cours de session remet le cache à zéro. Dans la séquence de cinq tours du début du module, le premier tour sur `pro` coûte quinze fois plus cher que le suivant, sur le même modèle.
 
-**Un modèle a un budget, et décrire plus de travail ne l'agrandit pas.** Notre ticket énumère cinq sous-cas et demande un test rouge pour chacun ; quatre exécutions sur vingt écrivent ces tests rouges et n'ouvrent jamais le fichier source. Ce constat conditionne la suite : soit vous réduisez la demande à ce que le modèle peut porter, soit vous lui donnez de quoi tenir la distance, ce qui est le sujet du module suivant.
+Un réglage proposé par le harnais n'arrive pas forcément jusqu'au modèle. Avec `gemma-4-31b`, `--thinking max` envoie la même requête que `--thinking minimal`, et la fenêtre que Pi connaît est celle que vous avez déclarée dans `models.json`. Avant de vous fier à un réglage, regardez dans la session ce qu'il a changé.
 
-**Le fichier de règles change ce que l'agent fait et non ce qu'il trouve, et il ne sert que sur ce que le ticket ne dit pas.** Il entre dans le contexte à chaque tour, ce qui en fait un levier fort et coûteux à la fois, d'où l'intérêt de le tenir court, de sourcer chaque règle par un échec observé et de le refactorer plutôt que de l'allonger. Nos mesures cadrent précisément ce qu'il achète : la configuration `+agents` fait passer de 0/20 à 20/20 le nombre d'exécutions qui lancent la suite de tests, laisse le critère de correction inchangé, et n'apporte plus rien du tout dès que le prompt cadré est là. La règle d'écriture qui en découle est directement applicable au budget de quarante lignes : une ligne qu'un ticket correct dirait de toute façon est une ligne à retirer.
+Une sortie d'outil reste dans la fenêtre jusqu'à la fin de la session. Mieux vaut la filtrer avant qu'elle y entre, avec un script, une commande ou `codemode`, que la résumer après coup par la compaction. Ce filtrage a aussi un coût : la description de `codemode` entre dans le contexte à chaque tour, et sur une petite tâche comme l'issue #1 elle peut coûter plus qu'elle ne fait gagner.
 
-**Un réglage exposé par le harnais n'est pas forcément transmis au modèle.** Entre le drapeau que vous tapez et la requête qui part se trouvent du code et des tables de correspondance, comme le montre `--thinking max`, qui n'atteint pas le modèle que nous utilisons sans que rien ne vous en avertisse. Le corollaire côté mesure est que ce qui décide de l'expérience doit être écrit dans l'expérience : un niveau de raisonnement hérité d'une configuration personnelle a rendu une de nos configurations identique à sa base dans toutes les matrices publiées.
-
-**Un effet qui ne survit pas au rééchantillonnage n'est pas un effet.** Répéter trois fois ne suffit pas : tant que l'intervalle d'un écart contient zéro, il n'y a rien à en dire. Sur les neuf configurations mesurées ici, trois seulement déplacent le critère de correction de façon établie, alors que les six autres affichent chacune un chiffre qui pourrait sembler convaincant. Un écart établi ne l'est par ailleurs que sur cette tâche, avec ce ticket et ce modèle.
-
-**Ce qui est mesuré doit être épinglé par ce qui ne bouge pas.** Un tag est un nom, et `git tag -f` le déplace sans laisser de trace du côté de la mesure, si bien que deux matrices peuvent déclarer le même étalon et avoir travaillé sur deux versions différentes du code. Épinglez par le commit, qui ne bouge pas, et si votre outil ne le permet pas encore, archivez au moins ce que le nom a résolu au moment de la mesure.
-
-**Une métrique doit dire pourquoi, et non seulement quoi.** Une colonne uniformément noire ressemble à un comportement de l'agent et peut être un défaut du validateur, et rien ne distingue les deux tant que la métrique se contente de répondre vrai ou faux. Faites-lui écrire ce sur quoi elle s'est prononcée : la nôtre recopie, sous chaque faux, les commandes que l'agent a passées, et c'est ce qui permet de vérifier un zéro au lieu de le croire sur parole.
-
-**Écrivez l'hypothèse avant de mesurer, et versionnez-la.** Une hypothèse rédigée après les mesures n'est qu'une conclusion déguisée. La nôtre, `hypotheses/issue1-contexte.md`, contient une prédiction qui s'est révélée fausse, et c'est parce qu'elle était écrite d'avance que nous l'avons publiée comme telle au lieu de la reformuler après coup en découverte.
+Enfin, `AGENTS.md` entre lui aussi dans le contexte à chaque tour. Gardez-le court, n'y ajoutez une règle qu'après avoir vu l'agent échouer sans elle, et renvoyez vers les documents que l'agent peut lire au besoin au lieu de les recopier. Quand vous changez de modèle, relisez-le et retirez ce qui ne sert plus.
 
 ## Livrable
 
-Ce module produit trois pièces : les deux premières servent toute la journée, la troisième servira à l'acte 4.
+Ce module produit deux pièces.
 
-**1. L'`AGENTS.md` de NÉON**, versionné dans le dépôt, sous les 40 lignes, chaque règle justifiée par un échec que vous avez observé.
+**1. L'`AGENTS.md` de NÉON**, versionné dans le dépôt, sous les 40 lignes. Pour chaque règle, notez l'échec que vous avez observé pendant les exercices et qui vous l'a fait ajouter.
 
-**2. Le répertoire de matrice** produit par `trysquare run`, avec sa ligne de journal. Le livrable n'est pas un tableau recopié mais l'archive qui permet de le refabriquer : les mesures brutes, les sessions, les diffs, et la révision de l'outil qui a mesuré. Sans cette archive, la matrice ne peut être ni vérifiée ni renotée, et ses chiffres ne valent pas mieux qu'une opinion.
+**2. Vos observations sur chaque levier**, une ligne par levier, avec la session ou le diff qui la montre. Le [module 3.1](./act3-contexte) reprend ces leviers sur vingt exécutions, et vous pourrez y comparer vos observations aux mesures.
 
-**3. La fiche de décision**, une ligne par levier :
-
-| levier                     | effet mesuré | adopté ? | pourquoi |
-| -------------------------- | ------------ | -------- | -------- |
-| choix du modèle            |              |          |          |
-| effort de raisonnement     |              |          |          |
-| ticket cadré               |              |          |          |
-| contenu du ticket pointé   |              |          |          |
-| `AGENTS.md`                |              |          |          |
-| prompt système             |              |          |          |
-| tests fournis d'avance     |              |          |          |
-| ordonnancement / cache     |              |          |          |
-| compaction                 |              |          |          |
-| critère exécutable (sonde) |              |          |          |
-
-Deux lignes ont été ajoutées à cette fiche après nos dernières mesures. « Contenu du ticket pointé » y figure parce que la réécriture d'`ISSUES.md` a déplacé plus de colonnes que n'importe quel réglage du harnais, et « tests fournis d'avance » parce que c'est le seul levier qui ait rattrapé le décrochage du modèle sur un ticket long.
-
-Cette fiche constitue le premier remplissage réel de la colonne « ton harnais ? » de la table de correspondance, pour la ligne « contexte ». Les cinq modules suivants feront de même pour leur brique, si bien que vous aborderez le capstone avec une table déjà remplie par vos expériences.
+| levier                           | ce que vous avez observé | session ou diff |
+| -------------------------------- | ------------------------ | --------------- |
+| choix du modèle                  |                          |                 |
+| effort de raisonnement           |                          |                 |
+| `AGENTS.md`                      |                          |                 |
+| prompt système (`.pi/SYSTEM.md`) |                          |                 |
+| fenêtre bridée et compaction     |                          |                 |
+| `codemode`                       |                          |                 |
 
 ::: tip Critère de réussite
-Vous savez citer un levier que vous avez mesuré comme sans effet sur NÉON, et dire à quelle condition précise il en aurait un ailleurs.
-
-Notre exemple est `AGENTS.md` : il ne déplace pas d'un point le critère de correction, et il deviendrait décisif sur un ticket dont l'échec habituel est de procédé plutôt que de raisonnement, ou sur un dépôt dont les tickets sont mal écrits. Le vôtre sera différent, et c'est le but. Ce critère demande d'avoir vu les chiffres et d'avoir compris que c'est la tâche et son matériau qui les déterminent. Il ne peut donc pas être satisfait de mémoire.
+Vous savez dire de quoi la fenêtre de contexte est faite. Vous savez comment elle est initialisée et comment modifier cette initialisation. Vous comprenez également comment limiter l'impact des outils ou du niveau de raisonnement. Vous pouvez dire si l'infrastructure d'inférence est bien configurée ou si elle vous coûte plus de tokens qu'il n'en faut, ce qui arrive par exemple quand le cache est mal configuré ou pas configuré du tout.
 :::
 
 ## Pour aller plus loin
 
 - Liu et al., [Lost in the Middle](https://arxiv.org/abs/2307.03172), l'étude qui justifie qu'on ne se contente pas de remplir la fenêtre.
 - Philipp Schmid, [The New Skill in AI is Not Prompting, It's Context Engineering](https://www.philschmid.de/context-engineering), sur le glissement du prompt isolé vers l'architecture du contexte.
-- Addy Osmani, [Agent Harness Engineering](https://addyosmani.com/blog/agent-harness-engineering/), dont la thèse est celle que la comparaison de la pile à la base met à l'épreuve.
 - [La documentation de Pi](https://github.com/earendil-works/pi/tree/main/packages/coding-agent/docs), et en particulier ses pages sur la compaction, les modèles et les réglages.
-- [trysquare](https://github.com/AI-for-dev/trysquare), l'outil de mesure utilisé dans ce module, et son guide d'écriture de scénario.
-- La campagne trysquare de la formation, `scripts/trysquare-campaign/`, avec ses hypothèses écrites avant mesure et ses matrices archivées. C'est le seul endroit où les chiffres de cette page sont vérifiables.
