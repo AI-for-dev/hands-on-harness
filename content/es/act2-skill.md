@@ -1,18 +1,19 @@
-# Los skills: un procedimiento de trabajo y lo que desplaza
+# Los skills: definir competencias
 
 ::: tip Objetivos de este módulo
-- Saber qué es un skill en Pi, qué ve el modelo de él y qué no ve
+- Saber qué es un skill
 - Distinguir una competencia que el modelo puede ignorar de una competencia que se le impone
 - Escribir un procedimiento de trabajo que produzca un entregable aprovechable
-- Medir lo que desplaza y no confundir desplazar con mejorar
-- Revisar un procedimiento a partir de las ejecuciones leídas y verificar la revisión con una nueva matriz
+- Revisar un procedimiento a partir de las sesiones leídas, probándolo con varios modelos
 :::
 
-El módulo anterior repasó lo que se gana haciendo las cosas mejor: elegir un modelo, ajustar un deslizador, escribir un ticket, mantener un archivo de reglas. Terminó con una constatación: en las configuraciones que reciben el ticket acotado, cuatro de cada veinte ejecuciones escriben las pruebas rojas que pide el ticket y nunca abren `game/neon.js`: el modelo agota su presupuesto formulando los casos y no llega a corregirlos. La única palanca que compensó ese desfase consistía en proporcionarle las pruebas ya escritas, algo que nadie hará en un ticket real.
+El módulo anterior te permitió familiarizarte con el contexto y con la forma de interactuar con él. También pudiste ver diferencias de comportamiento según el modelo elegido. Pudiste además constatar que el hecho de que el issue #1 esté muy bien detallada en el archivo `ISSUES.md` de NÉON permite a los modelos bastante recientes corregir fácilmente el bug añadiendo todas las pruebas necesarias, porque leen todo el repositorio y dan con ella fácilmente. Podrías poner un prompt muy corto: el modelo encontraría ese archivo de todos modos.
 
-La pregunta de este módulo es, por tanto, si un **procedimiento de trabajo**, escrito una vez y recargado bajo demanda, consigue lo mismo sin proporcionar las pruebas.
+En la vida real, pedirás corregir el bug sin una explicación tan detallada, porque no sabrás necesariamente evaluar todos los efectos secundarios de ese bug.
 
-Seguimos el orden habitual: entender qué es un skill en el harness, escribir uno sobre esta cuestión, medir lo que produce y luego revisarlo y volver a medir.
+La pregunta de este módulo es, entonces, saber si una competencia (llamada *skill*), escrita una vez y recargada a demanda, obtiene los mismos resultados que en el módulo anterior sin proporcionar las pruebas.
+
+Seguimos el orden habitual: entender qué es un skill en el harness, escribir uno sobre esta cuestión, medir lo que produce.
 
 ## Comprender
 
@@ -25,7 +26,8 @@ He aquí un skill completo, deliberadamente mínimo:
 ```markdown
 ---
 name: revue-rapide
-description: Relit les modifications en cours du dépôt. Utiliser quand l'utilisateur demande une relecture avant de commiter.
+description: Relit les modifications en cours du dépôt.
+Utiliser quand l'utilisateur demande une relecture avant de commiter.
 ---
 
 # Revue rapide
@@ -35,7 +37,7 @@ description: Relit les modifications en cours du dépôt. Utiliser quand l'utili
 3. Rends deux listes : « à corriger avant le commit » et « peut attendre ».
 ```
 
-La idea es la de un procedimiento de trabajo que se escribe una vez y que el agente recarga bajo demanda, en lugar de volver a escribirlo en cada prompt. Ocupa un lugar aparte en el harness: `AGENTS.md` entra en el contexto en cada turno y, por tanto, cuesta en cada turno, mientras que un skill está hecho para entrar solo cuando la tarea lo pide.
+Un skill describe instrucciones y archivos de apoyo (scripts, referencias) que un agente carga a demanda, en lugar de reescribirlos en cada prompt. Ocupa un lugar aparte en el harness: `AGENTS.md` entra en el contexto en cada turno y por lo tanto cuesta en cada turno, mientras que un skill está hecho para entrar solo cuando la tarea lo pide.
 
 ### Lo que el modelo ve de él
 
@@ -54,7 +56,9 @@ Use the read tool to load a skill's file when the task matches its description.
 </available_skills>
 ```
 
-El **cuerpo** del `SKILL.md` no está en él. Entra en el contexto por una de las dos vías siguientes, y la diferencia entre ambas es el tema de este módulo.
+Los demás harness proporcionan esta lista de forma similar, pero no necesariamente en el mismo lugar del contexto.
+
+El **cuerpo** del `SKILL.md` no está ahí. Pero entonces, ¿cómo puede el modelo usarlo? Hay dos caminos posibles.
 
 La primera es que el modelo **decide** abrirlo con la herramienta de lectura, basándose únicamente en la descripción. La documentación de Pi lo dice en los mismos términos, añadiendo que «models don't always do this».
 
@@ -66,239 +70,228 @@ Hay dos consecuencias prácticas. La descripción es lo único sobre lo que se a
 Comprueba esta mecánica por ti mismo, en tu clon de NÉON.
 
 1. Crea `.pi/skills/revue-rapide/SKILL.md` con el contenido anterior, modifica una línea de un archivo del juego y abre una sesión.
-2. Exporta la sesión con `\export` y localiza el bloque `<available_skills>` en el system prompt: el nombre, la descripción y la ruta están ahí, el cuerpo no.
-3. Pide «relee lo que acabo de modificar» sin nombrar el skill y observa si el modelo lee `SKILL.md` por sí mismo: la llamada a la herramienta de lectura es visible en la sesión.
-4. Abre una sesión nueva y escribe `/skill:revue-rapide`. Esta vez el cuerpo está pegado en tu primer mensaje, y ya no hay ninguna decisión que observar.
+2. Exporta la sesión con `/export` y localiza el bloque `<available_skills>` en el system prompt: el nombre, la descripción y la ruta están ahí, el cuerpo no.
+3. Pide «revisa lo que acabo de modificar» sin nombrar el skill, y observa si el modelo va a leer `SKILL.md` por sí mismo: la llamada a la herramienta de lectura es visible en la sesión.
+4. Abre una sesión nueva y escribe `/skill:revue-rapide`. Esta vez el cuerpo se pega en tu primer mensaje, y ya no hay ninguna decisión que observar.
 
 Acabas de recorrer los dos caminos. El primero se apoya por completo en la descripción; el segundo no la necesita.
 :::
 
+::: warning Solo invocado por el usuario
+Puedes hacer que tu skill no pueda ser activado por el modelo, sino únicamente por ti, poniendo en el frontmatter:
+
+```
+disable-model-invocation: true
+```
+
+La descripción del skill entonces no se añadirá a la lista de skills que se encuentra en el contexto.
+:::
+
+### Anatomía completa
+
+Hasta ahora solo hemos presentado el archivo `SKILL.md`, pero has de saber que existe todo un árbol de directorios posible que ofrece muchas posibilidades a tu skill.
+
+```
+my-skill/
+├── SKILL.md          # Required: metadata + instructions
+├── scripts/          # Optional: executable code
+├── references/       # Optional: documentation
+├── assets/           # Optional: templates, resources
+└── ...               # Any additional files or directories
+```
+
+Los tres directorios opcionales pueden ser muy útiles en la continuación de la construcción de tu harness.
+
+- `scripts`: son programas que acompañan a la skill y que se mencionan en `SKILL.md`. Permiten seguir siempre el mismo camino y no dejar que el modelo cree sus scripts sobre la marcha, porque, como ya sabes, nunca será la misma forma de hacerlo.
+- `references`: a veces ocurre que `SKILL.md` se vuelve demasiado largo y que algunas partes son específicas. Puedes entonces pedir en las instrucciones del skill que se vaya a ver esos archivos de referencia. Puedes verlo como una forma de recurrencia. Imagina que tienes un skill para la documentación. La documentación en un software es de distintas naturalezas: usuario, referencia, API, how-to, tuto... Y no se escribe de la misma manera según el destinatario. Podrías por tanto plantearte listar en el skill esas distintas documentaciones con su descripción y referenciar los archivos que se encuentran en `references` para que el modelo lea únicamente el que le concierne.
+- `assets`: encontrarás en este directorio todo documento útil al modelo que la skill necesita: imagen, template...
+
+Los usaremos en la segunda parte de **Reconstruir**.
+
+### ¿Debo escribir mi skill?
+
+Todo depende, una vez más, del grado de control que quieras tener sobre tu harness. Encontrarás muchos sitios que te ofrecen skills. El más conocido es probablemente https://www.skills.sh/. Sin embargo, hay que tener cuidado, porque, como hemos visto, el skill puede pedirle a tu modelo que haga cosas por él o que lance scripts. Por lo tanto, hay que tener en cuenta una vigilancia en materia de seguridad.
+
+En un primer momento, te animamos a escribirlos tú mismo inspirándote en personas con suficiente perspectiva sobre el uso de los skills y que pueden ser una fuente de inspiración. Estas son, en nuestra opinión, las tres personas que ofrecen los mejores skills en octubre de 2026:
+
+- Lauren Tan: https://github.com/cursor/plugins/tree/main/pstack
+- Matt Pocock: https://github.com/mattpocock/skills
+- Addy Osmani: https://github.com/addyosmani/agent-skills
+
+También puedes usar el skill [skill-creator de Anthropic](https://www.skills.sh/anthropics/skills/skill-creator) para hacer tu primer esqueleto.
+
+::: warning Los agentes no son humanos
+Hay que tener cuidado cuando se escribe un skill. No está destinado a un humano, sino a un modelo, y un modelo no necesita la misma información. Un humano tiende a quedarse con aquello en lo que cree y a descartar los párrafos que le parecen menos relevantes. Si tiene una duda, hará una búsqueda para formarse su propia opinión. Un modelo o un agente no hará nada de eso. Seguirá al pie de la letra tus instrucciones y todo lo que esté escrito tendrá la misma importancia para él. Un agente tampoco va a adivinar lo que hayas olvidado decir.
+
+Todo esto para decir que hay que ir a lo esencial y escribir el proceso que quieras repetir una y otra vez en cada llamada del skill.
+:::
+
 ## Reconstruir
 
-### Lo que un procedimiento debe producir
+Ahora vamos a intentar crear una competencia que encaje con el proyecto NÉON. Como mencionamos en la introducción, el módulo anterior demostró que si el agente tenía una definición precisa de los problemas ligados a un bug y de los tests asociados, entonces debería ser capaz de darte una solución de calidad.
 
-La skill que escribimos responde a la deserción medida en el módulo anterior y tiene por tanto dos objetivos. La primera es que el agente **descomponga** el síntoma reportado por el jugador en defectos distintos, en lugar de detenerse en la primera explicación que da cuenta de lo que ve. La segunda es que **vaya hasta el final**, es decir, que corrija cada defecto hasta el verde en lugar de detenerse una vez escritos los casos rojos.
+Así que proponemos hacerlo en dos tiempos. La primera versión recopila el conjunto de los problemas encontrados en un rompeladrillos relacionados con la issue #1. El problema con esta primera versión es que es demasiado específica para nuestro caso. El interés de una competencia es que sea específica para una problemática, pero lo bastante generalista como para poder usarla en otros casos. La segunda versión intentará entonces construir una lista de bugs para el juego de arcade previsto antes de seguir el mismo proceso que la primera solución.
 
-La skill `playtest` está escrita para eso. Le da al agente un rol, el del playtester que sabe que un síntoma no es un bug; una referencia de coordenadas para que los signos de velocidad no se adivinen; una tabla de diez familias de fallas para repasar una por una; y la obligación de cuantificar cada disparador a partir de las constantes del archivo en lugar de describirlo.
+### Versión 1
 
-<<<@/../scripts/trysquare-campaign/briques/skills/playtest/SKILL.md{md}
+Vamos a hacer esta versión en varias etapas. Hay que entender bien que la creación de un skill es un proceso iterativo. Vas a probarlo y luego mejorarlo a medida que lo testeas. El modelo también tiene su importancia. Puedes tener un skill que funcione muy bien en un modelo bastante potente y se derrumbe en un modelo más ligero. Tú decides si quieres que tu skill funcione con un conjunto de modelos.
 
-Dos decisiones de redacción se trasladan a cualquier procedimiento.
+Como los modelos evolucionan muy rápido, el skill no debe quedarse fijo y debes hacerlo evolucionar en el proceso de mejora de tu harness. Las instrucciones escritas pueden ser menos útiles, o incluso perjudiciales en el futuro.
 
-**El entregable es un archivo con una forma impuesta.** El paso 4 impone la forma de `.scratch/to_fix.md`: un bloque para cada defecto, con su causa localizada a la línea exacta, su invariante violado, su disparador cuantificado, su caso de test, la salida de fallo real copiada del terminal y la corrección ingenua que ese caso rechaza. Un agente que produce este archivo ha hecho necesariamente el trabajo que el archivo describe.
+Puedes apoyarte en el skill [skill-creator](https://github.com/anthropics/skills/blob/main/skills/skill-creator/SKILL.md) propuesto por Anthropic o probar paso a paso.
 
-**El procedimiento también describe lo que rechaza.** El paso 3 pide poner cada caso en rojo dos veces, una vez sobre el código actual y otra sobre la corrección ingenua, lo que descarta las pruebas que solo verifican que algo ha cambiado. Es la contrapartida directa de lo que midió el módulo anterior, donde algunas correcciones pasaban las cuatro caras y fallaban en la esquina.
+::: info Ejercicio (en sala)
+Empieza por escribir el frontmatter y haz que el skill se invoque cada vez que se pida corregir un bug en NÉON.
 
-::: info Ejercicio (en clase)
-Escribe la descripción antes de leer la nuestra y luego compara. Es la única línea del archivo que el modelo leerá con seguridad, y su redacción exige el mayor cuidado.
-
-Un criterio útil: ¿tu descripción dice **cuándo** usarlo, o solo **qué** hace el procedimiento? Las dos formulaciones se parecen al releerlas, pero solo la primera ayuda al modelo a decidir abrir el archivo.
+Pruébalo con distintos modelos.
 :::
 
-### Cómo entra el skill en la medición
+Vamos a definir ahora una lista de bugs conocidos. Podríamos habértela hecho construir solo, pero preferimos darte un ejemplo para que te concentres en lo esencial. Aquí tienes, pues, el comienzo del skill que te proponemos:
 
-Las dos configuraciones con skill de la matriz reciben el siguiente prompt:
+::: details El comienzo del skill `playtester`
 
-<<<@/../scripts/trysquare-campaign/briques/issue1-simple-prompt-with-skill.md
+<<<@/../scripts/skills/playtester/SKILL.md#L1-77{md}
 
-Hay tres cosas a tener en cuenta: la solicitud es la solicitud desatendida del módulo anterior; el `/skill:playtest` al inicio hace que el cuerpo del archivo se expanda del lado del cliente, por lo que el skill es **impuesto** en lugar de propuesto; y la lectura de `ISSUES.md` está prohibida, para que el procedimiento trabaje sobre el síntoma del jugador y no sobre un ticket ya redactado.
-
-La columna `skill_invoque` vale, por tanto, 20/20 en estas dos configuraciones por construcción, y 0/20 en todas las demás. Registra un hecho sobre la sesión sin medir una decisión del modelo, y nada de lo que sigue aborda la cuestión de si una buena descripción activa el skill.
-
-## Lo que dice la medición
-
-Las configuraciones con skill se comparan con las que reciben el ticket estructurado, con `AGENTS.md` y razonamiento idénticos. Sobre `gemma-4-31b`, veinte repeticiones:
-
-| configuración                    | `in_scope` | `tests_ajoutes` | bloques | esquinas | salida | vecinas |
-| -------------------------------- | ---------- | --------------- | ------- | -------- | ------ | ------- |
-| `+agents+well_crafted`           | 19/20      | 17/20           | 11/20   | 12/20    | 9/20   | 9/20    |
-| `+agents+skill`                  | **6/20**   | **8/20**        | 16/20   | 7/20     | 13/20  | 14/20   |
-| `+agents+add_tests+well_crafted` | 20/20      | 17/20           | 18/20   | 18/20    | 18/20  | 18/20   |
-| `+agents+add_tests+skill`        | **9/20**   | **7/20**        | 13/20   | 12/20    | 13/20  | 13/20   |
-
-De ello extraemos tres lecturas, de las cuales dos están establecidas y una no.
-
-**La competencia desplaza las pruebas fuera de la suite.** `tests_ajoutes` pasa de 17/20 a 8/20, es decir, una diferencia de -47 puntos cuyo intervalo excluye el cero. No es un incumplimiento: el procedimiento pide explícitamente que los casos vivan en `.scratch/to_fix.md`, y el agente obedece. La métrica cuenta los casos añadidos a `game/neon.test.js`, así que registra exactamente lo que la competencia decidió hacer: los casos existen, pero en un lugar donde la suite de pruebas del repositorio nunca irá a buscarlos.
-
-**La competencia deja sus borradores detrás de sí.** `in_scope` cae de 19/20 a 6/20, es decir, una diferencia de -68 puntos, también establecida. La columna `touched` nombra a los culpables: `.scratch/to_fix.md` permanece en once ejecuciones de veinte, acompañado de `.scratch/repro.test.js`, `.scratch/test_collision.js` o `.scratch/probe.js`. El paso 6 del `SKILL.md` ordena, sin embargo, retirar todos los archivos creados. La instrucción de limpieza solo se sigue, por tanto, en menos de una ejecución de cada tres.
-
-**Sobre la corrección en sí, nada está establecido.** El criterio pasa de 11/20 a 16/20 frente al ticket delimitado, pero su intervalo contiene el cero. La columna de la esquina va en la otra dirección, 12/20 frente a 7/20, y su intervalo también contiene el cero. Las veinte ejecuciones no permiten concluir ni que el procedimiento ayude, ni que perjudique.
-
-::: warning Lo que no dice la diferencia con la base
-La síntesis publica `+agents+skill` con +29 puntos en el criterio frente a `nothing`, una diferencia establecida, y sería tentador convertirlo en el resultado del módulo.
-
-Esta configuración difiere de la base en **cuatro cosas a la vez**: el razonamiento elevado, el archivo de reglas, la competencia y una extensión de búsqueda web. Las tres primeras tienen cada una su propia configuración en la matriz, la competencia no tiene ninguna, y nada permite, por tanto, atribuirle una parte de esos veintinueve puntos.
-
-La única diferencia legible para la competencia es la que la compara con el ticket delimitado, más arriba, y no es concluyente sobre la corrección. Aislar la palanca exigiría una configuración más, con una solicitud descuidada, razonamiento elevado, archivo de reglas y nada más. No se ha medido.
 :::
 
-### La competencia frente a la pila mejor equipada
+::: info Ejercicio (en sala)
+A partir de este inicio de archivo ya bastante explícito, te pedimos escribir otras dos partes:
 
-La configuración `+agents+add_tests+skill` se lee contra `+agents+add_tests+well_crafted`, de la que solo difiere en el reemplazo del ticket delimitado por la competencia:
+- **3. Tests en rojo**: cómo el agente escribe los tests de la lista establecida en la etapa 2;
+- **4. Verificación**: en qué momento el agente ha terminado.
 
-| columna          | ticket delimitado | competencia | diferencia |
-| ---------------- | ------------ | ---------- | ----------- |
-| `in_scope`       | 20/20        | 9/20       | -55 pts `*` |
-| `tests_ajoutes`  | 17/20        | 7/20       | -50 pts `*` |
-| `rebond_angles`  | 18/20        | 12/20      | -30 pts `*` |
-| `rebond_briques` | 18/20        | 13/20      | -25 pts `o` |
+Prueba luego tu skill con al menos dos modelos, sobre la petición descuidada del módulo anterior, sin dejar que el agente lea `ISSUES.md`. Mira los tests producidos y verifica que cubran todos los problemas del bug #1 descrito en `ISSUES.md`. Si no es el caso, corrige el procedimiento y vuelve a empezar.
 
-Tres diferencias constatadas, todas negativas. En esta tarea, con este modelo, el procedimiento de trabajo no sustituye ventajosamente a un ticket correctamente redactado, y la columna de la esquina lo dice con mayor claridad: es la que describe el ticket y la que la competencia, que no tiene derecho a leer `ISSUES.md`, debe encontrar por sí sola.
-
-`sonde_intacte` vale 20/20, así que ninguna ejecución modificó la sonda que tenía ante los ojos.
-
-### Lo que cuesta la competencia
-
-| configuración                    | tokens de entrada | turnos | duración |
-| -------------------------------- | ----------------- | ------ | -------- |
-| `+agents+well_crafted`           | 413 335           | 30     | 378 s    |
-| `+agents+skill`                  | **921 783**       | 49     | 575 s    |
-| `+agents+add_tests+well_crafted` | 558 473           | 31     | 590 s    |
-| `+agents+add_tests+skill`        | **811 584**       | 44     | 540 s    |
-
-Frente a la base, `+agents+skill` cuesta +908 622 tokens de entrada, +47 turnos y +560 segundos, con las tres diferencias constatadas. Es la configuración más cara de toda la matriz.
-
-::: warning Estas columnas de coste deben leerse con la reserva del módulo anterior
-Las dos configuraciones con competencia concentran por sí solas 632 de las 1 151 repeticiones de la matriz ILaaS, 345 para una y 287 para la otra. Una repetición vuelve a jugar el turno con todo el contexto acumulado, así que estas columnas miden en parte nuestra propia carga sobre el proveedor.
-
-El orden de magnitud sigue siendo legible en la matriz `deepseek-v4-flash`, que cuenta treinta y siete repeticiones en total y donde `+agents+skill` tarda 1 068 segundos de mediana frente a 553 para `+agents+well_crafted`. Un procedimiento en seis pasos que impone una búsqueda documental, diez familias que instruir y un bucle TDD es un trabajo largo, y la medición no dice nada más.
+Nuestra versión está en la solución de abajo. No la abras hasta haber probado la tuya.
 :::
 
-## Revisar el procedimiento y volver a medir
+::: details Solución: el skill `playtester` completo
 
-Un procedimiento de trabajo es texto versionado que produce efectos medibles, y por tanto se revisa como código: un diagnóstico extraído de las ejecuciones, una corrección, una nueva medición. Las columnas fallidas de la matriz tienen cada una una causa que se lee en las ejecuciones tomadas una a una.
+<<<@/../scripts/skills/playtester/SKILL.md{md}
 
-**Las pruebas nacen en el lugar equivocado.** El paso 3 dice que los casos viven en `.scratch/to_fix.md`, y es el paso 5 el que los hace migrar a `game/neon.test.js`. Esa migración es el paso que el modelo falla: diez ejecuciones de veinte terminan en «6 casos, como en la referencia», habiendo corregido el agente el código contra sus borradores y considerado el trabajo terminado.
-
-**La consigna de limpieza a veces destruye el entregable.** «Retira todos los archivos que hayas creado» quedó en letra muerta en las trece ejecuciones que dejan archivos tras de sí, y dos ejecuciones, en cambio, la aplicaron al pie de la letra: `game/neon.test.js`, que el agente acababa de llenar, ya no existe en el árbol medido.
-
-**Una referencia fantasma crea archivos.** El paso 3 pide ejecutar cada caso «desde la sonda del paso 1», mientras que el paso 1 es la búsqueda documental y no crea ninguna sonda. Esta instrucción huérfana, que quedó de una versión anterior del archivo, empuja a las ejecuciones a inventar lo que falta: los `probe.js`, `repro.test.js` y `test_ghost.js` que llenan la columna `touched` son su rastro.
-
-La matriz `deepseek-v4-flash` completa el diagnóstico: la misma habilidad obtiene ahí `tests_ajoutes` con 20/20. El contenido del procedimiento basta entonces para un modelo que tiene el presupuesto de ejecutarlo; en `gemma-4-31b`, es el propio protocolo el que agota ese presupuesto.
-
-### La revisión: `playtest-court`
-
-La versión revisada conserva lo que sostiene el contenido: el rol, la referencia de coordenadas, la tabla de las diez familias y la obligación de cuantificar cada disparador a partir de las constantes. Recorta el resto, y cada recorte responde a un defecto leído en las ejecuciones. Los casos se escriben directamente en rojo en `game/neon.test.js` y el procedimiento ya no crea ningún archivo, lo que elimina a la vez la migración fallida y la necesidad de limpieza. El paso de búsqueda web desaparece, ya que las sesiones no mostraban más que una sola llamada. El doble rojo y el bloque de doce campos se sustituyen por un requisito de una línea: el caso verifica el comportamiento esperado en valores, nunca solo «algo ha cambiado». El archivo pasa de seis pasos a cuatro y de 182 líneas a 86.
-
-<<<@/../scripts/trysquare-campaign/briques/skills/playtest-court/SKILL.md{md}
-
-### Lo que dice la segunda matriz
-
-El escenario `issue1-skills` enfrenta a las dos habilidades, con `AGENTS.md`, razonamiento y modelo idénticos, veinte repeticiones por celda, y la original sirviendo de referencia para las diferencias. Vive en su propio archivo para no tocar las matrices archivadas del módulo, y su hipótesis, `hypotheses/issue1-skills.md`, se escribió antes de medir. En `gemma-4-31b`:
-
-| columna          | `playtest` | `playtest-court` | diferencia            |
-| ---------------- | ---------- | ---------------- | ---------------------- |
-| `in_scope`       | 9/20       | **20/20**        | +53 pts `*` [+32, +74] |
-| `tests_ajoutes`  | 13/20      | **20/20**        | +32 pts `*` [+11, +53] |
-| `rebond_briques` | 14/20      | 17/20            | +11 pts `o`            |
-| `rebond_angles`  | 4/20       | 8/20             | +19 pts `o`            |
-
-En `deepseek-v4-flash`, `in_scope` pasa de 15/20 a 20/20, es decir, +25 puntos establecidos [+10, +45], y ninguna columna de corrección se mueve: la diferencia en el criterio vale +0 puntos.
-
-De ello extraemos tres lecturas.
-
-**Los dos desplazamientos establecidos de la primera versión desaparecen.** El alcance está completo en las cuarenta ejecuciones de competencia corta, y los tests van todos a la suite del repositorio. Los modelos son los mismos, solo ha cambiado el protocolo: cuando el entregable se escribe directamente en su sitio, ya no hay migración que fallar ni limpieza que conseguir. Un procedimiento que necesitara de verdad archivos intermedios conservaría el problema entero, y el módulo sobre los permisos mostrará cómo un hook que rechaza un `git commit` mientras el borrador está en el árbol garantiza lo que una frase solo puede sugerir.
-
-**La corrección sigue sin mostrar un desplazamiento establecido.** +11 puntos en el criterio y +19 en la esquina, con intervalos que contienen cero en los dos casos. La esquina sigue siendo la columna más baja de gemma, con 8/20, lejos de los 14/20 que el prompt enmarcado obtenía en el módulo anterior: la revisión ha reparado el protocolo del procedimiento, pero no ha sustituido el ticket.
-
-**El coste baja, y la diferencia es legible en flash.** Su matriz lleva veintitrés repeticiones, un total del mismo orden que los treinta y siete que el módulo anterior juzgaba legibles, y la competencia corta consume allí 12 861 tokens de entrada en mediana frente a 34 764, 692 segundos frente a 1 054, y la diferencia de turnos es de -27 con un intervalo de [-47, -16]. La matriz gemma va en el mismo sentido, pero lleva 490 repeticiones, de modo que sus columnas de coste mantienen la reserva habitual: la hipótesis predecía esta bajada, y esa matriz no puede confirmarla.
-
-::: warning La celda replicada no ha devuelto las mismas cifras
-`+agents+skill` remedida en gemma da 9/20 en el alcance, 13/20 en los tests añadidos y 14/20 en el criterio, mientras que la campaña del módulo daba 6, 8 y 16. Misma configuración, mismo commit, mismo modelo: es la dispersión del módulo anterior, vista una vez más. Es también por eso que el escenario vuelve a medir la original en la misma matriz en lugar de recopilar sus cifras antiguas, y por eso las diferencias de esta sección solo comparan celdas medidas juntas.
 :::
 
-El archivo de estas dos matrices está en `scripts/trysquare-campaign/results-2026-08-13/`.
+### Versión 2
 
-## Lo que un skill no garantiza
+La primera versión funciona en NÉON, pero su catálogo se escribió a mano para un rompeladrillos. Si usas `playtester` en un shoot 'em up o un juego de plataformas, el procedimiento sigue siendo válido, pero el agente ya no tiene ninguna entrada entre la que elegir. Vamos entonces a pedirle al agente que construya él mismo el catálogo del género a partir de una búsqueda web. Este catálogo se guardará en el directorio `references` del skill: solo se construye una vez y se relee en las llamadas siguientes. El resto del procedimiento casi no cambia.
 
-Todo lo que las dos matrices acaban de mostrar se reduce a una sola propiedad: un skill solo tiene texto. La consigna de limpieza ignorada, el borrador nunca migrado a la suite, la referencia fantasma seguida al pie de la letra: cada vez, el procedimiento pedía algo que nada obligaba al modelo a hacer. Un skill no tiene ni esquema de entrada, ni función de ejecución, ni guardia de permiso. Una herramienta de agente completa tiene un nombre, una descripción leída por el modelo, un esquema de entrada, una función de ejecución y un permiso entre la validación y la ejecución; un skill solo implementa los dos primeros elementos.
-
-Pi tiene un segundo mecanismo para el resto. Una **extensión** es un módulo TypeScript ubicado en `.pi/extensions/`, que llama a `pi.registerTool({ name, ... })`: una herramienta real, con un esquema JSON validado, una función que has escrito, y la posibilidad de interceptar las llamadas a herramientas para insertar un permiso en ellas. Ya te has topado con una sin saberlo: la herramienta de búsqueda web que pedía la primera versión del procedimiento es una extensión, cargada por el bloque `extension` del escenario. El módulo de permisos se apoyará en este mecanismo para convertir las instrucciones en garantías.
-
-::: danger Un campo documentado no se lee necesariamente
-Si pese a todo buscas un mecanismo de permiso en el skill, a menudo se lee que un skill declara las herramientas que se permite invocar mediante un campo `allowed-tools` en su frontmatter. La documentación incluida con Pi 0.80.6 lo describe efectivamente, en su tabla de frontmatter:
+Es la ocasión de usar los directorios opcionales de los que hablamos más arriba. El skill `dynamic-playtester` tiene la forma siguiente:
 
 ```
-| `allowed-tools` | No | Space-delimited list of pre-approved tools (experimental). |
+dynamic-playtester/
+├── SKILL.md
+├── references/
+│   ├── consignes-catalogue.md   # consignes pour construire le catalogue
+│   └── bugs-arcade.md           # le catalogue, écrit par le script
+└── scripts/
+    └── catalogue.sh             # construit le catalogue dans une session séparée
 ```
 
-El tipo que el código lee es este:
+Vamos a escribir estos archivos en orden: las instrucciones para construir el catálogo, el script que las ejecuta, y luego el skill que llama al script. Pi no tiene herramienta de búsqueda web: sus herramientas básicas son `read`, `write`, `edit` y `bash`. La búsqueda pasa por la extensión `pi-web-access`, que proporciona las herramientas `web_search` y `fetch_content`, independientemente del modelo utilizado. Instálala antes de empezar:
 
-```ts
-export interface SkillFrontmatter {
-    name?: string;
-    description?: string;
-    "disable-model-invocation"?: boolean;
-    [key: string]: unknown;
-}
+```bash
+pi install npm:pi-web-access
 ```
 
-Este tipo solo contiene tres campos, y la cadena `allowed-tools` no aparece en ningún lugar del código compilado del paquete, mientras que `disable-model-invocation` sí se lee. El `[key: string]: unknown` acepta silenciosamente todo lo que añadas, sin usarlo nunca ni avisarte.
+Funciona sin clave de API. El script de recolección que vamos a escribir se ejecuta en la herramienta `codemode` de Pi, disponible a partir de la versión 1.0.
 
-Es la misma trampa que el `--thinking max` del módulo anterior, aún más engañosa, ya que la fuente que te induce a error aquí es la documentación de la propia herramienta. Un skill no tiene ningún mecanismo de permiso propio, y si quieres uno, hace falta una extensión.
+#### Las instrucciones del catálogo
+
+El archivo `references/consignes-catalogue.md` no lo lee el agente que corrige el bug. Contiene las instrucciones dadas a otra sesión, lanzada por el script, cuyo único trabajo es escribir `references/bugs-arcade.md`. Estas instrucciones solo sirven en el momento de construir el catálogo, por eso están en `references` y no en `SKILL.md`.
+
+Esta sesión solo conoce las instrucciones, el género del juego y la ruta del archivo a escribir. Debe por tanto saber qué busca, dónde buscarlo y en qué forma devolver el resultado. La forma es el punto más importante: el skill va a releer este archivo, y cada entrada debe tener un invariante, ya que es lo que verificarán los tests. Ten también en cuenta que el texto de las páginas viene de internet y que cualquiera pudo escribirlo. Las instrucciones deben por tanto precisar que se trata de datos y no de instrucciones.
+
+Para la búsqueda en sí, puedes dejar que el modelo elija sus consultas y abra las páginas una por una. Hará entonces un turno de bucle por llamada, y dos ejecuciones no buscarán lo mismo. La herramienta `codemode` permite, al contrario, lanzar un script que hace todas las búsquedas y abre todas las páginas en un solo turno. Nos encontramos con la misma idea que para el directorio `scripts`: seguir siempre el mismo camino.
+
+::: info Ejercicio (en sala)
+Escribe `references/consignes-catalogue.md`. La sesión debe buscar los bugs del género para cada uno de estos componentes: desplazamiento y colisión, entradas del jugador, bordes de la pantalla, paso de tiempo, puntuación y estado. Escribe una entrada por causa distinta, con su síntoma, su causa, su invariante y la URL de la página de donde viene, y añade una sección al archivo sin borrar los otros géneros.
 :::
 
-## Lo que este módulo aún no sabe
+::: details Solución: `references/consignes-catalogue.md`
 
-Dos preguntas siguen abiertas, y conviene nombrarlas con claridad antes que darlas por resueltas.
+<<<@/../scripts/skills/dynamic-playtester/references/consignes-catalogue.md{md}
 
-**¿Una buena descripción la activa?** Nuestras configuraciones imponen la skill mediante `/skill:`; por lo tanto, las matrices miden un procedimiento aplicado y nunca un procedimiento elegido. La pregunta tiene que ver con la mecánica descrita más arriba, se puede medir con la columna `skill_invoque`, que ya existe para eso, y exige una configuración en la que la skill se cargue por su nombre sin estar desarrollada en el prompt.
+:::
 
-**¿La skill aporta algo con la misma solicitud?** Sigue faltando el control, es decir, la misma configuración sin la skill. La segunda matriz no lo añadió: compara dos versiones del procedimiento entre sí, no el procedimiento con su ausencia.
+#### El script que construye el catálogo
 
-::: info Ejercicio (por tu cuenta)
-Añade al escenario una configuración `+agents+skill_par_nom`, idéntica a `+agents+skill` pero cuyo prompt no contenga el `/skill:`, con la skill todavía cargada por el bloque `harness`. Vuelve a ejecutarlo y lee `skill_invoque`.
+Podrías pedirle directamente al agente que haga la búsqueda. El problema es que el agente que recibe el ticket conoce el síntoma y va a buscar a su alrededor: "la pelota atraviesa los ladrillos" trae páginas sobre el tunneling, y el catálogo solo contendrá eso. Es precisamente lo que queremos evitar. Una sesión lanzada con `pi -p` parte de un contexto vacío. Solo conoce el género, y busca por tanto sobre todos los componentes.
 
-Medirás lo único que este módulo afirma sin haberlo establecido, y no habrás tocado ni la herramienta, ni el validador, ni las demás configuraciones.
+Esta sesión no debe cargar nada más que las consignas: ni `AGENTS.md` ni los skills. De lo contrario, corre el riesgo de reencontrar el síntoma, incluso de llamar a `dynamic-playtester` por sí misma. Solo necesita las herramientas de búsqueda, lectura y escritura, y es preferible que use el mismo modelo que la sesión que la llama.
+
+::: info Ejercicio (en sala)
+Escribe `scripts/catalogue.sh`, que toma el género como argumento (`bash scripts/catalogue.sh "breakout"`), lanza la sesión descrita arriba con las consignas de `references/consignes-catalogue.md` y luego verifica que `references/bugs-arcade.md` no esté vacío.
+
+Lánzalo solo sobre `breakout` y compara el resultado con el catálogo de la versión 1. Lánzalo una segunda vez: ¿obtienes el mismo catálogo?
+:::
+
+::: details Solución: `scripts/catalogue.sh`
+
+<<<@/../scripts/skills/dynamic-playtester/scripts/catalogue.sh{bash}
+
+:::
+
+#### Adaptar el skill
+
+Queda modificar `playtester` para que ya no dependa del rompeladrillos. El catálogo escrito en duro deja lugar a un primer paso que lee `references/bugs-arcade.md` y lanza el script si el género del juego todavía no aparece ahí. El género debe escribirse en inglés, ya que sirve de palabra clave para la búsqueda.
+
+Los demás pasos se mantienen, pero varios fragmentos se escribieron para pelotas y ladrillos: caras, esquina, cuadrícula, sentido de `y`... Hay que generalizarlos sin perder las reglas de montaje, que siguen siendo válidas en un shoot 'em up. Por último, un catálogo extraído de la web mezcla los defectos y las sugerencias de gameplay, como «acelerar la pelota a lo largo del nivel». El agente debe saber descartar las segundas.
+
+::: info Ejercicio (en sala)
+Escribe `dynamic-playtester/SKILL.md` a partir de `playtester`.
+
+Pruébalo en NÉON con la petición descuidada, sin `ISSUES.md` y sin `references/bugs-arcade.md`. La primera llamada debe construir el catálogo y la segunda reutilizarlo. ¿Los tests producidos cubren los problemas del issue #1 tan bien como con la versión 1?
+:::
+
+::: details Solución: el skill `dynamic-playtester` completo
+
+<<<@/../scripts/skills/dynamic-playtester/SKILL.md{md}
+
 :::
 
 ## Generalizar
 
-**Un skill es un procedimiento de trabajo y no una herramienta.** No tiene ni esquema de entrada, ni función, ni permiso, y el único mecanismo del que dispone es el texto. Lo que sabe hacer es imponer un orden de trabajo y una forma de entregable, lo cual es útil y no se confunde con la ejecución de un código que tú controlas.
+Lo que hemos construido para NÉON sirve para cualquier skill.
 
-**La descripción es lo único que se lee con certeza.** El cuerpo solo entra en el contexto si el modelo decide abrirlo o si el usuario lo despliega con `/skill:`. Una descripción que dice qué hace el procedimiento, en lugar de cuándo usarlo, se dirige a la decisión equivocada.
+Un skill es un procedimiento escrito en texto. No ejecuta nada por sí mismo: le dice al modelo en qué orden trabajar y qué debe entregar. Cuando un paso siempre debe hacerse de la misma manera, conviene ponerlo en un script del directorio `scripts` en lugar de describirlo, como hicimos para la construcción del catálogo.
 
-**Un procedimiento desplaza el trabajo antes de mejorarlo.** Los dos efectos establecidos de la primera versión son desplazamientos: los tests van a un archivo de borrador en lugar de a la suite del repositorio, y los borradores permanecen en el árbol. La revisión suprime estos dos desplazamientos, y el efecto sobre la corrección sigue sin ser concluyente en las dos versiones. Antes de preguntarte si un componente mejora el resultado, mira primero adónde envía el trabajo.
+La descripción es la única parte que el modelo lee con seguridad. Debe decir cuándo usar el skill, y no solo qué hace. Si quieres estar seguro de que el skill se use, llámalo tú mismo con `/skill:<nombre>`.
 
-**Una consigna de limpieza no garantiza la limpieza.** El paso final de nuestro `SKILL.md` pide retirar los archivos creados, y once ejecuciones de veinte los dejan. La revisión que completó el alcance no reforzó la consigna, eliminó la necesidad de limpieza: un procedimiento que no crea nada no tiene nada que limpiar. Cuando los archivos intermedios son realmente necesarios, lo que debe ocurrir incluso si el modelo no piensa en ello exige un mecanismo que no dependa de él.
+Los conocimientos de un dominio y el procedimiento que los usa no tienen que vivir en el mismo archivo. En la versión 1, el catálogo estaba escrito en `SKILL.md`, y el skill solo valía para un rompeladrillos. En la versión 2, el catálogo lo construye un script y se guarda en `references`, y el mismo procedimiento puede servir para otros géneros de juegos.
 
-**Cada paso intermedio es un escalón que el modelo puede fallar.** Los tests nacían en un borrador antes de migrar a la suite, y esa migración es el paso perdido diez veces de veinte. Escribir el entregable directamente en su lugar eliminó el escalón, y las dos columnas afectadas pasaron a 20/20 en los dos modelos.
+Una tarea que no debe depender de lo que sabe el agente puede ejecutarse en una sesión separada. La sesión que lanza `catalogue.sh` no conoce el síntoma, así que busca los bugs en todo el género en lugar de detenerse en el caso reportado.
 
-**Un procedimiento se revisa como código, con las ejecuciones en la mano.** El diagnóstico no viene de las columnas agregadas sino de las ejecuciones leídas una por una: la migración fallida, la consigna aplicada al pie de la letra y la referencia fantasma dictaron cada corte, y una nueva matriz verificó la revisión en lugar de creerla.
+Un procedimiento debe decir cuándo termina el trabajo, con un criterio que el agente pueda verificar por sí solo. Aquí, cada entrada aceptada tiene sus tests, los tests existentes siguen pasando y cada test nuevo falla con una `AssertionError`.
 
-**Un campo documentado no siempre se lee.** `allowed-tools` figura en la documentación que se entrega con Pi y no aparece en ninguna parte de su código. El código es la única fuente que no se equivoca, y la verificación se reduce a un `grep`.
-
-**Una pieza de harness se mide contra lo que reemplaza, nunca contra nada.** En esta tarea, reemplazar el ticket delimitado por el procedimiento hace perder treinta puntos en la esquina y cincuenta en los tests añadidos, lo que no se ve en una comparación contra la base.
+Por último, un skill se prueba como si fuera código. Lánzalo con varios modelos, lee las sesiones para ver dónde el agente se aparta de lo que escribiste, corrige y vuelve a empezar. Un skill que funciona con un modelo puede fallar con otro, y tendrá que evolucionar al mismo tiempo que los modelos.
 
 ## Entregable
 
 Este módulo produce tres piezas.
 
-**1. La competencia**, en `.pi/skills/<nombre>/`, con su descripción escrita por ti y un entregable cuya forma impone el cuerpo. Si la has revisado, las dos versiones permanecen versionadas: la matriz que las compara no se entiende sin ellas.
+**1. El skill `playtester`**, en `.pi/skills/playtester/` de tu clon de NÉON, con el catálogo del rompeladrillos en `SKILL.md`.
 
-**2. El directorio de matriz** producido por `trysquare run`, con la configuración con competencia leída contra la que reemplaza y no contra la base.
+**2. El skill `dynamic-playtester`**, en `.pi/skills/dynamic-playtester/`, con las consignas `references/consignes-catalogue.md`, el script `scripts/catalogue.sh` y el catálogo `references/bugs-arcade.md` que ha construido. Guarda también los tests rojos que produce cada versión en la issue #1: son los que permiten comparar las dos.
 
-**3. La línea « herramientas » de la ficha de decisión**:
+**3. La fila «skills» de la ficha de decisión**:
 
-| palanca | efecto medido | ¿adoptado? | por qué |
-| -------------------------------- | ------------ | -------- | -------- |
-| skill (markdown)                 |              |          |          |
-| descripción del skill             |              |          |          |
-| competencia impuesta por `/skill:` |              |          |          |
-| forma del entregable impuesta     |              |          |          |
-| entregable directo o vía borrador |              |          |          |
-| extensión (herramienta real)      |              |          |          |
+| palanca                               | efecto medido | ¿adoptado? | por qué |
+| ------------------------------------- | ------------- | ---------- | ------- |
+| skill elegido por el modelo           |               |            |         |
+| skill impuesto por `/skill:`          |               |            |         |
+| catálogo escrito a mano               |               |            |         |
+| catálogo construido por búsqueda web  |               |            |         |
+| script en `scripts/`                  |               |            |         |
+| sesión separada                       |               |            |         |
 
 ::: tip Criterio de éxito
-Sabes citar un efecto de tu competencia que está establecido, un efecto que no lo está, y decir qué falta para zanjar el segundo.
-
-Este criterio exige haber leído una configuración contra la referencia correcta. Por tanto, no puede satisfacerse de memoria.
+Sabes decir qué problemas de la issue #1 cubren tus tests con cada versión del skill, cuáles faltan, y qué cambiaste en el skill tras leer las sesiones.
 :::
 
 ## Para ir más lejos
 
-- [Agent Skills](https://agentskills.io), el estándar abierto que Pi implementa, y su página sobre la integración en un system prompt.
-- Anthropic, [Equipping agents for the real world with Agent Skills](https://www.anthropic.com/engineering/equipping-agents-for-the-real-world-with-agent-skills).
-- Schick et al., [Toolformer](https://arxiv.org/abs/2302.04761), sobre la idea de que un modelo aprenda cuándo y cómo llamar a una herramienta.
-- Yao et al., [ReAct: Reasoning + Acting](https://arxiv.org/abs/2210.03629), el bucle que alterna razonamiento y acción.
-- La [documentación de las extensiones de Pi](https://github.com/earendil-works/pi/blob/main/packages/coding-agent/docs/extensions.md), para el componente que da garantías donde el skill da sugerencias.
+- La [especificación Agent Skills](https://agentskills.io/specification), que describe el formato de `SKILL.md`, los directorios opcionales `scripts`, `references` y `assets`, y la regla que quiere que el nombre del skill sea el de su directorio.
+- La [documentación de los skills de Pi](https://github.com/earendil-works/pi/blob/main/packages/coding-agent/docs/skills.md), para la ubicación de los skills y la forma en que Pi los carga.
+- Anthropic, [Equipping agents for the real world with Agent Skills](https://www.anthropic.com/engineering/equipping-agents-for-the-real-world-with-agent-skills), sobre la carga progresiva: primero la descripción, luego el cuerpo, los archivos adjuntos solo si hace falta.
+- Anthropic, [Skill authoring best practices](https://docs.claude.com/en/docs/agents-and-tools/agent-skills/best-practices), consejos de escritura que coinciden con los de este módulo: ir a lo esencial, sacar el detalle a archivos de referencia, probar con cada modelo objetivo.
+- La página de [pi-web-access](https://pi.dev/packages/pi-web-access), para configurar otros motores de búsqueda que el predeterminado.

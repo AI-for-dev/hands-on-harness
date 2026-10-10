@@ -95,7 +95,7 @@ Puedes jugar con él haciéndole preguntas, observar el bucle y ver cómo te res
     Puede ser útil navegar por tu sesión y retomar desde uno de los pasos de tu conversación. Para ello, tienes que usar el comando
 
     ```
-    \tree
+    /tree
     ```
 
     ::: info Ejercicio (en clase)
@@ -107,7 +107,7 @@ Puedes jugar con él haciéndole preguntas, observar el bucle y ver cómo te res
     Puedes retomar cualquier sesión anterior con el comando
 
     ```
-    \resume
+    /resume
     ```
 
     ::: info Ejercicio (en clase)
@@ -119,7 +119,7 @@ Puedes jugar con él haciéndole preguntas, observar el bucle y ver cómo te res
     Por último, puedes exportar tu sesión al formato HTML o JSON mediante el comando
 
     ```
-    \export
+    /export
     ```
 
     ::: info Ejercicio (en clase)

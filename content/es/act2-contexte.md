@@ -29,8 +29,8 @@ Cuando escribes una pregunta en Pi, el modelo recibe una pila en la que tu pregu
 
 Las cuatro primeras fuentes son estables de un turno a otro, mientras que la quinta crece en cada turno, lo que casi siempre la convierte en la responsable de los desbordamientos.
 
-::: info Ejercicio (en clase)
-Abre una sesión, haz una pregunta cualquiera, luego exporta la sesión con `\export`. Abre el archivo HTML producido y lee el system prompt de Pi por completo, algo que la mayoría de los agentes de código no te permiten ver.
+::: info Ejercicio (en el aula)
+Abre una sesión, plantea una pregunta cualquiera y luego exporta la sesión con `/export`. Abre el archivo HTML generado y lee el system prompt de Pi completo, algo que la mayoría de los agentes de código no te permiten ver.
 
 Identifica en él lo que describe **capacidades** y lo que describe **convenciones**: más adelante mediremos el peso real de cada una de las dos categorías.
 :::
@@ -220,7 +220,7 @@ El prompt de sistema de Pi ocupa 550 tokens. Todo el resto del trabajo se juega 
 
 #### Una ventana limitada, para ver la compactación
 
-Cuando el contexto se acerca al límite, Pi compacta, es decir, resume los mensajes antiguos y solo conserva intactos los más recientes. El disparo sigue la regla `contextTokens > contextWindow - reserveTokens`, donde `reserveTokens` vale 16 384 por defecto y representa el espacio dejado para la respuesta. El corte es visible en `\tree`, y `/compact` permite forzarlo, con instrucciones opcionales para orientar el resumen.
+Cuando el contexto se acerca al límite, Pi compacta, es decir, resume los mensajes antiguos y solo conserva intactos los más recientes. La activación sigue la regla `contextTokens > contextWindow - reserveTokens`, donde `reserveTokens` vale 16 384 por defecto y representa el espacio reservado para la respuesta. El corte es visible en `/tree`, y `/compact` permite forzarlo, con instrucciones opcionales para orientar el resumen.
 
 En NÉON, según el modelo, la compactación nunca se activará. El repositorio tiene 617 líneas, `gemma-4-31b` anuncia una ventana de aproximadamente 128 000 tokens, lo que sitúa el umbral en torno a 112 000, y nuestra experiencia más costosa solo alcanza esa cifra acumulando trece turnos, ninguno de los cuales pesa más de una decena de miles de tokens. Observar el mecanismo implica, por tanto, crear la restricción para ver sus efectos más rápidamente.
 
@@ -258,7 +258,7 @@ Añade en el `.pi/settings.json` de NÉON umbrales coherentes con esta ventana p
 { "compaction": { "reserveTokens": 4000, "keepRecentTokens": 8000 } }
 ```
 
-Dispones entonces de los dos regímenes en `/model`, el modelo real a 128K y el mismo limitado a 32K. Haz trabajar al agente sobre varios archivos con el segundo hasta el disparo, lee el resumen producido y verifica en `\tree` dónde se produjo el corte y si el agente todavía sabe lo que se le pidió al principio.
+Dispones entonces de los dos regímenes en `/model`, el modelo real de 128K y el mismo limitado a 32K. Haz trabajar al agente sobre varios archivos con el segundo hasta que se dispare, lee el resumen producido, luego verifica en `/tree` dónde se produjo el corte y si el agente todavía sabe lo que se le había pedido al principio.
 :::
 
 Esta manipulación muestra también que Pi compacta a 32 000 tokens no porque el modelo sature, sino porque tú se lo has declarado. La ventana que conoce un harness es una línea de configuración y no una propiedad del modelo. Esta constatación te servirá el día en que un agente se ponga a compactar demasiado pronto sin razón aparente.

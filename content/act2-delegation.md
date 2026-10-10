@@ -224,7 +224,7 @@ Si la séance le permet, continuez jusqu'au bout du plan. Le critère final est 
 ### Ce que l'isolation change dans votre fenêtre
 
 ::: info Exercice (en salle)
-Juste après le retour de la note de l'explorer, tapez `/session` dans la session principale et notez ce qu'elle contient : votre cadre, l'appel d'outil, la note. Ouvrez ensuite une session neuve sans l'extension et demandez au modèle de produire la même note d'impact lui-même, en lisant le dépôt. Comparez les deux `/session`, puis les deux `\tree`.
+Juste après le retour de la note de l'explorer, tapez `/session` dans la session principale et notez ce qu'elle contient : votre cadre, l'appel d'outil, la note. Ouvrez ensuite une session neuve sans l'extension et demandez au modèle de produire la même note d'impact lui-même, en lisant le dépôt. Comparez les deux `/session`, puis les deux `/tree`.
 
 Dans la seconde session, chaque fichier lu est resté dans la fenêtre et y restera jusqu'à la fin, alors que la première n'a fait entrer que la note. La délégation paie l'exploration dans un contexte qui disparaît une fois la tâche rendue, au lieu de la payer à chaque tour dans la fenêtre principale. L'argument est le même que pour la lecture de cache du module sur le contexte : un travail se paie à chaque tour tant qu'il reste dans la fenêtre, et une seule fois quand il n'y entre pas.
 :::
@@ -232,7 +232,7 @@ Dans la seconde session, chaque fichier lu est resté dans la fenêtre et y rest
 ### Vérifier dans la trace qui a tourné
 
 ::: info Exercice (en salle)
-Exportez la session principale avec `\export` et retrouvez chaque appel de l'outil `subagent` : le nom de l'agent, la portée, le modèle, la tâche transmise. C'est la seule réponse fiable à la question de savoir qui a tourné si vous n'avez pas vu l'activité de vos agents via herdr.
+Exportez la session principale avec `/export` et retrouvez chaque appel de l'outil `subagent` : le nom de l'agent, la portée, le modèle, la tâche transmise. C'est la seule réponse fiable à la question de savoir qui a tourné si vous n'avez pas vu l'activité de vos agents via herdr.
 :::
 
 

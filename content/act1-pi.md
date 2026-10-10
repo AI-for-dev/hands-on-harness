@@ -95,7 +95,7 @@ Vous pouvez jouer avec en lui posant des questions, observer la boucle et voir c
     Il peut être utile de naviguer dans votre session et de repartir d'une des étapes de votre discussion. Pour cela, il faut utiliser la commande
 
     ```
-    \tree
+    /tree
     ```
 
     ::: info Exercice (en salle)
@@ -107,7 +107,7 @@ Vous pouvez jouer avec en lui posant des questions, observer la boucle et voir c
     Vous pouvez repartir de n'importe quelle session précédente à l'aide de la commande
 
     ```
-    \resume
+    /resume
     ```
 
     ::: info Exercice (en salle)
@@ -119,7 +119,7 @@ Vous pouvez jouer avec en lui posant des questions, observer la boucle et voir c
     Enfin, vous pouvez exporter votre session au format HTML ou JSON via la commande
 
     ```
-    \export
+    /export
     ```
 
     ::: info Exercice (en salle)

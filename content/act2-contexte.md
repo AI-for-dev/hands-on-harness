@@ -30,7 +30,7 @@ Quand vous tapez une question dans Pi, le modèle reçoit un empilement dont vot
 Les quatre premières sources sont stables d'un tour à l'autre, alors que la cinquième grossit à chaque tour, ce qui en fait presque toujours la responsable des débordements.
 
 ::: info Exercice (en salle)
-Ouvrez une session, posez une question quelconque, puis exportez la session avec `\export`. Ouvrez le fichier HTML produit et lisez le prompt système de Pi en entier, ce que la plupart des agents de code ne vous permettent pas de voir.
+Ouvrez une session, posez une question quelconque, puis exportez la session avec `/export`. Ouvrez le fichier HTML produit et lisez le prompt système de Pi en entier, ce que la plupart des agents de code ne vous permettent pas de voir.
 
 Repérez-y ce qui décrit des **capacités** et ce qui décrit des **conventions** : nous mesurerons plus loin le poids réel de chacune des deux catégories.
 :::
@@ -220,7 +220,7 @@ Le prompt système de Pi tient en 550 tokens. Tout le reste du travail se joue a
 
 #### Une fenêtre bridée, pour voir la compaction
 
-Quand le contexte approche de la limite, Pi compacte, c'est-à-dire qu'il résume les messages anciens et ne garde intacts que les plus récents. Le déclenchement suit la règle `contextTokens > contextWindow - reserveTokens`, où `reserveTokens` vaut 16 384 par défaut et représente la place laissée à la réponse. La coupure est visible dans `\tree`, et `/compact` permet de la forcer, avec des instructions optionnelles pour orienter le résumé.
+Quand le contexte approche de la limite, Pi compacte, c'est-à-dire qu'il résume les messages anciens et ne garde intacts que les plus récents. Le déclenchement suit la règle `contextTokens > contextWindow - reserveTokens`, où `reserveTokens` vaut 16 384 par défaut et représente la place laissée à la réponse. La coupure est visible dans `/tree`, et `/compact` permet de la forcer, avec des instructions optionnelles pour orienter le résumé.
 
 Sur NÉON, selon le modèle, la compaction ne se déclenchera jamais. Le dépôt fait 617 lignes, `gemma-4-31b` annonce une fenêtre d'environ 128 000 tokens, ce qui place le seuil aux alentours de 112 000, et notre expérience la plus dépensière n'atteint ce total qu'en cumulant treize tours dont aucun ne pèse plus d'une dizaine de milliers de tokens. Observer le mécanisme suppose donc de fabriquer la contrainte pour voir ses effets plus rapidement.
 
@@ -258,7 +258,7 @@ Ajoutez dans le `.pi/settings.json` de NÉON des seuils cohérents avec cette pe
 { "compaction": { "reserveTokens": 4000, "keepRecentTokens": 8000 } }
 ```
 
-Vous disposez alors des deux régimes dans `/model`, le modèle réel à 128K et le même bridé à 32K. Faites travailler l'agent sur plusieurs fichiers avec le second jusqu'au déclenchement, lisez le résumé produit, puis vérifiez dans `\tree` où la coupure a eu lieu et si l'agent sait encore ce qu'on lui avait demandé au départ.
+Vous disposez alors des deux régimes dans `/model`, le modèle réel à 128K et le même bridé à 32K. Faites travailler l'agent sur plusieurs fichiers avec le second jusqu'au déclenchement, lisez le résumé produit, puis vérifiez dans `/tree` où la coupure a eu lieu et si l'agent sait encore ce qu'on lui avait demandé au départ.
 :::
 
 Cette manipulation montre également que Pi compacte à 32 000 tokens non pas parce que le modèle sature, mais parce que vous le lui avez déclaré. La fenêtre que connaît un harnais est une ligne de configuration et non une propriété du modèle. Ce constat vous servira le jour où un agent se mettra à compacter trop tôt sans raison apparente.

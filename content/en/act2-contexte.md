@@ -29,8 +29,8 @@ When you type a question into Pi, the model receives a stack in which your quest
 
 The first four sources are stable from one turn to the next, while the fifth grows with every turn, which almost always makes it the one responsible for overflows.
 
-::: info Exercise (in the classroom)
-Open a session, ask any question, then export the session with `\export`. Open the resulting HTML file and read Pi's system prompt in full, something most coding agents do not let you see.
+::: info Exercise (in the room)
+Open a session, ask any question, then export the session with `/export`. Open the resulting HTML file and read Pi's system prompt in full, which most coding agents don't let you see.
 
 Identify what describes **capabilities** and what describes **conventions**: later, we will measure the real weight of each of the two categories.
 :::
@@ -220,7 +220,7 @@ Pi's system prompt fits in 550 tokens. The rest of the work happens elsewhere, a
 
 #### A capped window, to see compaction
 
-When the context approaches the limit, Pi compacts, meaning it summarizes older messages and keeps only the most recent ones intact. Triggering follows the rule `contextTokens > contextWindow - reserveTokens`, where `reserveTokens` defaults to 16,384 and represents the space left for the response. The cutoff is visible in `\tree`, and `/compact` lets you force it, with optional instructions to guide the summary.
+When the context approaches the limit, Pi compacts, meaning it summarizes older messages and keeps only the most recent ones intact. Triggering follows the rule `contextTokens > contextWindow - reserveTokens`, where `reserveTokens` defaults to 16,384 and represents the room left for the response. The cut is visible in `/tree`, and `/compact` lets you force it, with optional instructions to steer the summary.
 
 On NÉON, depending on the model, compaction will never trigger. The repository is 617 lines, `gemma-4-31b` advertises a window of roughly 128,000 tokens, which places the threshold around 112,000, and our most expensive run only reaches this total by accumulating thirteen turns, none of which weighs more than about ten thousand tokens. Observing the mechanism therefore requires manufacturing the constraint to see its effects more quickly.
 
@@ -258,7 +258,7 @@ In NÉON's `.pi/settings.json`, add thresholds consistent with this small window
 { "compaction": { "reserveTokens": 4000, "keepRecentTokens": 8000 } }
 ```
 
-You then have both modes in `/model`: the actual model at 128K and the same one capped at 32K. Put the agent to work on several files with the second one until compaction triggers, read the resulting summary, then use `\tree` to check where the cutoff happened and whether the agent still knows what it was originally asked to do.
+You then have both regimes in `/model`, the real model at 128K and the same one capped at 32K. Have the agent work across several files with the second one until it triggers, read the summary it produces, then check in `/tree` where the cutoff happened and whether the agent still knows what it was originally asked to do.
 :::
 
 This experiment also shows that Pi compacts at 32,000 tokens not because the model saturates, but because you declared it so. The window a harness is aware of is a configuration line, not a property of the model. This observation will serve you well when an agent starts compacting too early for no apparent reason.

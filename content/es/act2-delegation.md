@@ -223,16 +223,16 @@ Si la sesión lo permite, continúa hasta el final del plan. El criterio final e
 
 ### Lo que el aislamiento cambia en tu ventana
 
-::: info Ejercicio (en el aula)
-Justo después de que el explorer entregue su nota, escribe `/session` en la sesión principal y anota lo que contiene: tu marco, la llamada a la herramienta, la nota. Abre luego una sesión nueva sin la extensión y pide al modelo que produzca la misma nota de impacto por sí mismo, leyendo el repositorio. Compara los dos `/session`, luego los dos `\tree`.
+::: info Ejercicio (en sala)
+Justo después de recibir la nota del explorer, escribe `/session` en la sesión principal y anota lo que contiene: tu marco, la llamada a la herramienta, la nota. Abre después una sesión nueva sin la extensión y pide al modelo que produzca él mismo la misma nota de impacto, leyendo el repositorio. Compara los dos `/session` y luego los dos `/tree`.
 
 En la segunda sesión, cada archivo leído ha quedado en la ventana y permanecerá en ella hasta el final, mientras que la primera solo ha dejado entrar la nota. La delegación paga la exploración en un contexto que desaparece una vez entregada la tarea, en lugar de pagarla en cada turno en la ventana principal. El argumento es el mismo que para la lectura de caché del módulo sobre el contexto: un trabajo se paga en cada turno mientras permanece en la ventana, y una sola vez cuando no entra en ella.
 :::
 
 ### Verificar en la traza quién ha corrido
 
-::: info Ejercicio (en el aula)
-Exporta la sesión principal con `\export` y localiza cada llamada a la herramienta `subagent`: el nombre del agente, el alcance, el modelo, la tarea transmitida. Es la única respuesta fiable a la cuestión de saber quién ha corrido si no has visto la actividad de tus agentes mediante herdr.
+::: info Ejercicio (en sala)
+Exporta la sesión principal con `/export` y localiza cada llamada a la herramienta `subagent`: el nombre del agente, el alcance, el modelo, la tarea transmitida. Es la única respuesta fiable a la pregunta de quién ejecutó si no has visto la actividad de tus agentes a través de herdr.
 :::
 
 

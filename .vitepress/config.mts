@@ -1,3 +1,4 @@
+import { readFileSync } from 'node:fs'
 import { defineConfig } from 'vitepress'
 import { fr } from './locales/fr.mts'
 import { en } from './locales/en.mts'
@@ -59,11 +60,26 @@ export default defineConfig({
   // above it (see scripts/i18n/lib/quotes.mjs). It is shown as a collapsible
   // "original text", except on the page in its own language, where the
   // translator has already put the original in place of the translation.
+  //
+  // `<<<@/file#L1-77` imports only lines 1 to 77 of the file. VitePress only
+  // knows regions marked by comments, and a skill cannot carry a marker
+  // above its frontmatter.
   markdown: {
     config(md) {
       const fence = md.renderer.rules.fence!
       md.renderer.rules.fence = (tokens, idx, options, env, self) => {
         const token = tokens[idx]
+        const [src, region] = token.src ?? []
+        const range = region?.match(/^L(\d+)-(\d+)$/)
+        if (range) {
+          env.includes?.push(src)
+          token.content = readFileSync(src, 'utf8')
+            .replace(/\r\n/g, '\n')
+            .split('\n')
+            .slice(Number(range[1]) - 1, Number(range[2]))
+            .join('\n')
+          token.src = undefined
+        }
         const info = token.info.trim()
         if (info === 'mermaid') {
           return `<Mermaid code="${encodeURIComponent(token.content)}" />`
