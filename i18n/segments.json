@@ -1,4 +1,66 @@
 {
+  "a-vous-de-jouer.md": {
+    "en": {
+      "rules": "ad0069665eaaa0bf",
+      "body": [
+        "2dd854166dd301b9:58c2ef59dfa1bb87",
+        "e77ef3027075d854:78b800d4b3e3118e",
+        "3c98feb12b8343e8:60941d28b4967f25",
+        "5832b3b4a7eb6211:4cd474dc83478c56",
+        "3480ee38b4e0b84d:08c95e148e1e2e20",
+        "34db5772d20de33e:2a1fbc5c7add400a",
+        "d6f97576448e73e1:6ff3f91cd6b93a12",
+        "0d3cec92e5ab840d:eb8d877e491b4097",
+        "980ddd329b87388e:05b1f6b1c8eafd93",
+        "b4563b53c6f0070a:8d5929045877d36f",
+        "6c2101aad3515aa9:25da2ead49f49ccd",
+        "18d557cd827b0728:fcc2dcc86f746871",
+        "ee2723113a67f106:ae8f316cd45eb5c5",
+        "4f68f41540573392:6d6ce9cdc49b2788",
+        "5b17e92f61946e07:49b61716985e1eab",
+        "9c39f302b86f9441:e27dba5a4a713207",
+        "f55c78ef98eac83d:d20c92085c1b3484",
+        "facae691514b3161:bc0c8da7f15f948b",
+        "4f2343daf92ac73e:903b3f58925e8dc3",
+        "6d2e86c6456bd410:1bc0e350368cd165",
+        "841329b90d7b6fdd:716be2dc9588393a",
+        "b628cbc8ac0f9339:f92b9aabd503a403",
+        "ebd1ae4ba158d30b:fa01a78e5482c11e",
+        "0ba5edd448b0bdd0:15df394deb787217",
+        "556aa3697d707884:edf502c4d9b20d19"
+      ]
+    },
+    "es": {
+      "rules": "ad0069665eaaa0bf",
+      "body": [
+        "2dd854166dd301b9:961cee6a546898d5",
+        "e77ef3027075d854:0e303b8a61294814",
+        "3c98feb12b8343e8:36a02467f19e3aec",
+        "5832b3b4a7eb6211:e70bbfa277fbbe94",
+        "3480ee38b4e0b84d:199aeaacb1df04c7",
+        "34db5772d20de33e:8691af4fef87ce96",
+        "d6f97576448e73e1:8782ddef67d7d45c",
+        "0d3cec92e5ab840d:3a03a45a9bbfa72b",
+        "980ddd329b87388e:b241ed9f6ebb93c8",
+        "b4563b53c6f0070a:2e651874d03c2da3",
+        "6c2101aad3515aa9:1e3f6647bec23cee",
+        "18d557cd827b0728:6b811e35c523390a",
+        "ee2723113a67f106:d0cff0dc7617e39e",
+        "4f68f41540573392:40930fe6f31031fb",
+        "5b17e92f61946e07:a74d3d34609dcf3a",
+        "9c39f302b86f9441:f3531983c9750257",
+        "f55c78ef98eac83d:2d1090389fab7fd8",
+        "facae691514b3161:b545ee57639ffe3d",
+        "4f2343daf92ac73e:44e380bbc6bdcea2",
+        "6d2e86c6456bd410:f40c109fab13cb51",
+        "841329b90d7b6fdd:082dc519d3dad2b7",
+        "b628cbc8ac0f9339:78f142e8dd933e09",
+        "ebd1ae4ba158d30b:8361391e82c0eada",
+        "0ba5edd448b0bdd0:9709234ed76534db",
+        "556aa3697d707884:9639f2038712a6df"
+      ]
+    }
+  },
   "act1-harness.md": {
     "en": {
       "rules": "ad0069665eaaa0bf",
