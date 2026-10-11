@@ -99,7 +99,12 @@ pi install -l npm:@ai-for-dev/combo
 pi
 ```
 
-Añade este archivo a `.pi/flows/impact-plan.md` y pruébalo en la issue #2. Puedes ver a los agentes evolucionar en herdr.
+Añade este archivo en `.pi/flows/impact-plan.md` y pruébalo sobre la issue #2. Puedes ver la evolución de los agentes en herdr.
+
+```
+/herdr on
+/run impact-plan traite le ticket #2 d'ISSUES.md
+```
 :::
 
 ### Automatización del orquestador
@@ -376,9 +381,6 @@ El resto sigue la misma lógica. Un modelo más grande para el planner y el audi
 Añade la parada antes del commit y vuelve a ejecutar el ticket. Prueba luego una modificación propia : otro reparto de roles, un modelo más grande donde se considere, un flow para otro tipo de ticket. La pregunta que debes hacerte es siempre la misma : ¿qué gesto repetías a mano, y qué línea lo escribiría ?
 :::
 
-### ¿Y la medida? (Para hacer con trysquare)
-
-
 ## Generalizar
 
 Automatizar un bucle exige haberlo ejecutado a mano o analizar finamente las trazas. El flow de este módulo es tu diario del módulo anterior reescrito : cada línea responde a una decisión que tomaste tú mismo, y por eso sabes dónde colocarla.
@@ -387,7 +389,7 @@ El harness se construye mediante correcciones sucesivas. Cada fallo leído en la
 
 Los tests tienen la última palabra pero solo verifican lo que restringen. Una suite verde no prueba que el ticket esté hecho.
 
-Una decisión merece su propio canal. Mientras un veredicto se lee en prosa, depende de la forma en que el modelo escribe una palabra como por ejemplo `APPROVED`. Cuando sea posible, dale una herramienta para responder. Puedes apoyarte en https://laya.convaiinnovations.com/ que permite tomar decisiones mucho más precisas que con un LLM clásico.
+Una decisión merece su propio canal. Mientras un veredicto se lea en prosa, depende de cómo el modelo escriba una palabra como `APPROVED`. Cuando sea posible, dale una herramienta para responder. En el momento de escribir esta formación, surgen nuevos modelos. Son los llamados modelos «de clasificación». Usan muy pocos tokens y pueden responder bastante bien a preguntas de opción múltiple a partir del prompt que les das. El más destacado ahora mismo es [Jev](https://typesafe.ai/blog/introducing-system-one-models-and-jev), pero puedes estar seguro de que otros modelos de clasificación aparecerán en los próximos meses.
 
 Las paradas humanas son elecciones de diseño. Colócalas donde un error cueste más caro de deshacer que de prevenir, y no en otro lugar. En nuestro caso, una discusión de preguntas y respuestas sobre el ticket para enriquecer el plan podría ser una buena cosa.
 

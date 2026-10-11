@@ -1,18 +1,16 @@
 # La delegación: dividir el trabajo en subagentes
 
 ::: tip Objetivos de este módulo
-- Saber qué recibe un subagente en su creación, qué no recibe y qué devuelve
-- Escribir un agente cuya garantía descansa en su panoplia de herramientas, y verificar esa garantía en la traza
-- Llevar tú mismo el bucle explorar → planificar → codificar → evaluar sobre un ticket real
-- Saber decir quién se ejecutó realmente, y con qué modelo, en lugar de fiarte de una ✓
-- Irte con la bitácora de lo que la orquestación te ha enseñado, que el siguiente módulo necesita para automatizar el bucle
+- Saber qué recibe un subagente al crearse, qué no recibe y qué devuelve
+- Escribir un agente cuya lista de herramientas limite lo que puede hacer, y verificarlo en la traza
+- Sostener tú mismo el bucle explorar → planificar → codificar → evaluar sobre un ticket real
+- Saber decir quién se ejecutó realmente, y con qué modelo
+- Llevar el registro de las decisiones tomadas entre dos etapas, del que el módulo siguiente necesita para automatizar el bucle
 :::
 
-Los dos módulos anteriores terminaron con dos constataciones. La primera es que cuidar el texto del prompt, indicando explícitamente el comportamiento deseado, mejora los resultados en ciertas columnas. Nuestro ticket acotado logra que el caso límite pase de 0/20 a 14/20 porque ISSUES.md lo describe. No obstante, con o sin la descripción detallada de los bugs de la issue #1, la corrección « briques » es de 11/20 y 13/20 respectivamente, lo que no supone un cambio fundamental. En cambio, añadir previamente las pruebas unitarias deseadas hace progresar ese resultado de 11/20 a 18/20 sin cambiar una línea del prompt. La segunda constatación es que un skill solo tiene texto, sin esquema de entrada, sin función de ejecución ni control de permisos, de modo que nada de lo que pide está garantizado: su consigna de hacer limpieza al final quedó en letra muerta en once de veinte ejecuciones, y sus únicos efectos comprobados fueron desplazamientos de trabajo, nunca una mejora de la corrección.
+Ahora tenemos una visión bastante clara de lo que puede ayudarnos en el contexto principal a resolver problemas complejos, gracias en particular a los skills. Sin embargo, un skill no es más que texto, y su descripción puede ser insuficiente, incluso ineficaz, para que el modelo lo use. El skill, una vez usado, entra en el contexto junto con su resultado. Por último, no puedes ajustar con precisión las herramientas que quieres usar y las que no.
 
-El agente solo tiene sus límites y no podemos sino constatar que no siempre lo logra por sí mismo. Pero imagina un subagente que añada pruebas unitarias pertinentes para ese agente: ¿seríamos capaces de volver a obtener ese 18/20? Vamos a intentar, entonces, dividir el trabajo mediante agentes especializados en ciertas tareas.
-
-Este módulo divide el trabajo en cuatro roles (**explorar**, **planificar**, **codificar** y **evaluar**), cada uno ejecutado en un contexto separado, con su lista de herramientas y su modelo. No emplearás ningún mecanismo de orquestación: eres tú quien lanza cada rol, quien decide qué pasa de uno a otro y quien ejecuta los tests entre medias. Un comando transporta los entregables por ti, pero ningún código elige el siguiente paso. El siguiente módulo automatizará este bucle. Pero antes de automatizar, primero hay que saber qué pasos reemplazar o reordenar. Esta lista se establece llevando tú mismo el bucle, y forma parte de los entregables del módulo.
+Vamos a ver, entonces, cómo lanzar sesiones de trabajo fuera del contexto principal, con la ayuda de lo que llamamos agentes, que a su vez pueden usar skills. Este módulo divide el trabajo en cuatro roles (**explorar**, **planificar**, **codificar** y **evaluar**), cada uno ejecutado en un contexto separado, con su lista de herramientas y su modelo. No emplearás ningún mecanismo de orquestación: eres tú quien lanza cada rol, quien decide qué pasa de uno a otro y quien ejecuta las pruebas entre dos. Un comando, `/step`, transmite el resultado de un agente al siguiente, pero eres tú quien elige la etapa siguiente. El módulo siguiente automatizará este bucle y, para saber qué automatizar, hay que haberlo hecho una vez a mano, anotando las decisiones tomadas entre dos etapas.
 
 ## Comprender
 
@@ -20,22 +18,20 @@ Este módulo divide el trabajo en cuatro roles (**explorar**, **planificar**, **
 
 Un **subagente** es una sesión abierta por la sesión principal, con su propio system prompt, su propia lista de herramientas, su propio modelo y una ventana de contexto vacía al inicio. Recibe una tarea en forma de texto, trabaja y devuelve un texto final. Todo lo demás, sus lecturas de archivos, sus llamadas a herramientas y su razonamiento, desaparece cuando su sesión termina, y solo su conclusión regresa al contexto de la sesión que lo lanzó.
 
-Tres propiedades de esta definición motivan la delegación.
+La primera razón para delegar es el aislamiento del contexto. El trabajo de una subtarea casi siempre es más grande que su conclusión: establecer qué archivos toca un ticket exige leer una decena de ellos, es decir, varios miles de tokens de salidas de herramientas, mientras que la nota resultante cabe en treinta líneas. Si haces este trabajo en la sesión principal, los diez archivos permanecen en tu ventana hasta el final. Si lo delegas, solo la nota entra en ella.
 
-La primera es el aislamiento del contexto. El trabajo de una subtarea casi siempre es más grande que su conclusión: determinar qué archivos afecta un ticket exige leer unos diez, es decir, varios miles de tokens de salidas de herramientas, mientras que la nota resultante cabe en treinta líneas. Si haces este trabajo en la sesión principal, los diez archivos permanecen en tu ventana hasta el final. Si lo delegas, solo la nota entra en ella.
+La segunda es la restricción de herramientas. Un skill puede pedirle al modelo que no escriba, pero nada lo obliga a ello: el estándar [Agent Skills](https://agentskills.io/specification) sí prevé un campo `allowed-tools`, que sirve para preautorizar herramientas y no para prohibir las demás, pero Pi lo ignora. Un agente cuyo repertorio no contiene ninguna herramienta de escritura no puede escribir, sea cual sea la consigna que reciba.
 
-La segunda es la restricción de herramientas. El módulo anterior mostró que una instrucción no obliga a nada, ya que la instrucción de limpieza del `SKILL.md` solo se sigue en menos de una de cada tres ejecuciones. Un agente cuyo arsenal de herramientas no incluye ninguna de escritura no puede escribir, y la cuestión de la obediencia ya no se plantea.
-
-La tercera es la separación entre el generador y el evaluador. Un modelo que relee su propio trabajo se inclina hacia el lado favorable, y se entiende: su ventana contiene todo el razonamiento que lo condujo a ese código, de modo que relee sus intenciones en lugar de su diff. Un revisor en un contexto nuevo solo conoce el ticket, el plan y el diff, y por tanto es más objetivo.
+La tercera es la separación entre quien escribe el código y quien lo relee. Un modelo que relee el código que acaba de escribir todavía tiene en su contexto todo el razonamiento que lo llevó hasta ahí, y tiende a validar lo que quería hacer en lugar de lo que escribió realmente. Un revisor lanzado en un contexto nuevo solo conoce el ticket, el plan y el diff, y por tanto juzga el código tal como es.
 
 ### La anatomía de un agente
 
-En Pi, la delegación no está en el núcleo de la herramienta: se hace a través de [combo](https://github.com/AI-for-dev/combo), una biblioteca escrita para esta formación sobre el SDK de Pi. Un archivo markdown se convierte allí en un **agente**, un agente se convierte en un **subagente** cuyo ciclo de vida está controlado por el llamante, y los subagentes se componen en workflows escritos en TypeScript o también en Markdown.
+En Pi, la delegación no está en el núcleo de la herramienta: llega mediante [combo](https://github.com/AI-for-dev/combo), una biblioteca escrita para esta formación sobre el SDK de Pi. En combo, un **agente** se describe con un archivo Markdown. Cuando la sesión principal lo lanza, se ejecuta como subagente, y varios subagentes pueden encadenarse en un workflow escrito en TypeScript o en Markdown, lo que hará el módulo siguiente.
 
 ::: info De dónde viene combo, y qué extensiones preferirle
-combo nació de las necesidades de este curso, y sus decisiones se explican por ello. No podemos decir que esta herramienta sea una joya de diseño para pilotar subagentes. La hemos moldeado a nuestra manera y seguramente evolucionará según nuestros usos futuros para quizás llegar a ser útil algún día para construir pipelines complejos. Sobre todo queríamos que pudieras sumergirte en las discusiones de los subagentes, que pudieras escribir workflows complejos fácilmente.
+combo nació de las necesidades de esta formación, y sus decisiones se explican por ello. No podemos decir que esta herramienta sea una joya de diseño para pilotar subagentes. La modelamos a nuestra manera y sin duda evolucionará según nuestros usos futuros hasta convertirse quizá algún día en algo útil para construir pipelines complejos. Ante todo queríamos que pudieras leer en detalle los intercambios de los subagentes y escribir fácilmente workflows complejos.
 
-Su integración con [herdr](https://herdr.dev) proporciona un panel por subagente, para ver el trabajo en curso en lugar de esperar ante un contador. También hemos añadido un conjunto de orquestación para crear pipelines compuestos de formas más ricas que una llamada aislada. Y, al igual que el resto de la formación mide, una ejecución contabiliza el tiempo y los tokens de cada subagente, y se exporta completa en HTML legible y en JSONL reproducible. Si estas mediciones son posibles sin instrumentar procesos hijo, es porque los subagentes se ejecutan en el proceso de Pi, mediante el SDK, y Pi ya tiene toda su información.
+Su integración con [herdr](https://herdr.dev) da un panel por subagente, para ver el trabajo hacerse en lugar de esperar frente a un contador. También añadimos orquestadores para componer pipelines más ricos que una llamada aislada. Y como todo lo demás en la formación mide, una ejecución cuenta allí el tiempo y los tokens de cada subagente, y se exporta entera en HTML legible y en JSONL rejugable. Estas medidas no requieren ninguna instrumentación, porque los subagentes corren en el proceso de Pi, a través de su SDK, y Pi ya conoce el tiempo y los tokens de cada llamada.
 
 Recordamos que combo no es por ahora una biblioteca de producción, y varias extensiones del ecosistema Pi están más probadas para un uso cotidiano.
 
@@ -48,7 +44,7 @@ El [ejemplo `subagent` del repositorio de Pi](https://github.com/earendil-works/
 Si montas una cadena de la que dependes, parte de una de estas tres. Conservamos combo aquí por razones pedagógicas: sus agentes son archivos markdown que lees por completo, la restricción de herramientas se verifica en la traza, y lo que hace la biblioteca sigue siendo visible. Todo lo que el módulo establece se traslada a los demás.
 :::
 
-La biblioteca se utiliza de dos maneras: desde un script o desde Pi a través de su **extensión**, cargada con `-e`, que registra una herramienta `subagent` que el modelo de la sesión principal puede llamar. El subagente se añade así a las herramientas de la sesión principal, al igual que `read` o `edit`, en lugar de formar un motor de orquestación junto al harness. combo también proporciona nueve combinadores, `chain`, `fanOut`, `loop`, `orchestrate` y los demás, de los cuales este módulo no utiliza ninguno: un agente a la vez, ya que eres tú quien lleva el bucle entre los agentes.
+La biblioteca se usa de dos maneras, desde un script o desde Pi a través de su **extensión**, cargada con `-e`, que registra una herramienta `subagent` que el modelo de la sesión principal puede llamar. Para el modelo, lanzar un subagente es por tanto una llamada de herramienta como cualquier otra, igual que `read` o `edit`. combo también proporciona nueve orquestadores (`chain`, `fanOut`, `loop`, `orchestrate`...) que encadenan varios agentes automáticamente. Este módulo no usa ninguno: lanzas un agente a la vez, y eres tú quien pasa de uno a otro.
 
 Un agente se define en un archivo markdown cuya estructura recuerda a la de un skill. Este es el agente completo más pequeño:
 
@@ -64,30 +60,28 @@ You read the file you are given and list its exported symbols,
 one per line, with the line number. Nothing else.
 ```
 
-El encabezado contiene el nombre, la descripción, el **conjunto de herramientas** (`tools:`) y el **modelo**. El cuerpo se convierte en el **system prompt** del subagente: cada sesión de `reader` arranca con este texto como único marco, mientras que un skill sigue siendo un procedimiento que el modelo decide o no abrir.
+El encabezado da el nombre, la descripción, el modelo y la **panoplia**, es decir, la lista de herramientas de las que dispone el agente (`tools:`). El cuerpo del archivo se convierte en el system prompt del subagente. A diferencia de un skill, que el modelo puede no abrir nunca, este texto siempre se lee. La línea `tools:` fija por su parte las únicas herramientas que el subagente puede llamar: `reader` puede leer, pero no tiene ninguna forma de escribir, sea cual sea la tarea que se le dé.
 
-La diferencia con un skill es, por tanto, doble. El cuerpo se lee siempre, y la línea `tools:` decide qué herramientas registra la sesión del subagente, de modo que un agente sin `write` no tiene ningún medio de escribir, sea cual sea la tarea que reciba.
-
-Un archivo que omite `tools:` obtiene el conjunto de herramientas en modo de solo lectura, `read, grep, find, ls`, que es el valor por defecto adecuado para todo lo que explora. No obstante, preferiremos incluir las herramientas disponibles para facilitar la lectura de este archivo y de las acciones posibles de este subagente.
+Un archivo que omite `tools:` obtiene la panoplia en solo lectura, `read, grep, find, ls`, que es el valor por defecto adecuado para todo lo que explora. No obstante, siempre declaramos la lista, para que se vea al leer el archivo lo que el agente puede hacer.
 
 ::: warning Estructura de los archivos de agente
-El primer ejemplo de archivo markdown que hemos presentado corresponde a la estructuración clásica de un subagente, que también encontrarás en otras bibliotecas de harness como Claude, Codex, OpenCode, Cursor, ...
+El primer ejemplo de archivo markdown que presentamos corresponde a la estructuración clásica de un subagente que también encontrarás en otros harness como Claude Code, Codex, OpenCode o Cursor. Por tanto, no está ligado a la biblioteca `combo` de la que hablamos más arriba.
 
-En el párrafo siguiente, vamos a introducir metadatos que son propios de combo y que no encontrarás en las demás. No obstante, estos archivos deberían funcionar igualmente con otras herramientas, ya que los metadatos no reconocidos simplemente se ignorarán.
+Los campos presentados a continuación son propios de combo. Las demás herramientas ignoran en principio los campos que no conocen, por lo que un archivo que los contenga sigue siendo utilizable en otros sitios.
 :::
 
-En combo, disponemos de un campo adicional en los metadatos. El campo `lifetime` regula la duración de vida del subagente: `task`, el valor por defecto, lo hace nacer y morir con cada tarea, mientras que `workflow` le permite sobrevivir de una iteración a otra. Este módulo utiliza `task` en todos los casos.
+En combo, tenemos campos adicionales en los metadatos. El campo `lifetime` regula la duración de vida del subagente. Con `task`, el valor por defecto, el subagente se crea para una tarea y desaparece al final de esta; con `workflow`, conserva su contexto de una iteración a otra de un workflow. Este módulo usa `task` en todas partes.
 
-Un subagente no hereda nada de tu entorno: ni extensiones, ni skills, ni archivos de contexto. Solo ve su definición, completada con una única línea que le indica dónde se encuentra. Esto es lo que hace que una ejecución sea reproducible, y por eso todo lo que un rol debe saber pasa por su prompt o por la tarea que le das. Si necesitas proporcionar skills a tu agente, puedes hacerlo añadiendo la lista en un campo `skills`.
+Un subagente no hereda nada de tu entorno: ni extensiones, ni skills, ni archivos de contexto. Solo ve su definición, completada con una sola línea que le dice dónde se encuentra. Su comportamiento no depende, por tanto, de tu configuración personal, y todo lo que necesita saber pasa por su prompt o por la tarea que le das. Si necesitas proporcionar skills a tu agente, puedes hacerlo añadiendo la lista en un campo `skills`. Este campo existe también en Claude Code, pero no necesariamente en los demás harness. Atención: si no pones la herramienta `read` en el conjunto de herramientas y rellenas `skills`, el agente fallará porque no podrá leer los skills.
 
-Los archivos de agentes del proyecto se encuentran en `.pi/agents/`, los de tu máquina en `~/.pi/agent/agents/`, y la extensión trae sus propios agentes de demostración. Puedes tener el mismo nombre de agente a nivel global y local, y combo te permite elegir cuál quieres usar. Lo veremos más adelante.
+Los archivos de agentes del proyecto viven en `.pi/agents/`, los de tu máquina en `~/.pi/agent/agents/`, y la extensión aporta sus propios agentes de demostración. Un agente puede llevar el mismo nombre en los dos directorios, y combo te deja elegir cuál usar.
 
 ::: warning Un agente sin `model:` se ejecuta con los ajustes del día
 El modelo de un subagente nunca se hereda de la sesión padre. Proviene de un argumento pasado a la llamada, en su defecto del archivo de pipeline, en su defecto del encabezado del agente y, en último recurso, de los ajustes de Pi: el más cercano al trabajo prevalece. Un agente que no declara nada y se lanza sin argumento se ejecuta entonces con tu `~/.pi/agent/settings.json`, es decir, con lo que haya en él ese día.
 :::
 
 ::: warning Tus agentes de proyecto nunca se cargan por defecto
-`.pi/agents/` es un contenido controlado por el repositorio, por lo que sus instrucciones son instrucciones de terceros: combo se niega a cargarlas sin que se lo pidas. El alcance se solicita en cada llamada a la herramienta.
+Los archivos de `.pi/agents/` vienen del repositorio que has clonado, y otra persona pudo haberlos escrito. combo solo los carga si lo pides, precisando el alcance (proyecto o máquina) en cada llamada a la herramienta.
 
 Puedes obtener la lista de tus agentes mediante el comando:
 
@@ -114,46 +108,67 @@ para que todo subagente en combo abra su propia ventana.
 
 Toda la parte práctica se centra en el **issue #2** de NÉON: la colisión se describe como lenta y enredada en el renderizado, y el ticket pide identificar el camino crítico y optimizar sin cambiar la API pública. Al leer el archivo `game/neon.js`, comprobarás que el bucle sobre los ladrillos de `frame()` hace la colisión, la puntuación y el dibujo en el mismo cuerpo, de modo que nada de ello es testeable por separado. El resultado esperado es una función **pura**, extraída de `frame()` y cubierta por tests nuevos, sin que ninguno de los exports de `game/neon.js` cambie de nombre ni de firma.
 
-Este ticket se ajusta a este módulo por dos razones. La primera es que cada rol tiene un entregable falsable: una nota de impacto se verifica abriendo los archivos que cita, un plan se verifica paso a paso, un diff se verifica lanzando la suite de tests, un veredicto se verifica contra la lista de exports. La segunda es que el ticket afirma algo que no mide, ya que «la colisión es lenta» es una frase del mantenedor y no una cifra. Por lo tanto, es necesario verificar que es cierto y dónde ocurre.
+La ruta elegida aquí es muy clásica y probablemente la encontrarás en las «software factories». Verás funcionar varios roles en la fase de resolución de este bug y te formarás tu propia opinión sobre el impacto de cada uno. Proponemos cuatro, pero con el uso quizá te parezcan demasiados. De nuevo, este módulo te permite ser el actor principal y modelar tu harness como quieras.
 
-El marco no cambia: solo `game/neon.js` y `game/neon.test.js` pueden modificarse, los tests nuevos van a la suite de tests y a ningún otro sitio, y `npm test` debe terminar en verde.
+El marco no cambia: solo se pueden modificar `game/neon.js` y `game/neon.test.js`, las pruebas nuevas van en la suite y en ningún otro lugar, y `npm test` debe terminar en verde. Recordamos que es una restricción fuerte que está aquí únicamente para probar la obediencia del modelo.
 
-### Cuatro roles, y qué tiene derecho a hacer cada uno
+### Definición de los cuatro roles
 
-| agente     | entregable                              | repertorio                          | lo que su repertorio le prohíbe |
-| ---------- | --------------------------------------- | ----------------------------------- | ------------------------------- |
-| `explorer` | una nota de impacto                     | `read, grep, find, ls`              | escribir cualquier cosa         |
-| `planner`  | un plan en pequeños pasos               | `read, grep, find, ls`              | escribir cualquier cosa         |
-| `coder`    | el diff de **un** paso del plan         | `read, grep, find, ls, edit, write` | ejecutar un comando             |
-| `reviewer` | `APPROVED` o `CHANGES REQUESTED`, motivado | `read, grep, find, ls`              | corregir lo que revisa          |
+El ticket pasa sucesivamente entre cuatro agentes. Cada uno recibe el resultado del anterior, produce un único entregable y solo dispone de las herramientas necesarias para producirlo. Ninguno de los cuatro tiene shell: entre `coder` y `reviewer`, eres tú quien lanza las pruebas.
 
-Los cuatro archivos están versionados en `scripts/agents/` y se copian en el `.pi/agents/` de tu clon de NÉON. Aquí están, con las decisiones de redacción que se trasponen a cualquier reparto en roles.
+| agente     | recibe                                 | entrega                                   | conjunto de herramientas            | lo que su conjunto de herramientas le prohíbe |
+| ---------- | -------------------------------------- | ----------------------------------------- | ----------------------------------- | ------------------------------- |
+| `explorer` | el ticket                              | una nota de impacto                       | `read, grep, find, ls`              | modificar cualquier cosa        |
+| `planner`  | el ticket y la nota de impacto         | un plan en pequeños pasos                 | `read, grep, find, ls`              | modificar cualquier cosa        |
+| `coder`    | **un** paso del plan                   | el código y la prueba de ese paso         | `read, grep, find, ls, edit, write` | lanzar un comando               |
+| `reviewer` | el paso, el diff y la salida de las pruebas | `APPROVED` o `CHANGES REQUESTED`, justificado | `read, grep, find, ls, verdict`     | corregir lo que relee           |
+
+Los cuatro archivos están versionados en `scripts/agents/`, y los copiarás en el `.pi/agents/` de tu clon de NÉON. El texto completo de cada agente está plegado bajo su descripción.
+
+#### `explorer`: decir qué tocará el ticket
+
+`explorer` recibe el ticket y entrega una **nota de impacto** en cuatro partes: los lugares del código que tocará la modificación, con el archivo y las líneas; lo que depende de esos lugares (llamadores, pruebas, imports); lo que el ticket deja abierto; y lo que no debe moverse, en particular los exports que importan las pruebas. No propone una corrección, ya que es el trabajo de `planner` y luego de `coder`. Su prompt también le advierte que el autor de los tickets de este repositorio a veces se ha equivocado sobre la ubicación del código, para que verifique en los archivos lo que afirma el ticket en lugar de copiarlo. Con sus únicas herramientas de lectura, no puede modificar nada, ni siquiera por error.
+
+::: details El agente `explorer`
 
 <<<@/../scripts/agents/explorer.md{md}
 
-El explorador entrega una nota y no una opinión, y su última sección se lo recuerda: una nota que también contiene la corrección deja de ser una nota. Su prompt le dice además que los tickets de este repositorio están escritos por un mantenedor que a veces se ha equivocado sobre la ubicación del código, lo cual es cierto, y basta para que la nota verifique en lugar de copiar.
+:::
+
+#### `planner` : dividir el trabajo en pasos pequeños
+
+`planner` recibe el ticket y la nota de impacto, y devuelve un **plan**, es decir, una lista ordenada de pasos. Cada paso indica qué hay que hacer, los únicos archivos que puede tocar, el test rojo que hay que escribir primero, y un criterio de fin que puedes verificar con `npm test`. Un paso debe ser lo bastante pequeño para que `coder` lo termine en una sola invocación, y el prompt da una regla simple: «si dudas, divide». Esta restricción viene del [módulo 3.1](./act3-contexte), donde cuatro ejecuciones de veinte escriben los tests rojos que pide un ticket largo, y luego se detienen sin abrir nunca `game/neon.js`. Si un paso añade un export a `game/neon.js`, `planner` debe escribirlo en una línea `api:`, para que `reviewer` pueda pronunciarse.
+
+::: details El agente `planner`
 
 <<<@/../scripts/agents/planner.md{md}
 
-El planificador aplica la lección de las [mediciones sobre el contexto](./act3-contexte): un modelo tiene un presupuesto, y describir más trabajo no lo agranda. Cada paso del plan debe caber por tanto en una invocación del coder, con su regla de corte explícita, «si dudas, divide». Cada paso empieza por su test rojo, y los tests van directamente a la suite, que es el corte exacto que la revisión del procedimiento del módulo anterior había tenido que hacer para vaciar sus columnas en fallo.
+:::
+
+#### `coder` : ejecutar un paso, y solo uno
+
+`coder` recibe **un solo paso** del plan. Escribe primero el test en `game/neon.test.js`, luego la modificación más pequeña de `game/neon.js` que debería hacerlo pasar, y termina con un breve informe: los archivos tocados, el nombre del test y lo que no ha podido hacer. Es el único de los cuatro que puede escribir, pero no tiene shell, así que no puede lanzar los tests, y su prompt le prohíbe pretender que lo ha hecho. Eres tú quien lanza `npm test` después de él, y es la salida de ese comando, y no su informe, la que dice si el paso está hecho.
+
+::: details El agente `coder`
 
 <<<@/../scripts/agents/coder.md{md}
 
-El codificador tiene con qué escribir y nada para ejecutar, y su prompt lo enuncia: no ejecuta los tests, no pretende haberlo hecho, los ejecutas tú después de él. Podríamos haberle dado una shell, y el ejercicio que sigue muestra lo que su ausencia garantiza.
+:::
+
+#### `reviewer` : releer el paso sin corregirlo
+
+`reviewer` recibe el ticket, el paso y lo que le pegues: el diff y la salida de `npm test`. No se fía del informe de `coder` y relee directamente el código del repositorio para verificar cuatro puntos en orden: los tests pasan y el nuevo test aparece en la salida, los exports de `game/neon.js` no han cambiado, solo se han tocado los archivos previstos por el paso, y el nuevo test realmente restringe el resultado. Devuelve `APPROVED` o `CHANGES REQUESTED`, con un motivo por línea que cita un archivo y una línea. Cuando combo le proporciona la herramienta `verdict`, registra su decisión con esa herramienta en lugar de escribirla en el texto. Nunca corrige él mismo, porque nadie releería sus correcciones. Si es el paso del plan el que está mal concebido, lo dice, y entonces es a `planner` a quien vuelves.
+
+::: details El agente `reviewer`
 
 <<<@/../scripts/agents/reviewer.md{md}
 
-El verificador no corrige nunca, porque un verificador que corrige se convierte en un segundo codificador cuyo trabajo ya no se relee. Sus cuatro verificaciones están ordenadas, la más mecánica primero, y dos de ellas se centran en el árbol más que en el diff, porque un diff muestra lo que ha cambiado sin mostrar lo que el cambio ha olvidado. Su veredicto, por último, puede designar el plan en lugar del código, en cuyo caso es al planificador a quien volverás.
-
-Otros dos archivos, `tester.md` y `auditor.md`, viven junto a los cuatro roles y se copiarán con ellos. No desempeñan ningún papel en el bucle de este módulo: el primero es el candidato natural para el lanzamiento en paralelo del módulo siguiente, el segundo releerá allí el trabajo terminado en su conjunto.
-
-
-::: warning Uso de herdr
-Para seguir las actividades de los subagentes, te animamos encarecidamente a lanzar Pi desde herdr (https://herdr.dev/). combo sabe abrir ventanas de herdr para ver a los subagentes trabajar y cerrarlas automáticamente cuando han terminado.
 :::
 
+Otros dos archivos, `tester.md` y `auditor.md`, se encuentran en el mismo directorio y se copiarán con los cuatro roles. Este módulo no los usa. El módulo siguiente sí los usa: `tester` produce un plan de tests que `planner` puede recibir además de la nota de impacto, y `auditor` relee el trabajo una vez terminado.
+
 ::: info Ejercicio (en sala)
-Antes de lanzar nada, haz que cada agente enuncie su propia garantía. Instala la extensión y coloca los agentes:
+Antes de lanzar el bucle, verifica que cada agente conoce los límites de su panoplia. Instala la extensión y deposita los agentes:
 
 ```bash
 cd /chemin/vers/neon
@@ -162,7 +177,7 @@ mkdir -p .pi/agents && cp /chemin/vers/hands-on-harness/scripts/agents/*.md .pi/
 pi
 ```
 
-La extensión no añade un comando explícito para llamar a un agente: `subagent` es una herramienta que el modelo de la sesión principal invoca cuando se lo pides. Te basta con nombrar el agente y lo que quieres que haga. Pide entonces al explorador así:
+La extensión no añade ningún comando explícito para llamar a un agente: `subagent` es una herramienta que el modelo de la sesión principal llama cuando se lo pides. Basta con que nombres el agente y lo que quieres que haga. Así que llama a `explorer` así:
 
 ```
 utilise le subagent "explorer" pour la tâche "Nomme exactement les outils dont tu disposes."
@@ -175,7 +190,7 @@ Esto es lo que devolvió el nuestro:
 
 La lista no contiene ninguna herramienta de escritura, y es el propio agente quien lo enuncia.
 
-Haz lo mismo con el programador, pidiéndole esta vez que ejecute los tests:
+Haz lo mismo con `coder`, pidiéndole esta vez que lance las pruebas:
 
 ```
 utilise le subagent "coder" pour la tâche "Lance `npm test` et rapporte le résultat."
@@ -183,40 +198,40 @@ utilise le subagent "coder" pour la tâche "Lance `npm test` et rapporte le rés
 
 > « El subagente "coder" indica que no dispone de una herramienta que le permita ejecutar comandos shell y, por tanto, no puede lanzar npm test. »
 
-Estas dos citas son las salidas de dos ejecuciones, y las tuyas serán distintas: un modelo reformula de una vez a otra, y el [módulo 3.0](./act3-trysquare) cifró esa dispersión. Lo que se reproduce es el fondo, el explorador enumerando cuatro herramientas de lectura y el coder devolviendo los tests al orquestador.
+Estas dos citas son las salidas de dos ejecuciones, y las tuyas serán distintas: un modelo reformula de una vez a otra, y el [módulo 3.0](./act3-trysquare) ha cifrado esa dispersión. El contenido, en cambio, sigue siendo el mismo: `explorer` enumera cuatro herramientas de lectura, y `coder` responde que no puede lanzar las pruebas.
 :::
 
 ::: warning Elección del modelo
-También puedes indicar en tu solicitud el modelo que deseas usar, como en el siguiente prompt:
+También puedes indicar en tu petición el modelo que quieres usar, como en el siguiente prompt:
 
 ```
-utilise le subagent "coder" avec le modèle deepseek-v4-flash d'opencode-go pour la tâche "Lance npm test et rapporte le résultat."
+utilise le subagent "coder" avec le modèle deepseek-v4-flash d'ilaas pour la tâche "Lance npm test et rapporte le résultat."
 ```
 :::
 
 ### La vuelta al bucle, a mano
 
-Ahora desempeñas el papel de orquestador que el módulo siguiente automatizará. Abre la sesión principal con la extensión cargada y recorre la cadena un paso a la vez con `/step`.
+Ahora asumes el papel de orquestador que el módulo siguiente automatizará. Abre la sesión principal con la extensión cargada y recorre la cadena paso a paso con `/step`. Este comando forma parte de combo. Si no lo tienes en la consola de Pi, es que no está bien instalado.
 
-Este comando `/step <agent> <instruction>` lanza el agente que nombres sobre lo que escribes, más la salida del paso anterior. Su respuesta se **escribe en la transcripción sin entrar en el contexto del modelo**: la sesión principal ve pasar los informes sin leerlos y, por tanto, sin poder actuar sobre ellos. Esa es la diferencia que importa aquí. Una sesión que lee un informe de exploración se convierte en un orquestador que no controlas y que elige la continuación basándose en conclusiones que no has validado. Ahora bien, queremos que seas tú quien decida cuál es el siguiente paso. La ventana principal es, por tanto, tu consola y no un interlocutor, como has visto hasta ahora. El comando `/quote` te permite introducir el resultado del paso anterior en el contexto para hacer un copiar y pegar rápido cuando hay algo que discutir.
+Este comando `/step <agent> <instruction>` lanza el agente que nombras sobre lo que escribes, más la salida del paso anterior (esto se hace automáticamente). Su respuesta se **escribe en la transcripción sin entrar en el contexto del modelo**: la sesión principal ve desfilar los informes sin leerlos, y por tanto sin poder actuar sobre ellos. Si la sesión principal leyera el informe de exploración, podría elegir por sí misma lo que sigue a partir de conclusiones que no has validado, mientras que lo que queremos es que seas tú quien decida el paso siguiente. La ventana principal te sirve, pues, de consola, y ya no de interlocutor como en los módulos anteriores. Cuando un resultado merece discutirse con el modelo, el comando `/quote` hace entrar la salida del paso anterior en el contexto, sin copiar y pegar.
 
 El bucle consta de seis pasos:
 
-1. `/step explorer traite le ticket #2 d'ISSUES.md` entrega la nota de impacto;
-2. la lees en la transcripción, luego `/step planner` la recibe tal cual, con el ticket, y entrega el plan;
-3. `/step coder` recibe el plan; dale el paso 1 y nada más, dictándolo después del nombre del agente. Entrega su informe, y el diff está en el árbol;
-4. lanzas **`npm test` tú mismo**, en un segundo terminal, y guardas la salida;
-5. `/step reviewer` recibe el informe del coder; pega ahí el ticket, el paso, el diff (`git diff`) y la salida de los tests, y entrega su veredicto;
-6. según el veredicto: siguiente paso al coder, retorno al coder con las razones, o retorno al planner si el paso es el que está en cuestión. `/step --from <id>` retoma la salida de un paso más antiguo que el último, que es exactamente el gesto de marcha atrás.
+1. `/step explorer traite le ticket #2 d'ISSUES.md` devuelve la nota de impacto;
+2. tú la lees en la transcripción, luego `/step planner` la recibe tal cual, junto con el ticket, y devuelve el plan;
+3. `/step coder` recibe el plan; dale el paso 1 y nada más, dictándolo después del nombre del agente. Devuelve su informe, y sus modificaciones están en el repositorio;
+4. lanzas **`npm test` tú mismo**, en una segunda terminal, y conservas la salida;
+5. `/step reviewer` recibe el informe de `coder`; pégale el ticket, el paso, el diff (`git diff`) y la salida de los tests, y devuelve su veredicto;
+6. según el veredicto, das el paso siguiente a `coder`, le reenvías el mismo paso con las razones del rechazo, o vuelves a `planner` si es el paso lo que está en cuestión. `/step --from <id>` parte de la salida de un paso más antiguo, lo que permite retroceder.
 
-`/chain` lista en todo momento los pasos recorridos; `/chain reset` parte de cero en un nuevo directorio. El registro que llevabas a mano para el orden de los pasos ya lo lleva la herramienta, lo que te deja escribir solo la parte que ella no sabe ver: tus decisiones.
+`/chain` lista en todo momento los pasos recorridos; `/chain reset` parte de cero en un nuevo directorio. La herramienta, por tanto, registra el orden de las etapas en tu lugar, pero no las razones de tus elecciones.
 
-Mientras un subagente trabaja, se muestra un punto encima del prompt con su modelo, sus tokens y un cronómetro, y la línea de herramientas debajo mantiene el rastro de la llamada. Si [herdr](https://herdr.dev) corre en tu máquina, `/herdr on` da a cada subagente su propia pestaña, y ves al explorer leer mientras preparas la siguiente tarea. Esta vista sirve para seguir el trabajo mientras se hace, sin permitirte concluir nada: para eso necesitarás el rastro del paso anterior.
+Mientras un subagente trabaja, aparece un punto sobre el prompt con su modelo, sus tokens y un cronómetro, y la línea de herramienta de debajo conserva el rastro de la llamada. Con herdr y `/herdr on`, descritos más arriba, cada subagente tiene su propia pestaña, y ves a `explorer` leer mientras preparas la tarea siguiente. Esta vista permite seguir el trabajo, pero para concluir cualquier cosa hay que leer la traza de la etapa.
 
-Mientras haces estos gestos, lleva un diario de lo que `/chain` no puede ver: no el orden de los pasos, que ya registra, sino lo que has decidido entre un paso y otro, y según qué criterio. Por qué este paso y no el siguiente, por qué ese retorno al planner, qué has releído antes de decidir. Este diario enumera lo que el orquestador del módulo siguiente deberá saber hacer, y estás en buena posición para escribirlo, ya que habrás tomado cada decisión tú mismo.
+Durante el bucle, lleva un diario de las decisiones que tomas entre dos etapas y del criterio que te hizo decidir. Anota, por ejemplo, por qué devolviste un paso a `coder`, por qué volviste a `planner`, o qué releíste antes de decidir. El módulo siguiente se servirá de ello para escribir el orquestador, ya que cada decisión anotada es una regla que deberá aplicar por sí solo.
 
-::: info Ejercicio (en el aula)
-Ejecuta el bucle hasta el primer `APPROVED`, es decir, hasta que el paso 1 del plan esté entregado, probado y revisado. Si el reviewer rechaza, juega el rechazo hasta el final: es la mitad más instructiva del bucle, porque te obliga a decidir a quién devolver el veredicto.
+::: info Ejercicio (en sala)
+Recorre el bucle hasta el primer `APPROVED`, es decir, hasta que el paso 1 del plan esté entregado, probado y revisado. Si `reviewer` rechaza, llega hasta el final del rechazo: es el caso más instructivo, porque debes decidir a quién devolver el veredicto.
 
 Si la sesión lo permite, continúa hasta el final del plan. El criterio final es el del ticket: la función extraída es pura y está cubierta por al menos dos tests nuevos en la suite, todas las funciones exportadas de `game/neon.js` lo siguen estando, y `npm test` está en verde.
 :::
@@ -224,9 +239,9 @@ Si la sesión lo permite, continúa hasta el final del plan. El criterio final e
 ### Lo que el aislamiento cambia en tu ventana
 
 ::: info Ejercicio (en sala)
-Justo después de recibir la nota del explorer, escribe `/session` en la sesión principal y anota lo que contiene: tu marco, la llamada a la herramienta, la nota. Abre después una sesión nueva sin la extensión y pide al modelo que produzca él mismo la misma nota de impacto, leyendo el repositorio. Compara los dos `/session` y luego los dos `/tree`.
+Justo después del retorno de la nota de `explorer`, teclea `/session` en la sesión principal y anota lo que contiene: tu marco, la llamada de herramienta, la nota. Abre después una sesión nueva sin la extensión y pide al modelo que produzca él mismo la misma nota de impacto, leyendo el repositorio. Compara los dos `/session`, y luego los dos `/tree`.
 
-En la segunda sesión, cada archivo leído ha quedado en la ventana y permanecerá en ella hasta el final, mientras que la primera solo ha dejado entrar la nota. La delegación paga la exploración en un contexto que desaparece una vez entregada la tarea, en lugar de pagarla en cada turno en la ventana principal. El argumento es el mismo que para la lectura de caché del módulo sobre el contexto: un trabajo se paga en cada turno mientras permanece en la ventana, y una sola vez cuando no entra en ella.
+Dans la seconde session, chaque fichier lu est resté dans la fenêtre et y restera jusqu'à la fin, alors que la première n'a reçu que la note. Avec la délégation, les fichiers lus par `explorer` restent dans son propre contexte, qui disparaît à la fin de sa tâche. C'est le mécanisme vu au [module 2.1](./act2-contexte) : tout ce qui reste dans la fenêtre est renvoyé au modèle à chaque tour.
 :::
 
 ### Verificar en la traza quién ha corrido
@@ -235,28 +250,21 @@ En la segunda sesión, cada archivo leído ha quedado en la ventana y permanecer
 Exporta la sesión principal con `/export` y localiza cada llamada a la herramienta `subagent`: el nombre del agente, el alcance, el modelo, la tarea transmitida. Es la única respuesta fiable a la pregunta de quién ejecutó si no has visto la actividad de tus agentes a través de herdr.
 :::
 
-
-### Por qué este módulo no publica ninguna matriz
-
-Los dos módulos anteriores basaron sus afirmaciones en veinte repeticiones, mientras que este no publica ninguna. Esta ausencia es deliberada. Queríamos ante todo mostrarte cómo funciona la delegación y lo que puede aportarte en cuanto al tamaño de tu contexto o a la verificación de los cambios en un contexto nuevo.
-
-También has podido ver que es fácil controlar con precisión lo que puede hacer un agente mediante sus herramientas y definir el modelo que se desea para él.
-
-Este módulo no puede, por ahora, garantizar que la división en roles mejore el resultado, es decir, que el ticket #2 tratado por este bucle se corregiría mejor que el mismo ticket tratado por un agente solo. La pregunta es legítima, es una cuestión de medición. El siguiente módulo presenta el protocolo que permite hacer esa medición. Vamos a automatizar el bucle que ejecutaste a mano y observar la calidad de los resultados.
-
 ## Generalizar
 
-Delegar equivale a aislar un contexto del que solo regresa la conclusión. La ganancia se debe menos al costo del trabajo que al hecho de que no permanece en la ventana: una exploración hecha en la sesión principal se relee allí en cada turno hasta el final, mientras que la misma exploración delegada desaparece con su contexto y solo deja treinta líneas. Por supuesto, si lo que devuelve el subagente es tan grande como lo que leyó, no has aislado nada.
+Lo que hicimos con estos cuatro agentes vale para cualquier división en roles.
 
-La garantía de un agente proviene de su conjunto de herramientas más que de su prompt. El prompt del coder le dice que no lance los tests, pero es la ausencia de un shell lo que hace que no pueda hacerlo, y el propio agente sabe distinguir. Cada vez que dudes entre escribir una prohibición y retirar una herramienta, retira la herramienta: una ausencia se comprueba en la configuración, mientras que una prohibición supone que el modelo la cumpla.
+Un subagente sirve ante todo para mantener ligera la ventana principal. `explorer` leyó varios archivos, y solo su nota volvió a la sesión principal. Eso solo funciona si el subagente devuelve un resultado corto: si copia todo lo que ha leído, no has ganado nada.
 
-Un generador no se evalúa a sí mismo. El valor de un revisor separado proviene de lo que su contexto no contiene, es decir, del razonamiento que produjo el código. Es también por eso que un reviewer que corrige destruye su propio valor, al volver a ser un generador de código.
+Para impedir que un agente haga algo, quítale la herramienta en lugar de escribirlo en su prompt. `coder` no ejecuta las pruebas porque no tiene shell, y no porque su prompt se lo pida. Una lista de herramientas se verifica leyendo el archivo del agente, mientras que nada garantiza que un modelo siga una consigna.
 
-Un campo que no declaras se decide en otro lugar. Un agente sin `model:` se ejecuta con los ajustes actuales de la máquina, un archivo sin `tools:` obtiene el conjunto de herramientas en modo de solo lectura, un archivo sin `name` no existe. La regla se aplica más allá de los agentes: para cada campo de una configuración, pregúntate qué sucede cuando está ausente y quién decide entonces en tu lugar.
+Haz que revise el código un agente distinto del que lo escribió. `reviewer` solo conoce el ticket, el paso y el diff, y por tanto juzga lo que se escribió y no lo que se pretendía. Déjalo sin herramienta de escritura, de lo contrario nadie revisaría sus propias modificaciones.
 
-La división en roles reparte el trabajo del modelo sin aumentarlo. El modelo que perdía el hilo con el ticket largo lo perderá igual con un plan entero pasado de una sola vez. Trabajar en pequeños pasos permite obtener un trabajo de mejor calidad. Un planner que divide en trozos demasiado grandes reproduce exactamente la pérdida de hilo medida en el [módulo 3.1](./act3-contexte).
+Declara todos los campos de un agente, incluso cuando el valor por defecto te sirva. Sin `model:`, el agente se ejecuta sobre el modelo configurado ese día en tus ajustes; sin `tools:`, recibe las herramientas de lectura; sin `name`, no se carga en absoluto.
 
-Automatizar un bucle exige haberlo ejecutado a mano. Tu diario dice lo que el orquestador deberá enrutar, en qué orden y según qué criterios decidiste los retornos. Te recordamos que construir tu propio harness requiere experiencia, y es a medida que adquieres esa experiencia que irás perfeccionando tu harness para que se establezca la confianza.
+Divide el trabajo en pasos lo bastante pequeños para que un agente los termine. El reparto en roles no le da más capacidad al modelo, y un `coder` que recibiera el plan entero de golpe podría perder el hilo como en el [módulo 3.1](./act3-contexte). Suponemos que los pasos pequeños dan un mejor resultado, y el módulo siguiente permite medirlo.
+
+Por último, haz el bucle a mano antes de automatizarlo. Tu diario contiene las decisiones que el orquestador deberá tomar solo: a qué agente pasar el relevo, cuándo retroceder y con qué criterio.
 
 ::: info Ejercicio (en autonomía)
 Ya puedes probar muchas combinaciones y tratar de ver su influencia en los resultados. Entre estas combinaciones, puedes:
@@ -270,12 +278,22 @@ Ya puedes probar muchas combinaciones y tratar de ver su influencia en los resul
 
 Este módulo produce tres piezas.
 
-1. Los cuatro agentes, versionados en tu repositorio, cada uno con su equipamiento mínimo y su `model:` declarado. Son ellos los que el siguiente módulo conectará al orquestador, sin modificarlos.
-2. El registro de una vuelta del bucle: la traza de la sesión principal exportada, el diff entregado del primer paso, la salida de `npm test` que leyó el reviewer, y tu registro.
-3. Las decisiones que tomar entre cada paso: has desempeñado el papel del agente principal y organizado el flujo de trabajo. Ahora sabes qué esperar para la automatización completa del bucle.
+**1. Los cuatro agentes**, versionados en el `.pi/agents/` de tu clon de NÉON, cada uno con su panoplia mínima y su `model:` declarado. El módulo siguiente los conectará al orquestador sin modificarlos.
+
+**2. La traza de una vuelta de bucle**: la sesión principal exportada, el diff del primer paso, la salida de `npm test` que `reviewer` leyó, y tu registro de las decisiones tomadas entre dos etapas.
+
+**3. La línea «delegación» de la ficha de decisión**:
+
+| palanca                                    | efecto observado | ¿adoptado? | por qué |
+| ------------------------------------------ | ---------------- | ---------- | ------- |
+| exploración delegada a un subagente        |                  |            |         |
+| restricción de herramientas (`tools:`)     |                  |            |         |
+| relectura en un contexto separado          |                  |            |         |
+| modelo declarado por agente (`model:`)     |                  |            |         |
+| plan dividido en pequeños pasos            |                  |            |         |
 
 ::: tip Criterio de éxito
-Sabes mostrar, con la traza en mano, qué agente se ha ejecutado en cada etapa de tu bucle, con qué herramientas y qué modelo. Como orquestador, también has podido ver qué acciones te negarías a repetir veinte veces. Esta comprensión es importante para finalizar la automatización de tu primer flujo de trabajo en tu harness.
+Sabes mostrar, con la traza en mano, qué agente se ejecutó en cada etapa de tu bucle, con qué herramientas y qué modelo. También sabes qué decisiones tomaste entre dos etapas, las que el orquestador del módulo siguiente deberá tomar en tu lugar.
 :::
 
 ## Para ir más allá

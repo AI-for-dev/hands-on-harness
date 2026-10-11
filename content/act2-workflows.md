@@ -100,6 +100,11 @@ pi
 ```
 
 Ajoutez ce fichier dans `.pi/flows/impact-plan.md` et testez-le sur l'issue #2. Vous pouvez regarder les agents évoluer dans herdr.
+
+```
+/herdr on
+/run impact-plan traite le ticket #2 d'ISSUES.md
+```
 :::
 
 ### Automatisation de l'orchestrateur
@@ -376,9 +381,6 @@ Le reste suit la même logique. Un modèle plus gros pour le planner et l'audite
 Ajoutez l'arrêt avant le commit et rejouez le ticket. Essayez ensuite une modification qui vous est propre : un autre découpage des rôles, un modèle plus gros là où l'on juge, un flow pour un autre type de ticket. La question à vous poser est toujours la même : quel geste répétiez-vous à la main, et quelle ligne l'écrirait ?
 :::
 
-### Et la mesure ? (À faire avec trysquare)
-
-
 ## Généraliser
 
 Automatiser une boucle demande de l'avoir tenue à la main ou d'analyser finement les traces. Le flow de ce module est votre journal du module précédent réécrit : chaque ligne répond à une décision que vous avez prise vous-même, et c'est pour cela que vous savez où la placer.
@@ -387,7 +389,7 @@ Le harnais se construit par corrections successives. Chaque échec lu dans la tr
 
 Les tests ont le dernier mot mais ne vérifient que ce qu'ils contraignent. Une suite verte ne prouve pas que le ticket est fait.
 
-Une décision mérite son propre canal. Tant qu'un verdict se lit dans de la prose, il dépend de la façon dont le modèle écrit un mot comme par exemple `APPROVED`. Quand c'est possible, donnez-lui un outil pour répondre. Vous pouvez vous appuyer sur https://laya.convaiinnovations.com/ qui permet de prendre des décisions beaucoup plus fines qu'avec un LLM classique.
+Une décision mérite son propre canal. Tant qu'un verdict se lit dans de la prose, il dépend de la façon dont le modèle écrit un mot comme `APPROVED`. Quand c'est possible, donnez-lui un outil pour répondre. Au moment d'écrire cette formation, de nouveaux modèles voient le jour. Ce sont des modèles dits « de classification ». Ils utilisent très peu de tokens et peuvent répondre assez bien à des questions à choix multiples à partir du prompt que vous leur donnez. Le plus en vue en ce moment est [Jev](https://typesafe.ai/blog/introducing-system-one-models-and-jev), mais vous pouvez être sûr que d'autres modèles de classification vont voir le jour dans les mois à venir.
 
 Les arrêts humains sont des choix de conception. Placez-les là où une erreur coûte plus cher à défaire qu'à prévenir, et pas ailleurs. Dans notre cas, une discussion questions-réponses sur le ticket pour enrichir le plan pourrait être une bonne chose.
 
