@@ -50,6 +50,10 @@ export const fr: LocaleSpecificConfig<DefaultTheme.Config> = {
           { text: '3.1 Les leviers du contexte, mesurés', link: '/act3-contexte' }
         ]
       },
+      {
+        text: 'Conclusion',
+        items: [{ text: 'À vous de jouer', link: '/a-vous-de-jouer' }]
+      },
       // {
       //   text: 'Acte 2 — Reconstruction (suite)',
       //   items: [

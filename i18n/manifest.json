@@ -178,5 +178,17 @@
       "model": "pi:opencode-go/deepseek-v4.1-flash",
       "translatedAt": "2026-10-10T17:44:25.839Z"
     }
+  },
+  "a-vous-de-jouer.md": {
+    "en": {
+      "unitHash": "1f52e273710756bedd2bfac14186cfaad332fe5dce8109bd5c0e7024a0a71902",
+      "model": "pi:opencode-go/deepseek-v4.1-flash",
+      "translatedAt": "2026-10-11T06:18:10.055Z"
+    },
+    "es": {
+      "unitHash": "1f52e273710756bedd2bfac14186cfaad332fe5dce8109bd5c0e7024a0a71902",
+      "model": "pi:opencode-go/deepseek-v4.1-flash",
+      "translatedAt": "2026-10-11T06:18:30.006Z"
+    }
   }
 }
