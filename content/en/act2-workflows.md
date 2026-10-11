@@ -99,7 +99,12 @@ pi install -l npm:@ai-for-dev/combo
 pi
 ```
 
-Add this file to `.pi/flows/impact-plan.md` and test it on issue #2. You can watch the agents progress in herdr.
+Add this file to `.pi/flows/impact-plan.md` and test it on issue #2. You can watch the agents evolve in herdr.
+
+```
+/herdr on
+/run impact-plan traite le ticket #2 d'ISSUES.md
+```
 :::
 
 ### Automating the orchestrator
@@ -376,9 +381,6 @@ The rest follows the same logic. A larger model for the planner and the auditor 
 Add the stop before the commit and replay the ticket. Then try a modification of your own: a different split of the roles, a larger model where you judge it useful, a flow for another type of ticket. The question to ask yourself is always the same: what gesture were you repeating by hand, and which line would write it?
 :::
 
-### What about the measurement? (To do with trysquare)
-
-
 ## Generalizing
 
 Automating a loop requires having run it by hand or analyzing the traces closely. The flow in this module is your journal from the previous module, rewritten: each line answers a decision you made yourself, and that is why you know where to put it.
@@ -387,7 +389,7 @@ The harness is built through successive corrections. Each failure read in the tr
 
 Tests have the final say, but they only check what they constrain. A green suite does not prove the ticket is done.
 
-A decision deserves its own channel. As long as a verdict is read from prose, it depends on how the model writes a word such as `APPROVED`. When possible, give it a tool to answer. You can rely on https://laya.convaiinnovations.com/ , which allows much finer decisions than a classic LLM.
+A decision deserves its own channel. As long as a verdict is read out of prose, it depends on how the model writes a word like `APPROVED`. When possible, give it a tool to answer with. At the time of writing this training, new models are appearing. These are called "classification" models. They use very few tokens and can answer multiple-choice questions quite well from the prompt you give them. The most prominent one right now is [Jev](https://typesafe.ai/blog/introducing-system-one-models-and-jev), but you can be sure other classification models will appear in the coming months.
 
 Human stops are design choices. Place them where an error costs more to undo than to prevent, and nowhere else. In our case, a Q&A discussion on the ticket to enrich the plan could be a good thing.
 
