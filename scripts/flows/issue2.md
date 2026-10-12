@@ -1,11 +1,11 @@
 ---
 name: issue2
-description: Le tour de boucle du module précédent, de la note d'impact à l'audit
+description: The previous module's loop, from the impact note to the audit
 input: string
 timeout: 15m
 
 nodes:
-  # Les deux lectures du ticket, en même temps : aucune des deux n'écrit.
+  # The two readings of the ticket, at the same time: neither one writes.
   - id: survey
     parallel:
       impact:
@@ -19,7 +19,7 @@ nodes:
           retry: 1
           reads: [input]
 
-  # Le retour au planner : un second tour replanifie ce que l'audit a laissé ouvert.
+  # Back to the planner: a second round replans what the audit left open.
   - id: round
     loop: suite.output.passed && audit.output.approved
     max: 2
@@ -31,12 +31,12 @@ nodes:
         reads: [input, survey.output.impact.output, survey.output.cases.output, round.ledger]
         output: { steps: [{ text: string }] }
 
-      # Un pas après l'autre, dans le même arbre.
+      # One step after the other, in the same tree.
       - id: steps
         map-from: plan.output.steps
         max: 6
         do:
-          # Le retour au coder : jusqu'à trois essais par pas.
+          # Back to the coder: up to three attempts per step.
           - id: step
             loop: tests.output.passed && review.output.approved
             max: 3
@@ -70,54 +70,51 @@ nodes:
 ---
 
 ## note
-Rends la note d'impact du ticket désigné sous `input`.
+Write the impact note for the ticket named under `input`.
 
 ## cases
-Liste les cas de test dont le ticket désigné sous `input` a besoin, en disant
-lesquels existent déjà. Commence par les comportements que l'extraction ne
-doit pas changer.
+List the test cases the ticket named under `input` needs, saying which ones
+already exist. Start with the behaviours the extraction must not change.
 
 ## plan
-Découpe le ticket désigné sous `input` en petits pas, avec la note d'impact et
-le plan de tests comme carte. Quand `round.ledger` n'est pas vide, c'est un second tour : ne planifie que ce que l'audit a soulevé et que
-personne n'a fermé.
+Split the ticket named under `input` into small steps, using the impact note
+and the test plan as your map. When `round.ledger` is not empty, this is a
+second round: plan only what the audit raised and nobody closed.
 
-Le contrat est celui du ticket, pas le tien :
+The contract is the ticket's, not yours:
 
-- la nouvelle fonction est `brickHit(ball, bricks)`, exportée de `game/neon.js` ;
-- elle est pure : elle rend le tableau de toutes les briques vivantes que la
-  balle chevauche, et ne modifie rien ;
-- `frame()` se comporte exactement comme avant, y compris quand la balle
-  chevauche plusieurs briques : chacune meurt dans la même frame, avec un
-  incrément de combo chacune. Ce comportement est épinglé par un test avant de
-  déplacer la logique, avec une balle de rayon 7 centrée dans l'espace entre
-  deux briques voisines.
+- the new function is `brickHit(ball, bricks)`, exported from `game/neon.js`;
+- it is pure: it returns the array of every alive brick the ball overlaps,
+  and changes nothing;
+- `frame()` behaves exactly as before, including when the ball overlaps
+  several bricks: each one dies in the same frame, with one combo increment
+  each. A test pins this behaviour before the logic moves, with a ball of
+  radius 7 centred in the gap between two neighbouring bricks.
 
-Le coder ne voit que le texte de son pas : nomme les fichiers, redis la partie
-du contrat que le pas touche, et dis à quoi ressemble « fini ». Chaque pas
-commence par son test rouge, écrit dans `game/neon.test.js`, et finit sur une
-suite verte : le test rouge et le code qui le fait passer vont dans le même
-pas, jamais dans deux.
+The coder sees only the text of its step: name the files, restate the part of
+the contract the step touches, and say what "done" looks like. Every step
+starts with its red test, written in `game/neon.test.js`, and ends on a green
+suite: the red test and the code that makes it pass go in the same step,
+never in two.
 
 ## code
-Exécute le pas décrit sous `item.text`, et lui seul.
+Carry out the step described under `item.text`, and only that step.
 
-Quand `step.previous.review` suit, le reviewer n'a pas approuvé ton dernier
-changement : traite chaque remarque et chaque obligation de `step.ledger`, ou
-dis clairement pourquoi tu ne le fais pas. `step.previous.tests` donne la
-sortie de la suite après ce changement.
+When `step.previous.review` follows, the reviewer did not approve your last
+change: address every remark and every obligation in `step.ledger`, or say
+plainly why you do not. `step.previous.tests` gives the suite's output after
+that change.
 
 ## review
-Relis le changement fait pour le pas décrit sous `item.text`. Le rapport du
-coder est sous `code`, le changement sous `diff`, la sortie de la suite sous
-`tests`. Le rapport est une affirmation, le diff et le code sont la preuve.
-Approuve, ou soulève ce qui doit encore changer.
+Review the change made for the step described under `item.text`. The coder's
+report is under `code`, the change under `diff`, the suite's output under
+`tests`. The report is a claim; the diff and the code are the evidence.
+Approve, or raise what must still change.
 
 ## audit
-Relis tout le changement sous `diff` contre le ticket désigné sous `input`.
-`steps` dit comment la relecture de chaque pas s'est terminée : un pas qui n'a
-pas convergé n'est pas fait tant que le code ne le montre pas. `suite` dit si
-les tests du projet passent. `round.ledger` porte ce qu'un audit précédent a
-soulevé et que personne n'a fermé.
+Review the whole change under `diff` against the ticket named under `input`.
+`steps` says how the review of each step ended: a step that did not converge
+is not done until the code shows it. `suite` says whether the project's tests
+pass. `round.ledger` holds what an earlier audit raised and nobody closed.
 
-Approuve le tout, ou soulève chaque correction sur sa propre ligne.
+Approve the whole, or raise each correction on its own line.
