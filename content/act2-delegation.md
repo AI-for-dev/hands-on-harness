@@ -83,6 +83,8 @@ Le modèle d'un sous-agent n'est jamais hérité de la session parente. Il vient
 ::: warning Vos agents de projet ne sont jamais chargés par défaut
 Les fichiers de `.pi/agents/` viennent du dépôt que vous avez cloné, et quelqu'un d'autre a pu les écrire. combo ne les charge donc que si vous le demandez, en précisant la portée (projet ou machine) à chaque appel de l'outil.
 
+Parmi les agents de démonstration de l'extension, `explorer`, `planner`, `coder`, `reviewer` et `auditor` portent les mêmes noms que les agents de ce module, avec un autre prompt, une autre panoplie et sans `model:`. Quand l'appel ne précise pas la portée, c'est cette version de combo qui tourne, et `/agents` ne l'affiche pas, parce que votre fichier de projet la masque dans la liste. Le `coder` de combo, lancé de cette façon, nous a répondu que les six tests étaient passés alors qu'il n'avait aucun moyen de les lancer. Les prompts de ce module précisent donc tous « de portée projet ». La commande `/step`, présentée plus loin, charge les agents de combo, de la machine et du projet, en donnant la priorité au projet, et n'a pas besoin de cette précision.
+
 Vous pouvez avoir la liste de vos agents via la commande :
 
 ```
@@ -180,7 +182,7 @@ pi
 L'extension n'ajoute pas de commande explicite pour appeler un agent : `subagent` est un outil que le modèle de la session principale appelle quand vous le lui demandez. Il vous suffit de nommer l'agent et ce que vous souhaitez qu'il fasse. Appelez donc `explorer` ainsi :
 
 ```
-utilise le subagent "explorer" pour la tâche "Nomme exactement les outils dont tu disposes."
+utilise le subagent "explorer" de portée projet pour la tâche "Nomme exactement les outils dont tu disposes."
 ```
 
 Voici ce que le nôtre a rendu :
@@ -193,38 +195,46 @@ La liste ne contient aucun outil d'écriture, et c'est l'agent qui l'énonce lui
 Faites de même avec `coder`, en lui demandant cette fois de lancer les tests :
 
 ```
-utilise le subagent "coder" pour la tâche "Lance `npm test` et rapporte le résultat."
+utilise le subagent "coder" de portée projet pour la tâche "Lance `npm test` et rapporte le résultat."
 ```
 
 > « Le subagent "coder" indique qu'il ne dispose pas d'un outil lui permettant d'exécuter des commandes shell, et ne peut donc pas lancer npm test. »
 
 Ces deux citations sont les sorties de deux exécutions, et les vôtres seront différentes : un modèle reformule d'une fois sur l'autre, et le [module 3.0](./act3-trysquare) a chiffré cette dispersion. Le contenu, lui, reste le même : `explorer` énumère quatre outils de lecture, et `coder` répond qu'il ne peut pas lancer les tests.
+
+La session principale dispose quant à elle de `bash`, et il arrive que le modèle lance alors `npm test` lui-même pour vous rapporter un résultat. Ce n'est pas `coder` qui a lancé les tests, et l'appel `bash` qui suit la ligne de l'outil `subagent` le montre.
 :::
 
 ::: warning Choix du modèle
 Vous pouvez également dire dans votre demande le modèle que vous souhaitez utiliser, comme dans le prompt suivant :
 
 ```
-utilise le subagent "coder" avec le modèle deepseek-v4-flash d'ilaas pour la tâche "Lance npm test et rapporte le résultat."
+utilise le subagent "coder" de portée projet avec le modèle qwen-3.8-27b d'ilaas pour la tâche "Lance npm test et rapporte le résultat."
 ```
+
+Le modèle doit être déclaré dans votre `~/.pi/agent/models.json`, comme ceux de l'[installation de Pi](./act1-pi), sinon combo refuse l'appel avec `Model "qwen-3.8-27b" not found for provider "ilaas"`. Avec `/step`, présentée plus loin, l'option `--model ilaas/qwen-3.8-27b` a le même effet. Nous avons écarté `qwen-3.6-35b-instruct` de cet exemple : en octobre 2026, lancé comme `coder` sur ILaaS, il a interrompu sa réponse (`Stream ended without finish_reason`) à chacun de nos trois essais.
 :::
 
 ### Le tour de boucle, à la main
 
 Vous tenez maintenant le rôle d'orchestrateur que le module suivant automatisera. Ouvrez la session principale avec l'extension chargée, et parcourez la chaîne un pas à la fois avec `/step`. Cette commande fait partie de combo. Si vous ne l'avez pas dans la console de Pi, c'est qu'il n'est pas bien installé.
 
-Cette commande `/step <agent> <instruction>` lance l'agent que vous nommez sur ce que vous tapez, plus la sortie du pas précédent (c'est fait automatiquement). Sa réponse est **écrite dans la transcription sans entrer dans le contexte du modèle** : la session principale voit défiler les rapports sans les lire, donc sans pouvoir agir dessus. Si la session principale lisait le rapport d'exploration, elle pourrait choisir elle-même la suite à partir de conclusions que vous n'avez pas validées, alors que nous voulons que ce soit vous qui décidiez de l'étape d'après. La fenêtre principale vous sert donc de console, et non plus d'interlocuteur comme dans les modules précédents. Quand un résultat mérite d'être discuté avec le modèle, la commande `/quote` fait entrer la sortie du pas précédent dans le contexte, sans copier-coller.
+Cette commande `/step <agent> <instruction>` lance l'agent que vous nommez sur ce que vous tapez, plus la sortie du pas précédent (c'est fait automatiquement). Sa réponse est **écrite dans la transcription sans entrer dans le contexte du modèle** : la session principale voit défiler les rapports sans les lire, donc sans pouvoir agir dessus. Si la session principale lisait le rapport d'exploration, elle pourrait choisir elle-même la suite à partir de conclusions que vous n'avez pas validées, alors que nous voulons que ce soit vous qui décidiez de l'étape d'après. Nous l'avons constaté en passant par l'outil `subagent` : une fois la note d'`explorer` reçue sur le ticket #2, la session principale a relu elle-même les fichiers, puis modifié `game/neon.js` et ses tests sans qu'on le lui demande. La fenêtre principale vous sert donc de console, et non plus d'interlocuteur comme dans les modules précédents. Quand un résultat mérite d'être discuté avec le modèle, la commande `/quote` fait entrer la sortie du pas précédent dans le contexte, sans copier-coller.
 
 La boucle comporte six étapes :
 
 1. `/step explorer traite le ticket #2 d'ISSUES.md` rend la note d'impact ;
-2. vous la lisez dans la transcription, puis `/step planner` la reçoit telle quelle, avec le ticket, et rend le plan ;
-3. `/step coder` reçoit le plan ; donnez-lui le pas 1 et rien d'autre, en le dictant après le nom de l'agent. Il rend son rapport, et ses modifications sont dans le dépôt ;
-4. vous lancez **`npm test` vous-même**, dans un second terminal, et vous gardez la sortie ;
-5. `/step reviewer` reçoit le rapport de `coder` ; collez-y le ticket, le pas, le diff (`git diff`) et la sortie des tests, et il rend son verdict ;
+2. vous la lisez dans la transcription, puis `/step planner découpe le ticket #2 d'ISSUES.md en pas, à partir de cette note` rend le plan. Le ticket doit figurer dans ce que vous tapez, puisque `/step` ne transmet que la sortie du pas précédent ;
+3. `/step --from none coder`, suivi du pas 1 que vous recopiez depuis le plan avec ses fichiers et son critère de fin. Sans `--from none`, `coder` recevrait aussi le plan entier, alors qu'il ne doit voir que son pas. Il rend son rapport, et ses modifications sont dans le dépôt ;
+4. vous lancez **`npm test` vous-même**, dans un second terminal, en gardant le diff et la sortie dans deux fichiers : `git diff > .pi/pas.diff`, puis `npm test > .pi/pas-tests.txt 2>&1` ;
+5. `/step reviewer` reçoit le rapport de `coder` ; donnez-lui le ticket, le pas et le nom des deux fichiers, par exemple `/step reviewer Relis le pas 1 du ticket #2 d'ISSUES.md : <le pas>. Le diff est dans .pi/pas.diff, la sortie de npm test dans .pi/pas-tests.txt.`, et il rend son verdict ;
 6. selon le verdict, vous donnez le pas suivant à `coder`, vous lui renvoyez le même pas avec les raisons du refus, ou vous revenez à `planner` si c'est le pas qui est en cause. `/step --from <id>` repart de la sortie d'un pas plus ancien, ce qui permet de revenir en arrière.
 
-`/chain` liste à tout moment les pas parcourus ; `/chain reset` repart de zéro dans un nouveau répertoire. L'outil enregistre donc l'ordre des étapes à votre place, mais pas les raisons de vos choix.
+::: info Pourquoi passer le diff par des fichiers
+`/step` remet sur une seule ligne tout ce que vous tapez après le nom de l'agent, si bien qu'un diff ou une sortie de tests collés arrivent sans leurs retours à la ligne et deviennent difficiles à lire. `reviewer` a l'outil `read` et lit les deux fichiers tels quels. Ils vont dans `.pi/` pour rester hors du code, et `git diff` ne montre de toute façon pas les fichiers que git ne suit pas.
+:::
+
+`/chain` liste à tout moment les pas parcourus et donne le répertoire où la chaîne est exportée ; `/chain reset` repart de zéro dans un nouveau répertoire. L'outil enregistre donc l'ordre des étapes à votre place, mais pas les raisons de vos choix.
 
 Pendant qu'un sous-agent travaille, un point s'affiche au-dessus de l'invite avec son modèle, ses tokens et un chronomètre, et la ligne d'outil en dessous garde la trace de l'appel. Avec herdr et `/herdr on`, décrits plus haut, chaque sous-agent a son propre onglet, et vous voyez `explorer` lire pendant que vous préparez la tâche suivante. Cette vue permet de suivre le travail, mais pour conclure quoi que ce soit, il faut lire la trace de l'étape.
 
@@ -239,15 +249,19 @@ Si la séance le permet, continuez jusqu'au bout du plan. Le critère final est 
 ### Ce que l'isolation change dans votre fenêtre
 
 ::: info Exercice (en salle)
-Juste après le retour de la note d'`explorer`, tapez `/session` dans la session principale et notez ce qu'elle contient : votre cadre, l'appel d'outil, la note. Ouvrez ensuite une session neuve sans l'extension et demandez au modèle de produire la même note d'impact lui-même, en lisant le dépôt. Comparez les deux `/session`, puis les deux `/tree`.
+Juste après le retour de la note d'`explorer`, tapez `/session` dans la session principale : elle ne compte aucun message, puisque `/step` a affiché la note dans la transcription sans la faire entrer dans le contexte. Ouvrez ensuite une session neuve sans l'extension, avec `pi -ne` (combo est installé dans le projet, et un simple `pi` le chargerait), et demandez au modèle de produire la même note d'impact lui-même, en lisant le dépôt et sans rien modifier. Comparez les deux `/session`, puis les deux `/tree`.
 
-Dans la seconde session, chaque fichier lu est resté dans la fenêtre et y restera jusqu'à la fin, alors que la première n'a reçu que la note. Avec la délégation, les fichiers lus par `explorer` restent dans son propre contexte, qui disparaît à la fin de sa tâche. C'est le mécanisme vu au [module 2.1](./act2-contexte) : tout ce qui reste dans la fenêtre est renvoyé au modèle à chaque tour.
+Dans la seconde session, chaque fichier lu est resté dans la fenêtre et y restera jusqu'à la fin, alors que la première reste vide tant que vous n'utilisez pas `/quote`, qui n'y ferait entrer que la note. Avec la délégation, les fichiers lus par `explorer` restent dans son propre contexte, qui disparaît à la fin de sa tâche. C'est le mécanisme vu au [module 2.1](./act2-contexte) : tout ce qui reste dans la fenêtre est renvoyé au modèle à chaque tour.
 :::
 
 ### Vérifier dans la trace qui a tourné
 
 ::: info Exercice (en salle)
-Exportez la session principale avec `/export` et retrouvez chaque appel de l'outil `subagent` : le nom de l'agent, la portée, le modèle, la tâche transmise. C'est la seule réponse fiable à la question de savoir qui a tourné si vous n'avez pas vu l'activité de vos agents via herdr.
+Tapez `/chain` : sa dernière ligne donne le répertoire où combo a exporté la chaîne, `runs/<date>/` à la racine de NÉON. Chaque pas y a son dossier (`1-explorer`, `2-planner`...) avec la session du sous-agent en JSONL et en HTML, et un `usage.json` qui donne le nom de l'agent, sa durée de vie, son modèle, la tâche transmise, ses tokens et sa durée. La session HTML montre chaque appel d'outil, ce qui permet de vérifier que l'agent est resté dans sa panoplie. C'est la seule réponse fiable à la question de savoir qui a tourné si vous n'avez pas vu l'activité de vos agents via herdr.
+:::
+
+::: warning `/export` après une boucle en `/step`
+`/export` exporte la session principale, qui ne contient rien après une boucle faite uniquement de `/step` : Pi répond alors `Nothing to export yet`. Les agents lancés par l'outil `subagent`, comme dans le premier exercice, y figurent en revanche, chaque appel avec le nom de l'agent, la portée et la tâche, et son résultat avec le modèle.
 :::
 
 ## Généraliser
@@ -280,7 +294,7 @@ Ce module produit trois pièces.
 
 **1. Les quatre agents**, versionnés dans le `.pi/agents/` de votre clone de NÉON, chacun avec sa panoplie minimale et son `model:` déclaré. Le module suivant les branchera sur l'orchestrateur sans les modifier.
 
-**2. La trace d'un tour de boucle** : la session principale exportée, le diff du premier pas, la sortie de `npm test` que `reviewer` a lue, et votre journal des décisions prises entre deux étapes.
+**2. La trace d'un tour de boucle** : le répertoire `runs/` de la chaîne, le diff du premier pas, la sortie de `npm test` que `reviewer` a lue, et votre journal des décisions prises entre deux étapes.
 
 **3. La ligne « délégation » de la fiche de décision** :
 

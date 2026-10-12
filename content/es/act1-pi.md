@@ -49,9 +49,14 @@ Edita el archivo `~/.pi/agent/models.json` y complétalo de la siguiente manera:
                     "id": "qwen-3.6-35b-instruct",
                     "contextWindow": 256000,
                     "cost": { "input": 0.14, "output": 0.28, "cacheRead": 0.0028, "cacheWrite": 0 }
+                },
+                {
+                    "id": "qwen-3.8-27b",
+                    "contextWindow": 256000,
+                    "cost": { "input": 0.14, "output": 0.28, "cacheRead": 0.0028, "cacheWrite": 0 }
                 }
             ]
-        },
+        }
     }
 }
 ```
