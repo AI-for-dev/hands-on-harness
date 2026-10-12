@@ -3,13 +3,13 @@
 ::: tip Objectifs de ce module
 - Savoir ce qu'un agent de code peut faire sur votre machine
 - Comparer le clone jetable, le conteneur et la micro-machine virtuelle : ce que chacun protège, et ce qu'il coûte
-- Lancer Pi dans une Docker Sandboxes avec un kit versionné dans ce dépôt
+- Lancer Pi dans Docker Sandboxes avec un kit versionné, [ai4dev-pi-kit](https://github.com/AI-for-dev/ai4dev-pi-kit)
 - Repartir avec un bac à sable dans lequel les manipulations des modules suivants tournent sans surveillance
 :::
 
 Les modules qui suivent lancent Pi vingt fois sur la même tâche sans intervention humaine, lui confient des sous-agents qui ont un shell, puis enchaînent des sous-agents dans des pipelines. Pi n'a aucun mécanisme pour demander votre accord avant d'exécuter une commande, et sa [documentation sur la sécurité](https://pi.dev/docs/latest/security) le dit clairement : les outils lisent, écrivent et lancent des commandes « with the permissions of the pi process », et « Pi does not include a built-in sandbox ». Tout ce que vous pouvez faire depuis votre terminal, l'agent peut donc le faire aussi, lire `~/.ssh`, lire `~/.pi/agent/auth.json` où sont rangées vos clés d'API, lancer `git push --force`, ou envoyer le contenu d'un fichier à un domaine quelconque avec `curl`.
 
-La réaction naturelle est d'écrire une consigne, « ne modifie que `game/neon.js` », « ne lis rien hors du dépôt ». Une consigne est du texte et nous vous rappelons que l'utilisation d'un LLM est toujours non déterministe ce qui veut dire que vous n'aurez jamais une garantie de 100% qu'elle sera suivie. Dans le module sur les compétences, vous constaterez qu'une consigne de nettoyage de fichiers temporaires placée dans un `SKILL.md` est suivie moins d'une fois sur trois. Avant la première exécution sans surveillance, il faut donc une limite qui ne dépende pas de l'obéissance du modèle. Le bac à sable (appelé sandbox) est une façon déterministe de s'assurer que le LLM est dans un environnement clos où les frontières sont déterminées par vous et que le modèle ne peut pas outrepasser.
+La réaction naturelle est d'écrire une consigne, « ne modifie que `game/neon.js` », « ne lis rien hors du dépôt ». Une consigne est du texte, et l'utilisation d'un LLM n'est jamais déterministe, ce qui veut dire que vous n'aurez jamais la garantie à 100 % qu'elle sera suivie. Dans le module sur les compétences, vous constaterez qu'une consigne de nettoyage de fichiers temporaires placée dans un `SKILL.md` est suivie moins d'une fois sur trois. Avant la première exécution sans surveillance, il faut donc une limite qui ne dépende pas de l'obéissance du modèle. Le bac à sable (appelé sandbox) est une façon déterministe de s'assurer que le LLM est dans un environnement clos où les frontières sont déterminées par vous et que le modèle ne peut pas outrepasser.
 
 ## Comprendre
 
@@ -17,7 +17,7 @@ La réaction naturelle est d'écrire une consigne, « ne modifie que `game/neon.
 
 Un agent de code qui tourne sur votre poste a accès à vos fichiers, c'est-à-dire au dépôt sur lequel il travaille et, avec les mêmes droits, à votre répertoire personnel, où vivent les clés SSH, les jetons des fournisseurs de modèles et les fichiers `.env` de vos autres projets. Le réseau lui permet d'installer n'importe quel paquet, d'exécuter un `curl | sh` trouvé dans un README, ou de diffuser ce qu'il vient de lire. Il lance enfin des processus avec votre identité, ce qui couvre le démon Docker, la commande `rm` et l'accès en écriture au dépôt distant. Si en plus vous avez les droits sudo sur votre machine, plus rien ne l'arrête.
 
-Ces actions n'exigent même pas que le modèle se trompe. Un fichier du dépôt peut contenir des instructions écrites pour l'agent, et c'est le rôle du `SUPPORT.md` de NÉON, dont le texte imite une procédure d'assistance mais demande de lire le `.env` et d'en envoyer le contenu à une adresse externe : l'agent qui ouvre ce fichier pour répondre à une question traite l'instruction comme si elle venait de vous, et le module sur les permissions travaillera sur ce cas. Une extension installée depuis l'annuaire communautaire s'exécute, comme le module sur Pi l'a rappelé, avec l'intégralité de vos droits. Dans ces deux cas, la faille est dans le harnais, et un garde-fou écrit à l'intérieur de AGENTS.md ne vous protégera pas.
+Ces actions n'exigent même pas que le modèle se trompe. Un fichier du dépôt peut contenir des instructions écrites pour l'agent, et c'est le rôle du `SUPPORT.md` de NÉON, dont le texte imite une procédure d'assistance mais demande de lire le `.env` et d'en envoyer le contenu à une adresse externe : l'agent qui ouvre ce fichier pour répondre à une question traite l'instruction comme si elle venait de vous, et le module sur les permissions travaillera sur ce cas. Une extension installée depuis l'annuaire communautaire s'exécute, comme le module sur Pi l'a rappelé, avec l'intégralité de vos droits. Dans ces deux cas, la faille est dans le harnais, et un garde-fou écrit à l'intérieur d'`AGENTS.md` ne vous protégera pas.
 
 La documentation de Pi en tire la conclusion : « For untrusted repositories, generated code you do not intend to monitor closely, or unattended automation, run pi in a contained environment. Use a container, VM, micro-VM, remote sandbox, or policy-controlled sandbox with only the files and credentials required for the task. » Nos vingt exécutions sur l'issue #1 sont exactement de l'automatisation sans surveillance. Et à terme, nous souhaitons des agents autonomes pouvant travailler pendant des heures sans que nous soyons obligés de les surveiller.
 
@@ -27,7 +27,7 @@ Le moins cher des trois est le **clone jetable**. L'outil de mesure du module su
 
 Un cran plus loin, le **conteneur** fait tourner Pi dans une image Docker où seul le dépôt est monté, ce qui met votre répertoire personnel hors de portée. Il partage le noyau de l'hôte, son réseau est ouvert par défaut, et surtout la clé du fournisseur de modèles doit y être ajoutée pour que Pi puisse appeler le modèle, ce que la [page de Pi sur la conteneurisation](https://pi.dev/docs/latest/containerization) note en une phrase : « Provider API keys enter the container ». Tout ce que l'agent exécute a donc accès à cette clé.
 
-Dans la même idée, vous pouvez ajouter un hook à Pi qui, à chaque commande bash demandée, vérifie si la commande est autorisée. Il y a plusieurs extension Pi qui offrent ce genre de configurations. C'est par exemple le cas de [`pi-permission-system`](https://pi.dev/packages/@gotgenes/pi-permission-system) qui, à partir d'un fichier de configuration, vous permet de dire quelles commandes sont autorisées et quelles commandes ne le sont pas. Elle s'accroche à l'événement `tool_call` de l'API d'extension de Pi, un hook qui intercepte chaque appel d'outil, chaque commande bash, chaque appel MCP et chaque skill invoqué avant son exécution, et compare la demande à des règles `allow` / `deny` / `ask` écrites en JSON. Ca demande néanmoins de configurer vous même les droits. L'outil `read` peut encore très bien lire vos fichiers de configurations. Vous verrez comment l'utiliser un peu plus loin dans ce module.
+Dans la même idée, vous pouvez ajouter un hook à Pi qui, à chaque commande bash demandée, vérifie si la commande est autorisée. Plusieurs extensions Pi offrent ce genre de configuration. C'est par exemple le cas de [`pi-permission-system`](https://pi.dev/packages/@gotgenes/pi-permission-system) qui, à partir d'un fichier de configuration, vous permet de dire quelles commandes sont autorisées et quelles commandes ne le sont pas. Elle s'accroche à l'événement `tool_call` de l'API d'extension de Pi, un hook qui intercepte chaque appel d'outil, chaque commande bash, chaque appel MCP et chaque skill invoqué avant son exécution, et compare la demande à des règles `allow` / `deny` / `ask` écrites en JSON. Cela demande néanmoins de configurer vous-même les droits, faute de quoi l'outil `read` peut encore lire vos fichiers de configuration. Vous verrez comment l'utiliser un peu plus loin dans ce module.
 
 Le troisième niveau est la **micro-machine virtuelle à politique** avec [Docker Sandboxes](https://docs.docker.com/ai/sandboxes/). Chaque sandbox a son propre noyau derrière un hyperviseur, tout le trafic TCP sortant passe par un proxy sur l'hôte qui n'accepte que les domaines d'une liste d'autorisations, et les clés d'API sont injectées dans les en-têtes HTTP par ce proxy, si bien que, pour citer la [page sur la sécurité](https://docs.docker.com/ai/sandboxes/security/), « Credential values never enter the VM ». Le répertoire de travail est monté dans la VM au même chemin absolu que sur l'hôte. Le coût est une image de six cent cinquante mégaoctets à télécharger, un démon à faire tourner, une liste de domaines autorisés à entretenir. Cela peut sembler compliqué, mais votre IA préférée pourra vous assister pour mettre en place facilement cette infrastructure.
 
@@ -83,11 +83,11 @@ Les règles vivent dans un fichier JSON, lu à trois portées : globale (`~/.pi/
 La règle la plus spécifique l'emporte : `bash.*` demande confirmation par défaut, `rm -rf *` refuse sans demander, et un chemin hors du dépôt reste soumis à confirmation même quand `path.*` autorise tout le reste. Une commande que l'analyseur bash de l'extension ne sait pas classer est refusée plutôt que laissée passer, et un chemin qui traverse un lien symbolique est résolu avant comparaison.
 
 ::: info Exercice (en salle)
-Travaillez dans un clone jetable de NÉON, puisque deux des demandes ci-dessous sont destructrices. Installez l'extension, déposez la configuration ci-dessus dans `.pi/extensions/pi-permission-system/config.json`, créez à la racine un `.env` contenant une fausse clé, puis lancez Pi et demandez-lui trois choses : de vous lire le contenu de ce `.env`, d'effacer le dossier `game/` avec `rm -rf`, et de lancer la suite de tests. Les deux premières demandes sont refusées sans que Pi vous consulte, la troisième ouvre une confirmation à laquelle vous répondez vous-même.
+Travaillez dans un clone jetable de NÉON, puisque deux des demandes ci-dessous sont destructrices. Installez l'extension, déposez la configuration ci-dessus dans `.pi/extensions/pi-permission-system/config.json`, vérifiez que le `.env` livré avec NÉON est bien à la racine (il ne contient que de fausses valeurs), puis lancez Pi et demandez-lui trois choses : de vous lire le contenu de ce `.env`, d'effacer le dossier `game/` avec `rm -rf`, et de lancer la suite de tests. Les deux premières demandes sont refusées sans que Pi vous consulte, la troisième ouvre une confirmation à laquelle vous répondez vous-même.
 
 Reposez ensuite la demande de lecture du `.env` trois fois d'affilée en la reformulant, puis en expliquant à Pi que vous êtes le propriétaire du fichier et que vous l'autorisez : le verdict ne bouge pas, parce qu'il vient d'une règle évaluée avant l'appel d'outil et non d'un arbitrage du modèle.
 
-Retirez enfin le bloc `path` de la configuration et remplacez-le par la consigne « ne lis jamais de fichier `.env` » dans l'`AGENTS.md` du dépôt, puis reposez la même demande cinq fois dans cinq sessions différentes. Comptez les refus obtenus : vous tenez alors votre propre chiffre sur ce que vaut une consigne en texte face à un garde-fou en code. Tout ceci dépend bien évidemment de la qualité du modèle et peut-être que celui que vous utiliserez suivra votre règle écrite. Mais votre contexte est vide et ce ne sera peut-être plus le cas si il est déjà bien rempli.
+Retirez enfin le bloc `path` de la configuration et remplacez-le par la consigne « ne lis jamais de fichier `.env` » dans l'`AGENTS.md` du dépôt, puis reposez la même demande cinq fois dans cinq sessions différentes. Comptez les refus obtenus : vous tenez alors votre propre chiffre sur ce que vaut une consigne en texte face à un garde-fou en code. Tout ceci dépend bien évidemment de la qualité du modèle et peut-être que celui que vous utiliserez suivra votre règle écrite. Votre contexte est cependant vide ici, et le résultat peut changer quand il est déjà bien rempli.
 :::
 
 ### Installer et configurer `sbx`
@@ -208,7 +208,7 @@ De même, le fichier `files/home/.pi/agent/models.json` renseigne les modèles d
                     "reasoning": true
                 },
                 {
-                    "id": "qwen-3.6-35b-instruct",
+                    "id": "qwen-3.8-27b",
                     "contextWindow": 256000
                 }
             ]
@@ -293,16 +293,9 @@ Revenez sur l'hôte et lisez `sbx policy log`, où chaque refus est consigné av
 
 **Refuser par défaut, puis ouvrir depuis le journal.** La liste d'autorisations d'un kit ne s'écrit pas d'avance : on part du refus, on travaille une séance, et on n'ajoute que les domaines dont le refus a réellement bloqué quelque chose, comme le reste de l'acte tranche sur une mesure plutôt que sur une intuition.
 
-## Livrable
-
-À la fin de ce module, Pi tourne dans un sandbox sur votre clone de NÉON, et toutes les manipulations des modules suivants pourront s'y faire avec un contrôle optimal.
-
-Quatre vérifications le confirment :
-
-- la variable `ILAAS_API_KEY` lue depuis le sandbox est la sentinelle ;
-- une requête vers un domaine absent de la liste échoue ;
-- une édition faite par Pi apparaît dans le dépôt côté hôte ;
-- `sbx policy log` ne montre aucun refus que votre liste n'ait pas choisi.
+::: tip Ce que vous avez appris
+Vous savez dire à quoi un agent a accès sur votre machine et ce que chaque niveau d'isolation protège. Vous savez lancer Pi dans un sandbox et vérifier qu'il ne voit pas votre clé, qu'il ne peut pas joindre un domaine non autorisé et que ses modifications arrivent bien dans votre dépôt. Enfin, vous savez lire le journal des refus pour n'ouvrir que les domaines dont vous avez besoin.
+:::
 
 ## Pour aller plus loin
 

@@ -45,11 +45,17 @@ Un appel au modèle se facture en trois postes, exprimés au million de tokens. 
 | `deepseek-v4-flash` | 0,14 $ | 0,28 $ | 0,0028 $         |
 | `deepseek-v4-pro`   | 1,74 $ | 3,48 $ | 0,0145 $         |
 
-Ces tarifs sont ceux publiés par [opencode Zen](https://opencode.ai/docs/zen/). Les mesures de l'[acte 3](./act3-trysquare) tournent sur ILaaS, qui ne facture rien aux participants de cette formation, et comptent donc des tokens plutôt que des euros. Les deux se lisent de la même façon, à ceci près qu'un compteur de tokens ne vous prévient pas quand vous dépensez.
+Ces tarifs sont ceux publiés par [opencode Zen](https://opencode.ai/docs/zen/). ILaaS, lui, ne facture rien aux participants de cette formation. Vous y compterez donc des tokens plutôt que des euros. Les deux se lisent de la même façon, mais un compteur de tokens ne vous prévient pas quand vous dépensez.
 
 Deux écarts en ressortent. Le premier sépare les deux modèles, puisque le `pro` coûte 12,4 fois plus cher que le `flash` à tarif nominal. C'est une première manière de se rendre compte qu'un modèle possède plus de capacités qu'un autre. Le second écart, bien plus large, sépare l'entrée de la lecture de cache : un facteur **50** sur `flash` et **120** sur `pro`.
 
 Ce second écart est ce qui rend un agent de code économiquement viable, car un agent relit son historique complet à chaque tour et paierait sinon vingt fois le prix de son contexte au cours d'une session de vingt tours.
+
+::: warning Un fournisseur qui rapporte le cache
+La séquence de l'exercice suivant a été mesurée sur [opencode Go](https://opencode.ai/docs/zen/). C'est une offre payante qui demande un compte. Nous l'avons choisie parce qu'ILaaS ne rapporte pas la lecture de cache : `cacheRead` y vaut toujours zéro.
+
+Si vous travaillez sur ILaaS, remplacez `--provider opencode-go --model deepseek-v4-flash` par `--provider ilaas --model gemma-4-31b`, et le modèle `pro` par `qwen-3.8-27b`. Vous verrez bien les tokens d'entrée et l'effet du changement de modèle, mais la colonne de lecture de cache restera vide. Faites de même pour l'exercice sur `codemode`, plus loin.
+:::
 
 ::: info Exercice (en salle)
 Dans une session interactive, enchaînez cinq questions sur un même fichier en tapant `/session` après chacune, et changez de modèle avec `/model` avant la quatrième. Les questions doivent interdire explicitement toute relecture de fichier, faute de quoi une nouvelle sortie d'outil viendra s'ajouter au contexte et brouillera la lecture.
@@ -116,7 +122,7 @@ En plus de la correction du bug, nous souhaitons commencer à définir un cadre 
 
 La première contrainte est trop forte dans un cadre général. L'idée ici est surtout de voir comment se comporte le modèle et s'il respecte cette contrainte écrite.
 
-Ce module vous fait manipuler les leviers à la main, sur une ou deux exécutions, pour voir ce que chacun change dans la session et dans le diff. Le [module 3.1](./act3-contexte) reprend la même tâche et les mêmes leviers avec vingt répétitions par configuration, ce qui permet de dire lesquels changent réellement le résultat.
+Ce module vous fait manipuler les leviers à la main, sur une ou deux exécutions, pour voir ce que chacun change dans la session et dans le diff.
 
 ### Les curseurs, à la main
 
@@ -130,13 +136,13 @@ Lancez la même demande sur deux modèles de tailles différentes, celui que vou
 Prenez soin de créer au préalable deux clones séparés :
 
 ```bash
-git clone --branch etalon-v1 git@github.com:AI-for-dev/neon.git neon-model-xxx
-git clone --branch etalon-v1 git@github.com:AI-for-dev/neon.git neon-model-yyy
+git clone --branch etalon-v1 https://github.com/AI-for-dev/neon neon-model-xxx
+git clone --branch etalon-v1 https://github.com/AI-for-dev/neon neon-model-yyy
 ```
 
 puis travaillez dans le répertoire correspondant au modèle testé.
 
-Lisez les deux diffs, puis les deux `/session`. Notez vos observations sans en tirer de conclusion : le [module 3.0](./act3-trysquare) explique pourquoi deux exécutions ne suffisent pas à départager deux modèles.
+Lisez les deux diffs, puis les deux `/session`. Notez vos observations sans en tirer de conclusion : deux exécutions ne suffisent pas à départager deux modèles.
 :::
 
 #### L'effort de raisonnement
@@ -169,12 +175,12 @@ Cette contrainte vous oblige à faire le travail de refactoring continu décrit 
 
 Nous pouvons également nous appuyer sur d'autres fichiers et le dire dans `AGENTS.md`, pour que l'agent aille les lire au besoin. Par exemple, nous pouvons lui indiquer que les conventions sont dans `CONTRIBUTING.md`, l'architecture dans le `README.md` et l'historique dans git.
 
-Sur les vingt exécutions de l'issue #1 avec la demande négligée que mesure le [module 3.1](./act3-contexte), **aucune n'a lancé la suite de tests** et **aucune n'a ajouté un cas**.
+Avec la demande négligée, l'agent ne lance en général pas la suite de tests et n'ajoute aucun cas.
 
 ::: info Exercice (en salle)
-Écrivez l'`AGENTS.md` de NÉON en partant de vos propres exécutions plutôt que des nôtres : relisez les diffs que vous venez de produire et cherchez ce que l'agent a fait sans qu'on le lui demande, ou omis alors qu'on le lui demandait. Faites en sorte qu'il lance les tests à chaque fois qu'il modifie le code et qu'il en ajoute s'il n'y a pas de couverture.
+Écrivez l'`AGENTS.md` de NÉON en partant de vos propres exécutions : relisez les diffs que vous venez de produire et cherchez ce que l'agent a fait sans qu'on le lui demande, ou omis alors qu'on le lui demandait. Faites en sorte qu'il lance les tests à chaque fois qu'il modifie le code et qu'il en ajoute s'il n'y a pas de couverture.
 
-Voici la base de départ, à discuter et à amender. C'est le fichier même que les mesures du [module 3.1](./act3-contexte) utilisent, versionné avec l'expérience :
+Voici la base de départ, à discuter et à amender :
 
 <<<@/../scripts/trysquare-campaign/briques/AGENTS.md{md}
 
@@ -183,7 +189,7 @@ Voici la base de départ, à discuter et à amender. C'est le fichier même que 
 ::: warning Un `AGENTS.md` peut en cacher un autre
 Pi cumule ces fichiers, à partir de votre `~/.pi/agent/AGENTS.md` personnel, puis de chaque répertoire parent en remontant, puis du répertoire courant. Un fichier de règles personnel s'invite donc dans toutes vos mesures sans que vous en soyez informé.
 
-Le drapeau `--no-context-files`, abrégé `-nc`, désactive cette découverte, ce qui est indispensable pour mesurer proprement. L'outil de mesure de l'acte 3 travaille dans un clone jetable où seul le fichier `AGENTS.md` du répertoire courant (NÉON) est déposé.
+Le drapeau `--no-context-files`, abrégé `-nc`, désactive cette découverte, ce qui est indispensable pour mesurer proprement.
 :::
 
 #### Le prompt système
@@ -191,7 +197,7 @@ Le drapeau `--no-context-files`, abrégé `-nc`, désactive cette découverte, c
 Pi permet de remplacer entièrement son prompt système par un `.pi/SYSTEM.md` à la racine du projet ou un `~/.pi/agent/SYSTEM.md` global. L'option `--system-prompt` obéit à une règle légèrement différente, puisque les fichiers de contexte et les skills continuent d'être ajoutés par-dessus, si bien qu'on ne repart jamais tout à fait d'une page blanche.
 
 ::: info Exercice (en autonomie)
-Créez un `.pi/SYSTEM.md` de trois lignes. C'est la brique que les mesures du [module 3.1](./act3-contexte) déposent dans le clone pour la configuration `-system_prompt` :
+Créez un `.pi/SYSTEM.md` de trois lignes, par exemple :
 
 <<<@/../scripts/trysquare-campaign/briques/SYSTEM-minimal.md
 
@@ -333,24 +339,7 @@ Une sortie d'outil reste dans la fenêtre jusqu'à la fin de la session. Mieux v
 
 Enfin, `AGENTS.md` entre lui aussi dans le contexte à chaque tour. Gardez-le court, n'y ajoutez une règle qu'après avoir vu l'agent échouer sans elle, et renvoyez vers les documents que l'agent peut lire au besoin au lieu de les recopier. Quand vous changez de modèle, relisez-le et retirez ce qui ne sert plus.
 
-## Livrable
-
-Ce module produit deux pièces.
-
-**1. L'`AGENTS.md` de NÉON**, versionné dans le dépôt, sous les 40 lignes. Pour chaque règle, notez l'échec que vous avez observé pendant les exercices et qui vous l'a fait ajouter.
-
-**2. Vos observations sur chaque levier**, une ligne par levier, avec la session ou le diff qui la montre. Le [module 3.1](./act3-contexte) reprend ces leviers sur vingt exécutions, et vous pourrez y comparer vos observations aux mesures.
-
-| levier                           | ce que vous avez observé | session ou diff |
-| -------------------------------- | ------------------------ | --------------- |
-| choix du modèle                  |                          |                 |
-| effort de raisonnement           |                          |                 |
-| `AGENTS.md`                      |                          |                 |
-| prompt système (`.pi/SYSTEM.md`) |                          |                 |
-| fenêtre bridée et compaction     |                          |                 |
-| `codemode`                       |                          |                 |
-
-::: tip Critère de réussite
+::: tip Ce que vous avez appris
 Vous savez dire de quoi la fenêtre de contexte est faite. Vous savez comment elle est initialisée et comment modifier cette initialisation. Vous comprenez également comment limiter l'impact des outils ou du niveau de raisonnement. Vous pouvez dire si l'infrastructure d'inférence est bien configurée ou si elle vous coûte plus de tokens qu'il n'en faut, ce qui arrive par exemple quand le cache est mal configuré ou pas configuré du tout.
 :::
 

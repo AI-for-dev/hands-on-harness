@@ -3,8 +3,8 @@
 ::: tip Objetivos de este módulo
 - Medir con trysquare el efecto de cada palanca del [módulo 2.1](./act2-contexte) sobre una misma tarea
 - Leer una matriz de veinte repeticiones y quedarte solo con las diferencias establecidas
-- Verificar el recuento de repeticiones y las razones de las métricas antes de citar una tabla
-- Salir con una decisión razonada sobre cada palanca
+- Verificar el recuento de reejecuciones y las razones de las métricas antes de citar una tabla
+- Saber decir, para cada palanca, si cambia el resultado en NÉON y por qué
 :::
 
 El [módulo 2.1](./act2-contexte) te hizo manipular a mano las palancas que llenan la ventana de contexto: el modelo, el esfuerzo de razonamiento, el prompt, `AGENTS.md` y el system prompt. Cada manipulación cabía en una o dos ejecuciones, lo que basta para ver qué cambia una palanca en la sesión y deja abierta la pregunta de si ese cambio se reproduce. Este módulo retoma la misma tarea, la issue #1 de NÉON, y mide las mismas palancas con [trysquare](https://github.com/AI-for-dev/trysquare), cuyo [módulo 3.0](./act3-trysquare) describe el funcionamiento y la lectura de las tablas.
@@ -276,35 +276,10 @@ Los principios que siguen tratan sobre las propias palancas, y los que tratan so
 
 **El archivo de reglas cambia lo que el agente hace y no lo que encuentra, y solo sirve para lo que el ticket no dice.** Entra en el contexto en cada turno, lo que lo convierte en una palanca fuerte y costosa a la vez, de ahí el interés de mantenerlo corto, de fundamentar cada regla en un fallo observado y de refactorizarlo en lugar de alargarlo. Nuestras mediciones enmarcan con precisión lo que compra: la configuración `+agents` hace pasar de 0/20 a 20/20 el número de ejecuciones que lanzan la suite de tests, deja el criterio de corrección sin cambios, y no aporta ya nada en absoluto en cuanto el prompt enmarcado está ahí. La regla de escritura que se deriva es directamente aplicable al presupuesto de cuarenta líneas: una línea que un ticket correcto diría de todos modos es una línea que hay que quitar.
 
-## Entregable
+::: tip Lo que has aprendido
+Sabes citar una palanca que has medido como sin efecto sobre NÉON, y decir en qué condición precisa tendría uno en otro lugar.
 
-Este módulo produce dos piezas, y la segunda servirá para el acto 4.
-
-**1. El directorio de matriz** producido por `trysquare run`, con su línea de registro. El entregable no es una tabla copiada sino el archivo que permite volver a fabricarlo: las mediciones brutas, las sesiones, los diffs, y la revisión de la herramienta que midió. Sin este archivo, la matriz no se puede verificar ni volver a puntuar, y sus cifras no valen más que una opinión.
-
-**2. La ficha de decisión**, una línea por palanca:
-
-| palanca                    | efecto medido | ¿adoptado? | por qué |
-| -------------------------- | ------------- | ---------- | ------- |
-| elección del modelo        |               |            |         |
-| esfuerzo de razonamiento   |               |            |         |
-| ticket enmarcado           |               |            |         |
-| contenido del ticket apuntado |            |            |         |
-| `AGENTS.md`                |               |            |         |
-| system prompt              |               |            |         |
-| tests proporcionados de antemano |         |            |         |
-| ordenación / caché         |               |            |         |
-| compactación               |               |            |         |
-| criterio ejecutable (sonda) |              |            |         |
-
-Se han añadido dos líneas a esta ficha después de nuestras últimas mediciones. «Contenido del ticket apuntado» figura en ella porque la reescritura de `ISSUES.md` movió más columnas que cualquier ajuste del harness, y «tests proporcionados de antemano» porque es la única palanca que ha compensado la caída del modelo en un ticket largo.
-
-Esta ficha constituye el primer relleno real de la columna «¿tu harness?» de la tabla de correspondencia, para la fila «contexto». Los módulos siguientes harán lo mismo con su ladrillo, de modo que abordarás el capstone con una tabla ya rellena por tus experiencias.
-
-::: tip Criterio de éxito
-Sabes citar una palanca que has medido como sin efecto sobre NÉON, y decir en qué condición precisa la tendría en otro lugar.
-
-Nuestro ejemplo es `AGENTS.md`: no mueve ni un punto el criterio de corrección, y se volvería decisivo en un ticket cuyo fallo habitual es de procedimiento y no de razonamiento, o en un repositorio cuyos tickets están mal escritos. El tuyo será distinto, y ese es el objetivo. Este criterio exige haber visto las cifras y haber entendido que son la tarea y su material los que las determinan. Por lo tanto, no se puede satisfacer de memoria.
+Nuestro ejemplo es `AGENTS.md`: no mueve ni un punto el criterio de corrección, y se volvería decisivo en un ticket cuyo fallo habitual es de procedimiento más que de razonamiento, o en un repositorio cuyos tickets están mal escritos. El tuyo será distinto, y ese es el propósito: para citarlo, hay que haber visto las cifras y comprendido que son la tarea y su material los que las determinan.
 :::
 
 ## Para profundizar

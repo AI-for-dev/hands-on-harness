@@ -24,7 +24,7 @@ export const fr: LocaleSpecificConfig<DefaultTheme.Config> = {
         ]
       },
       {
-        text: 'Acte 1 — Fondations',
+        text: 'Acte 1 - Fondations',
         items: [
           { text: 'Historique', link: '/historique' },
           { text: 'Les LLM en 2026', link: '/act1-llm' },
@@ -33,7 +33,7 @@ export const fr: LocaleSpecificConfig<DefaultTheme.Config> = {
         ]
       },
       {
-        text: 'Acte 2 — Reconstruction',
+        text: 'Acte 2 - Reconstruction',
         items: [
           { text: '2.0 Le bac à sable', link: '/act2-sandbox' },
           { text: '2.1 Le contexte et la fenêtre', link: '/act2-contexte' },

@@ -72,7 +72,7 @@ The fields presented below are specific to combo. Other tools in principle ignor
 
 In combo, we have additional fields in the metadata. The `lifetime` field controls the subagent's lifespan. With `task`, the default value, the subagent is created for one task and disappears when it ends; with `workflow`, it keeps its context from one iteration of a workflow to the next. This module uses `task` everywhere.
 
-A subagent inherits nothing from your environment: no extensions, no skills, no context files. It only sees its definition, plus a single line telling it where it is. Its behavior therefore does not depend on your personal configuration, and everything it needs to know goes through its prompt or through the task you give it. If you need to provide skills to your agent, you can do so by adding the list in a `skills` field. This field also exists in Claude Code, but not necessarily in other harnesses. Warning: if you do not include the `read` tool in the toolset and you fill in `skills`, the agent will fail because it will not be able to read the skills.
+A subagent inherits nothing from your environment: no extensions, no skills, no context files. It only sees its definition, completed by a single line telling it where it is. Its behavior therefore does not depend on your personal configuration, and everything it needs to know goes through its prompt or through the task you give it. If you need to provide skills to your agent, you can do so by adding the list in a `skills` field. This field also exists in Claude Code, but not necessarily in other harnesses. Beware: if you don't put the `read` tool in the toolkit and you fill in `skills`, the agent will fail because it won't be able to read the skills.
 
 The project's agent files live in `.pi/agents/`, your machine's in `~/.pi/agent/agents/`, and the extension ships its own demo agents. An agent can share the same name in both directories, and combo lets you pick which one to use.
 
@@ -81,7 +81,7 @@ A sub-agent's model is never inherited from its parent session. It comes from an
 :::
 
 ::: warning Understanding the agent hierarchy
-Like most Pi configurations you may have seen since the start of this training, combo loads the project agents, those on your machine, and its own by default. When two agents share the same name, the project one wins. Since the files in `.pi/agents/` come from the repository you cloned and someone else may have written them, read them before answering `Trust` to the question Pi asks on first launch in a folder. If a project agent masks an agent with the same name in `~/.pi/agent/agents/`, combo reports it in the call result, and you get yours back by requesting the `user` scope.
+Like most Pi setups you have seen since the start of this training, combo loads project agents, your machine's agents, and its own by default. When two agents share a name, the project's wins. Since the files in `.pi/agents/` come from the repo you cloned and someone else may have written them, read them before answering `Trust` to the question Pi asks on first launch in a folder. If a project agent shadows an agent with the same name in `~/.pi/agent/agents/`, combo reports it in the call result, and you get yours back by requesting the `user` scope.
 
 You can get the list of your agents via the command:
 
@@ -286,26 +286,8 @@ You can now test many combinations and try to see their influence on the results
 - ...
 :::
 
-## Deliverable
-
-This module produces three artifacts.
-
-**1. The four agents**, versioned in the `.pi/agents/` of your NÉON clone, each with its minimal setup and its declared `model:`. The next module will wire them into the orchestrator without modifying them.
-
-**2. The trace of one loop iteration**: the chain's `runs/` directory, the diff of the first step, the `npm test` output read by `reviewer`, and your log of decisions made between steps.
-
-**3. The "delegation" row of the decision sheet**:
-
-| lever                               | observed effect | adopted? | why |
-| ----------------------------------- | --------------- | -------- | --- |
-| exploration delegated to a subagent |                 |          |     |
-| tool restriction (`tools:`)         |                 |          |     |
-| review in a separate context        |                 |          |     |
-| model declared per agent (`model:`) |                 |          |     |
-| plan split into small steps         |                 |          |     |
-
-::: tip Success criterion
-You can show, trace in hand, which agent ran at each step of your loop, with which tools and which model. You also know which decisions you made between two steps, the ones the next module's orchestrator will have to make in your place.
+::: tip What you have learned
+You can show, trace in hand, which agent ran at each step of your loop, with which tools and which model. You also know which decisions you made between two steps, the ones the orchestrator of the next module will have to make on your behalf.
 :::
 
 ## To go further

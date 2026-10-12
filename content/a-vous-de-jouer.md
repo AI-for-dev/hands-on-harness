@@ -21,7 +21,7 @@ Nous avons écrit deux outils pour cette formation, pour que chaque expérience 
 combo et trysquare ont été écrits pour expérimenter vite. Ils ne pilotent aujourd'hui que Pi et n'ont pas encore été éprouvés en production. Nous vous conseillons de les utiliser pour décider de ce que vous mettez dans votre harnais, puis de regarder les outils de la section suivante si vous avez besoin de le faire tourner tous les jours sur une équipe.
 :::
 
-La démarche est plus importante que les outils eux-mêmes, et elle se transpose sur votre dépôt sans changement : choisir un ticket réel dont on sait vérifier la correction par un test, écrire la demande telle que vous l'écririez un jour ordinaire, puis faire varier un seul levier à la fois (le modèle, `AGENTS.md`, un skill, un flow) en répétant chaque configuration assez de fois pour que l'écart observé ne soit pas du bruit. La fiche de décision que vous avez remplie module après module est le livrable à reproduire.
+La démarche est plus importante que les outils eux-mêmes, et elle se transpose sur votre dépôt sans changement : choisir un ticket réel dont on sait vérifier la correction par un test, écrire la demande telle que vous l'écririez un jour ordinaire, puis faire varier un seul levier à la fois (le modèle, `AGENTS.md`, un skill, un flow) en répétant chaque configuration assez de fois pour que l'écart observé ne soit pas du bruit.
 
 ## Où trouver des skills dont s'inspirer ?
 
@@ -53,7 +53,7 @@ Une **usine logicielle** (*software factory*) est un système qui reçoit une de
 
 [Gas Town](https://github.com/steveyegge/gastown), de Steve Yegge, coordonne des agents (Claude Code, GitHub Copilot, Codex, Gemini et d'autres) répartis sur plusieurs projets, avec un agent coordinateur, des boîtes aux lettres entre agents et un état de travail conservé dans git, pour qu'un agent redémarré reprenne là où il en était. Son README annonce un fonctionnement confortable avec vingt à trente agents, un chiffre que nous n'avons pas mesuré.
 
-Ces outils vous font passer d'un agent que vous surveillez à plusieurs agents que vous dirigez, mais chaque agent ajouté multiplie les tokens dépensés et les pull requests à relire, et aucun d'eux ne dit si sa configuration corrige vos tickets plus souvent qu'un agent seul bien réglé, alors que c'est exactement la question à laquelle trysquare répond. Avant de confier votre dépôt à une usine, mesurez sur quelques tickets réels si elle livre plus souvent un correctif qui passe les tests que la configuration retenue dans votre fiche de décision, et pour quel coût.
+Ces outils vous font passer d'un agent que vous surveillez à plusieurs agents que vous dirigez, mais chaque agent ajouté multiplie les tokens dépensés et les pull requests à relire, et aucun d'eux ne dit si sa configuration corrige vos tickets plus souvent qu'un agent seul bien réglé, alors que c'est exactement la question à laquelle trysquare répond. Avant de confier votre dépôt à une usine, mesurez sur quelques tickets réels si elle livre plus souvent un correctif qui passe les tests que la configuration que vous avez retenue, et pour quel coût.
 
 ## Pour aller plus loin
 

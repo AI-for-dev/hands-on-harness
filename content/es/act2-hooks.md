@@ -10,7 +10,7 @@
 
 En los módulos anteriores, trabajamos sobre todo con archivos escritos en Markdown que los agentes leían (o no). En esos archivos intentamos describir marcos de desarrollo para ayudar a los agentes a llegar allí donde queríamos que llegaran. Recordemos que el carácter aleatorio de los LLM hace que no sea 100 % seguro que las directrices dadas en esos archivos de texto se lleven realmente a cabo. Pueden perderse en el contexto.
 
-En este módulo nos vamos a centrar en hacer deterministas las acciones que describíamos en los archivos Markdown. Esas acciones pueden aparecer en distintos momentos del flujo de trabajo, y veremos que Pi es capaz de darte el control en todos los niveles del harness. Eso pasa por construir extensiones. Ya has instalado algunas; ahora vas a construirlas. Aquí se ve toda la potencia y la flexibilidad de Pi.
+Dans ce module, nous allons nous intéresser à rendre déterministes les actions que nous décrivions dans les fichiers Markdown. Ces actions peuvent apparaître à différents moments du flux de travail et nous verrons que Pi est capable de vous donner la main à tous les étages du harness. Cela passe par la construction d'extensions. Vous en avez déjà installé certaines, vous allez maintenant les construire. C'est là que la flexibilité de Pi devient visible.
 
 Estos eventos también reciben el nombre de hooks.
 
@@ -59,7 +59,7 @@ Estos son los eventos disponibles en Pi.
 - `agent_end` y luego `agent_settled`: solo notificación. `agent_settled` garantiza que Pi no volverá a arrancar por su cuenta.
 - `session_shutdown`: limpieza, o commit automático al salir.
 
-Puedes comprobar que realmente puedes intervenir en cualquier momento y adaptar tu harness con precisión.
+Puedes por tanto intervenir en cualquier momento del bucle y adaptar con precisión tu harness.
 
 ### Una extensión de Pi
 
@@ -267,26 +267,8 @@ Plantea después una petición que termine bien, por ejemplo añadir un test par
 
 **La brecha entre hook y consigna sigue siendo una hipótesis.** No encontramos ningún estudio que compare, con harness constante, un hook con la misma regla escrita en la consigna. La medición más cercana es [ContextCov](https://arxiv.org/abs/2603.00822), que añade a un agente verificaciones ejecutables, entre ellas interceptaciones de comandos prohibidos, y reporta 88,3 % de conformidad frente a 67,0 % con solo `AGENTS.md`. El ejercicio del módulo sobre el sandbox, que cuenta los rechazos obtenidos por una consigna y por una barrera de seguridad en código, te da tu propia cifra sobre NÉON.
 
-## Entregable
-
-Este módulo produce tres piezas.
-
-**1. La barrera de seguridad sobre los comandos** : `.pi/forbidden-commands.json` y `.pi/extensions/command-guard.ts`, extendida a la herramienta `read` para el `.env`, con al menos una regla añadida por ti tras un comando que viste lanzar al agente.
-
-**2. La verificación de fin de trabajo** : `.pi/extensions/final-checks.ts`, cuyo array `CHECKS` contiene los comandos de tu proyecto, y no los de NÉON si lo aplicas en otro lugar.
-
-**3. La fila «hooks» de la ficha de decisión** :
-
-| palanca                                              | efecto observado | ¿adoptado? | por qué |
-| ---------------------------------------------------- | ---------------- | ---------- | ------- |
-| barrera de seguridad sobre los comandos (`tool_call`) |                  |            |         |
-| misma regla escrita en `AGENTS.md`                    |                  |            |         |
-| verificación final (`agent_before_settle`)            |                  |            |         |
-| límite de reintentos                                  |                  |            |         |
-| protección de los tests durante un reintento          |                  |            |         |
-
-::: tip Criterio de éxito
-Ante una regla que tu harness no hace respetar, sabes decir cómo verificarla. Si un comando, una ruta, un diff o un código de salida basta, es el trabajo de un hook. Si hace falta un modelo que juzgue, la verificación pasa por la inferencia y por tanto por `AGENTS.md` o un skill.
+::: tip Lo que has aprendido
+Frente a una regla que tu harness no hace cumplir, sabes decir cómo verificarla. Si un comando, una ruta, un diff o un código de salida basta, es trabajo de un hook. Si hace falta un modelo que juzgue, la verificación pasa por la inferencia y, por lo tanto, por `AGENTS.md` o un skill.
 :::
 
 ## Para profundizar

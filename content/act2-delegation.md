@@ -72,7 +72,7 @@ Les champs présentés ci-dessous sont propres à combo. Les autres outils ignor
 
 Dans combo, nous avons des champs supplémentaires dans les métadonnées. Le champ `lifetime` règle la durée de vie du sous-agent. Avec `task`, la valeur par défaut, le sous-agent est créé pour une tâche et disparaît à la fin de celle-ci ; avec `workflow`, il garde son contexte d'une itération à l'autre d'un workflow. Ce module utilise `task` partout.
 
-Un sous-agent n'hérite de rien de votre environnement : ni extensions, ni skills, ni fichiers de contexte. Il ne voit que sa définition, complétée d'une seule ligne qui lui dit où il se trouve. Son comportement ne dépend donc pas de votre configuration personnelle, et tout ce qu'il doit savoir passe par son prompt ou par la tâche que vous lui donnez. Si vous avez besoin de fournir des skills à votre agent, vous pouvez le faire en ajoutant la liste dans un champ `skills`. Ce champ existe aussi dans Claude Code, mais pas forcément dans les autres harnais. Attention: si vous ne mettez pas l'outil `read` dans la panoplie et que vous renseignez `skills`, l'agent échouera car il ne lui sera pas possible de lire les skills.
+Un sous-agent n'hérite de rien de votre environnement : ni extensions, ni skills, ni fichiers de contexte. Il ne voit que sa définition, complétée d'une seule ligne qui lui dit où il se trouve. Son comportement ne dépend donc pas de votre configuration personnelle, et tout ce qu'il doit savoir passe par son prompt ou par la tâche que vous lui donnez. Si vous avez besoin de fournir des skills à votre agent, vous pouvez le faire en ajoutant la liste dans un champ `skills`. Ce champ existe aussi dans Claude Code, mais pas forcément dans les autres harnais. Attention : si vous ne mettez pas l'outil `read` dans la panoplie et que vous renseignez `skills`, l'agent échouera car il ne lui sera pas possible de lire les skills.
 
 Les fichiers d'agents du projet vivent dans `.pi/agents/`, ceux de votre machine dans `~/.pi/agent/agents/`, et l'extension apporte ses propres agents de démonstration. Un agent peut porter le même nom dans les deux répertoires, et combo vous laisse choisir lequel utiliser.
 
@@ -80,7 +80,7 @@ Les fichiers d'agents du projet vivent dans `.pi/agents/`, ceux de votre machine
 Le modèle d'un sous-agent n'est jamais hérité de la session parente. Il vient d'un argument passé à l'appel, à défaut du fichier de pipeline, à défaut de l'en-tête de l'agent, et en dernier recours des réglages de Pi : le plus proche du travail l'emporte. Un agent qui ne déclare rien et qu'on lance sans argument tourne donc sur votre `~/.pi/agent/settings.json`, c'est-à-dire sur ce qui s'y trouve ce jour-là.
 :::
 
-::: warning Comprendre la hiérarchie de agents
+::: warning Comprendre la hiérarchie des agents
 Comme la plupart des configurations Pi que vous avez pu voir depuis le début de cette formation, combo charge par défaut les agents du projet, ceux de votre machine et les siens. Lorsque deux agents portent le même nom, c'est celui du projet qui l'emporte. Comme les fichiers de `.pi/agents/` viennent du dépôt que vous avez cloné et que quelqu'un d'autre a pu les écrire, lisez-les avant de répondre `Trust` à la question que Pi pose au premier lancement dans un dossier. Si un agent du projet masque un agent du même nom dans `~/.pi/agent/agents/`, combo le signale dans le résultat de l'appel, et vous retrouvez le vôtre en demandant la portée `user`.
 
 Vous pouvez avoir la liste de vos agents via la commande :
@@ -286,25 +286,7 @@ Vous pouvez à présent tester plein de combinaisons et essayer de voir leur inf
 - ...
 :::
 
-## Livrable
-
-Ce module produit trois pièces.
-
-**1. Les quatre agents**, versionnés dans le `.pi/agents/` de votre clone de NÉON, chacun avec sa panoplie minimale et son `model:` déclaré. Le module suivant les branchera sur l'orchestrateur sans les modifier.
-
-**2. La trace d'un tour de boucle** : le répertoire `runs/` de la chaîne, le diff du premier pas, la sortie de `npm test` que `reviewer` a lue, et votre journal des décisions prises entre deux étapes.
-
-**3. La ligne « délégation » de la fiche de décision** :
-
-| levier                               | effet observé | adopté ? | pourquoi |
-| ------------------------------------ | ------------- | -------- | -------- |
-| exploration déléguée à un sous-agent |               |          |          |
-| restriction d'outils (`tools:`)      |               |          |          |
-| relecture dans un contexte séparé    |               |          |          |
-| modèle déclaré par agent (`model:`)  |               |          |          |
-| plan découpé en petits pas           |               |          |          |
-
-::: tip Critère de réussite
+::: tip Ce que vous avez appris
 Vous savez montrer, trace en main, quel agent a tourné à chaque étape de votre boucle, avec quels outils et quel modèle. Vous savez aussi quelles décisions vous avez prises entre deux étapes, celles que l'orchestrateur du module suivant devra prendre à votre place.
 :::
 

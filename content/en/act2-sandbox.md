@@ -1,15 +1,15 @@
 # The sandbox: isolating the agent from your machine
 
 ::: tip Objectives of this module
-- Know what a code agent can do on your machine
-- Compare the disposable clone, the container and the micro virtual machine: what each protects, and what it costs
-- Launch Pi in Docker Sandboxes with a kit versioned in this repository
-- Leave with a sandbox in which the exercises of the following modules run unattended
+- Know what a coding agent can do on your machine
+- Compare the disposable clone, the container and the virtual micro-machine: what each one protects, and what it costs
+- Run Pi in Docker Sandboxes with a versioned kit, [ai4dev-pi-kit](https://github.com/AI-for-dev/ai4dev-pi-kit)
+- Leave with a sandbox in which the manipulations of the following modules run unattended
 :::
 
 The following modules launch Pi twenty times on the same task without human intervention, give it sub-agents that have a shell, then chain sub-agents into pipelines. Pi has no mechanism for asking your consent before executing a command, and its [security documentation](https://pi.dev/docs/latest/security) says it clearly: the tools read, write and run commands "with the permissions of the pi process", and "Pi does not include a built-in sandbox". Anything you can do from your terminal, the agent can do too: read `~/.ssh`, read `~/.pi/agent/auth.json` where your API keys are stored, run `git push --force`, or send the content of a file to any domain with `curl`.
 
-The natural reaction is to write a prompt: "only modify `game/neon.js`", "don't read anything outside the repository". A prompt is text, and we remind you that using an LLM is always non-deterministic, which means you will never have a 100% guarantee that it will be followed. In the module on skills, you will observe that an instruction for cleaning up temporary files placed in a `SKILL.md` is followed less than one time in three. Before the first unattended run, you therefore need a limit that doesn't depend on the model's obedience. The sandbox is a deterministic way to ensure that the LLM is in a closed environment whose boundaries are defined by you and that the model cannot overstep.
+The natural reaction is to write an instruction, "only modify `game/neon.js`", "read nothing outside the repository". An instruction is text, and using an LLM is never deterministic, which means you will never have a 100% guarantee that it will be followed. In the module on skills, you will see that a temporary-file cleanup instruction placed in a `SKILL.md` is followed less than one time in three. So before the first unsupervised run, you need a limit that does not depend on the model's obedience. The sandbox (appelé sandbox) is a deterministic way to ensure that the LLM is in a closed environment whose boundaries are set by you and that the model cannot overstep.
 
 ## Understanding
 
@@ -17,7 +17,7 @@ The natural reaction is to write a prompt: "only modify `game/neon.js`", "don't 
 
 A code agent running on your machine has access to your files, that is, the repository it works on and, with the same rights, your home directory, where the SSH keys, the model provider tokens and the `.env` files of your other projects live. The network lets it install any package, run a `curl | sh` found in a README, or broadcast what it has just read. Finally, it launches processes with your identity, which covers the Docker daemon, the `rm` command and write access to the remote repository. If you also have sudo privileges on your machine, nothing stops it.
 
-These actions don't even require the model to make a mistake. A repository file can contain instructions written for the agent: that is the role of NÉON's `SUPPORT.md`. Its text mimics a support procedure but asks the agent to read the `.env` and send its contents to an external address. An agent that opens this file to answer a question treats the instruction as if it came from you, and the module on permissions will work on this case. An extension installed from the community directory runs, as the module on Pi reminded you, with all of your permissions. In both cases, the flaw is in the harness, and a guardrail written inside `AGENTS.md` will not protect you.
+These actions don't even require the model to be wrong. A repository file can contain instructions written for the agent, and that's the role of NÉON's `SUPPORT.md`, whose text mimics a support procedure but asks you to read the `.env` and send its contents to an external address: the agent that opens this file to answer a question treats the instruction as if it came from you, and the module on permissions will work on this case. An extension installed from the community registry runs, as the module on Pi reminded, with all your rights. In both cases, the flaw is in the harness, and a guardrail written inside `AGENTS.md` will not protect you.
 
 Pi's documentation concludes: "For untrusted repositories, generated code you do not intend to monitor closely, or unattended automation, run pi in a contained environment. Use a container, VM, micro-VM, remote sandbox, or policy-controlled sandbox with only the files and credentials required for the task." Our twenty runs on issue #1 are exactly unattended automation. And eventually, we want autonomous agents that can work for hours without us having to monitor them.
 
@@ -27,7 +27,7 @@ The cheapest of the three is the **disposable clone**. The measurement tool in t
 
 One step further, the **container** runs Pi in a Docker image where only the repository is mounted, putting your home directory out of reach. It shares the host kernel, its network is open by default, and above all the model provider's API key must be added to it so that Pi can call the model, which the [Pi page on containerization](https://pi.dev/docs/latest/containerization) notes in one sentence: "Provider API keys enter the container". So everything the agent runs has access to this key.
 
-Along the same lines, you can add a hook to Pi that, on each requested bash command, checks whether the command is allowed. Several Pi extensions offer this kind of configuration. This is the case, for example, of [`pi-permission-system`](https://pi.dev/packages/@gotgenes/pi-permission-system), which, from a configuration file, lets you say which commands are allowed and which are not. It hooks into the `tool_call` event of Pi's extension API, a hook that intercepts each tool call, each bash command, each MCP call and each skill invoked before it runs, and compares the request against `allow` / `deny` / `ask` rules written in JSON. It does, however, require you to configure the permissions yourself. The `read` tool can still very well read your configuration files. You will see how to use it a bit further on in this module.
+In the same way, you can add a hook to Pi that checks whether each requested bash command is allowed. Several Pi extensions offer this kind of configuration. That is the case, for example, with [`pi-permission-system`](https://pi.dev/packages/@gotgenes/pi-permission-system), which lets you declare, from a configuration file, which commands are allowed and which are not. It hooks into the `tool_call` event of the Pi extension API, a hook that intercepts every tool call, every bash command, every MCP call, and every invoked skill before it runs, and compares the request against `allow` / `deny` / `ask` rules written in JSON. It still requires you to configure the permissions yourself; otherwise the `read` tool can still read your configuration files. You will see how to use it later in this module.
 
 The third level is the **policy micro-VM** with [Docker Sandboxes](https://docs.docker.com/ai/sandboxes/). Each sandbox has its own kernel behind a hypervisor, all outgoing TCP traffic goes through a proxy on the host that only accepts domains from an allow-list, and the API keys are injected into the HTTP headers by that proxy, so that, to quote the [security page](https://docs.docker.com/ai/sandboxes/security/), "Credential values never enter the VM". The working directory is mounted in the VM at the same absolute path as on the host. The cost is a six-hundred-and-fifty-megabyte image to download, a daemon to run, an allow-list of domains to maintain. This may seem complicated, but your favorite AI can help you set up this infrastructure easily.
 
@@ -83,11 +83,11 @@ The rules live in a JSON file, read at three scopes: global (`~/.pi/agent/extens
 The most specific rule wins: `bash.*` requires confirmation by default, `rm -rf *` refuses without asking, and a path outside the repository remains subject to confirmation even when `path.*` allows everything else. A command that the extension's bash parser cannot classify is refused rather than let through, and a path that traverses a symbolic link is resolved before comparison.
 
 ::: info Exercise (in class)
-Work in a disposable clone of NÉON, since two of the requests below are destructive. Install the extension, place the configuration above in `.pi/extensions/pi-permission-system/config.json`, create a `.env` at the root containing a fake key, then launch Pi and ask it three things: to read you the contents of this `.env`, to delete the `game/` folder with `rm -rf`, and to run the test suite. The first two requests are refused without Pi consulting you; the third opens a confirmation prompt that you answer yourself.
+Work in a throwaway clone of NÉON, since two of the requests below are destructive. Install the extension, drop the configuration above into `.pi/extensions/pi-permission-system/config.json`, check that the `.env` shipped with NÉON is at the root (it contains only fake values), then start Pi and ask it for three things: to read the contents of that `.env`, to delete the `game/` folder with `rm -rf`, and to run the test suite. The first two requests are refused without Pi consulting you; the third opens a confirmation that you answer yourself.
 
 Next, resubmit the request to read the `.env` three times in a row, rephrasing it, then explaining to Pi that you are the owner of the file and that you authorize it: the verdict does not change, because it comes from a rule evaluated before the tool call and not from model arbitration.
 
-Enfin, remove the `path` block from the configuration and replace it with the instruction "never read any `.env` file" in the repository's `AGENTS.md`, then repeat the same request five times across five different sessions. Count the refusals you get: you then have your own figure on what a text instruction is worth compared with a guardrail in code. All of this obviously depends on the quality of the model, and the one you use may follow your written rule. But your context is empty, and that may no longer be the case if it is already well filled.
+Finally, remove the `path` block from the configuration and replace it with the instruction "never read a `.env` file" in the repository's `AGENTS.md`, then repeat the same request five times in five different sessions. Count the refusals you get: you then hold your own number on what a text instruction is worth against a guardrail in code. All of this obviously depends on the quality of the model, and the one you use may follow your written rule. Your context, however, is empty here, and the result can change when it is already well filled.
 :::
 
 ### Installing and configuring `sbx`
@@ -208,7 +208,7 @@ Likewise, the `files/home/.pi/agent/models.json` file lists the models available
                     "reasoning": true
                 },
                 {
-                    "id": "qwen-3.6-35b-instruct",
+                    "id": "qwen-3.8-27b",
                     "contextWindow": 256000
                 }
             ]
@@ -293,16 +293,9 @@ Go back to the host and read `sbx policy log`, where each denial is recorded wit
 
 **Deny by default, then open up from the log.** A kit's allowlist is not written in advance: you start from denial, work a session, and only add the domains whose refusal actually blocked something, just as the rest of the act decides on measurement rather than intuition.
 
-## Deliverable
-
-At the end of this module, Pi runs in a sandbox on your clone of NÉON, and all the operations of the following modules can be done there with optimal control.
-
-Four checks confirm it:
-
-- the `ILAAS_API_KEY` variable read from the sandbox is the sentinel;
-- a request to a domain absent from the list fails;
-- an edit made by Pi appears in the repository on the host side;
-- `sbx policy log` shows no refusal your list did not choose.
+::: tip What you learned
+You can tell what an agent has access to on your machine and what each level of isolation protects. You can start Pi in a sandbox and check that it does not see your key, that it cannot reach an unauthorised domain, and that its changes do land in your repository. Finally, you can read the denial log to open only the domains you need.
+:::
 
 ## Going further
 

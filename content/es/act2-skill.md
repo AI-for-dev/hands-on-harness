@@ -7,11 +7,11 @@
 - Revisar un procedimiento a partir de las sesiones leídas, probándolo con varios modelos
 :::
 
-El módulo anterior te permitió familiarizarte con el contexto y con la forma de interactuar con él. También pudiste ver diferencias de comportamiento según el modelo elegido. Pudiste además constatar que el hecho de que el issue #1 esté muy bien detallada en el archivo `ISSUES.md` de NÉON permite a los modelos bastante recientes corregir fácilmente el bug añadiendo todas las pruebas necesarias, porque leen todo el repositorio y dan con ella fácilmente. Podrías poner un prompt muy corto: el modelo encontraría ese archivo de todos modos.
+El módulo anterior te permitió familiarizarte con el contexto y con la forma de interactuar con él. También pudiste ver diferencias de comportamiento según el modelo elegido. La descripción detallada del issue #1 en `ISSUES.md` ayuda también mucho al modelo a corregir el bug, siempre que el prompt la referencie.
 
 En la vida real, pedirás corregir el bug sin una explicación tan detallada, porque no sabrás necesariamente evaluar todos los efectos secundarios de ese bug.
 
-La pregunta de este módulo es, entonces, saber si una competencia (llamada *skill*), escrita una vez y recargada a demanda, obtiene los mismos resultados que en el módulo anterior sin proporcionar las pruebas.
+La pregunta de este módulo es, entonces, si una competencia (llamada *skill*), escrita una vez y recargada a demanda, obtiene los mismos resultados sin que el ticket describa todos los casos a probar.
 
 Seguimos el orden habitual: entender qué es un skill en el harness, escribir uno sobre esta cuestión, medir lo que produce.
 
@@ -265,27 +265,8 @@ Un procedimiento debe decir cuándo termina el trabajo, con un criterio que el a
 
 Por último, un skill se prueba como si fuera código. Lánzalo con varios modelos, lee las sesiones para ver dónde el agente se aparta de lo que escribiste, corrige y vuelve a empezar. Un skill que funciona con un modelo puede fallar con otro, y tendrá que evolucionar al mismo tiempo que los modelos.
 
-## Entregable
-
-Este módulo produce tres piezas.
-
-**1. El skill `playtester`**, en `.pi/skills/playtester/` de tu clon de NÉON, con el catálogo del rompeladrillos en `SKILL.md`.
-
-**2. El skill `dynamic-playtester`**, en `.pi/skills/dynamic-playtester/`, con las consignas `references/consignes-catalogue.md`, el script `scripts/catalogue.sh` y el catálogo `references/bugs-arcade.md` que ha construido. Guarda también los tests rojos que produce cada versión en la issue #1: son los que permiten comparar las dos.
-
-**3. La fila «skills» de la ficha de decisión**:
-
-| palanca                               | efecto medido | ¿adoptado? | por qué |
-| ------------------------------------- | ------------- | ---------- | ------- |
-| skill elegido por el modelo           |               |            |         |
-| skill impuesto por `/skill:`          |               |            |         |
-| catálogo escrito a mano               |               |            |         |
-| catálogo construido por búsqueda web  |               |            |         |
-| script en `scripts/`                  |               |            |         |
-| sesión separada                       |               |            |         |
-
-::: tip Criterio de éxito
-Sabes decir qué problemas de la issue #1 cubren tus tests con cada versión del skill, cuáles faltan, y qué cambiaste en el skill tras leer las sesiones.
+::: tip Lo que has aprendido
+Sabes decir qué problemas de la issue #1 cubren tus pruebas con cada versión del skill, cuáles faltan, y qué cambiaste en el skill tras leer las sesiones.
 :::
 
 ## Para ir más lejos

@@ -21,7 +21,7 @@ We wrote two tools for this training, so that each module experiment starts in a
 combo and trysquare were written to experiment quickly. Today they only drive Pi and have not yet been tested in production. We advise you to use them to decide what you put in your harness, then to look at the tools in the next section if you need to run it every day for a team.
 :::
 
-The approach matters more than the tools themselves, and it carries over to your repository without change: pick a real ticket whose correctness you know how to verify with a test, write the request the way you would write it on an ordinary day, then vary one lever at a time (the model, `AGENTS.md`, a skill, a flow), repeating each configuration enough times that the observed difference is not noise. The decision sheet you filled in module after module is the deliverable to reproduce.
+The approach matters more than the tools themselves, and it transfers to your repository unchanged: pick a real ticket whose correctness you know how to verify with a test, write the request the way you would write it on an ordinary day, then vary a single lever at a time (the model, `AGENTS.md`, a skill, a flow) by repeating each configuration enough times that the observed gap is not noise.
 
 ## Where to find skills to draw inspiration from?
 
@@ -53,7 +53,7 @@ A **software factory** is a system that receives a request, usually an issue or 
 
 [Gas Town](https://github.com/steveyegge/gastown), by Steve Yegge, coordinates agents (Claude Code, GitHub Copilot, Codex, Gemini and others) spread across several projects, with a coordinating agent, mailboxes between agents and a work state kept in git, so that a restarted agent picks up where it left off. Its README announces comfortable operation with twenty to thirty agents, a figure we have not measured.
 
-These tools move you from one agent you monitor to several agents you direct, but each added agent multiplies the tokens spent and the pull requests to review, and none of them says whether its configuration fixes your tickets more often than a single well-tuned agent, while that is exactly the question trysquare answers. Before handing your repository to a factory, measure on a few real tickets whether it more often delivers a fix that passes the tests than the configuration retained in your decision sheet, and at what cost.
+These tools take you from one agent you monitor to several agents you direct, but each added agent multiplies the tokens spent and the pull requests to review, and none of them tells you whether its configuration fixes your tickets more often than a single well-tuned agent, when that is exactly the question trysquare answers. Before handing your repository to a factory, measure on a few real tickets whether it delivers a fix that passes the tests more often than the configuration you settled on, and at what cost.
 
 ## Going further
 

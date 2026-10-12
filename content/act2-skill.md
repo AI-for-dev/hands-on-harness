@@ -7,11 +7,11 @@
 - Réviser une procédure à partir des sessions lues, en la testant avec plusieurs modèles
 :::
 
-Le module précédent vous a permis de vous familiariser avec le contexte et avec la façon d'interagir avec lui. Vous avez également pu voir des écarts de comportement en fonction du modèle choisi. Vous avez pu par ailleurs constater que le fait que l'issue #1 soit très bien précisée dans le fichier `ISSUES.md` de NÉON permet aux modèles assez récents de corriger facilement le bug en ajoutant tous les tests nécessaires, car ils lisent l'ensemble du dépôt et tombent facilement dessus. Vous pourriez mettre un prompt très court : le modèle trouverait quand même ce fichier.
+Le module précédent vous a permis de vous familiariser avec le contexte et avec la façon d'interagir avec lui. Vous avez également pu voir des écarts de comportement en fonction du modèle choisi. La description détaillée de l'issue #1 dans `ISSUES.md` aide aussi beaucoup le modèle à corriger le bug, à condition que le prompt y renvoie.
 
 Dans la vraie vie, vous demanderez à corriger le bug sans une explication aussi poussée, parce que vous ne saurez pas forcément évaluer l'ensemble des effets de bord de ce bug.
 
-La question de ce module est donc de savoir si une compétence (appelée *skill*), écrite une fois et rechargée à la demande, obtient les mêmes résultats qu'au module précédent sans fournir les tests.
+La question de ce module est donc de savoir si une compétence (appelée *skill*), écrite une fois et rechargée à la demande, obtient les mêmes résultats sans que le ticket décrive tous les cas à tester.
 
 Nous suivons l'ordre habituel : comprendre ce qu'est un skill dans le harnais, en écrire un sur cette question, mesurer ce qu'il produit.
 
@@ -265,26 +265,7 @@ Une procédure doit dire quand le travail est fini, avec un critère que l'agent
 
 Enfin, un skill se teste comme du code. Lancez-le avec plusieurs modèles, lisez les sessions pour voir où l'agent s'écarte de ce que vous avez écrit, corrigez et recommencez. Un skill qui fonctionne avec un modèle peut échouer avec un autre, et il devra évoluer en même temps que les modèles.
 
-## Livrable
-
-Ce module produit trois pièces.
-
-**1. Le skill `playtester`**, dans `.pi/skills/playtester/` de votre clone de NÉON, avec le catalogue du casse-brique dans `SKILL.md`.
-
-**2. Le skill `dynamic-playtester`**, dans `.pi/skills/dynamic-playtester/`, avec les consignes `references/consignes-catalogue.md`, le script `scripts/catalogue.sh` et le catalogue `references/bugs-arcade.md` qu'il a construit. Gardez aussi les tests rouges produits par chaque version sur l'issue #1 : ce sont eux qui permettent de comparer les deux.
-
-**3. La ligne « skills » de la fiche de décision** :
-
-| levier                                | effet mesuré | adopté ? | pourquoi |
-| ------------------------------------- | ------------ | -------- | -------- |
-| skill choisi par le modèle            |              |          |          |
-| skill imposé par `/skill:`            |              |          |          |
-| catalogue écrit à la main             |              |          |          |
-| catalogue construit par recherche web |              |          |          |
-| script dans `scripts/`                |              |          |          |
-| session séparée                       |              |          |          |
-
-::: tip Critère de réussite
+::: tip Ce que vous avez appris
 Vous savez dire quels problèmes de l'issue #1 vos tests couvrent avec chaque version du skill, lesquels manquent, et ce que vous avez changé dans le skill après avoir lu les sessions.
 :::
 

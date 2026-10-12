@@ -3,10 +3,10 @@
 ::: tip Objectives of this module
 
 - Understand why we start from Pi
-- Launch Pi and understand the role of the `.pi/` directory
-- Place the four extensions we will use to embody the grid of building blocks
-- Honestly frame the reconstruction exercise
-  :::
+- Install Pi, declare its models and get to grips with its first commands
+- Understand the role of the `~/.pi/agent/` and `.pi/` directories
+- Install, try and remove an extension, starting with combo, the only one the training needs
+:::
 
 We saw earlier that a harness is a set of tools on top of LLM models, each of which contributes to completing a task autonomously. You have at your disposal a set of already-built harnesses: Claude Code, Codex, OpenCode, Pi... In most cases, however, you control none of it: you let yourself be guided, hoping the tool does what you asked it, and when something goes wrong, it is not always easy to understand why. Yet our goal is precisely to understand how a harness works in its smallest details, to be able to easily add or remove an element and test the consequences.
 
@@ -57,19 +57,23 @@ Edit the `~/.pi/agent/models.json` file and fill it in as follows:
 
 You will need to enter the API key that was provided to you. The models listed are those available during the training; the [up-to-date list](https://www.ilaas.fr/liste-des-modeles-llms/) is on the ILaaS website.
 
-::: info The `cost` block is not data from the provider
-The `cost` field is optional and defaults to zero. Without it, the `/session` command will report a cost of €0.00 on all your sessions, which would deprive you of an indicator we will use a lot later on.
+::: info The `cost` block is not provider data
+The `cost` field is optional and defaults to zero. With the configuration above, `/session` will therefore report a zero cost on all your sessions. If you want an order of magnitude, add a block like this to each model (prices are per million tokens):
 
-The rates above, expressed per million tokens, are those charged on the market for a model of comparable size. They do not correspond to any actual billing: your use of ILaaS is not billed per token. They are there only to give you an order of magnitude.
+```json
+"cost": { "input": 0.14, "output": 0.28, "cacheRead": 0.0028, "cacheWrite": 0 }
+```
 
-Above all, remember this, because it is already a harness lesson: the cost displayed by a coding agent is not information received from the provider, it is a multiplication performed from a configuration field you wrote yourself.
+These rates are the market rates for a model of comparable size. You don't pay them: ILaaS does not bill you per token.
+
+Remember this above all, it is already a harness lesson: the cost a coding agent displays does not come from the provider. It is a multiplication made from a configuration field you wrote yourself.
 :::
 
 If everything went well, you can use Pi. Launch a first interactive session with `pi` in your terminal and check that you get a prompt like this:
 
 ![](/figures/pi.png)
 
-You will see the various elements that make up Pi (context, skills, extensions) as well as the model used by default at the bottom right (here `(ilaas) qwen-3.6-35b-instruct`).
+There you see the different elements that make up Pi (context, skills, extensions) along with the model used by default, at the bottom right.
 
 You can play with it by asking it questions, observe the loop and see how it answers you. Then try the non-interactive mode with `pi -p`, which runs a request and returns control.
 

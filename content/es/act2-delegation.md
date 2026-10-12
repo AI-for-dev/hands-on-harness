@@ -72,7 +72,7 @@ Los campos presentados a continuación son propios de combo. Las demás herramie
 
 En combo, tenemos campos adicionales en los metadatos. El campo `lifetime` regula la duración de vida del subagente. Con `task`, el valor por defecto, el subagente se crea para una tarea y desaparece al final de esta; con `workflow`, conserva su contexto de una iteración a otra de un workflow. Este módulo usa `task` en todas partes.
 
-Un subagente no hereda nada de tu entorno: ni extensiones, ni skills, ni archivos de contexto. Solo ve su definición, completada con una sola línea que le dice dónde se encuentra. Su comportamiento no depende, por tanto, de tu configuración personal, y todo lo que necesita saber pasa por su prompt o por la tarea que le das. Si necesitas proporcionar skills a tu agente, puedes hacerlo añadiendo la lista en un campo `skills`. Este campo existe también en Claude Code, pero no necesariamente en los demás harness. Atención: si no pones la herramienta `read` en el conjunto de herramientas y rellenas `skills`, el agente fallará porque no podrá leer los skills.
+Un subagente no hereda nada de tu entorno: ni extensiones, ni skills, ni archivos de contexto. Solo ve su definición, completada con una única línea que le dice dónde se encuentra. Su comportamiento no depende, por tanto, de tu configuración personal, y todo lo que debe saber pasa por su prompt o por la tarea que le das. Si necesitas proporcionar skills a tu agente, puedes hacerlo añadiendo la lista en un campo `skills`. Este campo también existe en Claude Code, pero no necesariamente en los otros harness. Atención: si no incluyes la herramienta `read` en el conjunto de herramientas y rellenas `skills`, el agente fallará porque no podrá leer los skills.
 
 Los archivos de agentes del proyecto viven en `.pi/agents/`, los de tu máquina en `~/.pi/agent/agents/`, y la extensión aporta sus propios agentes de demostración. Un agente puede llevar el mismo nombre en los dos directorios, y combo te deja elegir cuál usar.
 
@@ -80,8 +80,8 @@ Los archivos de agentes del proyecto viven en `.pi/agents/`, los de tu máquina 
 El modelo de un subagente nunca se hereda de la sesión padre. Proviene de un argumento pasado a la llamada, en su defecto del archivo de pipeline, en su defecto del encabezado del agente y, en último recurso, de los ajustes de Pi: el más cercano al trabajo prevalece. Un agente que no declara nada y se lanza sin argumento se ejecuta entonces con tu `~/.pi/agent/settings.json`, es decir, con lo que haya en él ese día.
 :::
 
-::: warning Entender la jerarquía de agentes
-Como la mayoría de las configuraciones de Pi que has podido ver desde el principio de esta formación, combo carga por defecto los agentes del proyecto, los de tu máquina y los suyos. Cuando dos agentes llevan el mismo nombre, gana el del proyecto. Como los archivos de `.pi/agents/` vienen del repositorio que clonaste y es posible que los haya escrito otra persona, léelos antes de responder `Trust` a la pregunta que Pi hace en el primer lanzamiento dentro de una carpeta. Si un agente del proyecto oculta un agente con el mismo nombre en `~/.pi/agent/agents/`, combo lo indica en el resultado de la llamada, y recuperas el tuyo pidiendo el ámbito `user`.
+::: warning Entender la jerarquía de los agentes
+Como la mayoría de las configuraciones de Pi que has podido ver desde el principio de esta formación, combo carga por defecto los agentes del proyecto, los de tu máquina y los suyos. Cuando dos agentes tienen el mismo nombre, gana el del proyecto. Como los archivos de `.pi/agents/` vienen del repositorio que has clonado y puede que los haya escrito otra persona, léelos antes de responder `Trust` a la pregunta que Pi hace en el primer arranque dentro de una carpeta. Si un agente del proyecto oculta a un agente del mismo nombre en `~/.pi/agent/agents/`, combo lo indica en el resultado de la llamada, y recuperas el tuyo pidiendo el ámbito `user`.
 
 Puedes obtener la lista de tus agentes mediante el comando:
 
@@ -286,26 +286,8 @@ Ya puedes probar muchas combinaciones y tratar de ver su influencia en los resul
 - ...
 :::
 
-## Entregable
-
-Este módulo produce tres piezas.
-
-**1. Los cuatro agentes**, versionados en el `.pi/agents/` de tu clon de NÉON, cada uno con su panoplia mínima y su `model:` declarado. El módulo siguiente los conectará al orquestador sin modificarlos.
-
-**2. La traza de una vuelta del bucle**: el directorio `runs/` de la cadena, el diff del primer paso, la salida de `npm test` que leyó `reviewer` y tu registro de las decisiones tomadas entre dos pasos.
-
-**3. La línea «delegación» de la ficha de decisión**:
-
-| palanca                                    | efecto observado | ¿adoptado? | por qué |
-| ------------------------------------------ | ---------------- | ---------- | ------- |
-| exploración delegada a un subagente        |                  |            |         |
-| restricción de herramientas (`tools:`)     |                  |            |         |
-| relectura en un contexto separado          |                  |            |         |
-| modelo declarado por agente (`model:`)     |                  |            |         |
-| plan dividido en pequeños pasos            |                  |            |         |
-
-::: tip Criterio de éxito
-Sabes mostrar, con la traza en mano, qué agente se ejecutó en cada etapa de tu bucle, con qué herramientas y qué modelo. También sabes qué decisiones tomaste entre dos etapas, las que el orquestador del módulo siguiente deberá tomar en tu lugar.
+::: tip Lo que has aprendido
+Sabes mostrar, con la traza en mano, qué agente se ejecutó en cada etapa de tu bucle, con qué herramientas y qué modelo. También sabes qué decisiones tomaste entre dos etapas, las que el orquestador del siguiente módulo deberá tomar en tu lugar.
 :::
 
 ## Para ir más allá

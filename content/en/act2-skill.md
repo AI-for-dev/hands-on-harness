@@ -7,11 +7,11 @@
 - Revise a procedure from the sessions you read, by testing it with several models
 :::
 
-The previous module let you become familiar with the context and with how to interact with it. You could also see behavioral differences depending on the chosen model. You may also have noticed that the fact that issue #1 is very well specified in NÉON's `ISSUES.md` file lets fairly recent models easily fix the bug by adding all the necessary tests, because they read the whole repository and easily stumble upon it. You could use a very short prompt: the model would still find this file.
+The previous module got you familiar with the context and with how to interact with it. You also saw behavioral differences depending on the model chosen. The detailed description of issue #1 in `ISSUES.md` also helps the model a lot to fix the bug, provided the prompt points to it.
 
 In the real world, you will ask to fix the bug without such a thorough explanation, because you won't necessarily know how to assess all the side effects of that bug.
 
-The question of this module is therefore whether a competency (called a *skill*), written once and reloaded on demand, gets the same results as in the previous module without providing the tests.
+The question of this module is therefore whether a capability (called a *skill*), written once and reloaded on demand, gets the same results without the ticket describing all the cases to test.
 
 We follow the usual order: understand what a skill is in the harness, write one on this question, measure what it produces.
 
@@ -265,27 +265,8 @@ A procedure must say when the work is done, with a criterion the agent can check
 
 Finally, a skill is tested like code. Run it with several models, read the sessions to see where the agent deviates from what you wrote, fix it and start again. A skill that works with one model can fail with another, and it will have to evolve along with the models.
 
-## Deliverable
-
-This module produces three pieces.
-
-**1. The `playtester` skill**, in `.pi/skills/playtester/` of your NÉON clone, with the brick-breaker catalogue in `SKILL.md`.
-
-**2. The `dynamic-playtester` skill**, in `.pi/skills/dynamic-playtester/`, with the `references/consignes-catalogue.md` instructions, the `scripts/catalogue.sh` script and the `references/bugs-arcade.md` catalogue that it built. Also keep the red tests produced by each version on issue #1: they are what lets you compare the two.
-
-**3. The "skills" row of the decision sheet**:
-
-| lever                                 | measured effect | adopted? | why |
-| ------------------------------------- | --------------- | -------- | --- |
-| skill chosen by the model             |                 |          |     |
-| skill imposed by `/skill:`            |                 |          |     |
-| catalogue written by hand             |                 |          |     |
-| catalogue built by web search         |                 |          |     |
-| script in `scripts/`                  |                 |          |     |
-| separate session                      |                 |          |     |
-
-::: tip Success criterion
-You can say which problems of issue #1 your tests cover with each version of the skill, which ones are missing, and what you changed in the skill after reading the sessions.
+::: tip Ce que vous avez appris
+Vous savez dire quels problèmes de l'issue #1 vos tests couvrent avec chaque version du skill, lesquels manquent, et ce que vous avez changé dans le skill après avoir lu les sessions.
 :::
 
 ## Going further

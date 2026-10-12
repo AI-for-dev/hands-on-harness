@@ -16,17 +16,17 @@ El segundo tiempo, **Reconstruir**, consiste en escribir el equivalente mínimo 
 
 El tercer tiempo, **Generalizar**, extrae el principio que es independiente de la herramienta utilizada. Da las reglas de diseño que aplicarías en otro lugar. Es este tiempo el que cuenta de verdad, porque es el único que no caduca.
 
-Además de estos tres tiempos, tendrás al inicio de cada módulo los objetivos de este, la descripción del entregable cuando sea pertinente y referencias para profundizar en los conceptos.
+Además de estos tres tiempos, cada módulo presenta sus objetivos al principio y, al final, lo que has aprendido y referencias para profundizar en los conceptos.
 
 ## El desarrollo
 
-La formación se organiza en cuatro actos.
+La formación se organiza en tres actos, seguidos de una página de conclusión.
 
-| Etapa                               | Contenido                                                                                    |
-| ----------------------------------- | -------------------------------------------------------------------------------------------- |
-| 1. Fundamentos                      | Los LLM y su ecosistema, los componentes de un harness, el harness inicial Pi, y el método |
-| 2. Reconstrucción componente a componente | Contexto, herramientas, agentes, workflows, memoria, permisos                                    |
-| 3. Verificar, evaluar, observar      | Pruebas, evaluaciones multimodelo, observabilidad                                              |
-| 4. Construir tu propio harness       | Un caso de uso personal, y la clasificación durable / desechable                                        |
+| Acto                                | Contenido                                                                                                |
+| ----------------------------------- | -------------------------------------------------------------------------------------------------------- |
+| 1. Fundamentos                      | La historia de las técnicas, los LLM en 2026, las piezas de un harness y el harness inicial Pi           |
+| 2. Reconstrucción pieza a pieza     | El sandbox, el contexto, los skills, la delegación a subagentes, los workflows y los hooks               |
+| 3. Evaluar                          | Medir un agente con trysquare y luego medir las palancas del contexto en veinte repeticiones             |
+| Ahora te toca a ti                  | Retomar el proceso en tu repositorio, y las herramientas más maduras que ya hacen lo que hacen las nuestras |
 
 Hemos querido que este documento sea lo más detallado posible para que puedas experimentar con total autonomía.

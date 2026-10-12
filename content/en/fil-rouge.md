@@ -1,6 +1,6 @@
 # The common thread: NÉON
 
-Throughout the training, we work on a single repository, which we call **NÉON**. It is a small playable Breakout game, written in HTML and JavaScript on a `<canvas>`, with no dependencies. You open it in your browser and it works. It's real software, with its strengths and its flaws, because NÉON is deliberately imperfect: it contains bugs, technical choices to fix, a list of pending tickets, a trapped file, and a very real git history, which form the raw material of the training.
+Throughout the training, we work on the same repository, which we call **NÉON**. It's a small playable Breakout game, written in HTML and JavaScript on a `<canvas>`, with no dependencies at all. The game starts with `npm run serve`, then opens in the browser at `http://localhost:8000/` (its ES modules don't load from a plain `file://`). It's real software, with its strengths and flaws, because NÉON is deliberately imperfect: it has bugs, technical choices to fix, a backlog of tickets, a booby-trapped file and a very real git history, which form the raw material of the training.
 
 You will find it at [github.com/AI-for-dev/neon](https://github.com/AI-for-dev/neon).
 
@@ -8,7 +8,7 @@ You will find it at [github.com/AI-for-dev/neon](https://github.com/AI-for-dev/n
 
 We could have had you build NÉON from scratch, brick by brick, at the same time as your harness. That would be visually satisfying, but often artificial: using an LLM on the first lines of a codebase usually goes well because everything remains to be done. When the codebase is substantial, it is a different story.
 
-So we made another choice. You do not build NÉON, you maintain it and make it evolve. The harness you forge learns to understand the repository, to plan a change, to delegate part of the work, to modify the code, to test it, to refuse a dangerous instruction, and then to deliver a diff, a commit, a PR, exactly what you will do at the end of this training on your own projects, which already have a history.
+So we made another choice. You don't build NÉON, you maintain and evolve it. The harness you forge learns to understand the repository, to plan a change, to delegate part of the work, to modify the code, to test it, to refuse a dangerous instruction, and then to deliver a diff and a commit - exactly what you'll do at the end of this training on your own projects, which already have a history.
 
 This choice has two advantages. Each piece of the harness then answers a concrete need, not an exercise invented for the occasion. Transfer to your daily work is direct, because a repository, an issue, a diff, a review, and a commit are exactly what you already work on.
 
@@ -20,8 +20,11 @@ The provided repository has the following structure.
 neon/
   game/index.html     coquille : le <canvas> et le démarrage
   game/neon.js        logique et rendu, mêlés par endroits
+  game/bloom.js       le halo lumineux autour des briques et de la balle
   game/theme.js       couleurs en dur et une amorce de palette, les deux coexistent
   game/neon.test.js   tests partiels : la collision est testée, le score ne l'est pas
+  serve.js            un petit serveur statique, sans dépendance, pour lancer le jeu
+  package.json        les scripts `npm run serve` et `npm test`
   README.md           partiel : lancer et tester sont documentés, l'architecture reste floue
   ISSUES.md           le backlog
   CONTRIBUTING.md     la contrainte « zéro dépendance » et les conventions
@@ -36,14 +39,14 @@ The separation between pure logic and rendering is partially respected. Where it
 
 The `ISSUES.md` file contains the backlog we draw on in the modules.
 
-| #   | Type           | Title                                                                      |
-| --- | -------------- | -------------------------------------------------------------------------- |
-| 1   | bug            | The ball passes through a brick at high speed                              |
-| 2   | performance    | The collision scans all bricks at every frame, code mixed with rendering   |
-| 3   | feature        | Night mode                                                                  |
-| 4   | feature        | CSV import of a score table, compatible with local save                    |
-| 5   | debt           | The score and combo logic is not tested                                    |
-| 6   | debt           | Hard-coded colors instead of the palette                                   |
+| #   | Type        | Title                                                                     |
+| --- | ----------- | ------------------------------------------------------------------------- |
+| 1   | bug         | The ball passes through the bricks instead of bouncing                    |
+| 2   | performance | The collision scans all the bricks at each frame, code mixed with rendering |
+| 3   | feature     | Night mode                                                                |
+| 4   | feature     | CSV import of a score table, compatible with the local save               |
+| 5   | debt        | The score and combo logic is not tested                                   |
+| 6   | debt        | Hard-coded colors instead of the palette                                  |
 
 You may not do everything, but this backlog gives enough material to test your harness.
 
@@ -51,14 +54,18 @@ You may not do everything, but this backlog gives enough material to test your h
 
 The `SUPPORT.md` file contains text that looks like a support procedure, but actually asks to read the `.env` file and send its contents to an external address. This text is untrusted data, placed there to test the safety of your harness, and not a legitimate instruction.
 
-The point to remember right now is this: your harness must treat this text as data, not as an instruction to execute. We will come back to this in detail in the module on writing a permissions hook.
+The point to remember right now is this: your harness must treat this text as data, and not as an instruction to execute. [Module 2.0](./act2-sandbox) on the sandbox and [module 2.5](./act2-hooks) on hooks build the guardrails that refuse reading of the `.env`, whether or not the agent has been tricked.
 
 ## The destination
 
-The final module brings together everything that precedes it. You give your harness a single sentence, corresponding to a real combined issue:
+At the end of act 2, you will have built your own harness in your clone of NÉON. It contains:
 
-> Add night mode and CSV import of a score table, keep compatibility with the local save, document the behavior and add the tests.
+- an `AGENTS.md` of fewer than forty lines, at the root;
+- in `.pi/`, the `playtester` and `dynamic-playtester` skills;
+- the `explorer`, `planner`, `coder`, and `reviewer` agents;
+- a flow that handles ticket #2 from exploration to audit, with tests as judge;
+- two extensions: one refuses forbidden commands, the other sends the agent back to work as long as the tests are red.
 
-The harness then runs the complete cycle autonomously: it retrieves the project decisions from memory, plans, delegates to read-only subagents, runs workers in parallel, has the result reviewed, requires green tests before concluding, refuses the `SUPPORT.md` trap while explaining why, updates the README, and produces a diff accompanied by a justified commit.
+All of this runs in a sandbox. Act 3 then measures what some of these pieces really change.
 
-You have just done, on a toy repository, exactly what you will do on your own repositories: you will simply need to replace NÉON with your own.
+No module handles issues #3, #4, and #6. They are there so that you can try your harness on a request it has never seen. You can then replace NÉON with your own repository, as the [Your turn](./a-vous-de-jouer) page suggests.

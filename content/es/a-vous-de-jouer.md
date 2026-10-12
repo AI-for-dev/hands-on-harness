@@ -21,7 +21,7 @@ Hemos escrito dos herramientas para esta formación, para que cada experimento d
 combo y trysquare se escribieron para experimentar rápido. Hoy solo controlan Pi y todavía no se han probado en producción. Te aconsejamos usarlas para decidir qué pones en tu harness, y luego mirar las herramientas de la sección siguiente si necesitas hacerlo funcionar todos los días con un equipo.
 :::
 
-El proceso importa más que las herramientas en sí, y se traslada a tu repositorio sin cambios: elegir un ticket real cuya corrección sepas verificar con un test, escribir la petición tal como la escribirías un día cualquiera, y luego hacer variar una sola palanca a la vez (el modelo, `AGENTS.md`, un skill, un flow) repitiendo cada configuración las veces suficientes para que la diferencia observada no sea ruido. La ficha de decisión que rellenaste módulo a módulo es el entregable que hay que reproducir.
+El enfoque es más importante que las herramientas en sí, y se traslada a tu repositorio sin cambios: elegir un ticket real cuya corrección se sepa verificar con un test, escribir la petición tal como la escribirías un día cualquiera, y luego hacer variar una sola palanca a la vez (el modelo, `AGENTS.md`, un skill, un flow) repitiendo cada configuración las suficientes veces como para que la diferencia observada no sea ruido.
 
 ## ¿Dónde encontrar skills en los que inspirarse?
 
@@ -53,7 +53,7 @@ Una **fábrica de software** (*software factory*) es un sistema que recibe una p
 
 [Gas Town](https://github.com/steveyegge/gastown), de Steve Yegge, coordina agentes (Claude Code, GitHub Copilot, Codex, Gemini y otros) repartidos por varios proyectos, con un agente coordinador, buzones entre agentes y un estado de trabajo conservado en git, para que un agente reiniciado retome donde lo dejó. Su README anuncia un funcionamiento cómodo con veinte a treinta agentes, una cifra que no hemos medido.
 
-Estas herramientas te hacen pasar de un agente que vigilas a varios agentes que diriges, pero cada agente añadido multiplica los tokens gastados y las pull requests por revisar, y ninguno dice si su configuración corrige tus tickets con más frecuencia que un solo agente bien ajustado, cuando es exactamente la pregunta a la que responde trysquare. Antes de confiar tu repositorio a una fábrica, mide sobre algunos tickets reales si entrega con más frecuencia una corrección que pasa las pruebas que la configuración elegida en tu ficha de decisión, y a qué coste.
+Estas herramientas te hacen pasar de un agente que vigilas a varios agentes que diriges, pero cada agente añadido multiplica los tokens gastados y las pull requests por revisar, y ninguno de ellos dice si su configuración corrige tus tickets con más frecuencia que un solo agente bien ajustado, cuando es exactamente la pregunta a la que responde trysquare. Antes de confiar tu repositorio a una fábrica, mide sobre unos cuantos tickets reales si entrega más a menudo un parche que pasa los tests que la configuración que has retenido, y a qué coste.
 
 ## Para ir más lejos
 
