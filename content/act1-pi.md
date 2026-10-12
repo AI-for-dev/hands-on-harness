@@ -1,11 +1,12 @@
 # Le harnais de départ : Pi
 
 ::: tip Objectifs de ce module
+
 - Comprendre pourquoi nous partons de Pi
 - Lancer Pi et comprendre le rôle du répertoire `.pi/`
 - Situer les quatre extensions que nous utiliserons pour incarner la grille des briques
 - Cadrer honnêtement l'exercice de reconstruction
-:::
+  :::
 
 Nous avons vu précédemment qu'un harnais était un ensemble d'outils au-dessus des modèles LLM, dont chacun contribue à l'accomplissement d'une tâche en autonomie. Vous avez à votre disposition un ensemble de harnais déjà construits : Claude Code, Codex, OpenCode, Pi... Dans la plupart des cas, vous n'en maîtrisez pourtant rien : vous vous laissez guider en espérant que l'outil fasse ce que vous lui avez demandé, et quand quelque chose se passe mal, il n'est pas forcément aisé de comprendre pourquoi. Or, notre objectif est justement de comprendre comment marche un harnais dans le moindre de ses détails, de pouvoir y ajouter ou en retirer facilement un élément et d'en tester les conséquences.
 
@@ -42,16 +43,14 @@ Pour celles et ceux qui suivent cette formation en présentiel, nous vous propos
                 {
                     "id": "gemma-4-31b",
                     "contextWindow": 128000,
-                    "reasoning": true,
-                    "cost": { "input": 0.14, "output": 0.28, "cacheRead": 0.0028, "cacheWrite": 0 }
+                    "reasoning": true
                 },
                 {
-                    "id": "qwen-3.6-35b-instruct",
-                    "contextWindow": 256000,
-                    "cost": { "input": 0.14, "output": 0.28, "cacheRead": 0.0028, "cacheWrite": 0 }
+                    "id": "qwen-3.8-27b",
+                    "contextWindow": 256000
                 }
             ]
-        },
+        }
     }
 }
 ```
@@ -78,53 +77,50 @@ Vous pouvez jouer avec en lui posant des questions, observer la boucle et voir c
 
 - Les outils
 
-    Comme dit en introduction de cette partie, Pi est livré avec quatre outils. Pour en obtenir la liste, il vous suffit de taper
+  Comme dit en introduction de cette partie, Pi est livré avec quatre outils. Pour en obtenir la liste, il vous suffit de taper
 
-    ```
-    /tools
-    ```
+  ```
+  /tools
+  ```
 
-    Vous devriez voir au moins les outils read, bash, edit et write.
+  Vous devriez voir au moins les outils read, bash, edit et write.
 
-    ::: info Exercice (en salle)
-    À partir du prompt, essayez grâce à votre question de déclencher chacun de ces outils.
-    :::
-
+  ::: info Exercice (en salle)
+  À partir du prompt, essayez grâce à votre question de déclencher chacun de ces outils.
+  :::
 - L'arborescence de votre session
 
-    Il peut être utile de naviguer dans votre session et de repartir d'une des étapes de votre discussion. Pour cela, il faut utiliser la commande
+  Il peut être utile de naviguer dans votre session et de repartir d'une des étapes de votre discussion. Pour cela, il faut utiliser la commande
 
-    ```
-    /tree
-    ```
+  ```
+  /tree
+  ```
 
-    ::: info Exercice (en salle)
-    Essayez de repartir d'un point de votre fil de discussion.
-    :::
-
+  ::: info Exercice (en salle)
+  Essayez de repartir d'un point de votre fil de discussion.
+  :::
 - Reprendre une session précédente
 
-    Vous pouvez repartir de n'importe quelle session précédente à l'aide de la commande
+  Vous pouvez repartir de n'importe quelle session précédente à l'aide de la commande
 
-    ```
-    /resume
-    ```
+  ```
+  /resume
+  ```
 
-    ::: info Exercice (en salle)
-    Essayez de repartir d'une session précédente.
-    :::
-
+  ::: info Exercice (en salle)
+  Essayez de repartir d'une session précédente.
+  :::
 - Exporter sa session
 
-    Enfin, vous pouvez exporter votre session au format HTML ou JSON via la commande
+  Enfin, vous pouvez exporter votre session au format HTML ou JSON via la commande
 
-    ```
-    /export
-    ```
+  ```
+  /export
+  ```
 
-    ::: info Exercice (en salle)
-    Faites un export de votre session en HTML (format par défaut) et ouvrez ce fichier.
-    :::
+  ::: info Exercice (en salle)
+  Faites un export de votre session en HTML (format par défaut) et ouvrez ce fichier.
+  :::
 
 Nous avons fait le tour des principales commandes que nous jugeons utiles pour le moment ; nous en verrons d'autres au fil de la formation.
 

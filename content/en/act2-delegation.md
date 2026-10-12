@@ -80,8 +80,8 @@ The project's agent files live in `.pi/agents/`, your machine's in `~/.pi/agent/
 A sub-agent's model is never inherited from its parent session. It comes from an argument passed to the call, otherwise from the pipeline file, otherwise from the agent header, and as a last resort from Pi's settings: the closest to the work wins. An agent that declares nothing and is run without an argument therefore runs on your `~/.pi/agent/settings.json`, that is, on whatever is in there that day.
 :::
 
-::: warning Your project agents are never loaded by default
-The files in `.pi/agents/` come from the repository you cloned, and someone else may have written them. combo therefore only loads them if you ask, specifying the scope (project or machine) on each tool call.
+::: warning Understanding the agent hierarchy
+Like most Pi configurations you may have seen since the start of this training, combo loads the project agents, those on your machine, and its own by default. When two agents share the same name, the project one wins. Since the files in `.pi/agents/` come from the repository you cloned and someone else may have written them, read them before answering `Trust` to the question Pi asks on first launch in a folder. If a project agent masks an agent with the same name in `~/.pi/agent/agents/`, combo reports it in the call result, and you get yours back by requesting the `user` scope.
 
 You can get the list of your agents via the command:
 
@@ -167,6 +167,10 @@ The four files are versioned in `scripts/agents/`, and you'll copy them into the
 
 Two other files, `tester.md` and `auditor.md`, sit in the same directory and will be copied along with the four roles. This module does not use them. The next module does: `tester` produces a test plan that `planner` can receive in addition to the impact note, and `auditor` reviews the work once it is finished.
 
+::: warning Combo version
+This module assumes combo 0.5.0 or newer, because earlier versions only load project agents if the call specifies the scope. If you installed combo earlier, `pi update npm:@ai-for-dev/combo` will update it.
+:::
+
 ::: info Exercise (in class)
 Before starting the loop, check that each agent knows the limits of its toolkit. Install the extension and drop in the agents:
 
@@ -198,33 +202,37 @@ utilise le subagent "coder" pour la tâche "Lance `npm test` et rapporte le rés
 
 > "The subagent 'coder' indicates that it does not have a tool allowing it to execute shell commands, and therefore cannot run npm test."
 
-These two quotations are the output of two runs, and yours will differ: a model rephrases from one run to the next, and [module 3.0](./act3-trysquare) quantified this spread. The content, though, stays the same: `explorer` lists four read tools, and `coder` answers that it cannot run the tests.
+These two quotes are the outputs of two executions, and yours will be different: a model rephrases from one time to another, and [module 3.0](./act3-trysquare) quantified this dispersion. The content, however, remains the same: `explorer` lists four read tools, and `coder` responds that it cannot run the tests.
+
+The main session, for its part, has access to `bash`, and the model may then run `npm test` itself to report a result to you. It is not `coder` that ran the tests, and the `bash` call following the `subagent` tool line shows this.
 :::
 
 ::: warning Choice of model
 You can also specify in your request the model you want to use, as in the following prompt:
 
 ```
-utilise le subagent "coder" avec le modèle deepseek-v4-flash d'ilaas pour la tâche "Lance npm test et rapporte le résultat."
+utilise le subagent "coder" avec le modèle qwen-3.8-27b d'ilaas pour la tâche "Lance npm test et rapporte le résultat."
 ```
+
+The model has to be declared in your `~/.pi/agent/models.json`, like those in the [Pi installation](./act1-pi), otherwise combo refuses the call with `Model "qwen-3.8-27b" not found for provider "ilaas"`. With `/step`, presented further on, the `--model ilaas/qwen-3.8-27b` option has the same effect.
 :::
 
 ### Running the loop by hand
 
 You now hold the orchestrator role that the next module will automate. Open the main session with the extension loaded, and walk the chain one step at a time with `/step`. This command is part of combo. If you do not have it in the Pi console, then it is not properly installed.
 
-This `/step <agent> <instruction>` command runs the agent you name on what you type, plus the output of the previous step (this is done automatically). Its response is **written to the transcript without entering the model's context**: the main session sees the reports scroll by without reading them, and therefore without being able to act on them. If the main session read the exploration report, it could itself choose what comes next based on conclusions you have not validated, whereas we want you to be the one deciding the next step. The main window therefore serves as your console, and no longer as an interlocutor as in the previous modules. When a result deserves to be discussed with the model, the `/quote` command brings the previous step's output into the context, without copy-pasting.
+This `/step <agent> <instruction>` command runs the agent you name on what you type, plus the previous step's output (this happens automatically). Its answer is written to the transcript without entering the model's context: the main session sees the reports scroll by without reading them, so it cannot act on them. If the main session read the exploration report, it could choose the next move itself from conclusions you haven't validated, whereas we want you to decide the next step. When a result deserves to be discussed with the model, the `/quote` command brings the previous step's output into the context, with no copy-paste.
 
 The loop has six steps:
 
-1. `/step explorer processes issue #2 from ISSUES.md` returns the impact note;
-2. you read it in the transcript, then `/step planner` receives it as-is, along with the issue, and returns the plan;
-3. `/step coder` receives the plan; give it step 1 and nothing else, dictating it after the agent's name. It returns its report, and its changes are in the repository;
-4. you run **`npm test` yourself**, in a second terminal, and you keep the output;
-5. `/step reviewer` receives `coder`'s report; paste the issue, the step, the diff (`git diff`) and the test output into it, and it returns its verdict;
-6. depending on the verdict, you give the next step to `coder`, you send the same step back to it with the reasons for the rejection, or you go back to `planner` if the step itself is at fault. `/step --from <id>` restarts from the output of an earlier step, which lets you go back.
+1. `/step explorer handles ticket #2 from ISSUES.md` produces the impact note;
+2. you read it in the transcript, then `/step planner breaks down ticket #2 from ISSUES.md into steps, based on this note` produces the plan. The ticket must be included in what you type, since `/step` only passes the output of the previous step;
+3. `/step --from none coder`, followed by step 1 which you copy from the plan with its files and its exit criterion. Without `--from none`, `coder` would also receive the entire plan, whereas it should only see its specific step. It produces its report, and its modifications are in the repository;
+4. you run **`npm test` yourself**, in a second terminal, and you save the output;
+5. `/step reviewer` receives the report from `coder`; paste the ticket, the step, the diff (`git diff`), and the test output into it, and it produces its verdict;
+6. depending on the verdict, you give the next step to `coder`, you send the same step back with the reasons for refusal, or you return to `planner` if the step is the issue. `/step --from <id>` starts again from the output of an older step, which allows you to go back.
 
-`/chain` lists the steps taken at any time; `/chain reset` starts over from scratch in a new directory. The tool thus records the order of the steps for you, but not the reasons for your choices.
+`/chain` lists the steps taken at any time and provides the directory where the chain is exported; `/chain reset` starts over from scratch in a new directory. The tool thus records the order of steps for you, but not the reasons for your choices.
 
 While a subagent is working, a dot appears above the prompt with its model, its tokens and a timer, and the tool line below keeps a record of the call. With herdr and `/herdr on`, described above, each subagent has its own tab, and you see `explorer` reading while you prepare the next task. This view lets you follow the work, but to conclude anything you have to read the step's trace.
 
@@ -238,16 +246,20 @@ If the session allows, continue to the end of the plan. The final criterion is t
 
 ### What isolation changes in your window
 
-::: info Exercise (in class)
-Right after `explorer`'s note comes back, type `/session` in the main session and note what it contains: your frame, the tool call, the note. Then open a fresh session without the extension and ask the model to produce the same impact note itself, by reading the repository. Compare the two `/session` outputs, then the two `/tree` ones.
+::: info Exercise (in-class)
+Right after the `explorer` note is returned, type `/session` in the main session: it contains no messages, because `/step` displayed the note in the transcript without adding it to the context. Then open a new session without the extension, using `pi -ne` (combo is installed in the project, and a simple `pi` would load it), and ask the model to produce the same impact note itself, by reading the repository and without modifying anything. Compare the two `/session` outputs, then the two `/tree` outputs.
 
-In the second session, every file read stayed in the window and will stay there until the end, whereas the first only received the note. With delegation, the files read by `explorer` stay in its own context, which disappears at the end of its task. This is the mechanism from [module 2.1](./act2-contexte): everything that stays in the window is sent back to the model at every turn.
+In the second session, each read file remained in the window and will stay there until the end, whereas the first one remains empty unless you use `/quote`, which would only add the note. With delegation, the files read by `explorer` remain in its own context, which disappears at the end of its task. This is the mechanism seen in [module 2.1](./act2-contexte): everything that remains in the window is sent back to the model in each turn.
 :::
 
 ### Verify in the trace who ran
 
-::: info Exercise (in class)
-Export the main session with `/export` and find each call to the `subagent` tool: the agent name, the scope, the model, the task passed. It is the only reliable answer to the question of who ran if you have not seen your agents' activity through herdr.
+::: info Exercise (in-class)
+Type `/chain`: its last line provides the directory where combo exported the chain, `runs/<date>/` at the root of NEON. Each step has its own folder (`1-explorer`, `2-planner`...) containing the sub-agent's session in JSONL and HTML, and a `usage.json` file specifying the agent's name, lifespan, model, assigned task, tokens, and duration. The HTML session shows every tool call, making it possible to verify that the agent stayed within its toolkit. This is the only reliable way to know who ran if you didn't see your agents' activity via herdr.
+:::
+
+::: warning `/export` after a loop using `/step`
+`/export` exports the main session, which contains nothing after a loop made solely of `/step`: Pi then replies `Nothing to export yet`. On the other hand, agents launched by the `subagent` tool, as in the first exercise, are listed there, with each call showing the agent's name and task, and its result showing the model.
 :::
 
 ## Generalizing
@@ -280,7 +292,7 @@ This module produces three artifacts.
 
 **1. The four agents**, versioned in the `.pi/agents/` of your NÉON clone, each with its minimal setup and its declared `model:`. The next module will wire them into the orchestrator without modifying them.
 
-**2. The trace of one loop turn**: the exported main session, the diff of the first step, the `npm test` output that `reviewer` read, and your log of the decisions made between two steps.
+**2. The trace of one loop iteration**: the chain's `runs/` directory, the diff of the first step, the `npm test` output read by `reviewer`, and your log of decisions made between steps.
 
 **3. The "delegation" row of the decision sheet**:
 

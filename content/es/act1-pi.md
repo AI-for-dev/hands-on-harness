@@ -1,11 +1,12 @@
 # El harness de partida: Pi
 
 ::: tip Objetivos de este módulo
+
 - Entender por qué partimos de Pi
 - Lanzar Pi y entender el papel del directorio `.pi/`
-- Situar las cuatro extensiones que usaremos para materializar la cuadrícula de bloques
-- Enmarcar con honestidad el ejercicio de reconstrucción
-:::
+- Ubicar las cuatro extensiones que usaremos para encarnar la cuadrícula de bloques
+- Enmarcar honestamente el ejercicio de reconstrucción
+  :::
 
 Hemos visto anteriormente que un harness es un conjunto de herramientas por encima de los modelos LLM, cada una de las cuales contribuye a la realización de una tarea de forma autónoma. Tienes a tu disposición un conjunto de harness ya construidos: Claude Code, Codex, OpenCode, Pi... Sin embargo, en la mayoría de los casos no controlas nada de ellos: te dejas guiar esperando que la herramienta haga lo que le pediste, y cuando algo sale mal, no siempre es fácil entender por qué. Ahora bien, nuestro objetivo es precisamente entender cómo funciona un harness en el más mínimo de sus detalles, poder añadirle o quitarle fácilmente un elemento y probar sus consecuencias.
 
@@ -42,16 +43,14 @@ Edita el archivo `~/.pi/agent/models.json` y complétalo de la siguiente manera:
                 {
                     "id": "gemma-4-31b",
                     "contextWindow": 128000,
-                    "reasoning": true,
-                    "cost": { "input": 0.14, "output": 0.28, "cacheRead": 0.0028, "cacheWrite": 0 }
+                    "reasoning": true
                 },
                 {
-                    "id": "qwen-3.6-35b-instruct",
-                    "contextWindow": 256000,
-                    "cost": { "input": 0.14, "output": 0.28, "cacheRead": 0.0028, "cacheWrite": 0 }
+                    "id": "qwen-3.8-27b",
+                    "contextWindow": 256000
                 }
             ]
-        },
+        }
     }
 }
 ```
@@ -78,53 +77,50 @@ Puedes jugar con él haciéndole preguntas, observar el bucle y ver cómo te res
 
 - Las herramientas
 
-    Como se dijo en la introducción de esta parte, Pi viene con cuatro herramientas. Para obtener la lista, solo tienes que escribir
+  Como se dijo en la introducción de esta parte, Pi viene con cuatro herramientas. Para obtener la lista, te basta con escribir
 
-    ```
-    /tools
-    ```
+  ```
+  /tools
+  ```
 
-    Deberías ver al menos las herramientas read, bash, edit y write.
+  Deberías ver al menos las herramientas read, bash, edit y write.
 
-    ::: info Ejercicio (en clase)
-    A partir del prompt, intenta activar cada una de estas herramientas con tu pregunta.
-    :::
-
+  ::: info Ejercicio (en sala)
+  A partir del prompt, intenta desencadenar cada una de estas herramientas con tu pregunta.
+  :::
 - El árbol de tu sesión
 
-    Puede ser útil navegar por tu sesión y retomar desde uno de los pasos de tu conversación. Para ello, tienes que usar el comando
+  Puede ser útil navegar por tu sesión y retomar desde una de las etapas de tu conversación. Para ello, hay que usar el comando
 
-    ```
-    /tree
-    ```
+  ```
+  /tree
+  ```
 
-    ::: info Ejercicio (en clase)
-    Intenta volver a un punto de tu hilo de discusión.
-    :::
-
+  ::: info Ejercicio (en sala)
+  Intenta retomar desde un punto de tu hilo de conversación.
+  :::
 - Retomar una sesión anterior
 
-    Puedes retomar cualquier sesión anterior con el comando
+  Puedes retomar cualquier sesión anterior con el comando
 
-    ```
-    /resume
-    ```
+  ```
+  /resume
+  ```
 
-    ::: info Ejercicio (en clase)
-    Intenta retomar una sesión anterior.
-    :::
-
+  ::: info Ejercicio (en sala)
+  Intenta retomar una sesión anterior.
+  :::
 - Exportar tu sesión
 
-    Por último, puedes exportar tu sesión al formato HTML o JSON mediante el comando
+  Por último, puedes exportar tu sesión en formato HTML o JSON con el comando
 
-    ```
-    /export
-    ```
+  ```
+  /export
+  ```
 
-    ::: info Ejercicio (en clase)
-    Haz una exportación de tu sesión en HTML (formato por defecto) y abre este archivo.
-    :::
+  ::: info Ejercicio (en sala)
+  Exporta tu sesión en HTML (formato predeterminado) y abre el archivo.
+  :::
 
 Hemos repasado los principales comandos que consideramos útiles por ahora; veremos otros a lo largo de la formación.
 
