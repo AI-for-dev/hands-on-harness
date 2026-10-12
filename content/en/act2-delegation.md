@@ -80,10 +80,8 @@ The project's agent files live in `.pi/agents/`, your machine's in `~/.pi/agent/
 A sub-agent's model is never inherited from its parent session. It comes from an argument passed to the call, otherwise from the pipeline file, otherwise from the agent header, and as a last resort from Pi's settings: the closest to the work wins. An agent that declares nothing and is run without an argument therefore runs on your `~/.pi/agent/settings.json`, that is, on whatever is in there that day.
 :::
 
-::: warning Your project agents are never loaded by default
-The files in `.pi/agents/` come from the repository you cloned, and someone else may have written them. combo therefore only loads them if you ask, specifying the scope (project or machine) on each tool call.
-
-Among the extension's demo agents, `explorer`, `planner`, `coder`, `reviewer`, and `auditor` have the same names as the agents in this module, but with a different prompt, a different toolset, and without `model:`. When the call doesn't specify the scope, this combo version runs, and `/agents` doesn't display it because your project file hides it in the list. The combo `coder`, launched this way, told us that the six tests passed even though it had no way to run them. The prompts in this module therefore all specify "project scope". The `/step` command, presented later, loads combo, machine, and project agents, giving priority to the project, and does not need this specification.
+::: warning Project agents take precedence over yours
+By default, combo loads project agents, those on your machine, and its own; when two agents have the same name, the project agent is the one that runs. Since the files in `.pi/agents/` come from the repository you cloned and may have been written by someone else, read them before answering `Trust` to the question Pi asks when first launched in a folder. If a project agent masks an agent with the same name in `~/.pi/agent/agents/`, combo flags this in the call result, and you can access yours by requesting the `user` scope.
 
 You can get the list of your agents via the command:
 
@@ -169,6 +167,10 @@ The four files are versioned in `scripts/agents/`, and you'll copy them into the
 
 Two other files, `tester.md` and `auditor.md`, sit in the same directory and will be copied along with the four roles. This module does not use them. The next module does: `tester` produces a test plan that `planner` can receive in addition to the impact note, and `auditor` reviews the work once it is finished.
 
+::: warning Combo version
+This module assumes combo 0.5.0 or newer, because earlier versions only load project agents if the call specifies the scope. If you installed combo earlier, `pi update npm:@ai-for-dev/combo` will update it.
+:::
+
 ::: info Exercise (in class)
 Before starting the loop, check that each agent knows the limits of its toolkit. Install the extension and drop in the agents:
 
@@ -182,7 +184,7 @@ pi
 The extension does not add an explicit command to call an agent: `subagent` is a tool the main session's model calls when you ask it to. You just name the agent and what you want it to do. So call `explorer` like this:
 
 ```
-utilise le subagent "explorer" de portée projet pour la tâche "Nomme exactement les outils dont tu disposes."
+utilise le subagent "explorer" pour la tâche "Nomme exactement les outils dont tu disposes."
 ```
 
 Here is what ours returned:
@@ -195,7 +197,7 @@ The list contains no writing tool, and it is the agent itself that says so.
 Do the same with `coder`, this time asking it to run the tests:
 
 ```
-utilise le subagent "coder" de portée projet pour la tâche "Lance `npm test` et rapporte le résultat."
+utilise le subagent "coder" pour la tâche "Lance `npm test` et rapporte le résultat."
 ```
 
 > "The subagent 'coder' indicates that it does not have a tool allowing it to execute shell commands, and therefore cannot run npm test."
@@ -209,7 +211,7 @@ The main session, for its part, has access to `bash`, and the model may then run
 You can also specify in your request the model you want to use, as in the following prompt:
 
 ```
-utilise le subagent "coder" de portée projet avec le modèle qwen-3.8-27b d'ilaas pour la tâche "Lance npm test et rapporte le résultat."
+utilise le subagent "coder" avec le modèle qwen-3.8-27b d'ilaas pour la tâche "Lance npm test et rapporte le résultat."
 ```
 
 The model must be declared in your `~/.pi/agent/models.json`, like those in the [Pi installation](./act1-pi), otherwise combo refuses the call with `Model "qwen-3.8-27b" not found for provider "ilaas"`. With `/step`, presented later, the `--model ilaas/qwen-3.8-27b` option has the same effect. We excluded `qwen-3.6-35b-instruct` from this example: in October 2026, when run as `coder` on ILaaS, it interrupted its response (`Stream ended without finish_reason`) in each of our three attempts.
@@ -223,16 +225,12 @@ This `/step <agent> <instruction>` command runs the agent you name on what you t
 
 The loop has six steps:
 
-1. `/step explorer treats ticket #2 from ISSUES.md` produces the impact note;
-2. you read it in the transcription, then `/step planner breaks down ticket #2 from ISSUES.md into steps based on this note` produces the plan. The ticket must be included in what you type, since `/step` only transmits the output of the previous step;
-3. `/step --from none coder`, followed by step 1 which you copy from the plan along with its files and its exit criterion. Without `--from none`, `coder` would also receive the entire plan, whereas it should only see its specific step. It produces its report, and its changes are in the repository;
-4. you run **`npm test` yourself**, in a second terminal, saving the diff and the output into two files: `git diff > .pi/pas.diff`, then `npm test > .pi/pas-tests.txt 2>&1`;
-5. `/step reviewer` receives the report from `coder`; give it the ticket, the step, and the names of the two files, for example `/step reviewer Review step 1 of ticket #2 from ISSUES.md: <the step>. The diff is in .pi/pas.diff, the npm test output in .pi/pas-tests.txt.`, and it produces its verdict;
-6. depending on the verdict, you give the next step to `coder`, send the same step back with the reasons for rejection, or go back to `planner` if the step itself is the issue. `/step --from <id>` restarts from the output of an earlier step, allowing you to go backward.
-
-::: info Why pass the diff through files
-`/step` flattens everything you type after the agent's name into a single line, meaning that a pasted diff or test output arrives without line breaks and becomes difficult to read. `reviewer` has the `read` tool and reads the two files as-is. They are placed in `.pi/` to stay separate from the code, and `git diff` does not show files that git is not tracking anyway.
-:::
+1. `/step explorer handles ticket #2 from ISSUES.md` produces the impact note;
+2. you read it in the transcript, then `/step planner breaks down ticket #2 from ISSUES.md into steps, based on this note` produces the plan. The ticket must be included in what you type, since `/step` only passes the output of the previous step;
+3. `/step --from none coder`, followed by step 1 which you copy from the plan with its files and its exit criterion. Without `--from none`, `coder` would also receive the entire plan, whereas it should only see its specific step. It produces its report, and its modifications are in the repository;
+4. you run **`npm test` yourself**, in a second terminal, and you save the output;
+5. `/step reviewer` receives the report from `coder`; paste the ticket, the step, the diff (`git diff`), and the test output into it, and it produces its verdict;
+6. depending on the verdict, you give the next step to `coder`, you send the same step back with the reasons for refusal, or you return to `planner` if the step is the issue. `/step --from <id>` starts again from the output of an older step, which allows you to go back.
 
 `/chain` lists the steps taken at any time and provides the directory where the chain is exported; `/chain reset` starts over from scratch in a new directory. The tool thus records the order of steps for you, but not the reasons for your choices.
 
@@ -260,8 +258,8 @@ In the second session, each read file remained in the window and will stay there
 Type `/chain`: its last line provides the directory where combo exported the chain, `runs/<date>/` at the root of NEON. Each step has its own folder (`1-explorer`, `2-planner`...) containing the sub-agent's session in JSONL and HTML, and a `usage.json` file specifying the agent's name, lifespan, model, assigned task, tokens, and duration. The HTML session shows every tool call, making it possible to verify that the agent stayed within its toolkit. This is the only reliable way to know who ran if you didn't see your agents' activity via herdr.
 :::
 
-::: warning `/export` after a `/step` loop
-`/export` exports the main session, which contains nothing after a loop made solely of `/step`: Pi will then reply `Nothing to export yet`. Conversely, agents launched by the `subagent` tool, as in the first exercise, are listed there, with each call showing the agent's name, scope, task, and its result with the model.
+::: warning `/export` after a loop using `/step`
+`/export` exports the main session, which contains nothing after a loop made solely of `/step`: Pi then replies `Nothing to export yet`. On the other hand, agents launched by the `subagent` tool, as in the first exercise, are listed there, with each call showing the agent's name and task, and its result showing the model.
 :::
 
 ## Generalizing

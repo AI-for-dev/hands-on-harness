@@ -80,10 +80,8 @@ Les fichiers d'agents du projet vivent dans `.pi/agents/`, ceux de votre machine
 Le modèle d'un sous-agent n'est jamais hérité de la session parente. Il vient d'un argument passé à l'appel, à défaut du fichier de pipeline, à défaut de l'en-tête de l'agent, et en dernier recours des réglages de Pi : le plus proche du travail l'emporte. Un agent qui ne déclare rien et qu'on lance sans argument tourne donc sur votre `~/.pi/agent/settings.json`, c'est-à-dire sur ce qui s'y trouve ce jour-là.
 :::
 
-::: warning Vos agents de projet ne sont jamais chargés par défaut
-Les fichiers de `.pi/agents/` viennent du dépôt que vous avez cloné, et quelqu'un d'autre a pu les écrire. combo ne les charge donc que si vous le demandez, en précisant la portée (projet ou machine) à chaque appel de l'outil.
-
-Parmi les agents de démonstration de l'extension, `explorer`, `planner`, `coder`, `reviewer` et `auditor` portent les mêmes noms que les agents de ce module, avec un autre prompt, une autre panoplie et sans `model:`. Quand l'appel ne précise pas la portée, c'est cette version de combo qui tourne, et `/agents` ne l'affiche pas, parce que votre fichier de projet la masque dans la liste. Le `coder` de combo, lancé de cette façon, nous a répondu que les six tests étaient passés alors qu'il n'avait aucun moyen de les lancer. Les prompts de ce module précisent donc tous « de portée projet ». La commande `/step`, présentée plus loin, charge les agents de combo, de la machine et du projet, en donnant la priorité au projet, et n'a pas besoin de cette précision.
+::: warning Les agents du projet passent avant les vôtres
+combo charge par défaut les agents du projet, ceux de votre machine et les siens, et quand deux agents portent le même nom, c'est celui du projet qui tourne. Comme les fichiers de `.pi/agents/` viennent du dépôt que vous avez cloné et que quelqu'un d'autre a pu les écrire, lisez-les avant de répondre `Trust` à la question que Pi pose au premier lancement dans un dossier. Si un agent du projet masque un agent du même nom dans `~/.pi/agent/agents/`, combo le signale dans le résultat de l'appel, et vous retrouvez le vôtre en demandant la portée `user`.
 
 Vous pouvez avoir la liste de vos agents via la commande :
 
@@ -169,6 +167,10 @@ Les quatre fichiers sont versionnés dans `scripts/agents/`, et vous les copiere
 
 Deux autres fichiers, `tester.md` et `auditor.md`, se trouvent dans le même répertoire et seront copiés avec les quatre rôles. Ce module ne s'en sert pas. Le module suivant les utilise : `tester` produit un plan de tests que `planner` peut recevoir en plus de la note d'impact, et `auditor` relit le travail une fois terminé.
 
+::: warning Version de combo
+Ce module suppose combo 0.5.0 ou plus récent, parce que les versions antérieures ne chargent les agents du projet que si l'appel précise la portée. Si vous avez installé combo plus tôt, `pi update npm:@ai-for-dev/combo` le met à jour.
+:::
+
 ::: info Exercice (en salle)
 Avant de lancer la boucle, vérifiez que chaque agent connaît les limites de sa panoplie. Installez l'extension et déposez les agents :
 
@@ -182,7 +184,7 @@ pi
 L'extension n'ajoute pas de commande explicite pour appeler un agent : `subagent` est un outil que le modèle de la session principale appelle quand vous le lui demandez. Il vous suffit de nommer l'agent et ce que vous souhaitez qu'il fasse. Appelez donc `explorer` ainsi :
 
 ```
-utilise le subagent "explorer" de portée projet pour la tâche "Nomme exactement les outils dont tu disposes."
+utilise le subagent "explorer" pour la tâche "Nomme exactement les outils dont tu disposes."
 ```
 
 Voici ce que le nôtre a rendu :
@@ -195,7 +197,7 @@ La liste ne contient aucun outil d'écriture, et c'est l'agent qui l'énonce lui
 Faites de même avec `coder`, en lui demandant cette fois de lancer les tests :
 
 ```
-utilise le subagent "coder" de portée projet pour la tâche "Lance `npm test` et rapporte le résultat."
+utilise le subagent "coder" pour la tâche "Lance `npm test` et rapporte le résultat."
 ```
 
 > « Le subagent "coder" indique qu'il ne dispose pas d'un outil lui permettant d'exécuter des commandes shell, et ne peut donc pas lancer npm test. »
@@ -209,7 +211,7 @@ La session principale dispose quant à elle de `bash`, et il arrive que le modè
 Vous pouvez également dire dans votre demande le modèle que vous souhaitez utiliser, comme dans le prompt suivant :
 
 ```
-utilise le subagent "coder" de portée projet avec le modèle qwen-3.8-27b d'ilaas pour la tâche "Lance npm test et rapporte le résultat."
+utilise le subagent "coder" avec le modèle qwen-3.8-27b d'ilaas pour la tâche "Lance npm test et rapporte le résultat."
 ```
 
 Le modèle doit être déclaré dans votre `~/.pi/agent/models.json`, comme ceux de l'[installation de Pi](./act1-pi), sinon combo refuse l'appel avec `Model "qwen-3.8-27b" not found for provider "ilaas"`. Avec `/step`, présentée plus loin, l'option `--model ilaas/qwen-3.8-27b` a le même effet. Nous avons écarté `qwen-3.6-35b-instruct` de cet exemple : en octobre 2026, lancé comme `coder` sur ILaaS, il a interrompu sa réponse (`Stream ended without finish_reason`) à chacun de nos trois essais.
@@ -226,13 +228,9 @@ La boucle comporte six étapes :
 1. `/step explorer traite le ticket #2 d'ISSUES.md` rend la note d'impact ;
 2. vous la lisez dans la transcription, puis `/step planner découpe le ticket #2 d'ISSUES.md en pas, à partir de cette note` rend le plan. Le ticket doit figurer dans ce que vous tapez, puisque `/step` ne transmet que la sortie du pas précédent ;
 3. `/step --from none coder`, suivi du pas 1 que vous recopiez depuis le plan avec ses fichiers et son critère de fin. Sans `--from none`, `coder` recevrait aussi le plan entier, alors qu'il ne doit voir que son pas. Il rend son rapport, et ses modifications sont dans le dépôt ;
-4. vous lancez **`npm test` vous-même**, dans un second terminal, en gardant le diff et la sortie dans deux fichiers : `git diff > .pi/pas.diff`, puis `npm test > .pi/pas-tests.txt 2>&1` ;
-5. `/step reviewer` reçoit le rapport de `coder` ; donnez-lui le ticket, le pas et le nom des deux fichiers, par exemple `/step reviewer Relis le pas 1 du ticket #2 d'ISSUES.md : <le pas>. Le diff est dans .pi/pas.diff, la sortie de npm test dans .pi/pas-tests.txt.`, et il rend son verdict ;
+4. vous lancez **`npm test` vous-même**, dans un second terminal, et vous gardez la sortie ;
+5. `/step reviewer` reçoit le rapport de `coder` ; collez-y le ticket, le pas, le diff (`git diff`) et la sortie des tests, et il rend son verdict ;
 6. selon le verdict, vous donnez le pas suivant à `coder`, vous lui renvoyez le même pas avec les raisons du refus, ou vous revenez à `planner` si c'est le pas qui est en cause. `/step --from <id>` repart de la sortie d'un pas plus ancien, ce qui permet de revenir en arrière.
-
-::: info Pourquoi passer le diff par des fichiers
-`/step` remet sur une seule ligne tout ce que vous tapez après le nom de l'agent, si bien qu'un diff ou une sortie de tests collés arrivent sans leurs retours à la ligne et deviennent difficiles à lire. `reviewer` a l'outil `read` et lit les deux fichiers tels quels. Ils vont dans `.pi/` pour rester hors du code, et `git diff` ne montre de toute façon pas les fichiers que git ne suit pas.
-:::
 
 `/chain` liste à tout moment les pas parcourus et donne le répertoire où la chaîne est exportée ; `/chain reset` repart de zéro dans un nouveau répertoire. L'outil enregistre donc l'ordre des étapes à votre place, mais pas les raisons de vos choix.
 
@@ -261,7 +259,7 @@ Tapez `/chain` : sa dernière ligne donne le répertoire où combo a exporté la
 :::
 
 ::: warning `/export` après une boucle en `/step`
-`/export` exporte la session principale, qui ne contient rien après une boucle faite uniquement de `/step` : Pi répond alors `Nothing to export yet`. Les agents lancés par l'outil `subagent`, comme dans le premier exercice, y figurent en revanche, chaque appel avec le nom de l'agent, la portée et la tâche, et son résultat avec le modèle.
+`/export` exporte la session principale, qui ne contient rien après une boucle faite uniquement de `/step` : Pi répond alors `Nothing to export yet`. Les agents lancés par l'outil `subagent`, comme dans le premier exercice, y figurent en revanche, chaque appel avec le nom de l'agent et la tâche, et son résultat avec le modèle.
 :::
 
 ## Généraliser

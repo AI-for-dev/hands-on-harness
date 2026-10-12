@@ -109,14 +109,14 @@
   },
   "act2-delegation.md": {
     "en": {
-      "unitHash": "a14ec91064203ca28d3d1ca035ce6312da0789c96642afb1631f1c2758646ee5",
+      "unitHash": "4cb994381a49b2265e8fe14c67521e7399625d4e53d51a3805fa57c33b996dd2",
       "model": "pi:ilaas/gemma-4-31b",
-      "translatedAt": "2026-10-12T06:26:23.436Z"
+      "translatedAt": "2026-10-12T07:39:39.227Z"
     },
     "es": {
-      "unitHash": "a14ec91064203ca28d3d1ca035ce6312da0789c96642afb1631f1c2758646ee5",
+      "unitHash": "4cb994381a49b2265e8fe14c67521e7399625d4e53d51a3805fa57c33b996dd2",
       "model": "pi:ilaas/gemma-4-31b",
-      "translatedAt": "2026-10-12T06:28:04.342Z"
+      "translatedAt": "2026-10-12T07:41:08.583Z"
     }
   },
   "act2-workflows.md": {
