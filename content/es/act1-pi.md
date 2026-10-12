@@ -3,10 +3,10 @@
 ::: tip Objetivos de este módulo
 
 - Entender por qué partimos de Pi
-- Lanzar Pi y entender el papel del directorio `.pi/`
-- Ubicar las cuatro extensiones que usaremos para encarnar la cuadrícula de bloques
-- Enmarcar honestamente el ejercicio de reconstrucción
-  :::
+- Instalar Pi, declarar sus modelos y familiarizarse con sus primeros comandos
+- Entender el papel de los directorios `~/.pi/agent/` y `.pi/`
+- Instalar, probar y quitar una extensión, empezando por combo, la única que necesita la formación
+:::
 
 Hemos visto anteriormente que un harness es un conjunto de herramientas por encima de los modelos LLM, cada una de las cuales contribuye a la realización de una tarea de forma autónoma. Tienes a tu disposición un conjunto de harness ya construidos: Claude Code, Codex, OpenCode, Pi... Sin embargo, en la mayoría de los casos no controlas nada de ellos: te dejas guiar esperando que la herramienta haga lo que le pediste, y cuando algo sale mal, no siempre es fácil entender por qué. Ahora bien, nuestro objetivo es precisamente entender cómo funciona un harness en el más mínimo de sus detalles, poder añadirle o quitarle fácilmente un elemento y probar sus consecuencias.
 
@@ -58,11 +58,15 @@ Edita el archivo `~/.pi/agent/models.json` y complétalo de la siguiente manera:
 Deberás indicar la clave de API que se te haya proporcionado. Los modelos indicados son los disponibles durante la formación; la [lista actualizada](https://www.ilaas.fr/liste-des-modeles-llms/) se encuentra en el sitio de ILaaS.
 
 ::: info El bloque `cost` no es un dato del proveedor
-El campo `cost` es opcional y vale cero por defecto. Sin él, el comando `/session` te anunciará un costo de 0,00 € en todas tus sesiones, lo que te privaría de un indicador que usaremos mucho en adelante.
+El campo `cost` es opcional y vale cero por defecto. Con la configuración anterior, `/session` te anunciará un coste nulo en todas tus sesiones. Si quieres un orden de magnitud, añade a cada modelo un bloque de este tipo (los precios son por millón de tokens):
 
-Las tarifas anteriores, expresadas por millón de tokens, son las que se aplican en el mercado para un modelo de tamaño comparable. No corresponden a ninguna facturación real: tu uso de ILaaS no se te factura por token. Solo están ahí para obtener un orden de magnitud.
+```json
+"cost": { "input": 0.14, "output": 0.28, "cacheRead": 0.0028, "cacheWrite": 0 }
+```
 
-Recuerda sobre todo esto, porque ya es una lección de harness: el costo que muestra un agente de código no es una información recibida del proveedor, es una multiplicación hecha a partir de un campo de configuración que tú mismo has escrito.
+Estas tarifas son las del mercado para un modelo de tamaño comparable. No las pagas: ILaaS no te factura por token.
+
+Recuerda sobre todo esto, que ya es una lección de harness: el coste que muestra un agente de código no viene del proveedor. Es una multiplicación hecha a partir de un campo de configuración que tú mismo has escrito.
 :::
 
 Si todo ha ido bien, puedes usar Pi. Inicia una primera sesión interactiva con `pi` en tu terminal y comprueba que obtienes un prompt de este tipo:

@@ -21,7 +21,7 @@ You work on a single repository from start to finish: [NÉON](https://github.com
 | 3. Evaluating  | Repeating the same task many times, to tell a real improvement from sampling noise                                      |
 | Your turn      | Pointers to carry the method over to your own repository, and to the tools that already go further                      |
 
-Every module of act 2 follows the same three steps (understand, rebuild, generalise) and ends with a deliverable: a skill, an extension, a flow, or a line in a decision sheet that records which lever you measured, what it changed and whether you keep it.
+Every module of act 2 follows the same three steps (understand, rebuild, generalise) and ends with a short summary of what you have learned.
 
 ## What tools come with the course?
 

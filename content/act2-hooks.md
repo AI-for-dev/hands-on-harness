@@ -10,7 +10,7 @@
 
 Dans les modules précédents, nous avons surtout travaillé sur des fichiers écrits en markdown qui étaient lus (ou pas) par des agents. Dans ces fichiers, nous avons essayé de décrire des cadres de développement pour aider les agents à aller là où nous souhaitions qu'ils aillent. Nous rappelons que le caractère aléatoire des LLM fait qu'il n'est pas sûr à 100 % que les directives données dans ces fichiers texte soient réellement effectuées. Elles peuvent se perdre dans le contexte.
 
-Dans ce module, nous allons nous intéresser à rendre déterministes les actions que nous décrivions dans les fichiers markdown. Ces actions peuvent apparaître à différents moments du flux de travail et nous verrons que Pi est capable de vous donner la main à tous les étages du harnais. Cela passe par la construction d'extensions. Vous en avez déjà installé certaines, vous allez maintenant les construire. C'est là que l'on voit toute la puissance et la flexibilité de Pi.
+Dans ce module, nous allons nous intéresser à rendre déterministes les actions que nous décrivions dans les fichiers markdown. Ces actions peuvent apparaître à différents moments du flux de travail et nous verrons que Pi est capable de vous donner la main à tous les étages du harnais. Cela passe par la construction d'extensions. Vous en avez déjà installé certaines, vous allez maintenant les construire. C'est là que la flexibilité de Pi devient visible.
 
 Ces événements peuvent avoir le nom de hooks.
 
@@ -59,7 +59,7 @@ Voici les événements disponibles dans Pi.
 - `agent_end` puis `agent_settled` : notification seulement. `agent_settled` garantit que Pi ne repartira pas tout seul.
 - `session_shutdown` : nettoyage, ou commit automatique en sortie.
 
-Vous pouvez constater que vous pouvez réellement intervenir à n'importe quel moment et adapter finement votre harnais.
+Vous pouvez donc intervenir à n'importe quel moment de la boucle et adapter finement votre harnais.
 
 ### Une extension Pi
 
@@ -267,25 +267,7 @@ Reposez ensuite une demande qui se termine bien, par exemple l'ajout d'un test p
 
 **L'écart entre hook et consigne reste une hypothèse.** Nous n'avons trouvé aucune étude qui compare, à harnais constant, un hook à la même règle écrite en consigne. La mesure la plus proche est [ContextCov](https://arxiv.org/abs/2603.00822), qui ajoute à un agent des vérifications exécutables, dont des interceptions de commandes interdites, et rapporte 88,3 % de conformité contre 67,0 % avec le seul `AGENTS.md`. L'exercice du module sur le bac à sable, qui compte les refus obtenus par une consigne et par un garde-fou en code, vous donne votre propre chiffre sur NÉON.
 
-## Livrable
-
-Ce module produit trois pièces.
-
-**1. Le garde-fou sur les commandes** : `.pi/forbidden-commands.json` et `.pi/extensions/command-guard.ts`, étendue à l'outil `read` pour le `.env`, avec au moins une règle ajoutée par vous après une commande que vous avez vu l'agent lancer.
-
-**2. La vérification de fin de travail** : `.pi/extensions/final-checks.ts`, dont le tableau `CHECKS` contient les commandes de votre projet, et non celles de NÉON si vous l'appliquez ailleurs.
-
-**3. La ligne « hooks » de la fiche de décision** :
-
-| levier                                      | effet observé | adopté ? | pourquoi |
-| ------------------------------------------- | ------------- | -------- | -------- |
-| garde-fou sur les commandes (`tool_call`)   |               |          |          |
-| même règle écrite dans `AGENTS.md`          |               |          |          |
-| vérification de fin (`agent_before_settle`) |               |          |          |
-| plafond de relances                         |               |          |          |
-| protection des tests pendant une relance    |               |          |          |
-
-::: tip Critère de réussite
+::: tip Ce que vous avez appris
 Face à une règle que votre harnais ne fait pas respecter, vous savez dire comment la vérifier. Si une commande, un chemin, un diff ou un code de sortie suffit, c'est le travail d'un hook. S'il faut un modèle qui juge, la vérification passe par l'inférence et donc par `AGENTS.md` ou un skill.
 :::
 

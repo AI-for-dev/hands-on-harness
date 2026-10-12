@@ -16,17 +16,17 @@ The second step, **Reconstruct**, consists in writing by hand, on Pi, the minima
 
 The third step, **Generalize**, brings out the principle that is independent of the tool used. It provides the design rules you would apply elsewhere. This is the step that truly counts, because it is the only one that never goes stale.
 
-In addition to these three steps, at the start of each module you will find its objectives, the description of the deliverable when relevant, and references to explore the concepts further.
+In addition to these three stages, each module states its objectives at the beginning, then, at the end, what you have learned and references for going deeper into the concepts.
 
 ## The structure
 
-The training is organized into four acts.
+The training is organized into three acts, followed by a conclusion page.
 
-| Act                                 | Content                                                                                      |
-| ----------------------------------- | -------------------------------------------------------------------------------------------- |
-| 1. Foundations                      | LLMs and their ecosystem, the building blocks of a harness, the Pi starter harness, and the method |
-| 2. Brick-by-brick reconstruction    | Context, tools, agents, workflows, memory, permissions                                       |
-| 3. Verify, evaluate, observe        | Tests, multi-model evaluations, observability                                                |
-| 4. Building your own harness        | A personal use case, and sorting durable / disposable                                        |
+| Act                                 | Content                                                                                                  |
+| ----------------------------------- | -------------------------------------------------------------------------------------------------------- |
+| 1. Foundations                      | The history of the techniques, LLMs in 2026, the building blocks of a harness and the starting harness Pi |
+| 2. Rebuilding block by block        | The sandbox, context, skills, delegation to sub-agents, workflows and hooks                              |
+| 3. Evaluating                       | Measuring an agent with trysquare, then measuring the context levers over twenty repetitions             |
+| Your turn                           | Taking the approach to your own repository, and the more mature tools that already do what ours do       |
 
 We wanted this document to be as detailed as possible so you can experiment on your own.

@@ -109,7 +109,7 @@ Add this file to `.pi/flows/impact-plan.md` and test it on issue #2. You can wat
 
 ### Automating the orchestrator
 
-In the previous session, you orchestrated the different steps involved in resolving a bug. Here, we will automate this process as follows:
+In the previous module, you carried out the orchestration of the various steps involved in resolving a bug. Here we will automate this process as follows:
 
 | in the previous module                         | in the flow                                                                    |
 | -------------------------------------------- | ------------------------------------------------------------------------------- |
@@ -125,7 +125,7 @@ We saw in previous modules that it was important to carry out each step of a pla
 
 ### Tests have the last word
 
-We need a reliable step to know whether the changes made clearly meet our needs. We could ask for it in the prompt, but you've seen that you don't have 100% certainty that it will be done. We therefore prefer to define a bash script that represents the actions to take after each change. In a flow, the `check` node is precisely there to do this by launching a script from your project. Its result is a value that the loop reads: with `loop: tests.output.passed && review.output.approved`, the coder knows what it must do if the code it generated is wrong or if it doesn't strictly follow the development framework (linter for example).
+We need a reliable step to know whether the changes made clearly meet our needs. We could ask for it in the prompt, but you have seen that a written instruction is not always followed. So we prefer to define a bash script that represents the actions to take after each change. In a flow, the `check` node does exactly that by running a script from your project. Its result is a value that the loop reads: with `loop: tests.output.passed && review.output.approved`, the coder knows what to do if the code it generated is wrong or if it does not exactly follow the development framework (linter, for example).
 
 ![gate](/figures/workflows/gate-light.en.svg){.only-light}
 ![gate](/figures/workflows/gate-dark.en.svg){.only-dark}
@@ -134,7 +134,7 @@ We need a reliable step to know whether the changes made clearly meet our needs.
 
 ### The flow of ticket #2
 
-Here is the loop from the previous module written in full, versioned in `scripts/flows/issue2.md`. It uses your six agents without modifying them.
+Here is the loop from the previous module written out in full, versioned in `scripts/flows/issue2.md`. It uses the four agents from the previous module without modifying them, as well as `tester` and `auditor`, copied at the same time as them.
 
 <<<@/../scripts/flows/issue2.md{md}
 
@@ -269,18 +269,9 @@ A decision deserves its own channel. As long as a verdict is read out of prose, 
 
 Human stops are design choices. Place them where an error costs more to undo than to prevent, and nowhere else. In our case, a Q&A discussion on the ticket to enrich the plan could be a good thing.
 
-## Deliverable
-
-This module produces three pieces.
-
-1. Your `.pi/flows/issue2.md` flow and the `.pi/checks/test.sh` script, kept with your agents in the version you adapted. The `.gitignore` file keeps them out of the NÉON repository: keep them elsewhere if you want to version them.
-2. The trace of a full run, the `runs/<timestamp>/` directory from a `/run issue2` on ticket #2.
-3. The "workflows" line from the decision sheet below.
-
-::: tip Success criterion
-With the trace in hand, you can explain why a run succeeded or failed: which step did not converge, whether the suite was red, what the auditor left open. You can evolve your workflow to try to obtain a harness that follows your way of working and be confident in the result.
+::: tip What you learned
+You can say, trace in hand, why a run succeeded or not: which step did not converge, whether the suite was red, what the auditor left open. You can evolve your workflow so that it follows the way you work, and check the result yourself instead of trusting the flow's verdict.
 :::
-
 
 ## Going further
 

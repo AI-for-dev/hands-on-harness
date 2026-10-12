@@ -16,17 +16,17 @@ Le deuxième temps, **Reconstruire**, consiste à écrire l'équivalent minimal 
 
 Le troisième temps, **Généraliser**, dégage le principe qui est indépendant de l'outil utilisé. Il donne les règles de conception que vous appliqueriez ailleurs. C'est ce temps-là qui compte vraiment, car c'est le seul qui ne périme pas.
 
-En plus de ces trois temps, vous aurez en début de chaque module les objectifs de celui-ci, la description du livrable lorsque ce sera pertinent et des références pour approfondir les concepts.
+En plus de ces trois temps, chaque module donne ses objectifs au début, puis, à la fin, ce que vous avez appris et des références pour approfondir les concepts.
 
 ## Le déroulé
 
-La formation s'organise en quatre actes.
+La formation s'organise en trois actes, suivis d'une page de conclusion.
 
-| Acte                                | Contenu                                                                                      |
-| ----------------------------------- | -------------------------------------------------------------------------------------------- |
-| 1. Fondations                       | Les LLM et leur écosystème, les briques d'un harnais, le harnais de départ Pi, et la méthode |
-| 2. Reconstruction brique par brique | Contexte, outils, agents, workflows, mémoire, permissions                                    |
-| 3. Vérifier, évaluer, observer      | Tests, évaluations multi-modèles, observabilité                                              |
-| 4. Construire son propre harnais    | Un cas d'usage personnel, et le tri durable / jetable                                        |
+| Acte                                | Contenu                                                                                                  |
+| ----------------------------------- | -------------------------------------------------------------------------------------------------------- |
+| 1. Fondations                       | L'historique des techniques, les LLM en 2026, les briques d'un harnais et le harnais de départ Pi        |
+| 2. Reconstruction brique par brique | Le bac à sable, le contexte, les skills, la délégation à des sous-agents, les workflows et les hooks     |
+| 3. Évaluer                          | Mesurer un agent avec trysquare, puis mesurer les leviers du contexte sur vingt répétitions              |
+| À vous de jouer                     | Reprendre la démarche sur votre dépôt, et les outils plus aboutis qui font déjà ce que font les nôtres   |
 
 Nous avons voulu ce document le plus détaillé possible afin que vous puissiez expérimenter en toute autonomie.

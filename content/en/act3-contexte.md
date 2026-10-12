@@ -2,9 +2,9 @@
 
 ::: tip Objectives of this module
 - Measure with trysquare the effect of each lever from [module 2.1](./act2-contexte) on the same task
-- Read a matrix of twenty repetitions and keep only the established gaps
-- Check the retry count and the reasons behind the metrics before citing a table
-- Leave with a reasoned decision on each lever
+- Read a matrix of twenty repetitions and retain only the established differences
+- Check the rerun count and the reasons behind the metrics before quoting a table
+- Know how to say, for each lever, whether it changes the result on NÉON and why
 :::
 
 [Module 2.1](./act2-contexte) had you handle by hand the levers that fill the context window: the model, the reasoning effort, the prompt, `AGENTS.md`, and the system prompt. Each manipulation fit into one or two runs, which is enough to see what a lever changes within the session and leaves open the question of whether that change reproduces. This module takes the same task, NÉON issue #1, and measures the same levers with [trysquare](https://github.com/AI-for-dev/trysquare), whose operation and table reading are described in [module 3.0](./act3-trysquare).
@@ -276,35 +276,10 @@ The principles that follow concern the levers themselves, those that concern the
 
 **The rules file changes what the agent does, not what it finds, and it only applies to what the ticket does not say.** It enters the context at every turn, which makes it both a strong lever and a costly one, hence the value of keeping it short, sourcing each rule from an observed failure, and refactoring it rather than making it longer. Our measurements pin down exactly what it buys: the `+agents` configuration takes the number of runs that launch the test suite from 0/20 to 20/20, leaves the correctness criterion unchanged, and adds nothing at all once the framed prompt is there. The writing rule that follows applies directly to the forty-line budget: a line that a correct ticket would say anyway is a line to remove.
 
-## Deliverable
+::: tip What you have learned
+You can cite a lever that you measured as having no effect on NÉON, and say under what precise condition it would have one elsewhere.
 
-This module produces two pieces, and the second will serve act 4.
-
-**1. The matrix directory** produced by `trysquare run`, with its log line. The deliverable is not a copied table but the archive that allows rebuilding it: the raw measurements, the sessions, the diffs, and the revision of the tool that measured. Without that archive, the matrix can be neither verified nor re-scored, and its numbers are worth no more than an opinion.
-
-**2. The decision sheet**, one line per lever:
-
-| lever                      | measured effect | adopted? | why |
-| -------------------------- | --------------- | -------- | --- |
-| model choice               |                 |          |     |
-| reasoning effort           |                 |          |     |
-| framed ticket              |                 |          |     |
-| content of the pointed ticket |              |          |     |
-| `AGENTS.md`                |                 |          |     |
-| system prompt              |                 |          |     |
-| tests provided in advance  |                 |          |     |
-| scheduling / cache         |                 |          |     |
-| compaction                 |                 |          |     |
-| executable criterion (probe) |               |          |     |
-
-Two lines were added to this sheet after our latest measurements. "Content of the pointed ticket" appears there because rewriting `ISSUES.md` moved more columns than any harness setting, and "tests provided in advance" because it is the only lever that caught the model's drop-off on a long ticket.
-
-This sheet is the first real filling of the "your harness?" column of the correspondence table, for the "context" row. The following modules will do the same for their building block, so you will approach the capstone with a table already filled in by your experiments.
-
-::: tip Success criterion
-You can name a lever you measured as having no effect on NÉON, and say under what precise condition it would have one elsewhere.
-
-Notre exemple est `AGENTS.md` : il ne déplace pas d'un point le critère de correction, et il deviendrait décisif sur un ticket dont l'échec habituel est de procédé plutôt que de raisonnement, ou sur un dépôt dont les tickets sont mal écrits. Le vôtre sera différent, et c'est le but. Ce critère demande d'avoir vu les chiffres et d'avoir compris que c'est la tâche et son matériau qui les déterminent. Il ne peut donc pas être satisfait de mémoire.
+Our example is `AGENTS.md`: it does not move the correctness criterion by a single point, and it would become decisive on a ticket whose usual failure is one of procedure rather than reasoning, or on a repository whose tickets are poorly written. Yours will be different, and that is the point: to cite it, you have to have seen the numbers and understood that it is the task and its material that determine them.
 :::
 
 ## Going further

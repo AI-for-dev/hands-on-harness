@@ -51,6 +51,12 @@ De ello se desprenden dos brechas. La primera separa los dos modelos, ya que el 
 
 Esta segunda diferencia es lo que hace económicamente viable a un agente de código, porque un agente relee su historial completo en cada turno y, de otro modo, pagaría veinte veces el precio de su contexto a lo largo de una sesión de veinte turnos.
 
+::: warning Un proveedor que reporta el caché
+La secuencia del ejercicio siguiente se midió en [opencode Go](https://opencode.ai/docs/zen/). Es una oferta de pago que requiere una cuenta. La elegimos porque ILaaS no reporta la lectura de caché: `cacheRead` siempre vale cero.
+
+Si trabajas en ILaaS, sustituye `--provider opencode-go --model deepseek-v4-flash` por `--provider ilaas --model gemma-4-31b`, y el modelo `pro` por `qwen-3.8-27b`. Sí verás los tokens de entrada y el efecto del cambio de modelo, pero la columna de lectura de caché seguirá vacía. Haz lo mismo con el ejercicio sobre `codemode`, más adelante.
+:::
+
 ::: info Ejercicio (en sala)
 En una sesión interactiva, encadena cinco preguntas sobre un mismo archivo tecleando `/session` después de cada una, y cambia de modelo con `/model` antes de la cuarta. Las preguntas deben prohibir explícitamente cualquier relectura de archivo; de lo contrario, una nueva salida de herramienta se añadirá al contexto y enturbiará la lectura.
 
@@ -130,8 +136,8 @@ Lanza la misma solicitud en dos modelos de tamaños diferentes, el que usas habi
 Asegúrate de crear previamente dos clones separados:
 
 ```bash
-git clone --branch etalon-v1 git@github.com:AI-for-dev/neon.git neon-model-xxx
-git clone --branch etalon-v1 git@github.com:AI-for-dev/neon.git neon-model-yyy
+git clone --branch etalon-v1 https://github.com/AI-for-dev/neon neon-model-xxx
+git clone --branch etalon-v1 https://github.com/AI-for-dev/neon neon-model-yyy
 ```
 
 y luego trabaja en el directorio correspondiente al modelo probado.
@@ -333,25 +339,8 @@ La salida de una herramienta permanece en la ventana hasta el final de la sesió
 
 Por último, `AGENTS.md` también entra en el contexto en cada turno. Mantenlo corto, no añadas una regla hasta haber visto al agente fallar sin ella, y remite a los documentos que el agente puede leer cuando haga falta en lugar de copiarlos. Cuando cambies de modelo, reléelo y elimina lo que ya no sirva.
 
-## Entregable
-
-Este módulo produce dos piezas.
-
-**1. El `AGENTS.md` de NEÓN**, versionado en el repositorio, por debajo de las 40 líneas. Para cada regla, anota el fallo que observaste durante los ejercicios y que te llevó a añadirla.
-
-**2. Tus observaciones sobre cada palanca**, una línea por palanca, con la sesión o el diff que la muestra. El [módulo 3.1](./act3-contexte) retoma estas palancas en veinte ejecuciones, y podrás comparar allí tus observaciones con las mediciones.
-
-| palanca | lo que has observado | sesión o diff |
-| -------------------------------- | ------------------------ | --------------- |
-| elección del modelo | | |
-| esfuerzo de razonamiento | | |
-| `AGENTS.md` | | |
-| system prompt (`.pi/SYSTEM.md`) | | |
-| ventana limitada y compactación | | |
-| `codemode` | | |
-
-::: tip Criterio de éxito
-Sabes decir de qué está hecha la ventana de contexto. Sabes cómo se inicializa y cómo modificar esa inicialización. También entiendes cómo limitar el impacto de las herramientas o del nivel de razonamiento. Puedes decir si la infraestructura de inferencia está bien configurada o si te cuesta más tokens de los necesarios, lo que ocurre por ejemplo cuando la caché está mal configurada o no está configurada en absoluto.
+::: tip Lo que has aprendido
+Sabes decir de qué está hecha la ventana de contexto. Sabes cómo se inicializa y cómo modificar esa inicialización. También entiendes cómo limitar el impacto de las herramientas o del nivel de razonamiento. Puedes decir si la infraestructura de inferencia está bien configurada o si te cuesta más tokens de los necesarios, lo que ocurre por ejemplo cuando el caché está mal configurado o no está configurado en absoluto.
 :::
 
 ## Para ir más lejos

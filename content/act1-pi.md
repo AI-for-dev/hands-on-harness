@@ -3,10 +3,10 @@
 ::: tip Objectifs de ce module
 
 - Comprendre pourquoi nous partons de Pi
-- Lancer Pi et comprendre le rôle du répertoire `.pi/`
-- Situer les quatre extensions que nous utiliserons pour incarner la grille des briques
-- Cadrer honnêtement l'exercice de reconstruction
-  :::
+- Installer Pi, déclarer ses modèles et prendre en main ses premières commandes
+- Comprendre le rôle des répertoires `~/.pi/agent/` et `.pi/`
+- Installer, essayer et retirer une extension, à commencer par combo, la seule dont la formation a besoin
+:::
 
 Nous avons vu précédemment qu'un harnais était un ensemble d'outils au-dessus des modèles LLM, dont chacun contribue à l'accomplissement d'une tâche en autonomie. Vous avez à votre disposition un ensemble de harnais déjà construits : Claude Code, Codex, OpenCode, Pi... Dans la plupart des cas, vous n'en maîtrisez pourtant rien : vous vous laissez guider en espérant que l'outil fasse ce que vous lui avez demandé, et quand quelque chose se passe mal, il n'est pas forcément aisé de comprendre pourquoi. Or, notre objectif est justement de comprendre comment marche un harnais dans le moindre de ses détails, de pouvoir y ajouter ou en retirer facilement un élément et d'en tester les conséquences.
 
@@ -58,11 +58,15 @@ Pour celles et ceux qui suivent cette formation en présentiel, nous vous propos
 Vous devrez renseigner la clé d'API qui vous aura été fournie. Les modèles indiqués sont ceux disponibles lors de la formation ; la [liste à jour](https://www.ilaas.fr/liste-des-modeles-llms/) se trouve sur le site d'ILaaS.
 
 ::: info Le bloc `cost` n'est pas une donnée du fournisseur
-Le champ `cost` est optionnel et vaut zéro par défaut. Sans lui, la commande `/session` vous annoncera un coût de 0,00 € sur toutes vos sessions, ce qui vous priverait d'un indicateur dont nous nous servirons beaucoup par la suite.
+Le champ `cost` est optionnel et vaut zéro par défaut. Avec la configuration ci-dessus, `/session` vous annoncera donc un coût nul sur toutes vos sessions. Si vous voulez un ordre de grandeur, ajoutez à chaque modèle un bloc de ce type (les prix sont au million de tokens) :
 
-Les tarifs ci-dessus, exprimés au million de tokens, sont ceux pratiqués sur le marché pour un modèle de gabarit comparable. Ils ne correspondent à aucune facturation réelle : votre usage d'ILaaS ne vous est pas facturé au token. Ils ne sont là que pour obtenir un ordre de grandeur.
+```json
+"cost": { "input": 0.14, "output": 0.28, "cacheRead": 0.0028, "cacheWrite": 0 }
+```
 
-Retenez surtout ceci, car c'est déjà une leçon de harnais : le coût qu'affiche un agent de code n'est pas une information reçue du fournisseur, c'est une multiplication effectuée à partir d'un champ de configuration que vous avez écrit vous-même.
+Ces tarifs sont ceux du marché pour un modèle de taille comparable. Vous ne les payez pas : ILaaS ne vous facture pas au token.
+
+Retenez surtout ceci, c'est déjà une leçon de harnais : le coût qu'affiche un agent de code ne vient pas du fournisseur. C'est une multiplication faite à partir d'un champ de configuration que vous avez écrit vous-même.
 :::
 
 Si tout s'est bien passé, vous pouvez utiliser Pi. Lancez une première session interactive avec `pi` dans votre terminal et vérifiez que vous obtenez un prompt de ce type :

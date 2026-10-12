@@ -109,7 +109,7 @@ Ajoutez ce fichier dans `.pi/flows/impact-plan.md` et testez-le sur l'issue #2. 
 
 ### Automatisation de l'orchestrateur
 
-À la session précédente vous avez mené l'orchestration des différentes étapes constituant la résolution d'un bug. Nous allons ici automatiser ce processus de la façon suivante :
+Au module précédent, vous avez mené l'orchestration des différentes étapes constituant la résolution d'un bug. Nous allons ici automatiser ce processus de la façon suivante :
 
 | au module précédent                          | dans le flow                                                                    |
 | -------------------------------------------- | ------------------------------------------------------------------------------- |
@@ -125,7 +125,7 @@ Nous avons vu dans les modules précédents qu'il était important de faire chaq
 
 ### Les tests ont le dernier mot
 
-Nous avons besoin d'une étape fiable pour savoir si les changements opérés répondent clairement à nos besoins. Nous pourrions le demander dans le prompt mais vous avez bien vu que vous n'avez pas une certitude à 100% que ce soit fait. Nous préférons donc définir un script bash qui représente les actions à faire après chaque changement. Dans un flow, le nœud `check` permet justement de faire cela en lançant un script de votre projet. Son résultat est une valeur que la boucle lit : avec `loop: tests.output.passed && review.output.approved`, le coder sait ce qu'il doit faire si le code qu'il a généré est faux ou s'il ne suit pas exactement le cadre de développement (linter par exemple).
+Nous avons besoin d'une étape fiable pour savoir si les changements opérés répondent clairement à nos besoins. Nous pourrions le demander dans le prompt, mais vous avez vu qu'une consigne écrite n'est pas toujours suivie. Nous préférons donc définir un script bash qui représente les actions à faire après chaque changement. Dans un flow, le nœud `check` permet justement de faire cela en lançant un script de votre projet. Son résultat est une valeur que la boucle lit : avec `loop: tests.output.passed && review.output.approved`, le coder sait ce qu'il doit faire si le code qu'il a généré est faux ou s'il ne suit pas exactement le cadre de développement (linter par exemple).
 
 ![gate](/figures/workflows/gate-light.svg){.only-light}
 ![gate](/figures/workflows/gate-dark.svg){.only-dark}
@@ -134,7 +134,7 @@ Nous avons besoin d'une étape fiable pour savoir si les changements opérés r�
 
 ### Le flow du ticket #2
 
-Voici la boucle du module précédent écrite en entier, versionnée dans `scripts/flows/issue2.md`. Elle utilise vos six agents sans les modifier.
+Voici la boucle du module précédent écrite en entier, versionnée dans `scripts/flows/issue2.md`. Elle utilise sans les modifier les quatre agents du module précédent, ainsi que `tester` et `auditor`, copiés en même temps qu'eux.
 
 <<<@/../scripts/flows/issue2.md{md}
 
@@ -269,18 +269,9 @@ Une décision mérite son propre canal. Tant qu'un verdict se lit dans de la pro
 
 Les arrêts humains sont des choix de conception. Placez-les là où une erreur coûte plus cher à défaire qu'à prévenir, et pas ailleurs. Dans notre cas, une discussion questions-réponses sur le ticket pour enrichir le plan pourrait être une bonne chose.
 
-## Livrable
-
-Ce module produit trois pièces.
-
-1. Votre flow `.pi/flows/issue2.md` et le script `.pi/checks/test.sh`, conservés avec vos agents dans la version que vous avez adaptée. Le `.gitignore` les tient hors du dépôt de NÉON : gardez-les ailleurs si vous voulez les versionner.
-2. La trace d'un run complet, le répertoire `runs/<horodatage>/` d'un `/run issue2` sur le ticket #2.
-3. La ligne « workflows » de la fiche de décision, ci-dessous.
-
-::: tip Critère de réussite
-Vous savez dire, trace en main, pourquoi un run a abouti ou non : quel pas n'a pas convergé, si la suite était rouge, ce que l'auditeur a laissé ouvert. Vous pouvez faire évoluer votre flux de travail pour essayer d'obtenir un harnais qui suit votre façon de travailler et être confiant dans le résultat.
+::: tip Ce que vous avez appris
+Vous savez dire, trace en main, pourquoi un run a abouti ou non : quel pas n'a pas convergé, si la suite était rouge, ce que l'auditeur a laissé ouvert. Vous savez faire évoluer votre flux de travail pour qu'il suive votre façon de travailler, et vérifier vous-même le résultat au lieu de vous fier au verdict du flow.
 :::
-
 
 ## Pour aller plus loin
 

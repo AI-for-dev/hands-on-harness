@@ -4,7 +4,7 @@
 - Mesurer avec trysquare l'effet de chaque levier du [module 2.1](./act2-contexte) sur une même tâche
 - Lire une matrice de vingt répétitions et ne retenir que les écarts établis
 - Vérifier le compte de reprises et les raisons des métriques avant de citer une table
-- Repartir avec une décision motivée sur chaque levier
+- Savoir dire, pour chaque levier, s'il change le résultat sur NÉON et pourquoi
 :::
 
 Le [module 2.1](./act2-contexte) vous a fait manipuler à la main les leviers qui remplissent la fenêtre de contexte : le modèle, l'effort de raisonnement, le prompt, `AGENTS.md` et le prompt système. Chaque manipulation tenait en une ou deux exécutions, ce qui suffit à voir ce qu'un levier change dans la session et laisse ouverte la question de savoir si ce changement se reproduit. Ce module reprend la même tâche, l'issue #1 de NÉON, et mesure les mêmes leviers avec [trysquare](https://github.com/AI-for-dev/trysquare), dont le [module 3.0](./act3-trysquare) décrit le fonctionnement et la lecture des tables.
@@ -276,35 +276,10 @@ Les principes qui suivent portent sur les leviers eux-mêmes, ceux qui portent s
 
 **Le fichier de règles change ce que l'agent fait et non ce qu'il trouve, et il ne sert que sur ce que le ticket ne dit pas.** Il entre dans le contexte à chaque tour, ce qui en fait un levier fort et coûteux à la fois, d'où l'intérêt de le tenir court, de sourcer chaque règle par un échec observé et de le refactorer plutôt que de l'allonger. Nos mesures cadrent précisément ce qu'il achète : la configuration `+agents` fait passer de 0/20 à 20/20 le nombre d'exécutions qui lancent la suite de tests, laisse le critère de correction inchangé, et n'apporte plus rien du tout dès que le prompt cadré est là. La règle d'écriture qui en découle est directement applicable au budget de quarante lignes : une ligne qu'un ticket correct dirait de toute façon est une ligne à retirer.
 
-## Livrable
-
-Ce module produit deux pièces, et la seconde servira à l'acte 4.
-
-**1. Le répertoire de matrice** produit par `trysquare run`, avec sa ligne de journal. Le livrable n'est pas un tableau recopié mais l'archive qui permet de le refabriquer : les mesures brutes, les sessions, les diffs, et la révision de l'outil qui a mesuré. Sans cette archive, la matrice ne peut être ni vérifiée ni renotée, et ses chiffres ne valent pas mieux qu'une opinion.
-
-**2. La fiche de décision**, une ligne par levier :
-
-| levier                     | effet mesuré | adopté ? | pourquoi |
-| -------------------------- | ------------ | -------- | -------- |
-| choix du modèle            |              |          |          |
-| effort de raisonnement     |              |          |          |
-| ticket cadré               |              |          |          |
-| contenu du ticket pointé   |              |          |          |
-| `AGENTS.md`                |              |          |          |
-| prompt système             |              |          |          |
-| tests fournis d'avance     |              |          |          |
-| ordonnancement / cache     |              |          |          |
-| compaction                 |              |          |          |
-| critère exécutable (sonde) |              |          |          |
-
-Deux lignes ont été ajoutées à cette fiche après nos dernières mesures. « Contenu du ticket pointé » y figure parce que la réécriture d'`ISSUES.md` a déplacé plus de colonnes que n'importe quel réglage du harnais, et « tests fournis d'avance » parce que c'est le seul levier qui ait rattrapé le décrochage du modèle sur un ticket long.
-
-Cette fiche constitue le premier remplissage réel de la colonne « ton harnais ? » de la table de correspondance, pour la ligne « contexte ». Les modules suivants feront de même pour leur brique, si bien que vous aborderez le capstone avec une table déjà remplie par vos expériences.
-
-::: tip Critère de réussite
+::: tip Ce que vous avez appris
 Vous savez citer un levier que vous avez mesuré comme sans effet sur NÉON, et dire à quelle condition précise il en aurait un ailleurs.
 
-Notre exemple est `AGENTS.md` : il ne déplace pas d'un point le critère de correction, et il deviendrait décisif sur un ticket dont l'échec habituel est de procédé plutôt que de raisonnement, ou sur un dépôt dont les tickets sont mal écrits. Le vôtre sera différent, et c'est le but. Ce critère demande d'avoir vu les chiffres et d'avoir compris que c'est la tâche et son matériau qui les déterminent. Il ne peut donc pas être satisfait de mémoire.
+Notre exemple est `AGENTS.md` : il ne déplace pas d'un point le critère de correction, et il deviendrait décisif sur un ticket dont l'échec habituel est de procédé plutôt que de raisonnement, ou sur un dépôt dont les tickets sont mal écrits. Le vôtre sera différent, et c'est le but : pour le citer, il faut avoir vu les chiffres et compris que c'est la tâche et son matériau qui les déterminent.
 :::
 
 ## Pour aller plus loin

@@ -10,7 +10,7 @@
 
 In the previous modules, we mostly worked on files written in Markdown that were read (or not) by agents. In those files, we tried to describe development frameworks to help agents go where we wanted them to go. We recall that the random nature of LLMs means it is not 100% certain that the directives given in these text files are actually carried out. They can get lost in the context.
 
-In this module, we are going to focus on making deterministic the actions we described in the markdown files. These actions can appear at different points in the workflow, and we will see that Pi is able to give you control at every level of the harness. This goes through building extensions. You have already installed some of them, and now you are going to build them. This is where we see all the power and flexibility of Pi.
+In this module, we will look at making the actions we described in Markdown files deterministic. These actions can appear at different points in the workflow, and we will see that Pi can hand you control at every level of the harness. This goes through building extensions. You have already installed some of them; you will now build them. This is where Pi's flexibility becomes visible.
 
 These events can be called hooks.
 
@@ -59,7 +59,7 @@ Here are the events available in Pi.
 - `agent_end` then `agent_settled` : notification only. `agent_settled` guarantees that Pi will not start again on its own.
 - `session_shutdown` : cleanup, or automatic commit on exit.
 
-You can see that you can really intervene at any moment and finely adapt your harness.
+So you can intervene at any point in the loop and tune your harness precisely.
 
 ### A Pi extension
 
@@ -267,26 +267,8 @@ Then submit a request that ends well, for example adding a test for the score (i
 
 **The gap between a hook and an instruction remains a hypothesis.** We found no study that compares, with the harness held constant, a hook against the same rule written as an instruction. The closest measurement is [ContextCov](https://arxiv.org/abs/2603.00822), which adds executable checks to an agent, including interception of forbidden commands, and reports 88.3% compliance against 67.0% with `AGENTS.md` alone. The module's exercise on the sandbox, which counts the refusals obtained with an instruction and with a guardrail in code, gives you your own figure on NÉON.
 
-## Deliverable
-
-This module produces three pieces.
-
-**1. The guardrail on commands**: `.pi/forbidden-commands.json` and `.pi/extensions/command-guard.ts`, extended to the `read` tool for `.env`, with at least one rule added by you after a command you saw the agent run.
-
-**2. The end-of-work check**: `.pi/extensions/final-checks.ts`, whose `CHECKS` array holds your project's commands, not NÉON's if you apply it elsewhere.
-
-**3. The "hooks" row of the decision sheet**:
-
-| lever                                    | observed effect | adopted? | why |
-| ---------------------------------------- | --------------- | -------- | --- |
-| guardrail on commands (`tool_call`)      |                 |          |     |
-| same rule written in `AGENTS.md`         |                 |          |     |
-| end-of-work check (`agent_before_settle`) |                |          |     |
-| retry ceiling                            |                 |          |     |
-| protection of tests during a retry       |                 |          |     |
-
-::: tip Success criterion
-Faced with a rule your harness does not enforce, you know how to check it. If a command, a path, a diff or an exit code is enough, it is a hook's job. If it takes a model to judge, the check goes through inference, and therefore through `AGENTS.md` or a skill.
+::: tip What you have learned
+Faced with a rule your harness does not enforce, you know how to say how to verify it. If a command, a path, a diff or an exit code is enough, that is a hook's job. If a model has to judge, the verification goes through inference and therefore through `AGENTS.md` or a skill.
 :::
 
 ## Going further

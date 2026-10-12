@@ -51,6 +51,12 @@ Two gaps stand out. The first separates the two models, since the `pro` costs 12
 
 This second gap is what makes a code agent economically viable, because an agent rereads its full history at every turn and would otherwise pay twenty times the price of its context over a session of twenty turns.
 
+::: warning A provider that reports the cache
+The sequence in the next exercise was measured on [opencode Go](https://opencode.ai/docs/zen/). It is a paid offering that requires an account. We chose it because ILaaS does not report cache reads: `cacheRead` is always zero there.
+
+If you are working on ILaaS, replace `--provider opencode-go --model deepseek-v4-flash` with `--provider ilaas --model gemma-4-31b`, and the `pro` model with `qwen-3.8-27b`. You will still see the input tokens and the effect of the model change, but the cache read column will stay empty. Do the same for the exercise on `codemode`, further on.
+:::
+
 ::: info Exercise (in class)
 In an interactive session, ask five questions in a row on the same file, typing `/session` after each, and switch models with `/model` before the fourth. The questions must explicitly forbid any file rereading, otherwise a new tool output will land in the context and blur the reading.
 
@@ -130,8 +136,8 @@ Run the same request on two models of different sizes: the one you usually use a
 Make sure to create two separate clones beforehand:
 
 ```bash
-git clone --branch etalon-v1 git@github.com:AI-for-dev/neon.git neon-model-xxx
-git clone --branch etalon-v1 git@github.com:AI-for-dev/neon.git neon-model-yyy
+git clone --branch etalon-v1 https://github.com/AI-for-dev/neon neon-model-xxx
+git clone --branch etalon-v1 https://github.com/AI-for-dev/neon neon-model-yyy
 ```
 
 then work in the directory corresponding to the model being tested.
@@ -333,25 +339,8 @@ Tool output stays in the window until the end of the session. Better to filter i
 
 Finally, `AGENTS.md` also enters the context at every turn. Keep it short, only add a rule to it after seeing the agent fail without it, and point to the documents the agent can read when needed instead of copying them in. When you change models, read it again and remove what is no longer useful.
 
-## Deliverable
-
-This module produces two pieces.
-
-**1. NÉON's `AGENTS.md`**, versioned in the repository, under 40 lines. For each rule, note the failure you observed during the exercises that made you add it.
-
-**2. Your observations on each lever**, one line per lever, with the session or diff that shows it. [Module 3.1](./act3-contexte) takes up these levers again over twenty runs, and there you can compare your observations with the measurements.
-
-| lever                             | what you observed        | session or diff |
-| --------------------------------- | ------------------------ | --------------- |
-| model choice                      |                          |                 |
-| reasoning effort                  |                          |                 |
-| `AGENTS.md`                       |                          |                 |
-| system prompt (`.pi/SYSTEM.md`)   |                          |                 |
-| constrained window and compaction |                          |                 |
-| `codemode`                        |                          |                 |
-
-::: tip Success criterion
-You can say what the context window is made of. You know how it is initialized and how to change that initialization. You also understand how to limit the impact of tools or of the reasoning level. You can tell whether the inference infrastructure is well configured or whether it costs you more tokens than needed, which happens for example when the cache is misconfigured or not configured at all.
+::: tip What you have learned
+You can say what the context window is made of. You know how it is initialized and how to change that initialization. You also understand how to limit the impact of tools or of the reasoning level. You can tell whether the inference infrastructure is properly configured or whether it costs you more tokens than needed, which happens for example when the cache is misconfigured or not configured at all.
 :::
 
 ## To go further
