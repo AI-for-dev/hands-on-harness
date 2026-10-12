@@ -134,143 +134,17 @@ Necesitamos un paso fiable para saber si los cambios realizados responden claram
 
 ### El flow del ticket #2
 
-Aquí está el bucle del módulo anterior escrito por completo. Utiliza tus seis agentes sin modificarlos.
+Aquí tienes el bucle del módulo anterior escrito completo, versionado en `scripts/flows/issue2.md`. Utiliza tus seis agentes sin modificarlos.
 
-```md
----
-name: issue2
-description: Le tour de boucle du module précédent, de la note d'impact à l'audit
-input: string
-timeout: 15m
-
-nodes:
-  # Les deux lectures du ticket, en même temps : aucune des deux n'écrit.
-  - id: survey
-    parallel:
-      impact:
-        - id: note
-          agent: explorer
-          retry: 1
-          reads: [input]
-      cases:
-        - id: cases
-          agent: tester
-          retry: 1
-          reads: [input]
-
-  # Le retour au planner : un second tour replanifie ce que l'audit a laissé ouvert.
-  - id: round
-    loop: suite.output.passed && audit.output.approved
-    max: 2
-    ledger: round
-    do:
-      - id: plan
-        agent: planner
-        retry: 1
-        reads: [input, survey.output.impact.output, survey.output.cases.output, round.ledger]
-        output: { steps: [{ text: string }] }
-
-      # Un pas après l'autre, dans le même arbre.
-      - id: steps
-        map-from: plan.output.steps
-        max: 6
-        do:
-          # Le retour au coder : jusqu'à trois essais par pas.
-          - id: step
-            loop: tests.output.passed && review.output.approved
-            max: 3
-            ledger: step
-            on-fail: continue
-            do:
-              - id: code
-                agent: coder
-                retry: 1
-                memory: step
-                reads: [input, item.text, step.previous.tests, step.previous.review, step.ledger]
-
-              - id: tests
-                check: .pi/checks/test.sh
-
-              - id: review
-                agent: reviewer
-                retry: 1
-                memory: step
-                verdict: step
-                reads: [input, item.text, code, diff, tests]
-
-      - id: suite
-        check: .pi/checks/test.sh
-
-      - id: audit
-        agent: auditor
-        retry: 1
-        verdict: round
-        reads: [input, steps, suite, diff, round.ledger]
----
-
-## note
-Rends la note d'impact du ticket désigné sous `input`.
-
-## cases
-Liste les cas de test dont le ticket désigné sous `input` a besoin, en disant
-lesquels existent déjà. Commence par les comportements que l'extraction ne
-doit pas changer.
-
-## plan
-Découpe le ticket désigné sous `input` en petits pas, avec la note d'impact et
-le plan de tests comme carte. `remark` porte la remarque de la personne qui a
-lancé le run, vide si elle n'en a pas fait. Quand `round.ledger` n'est pas
-vide, c'est un second tour : ne planifie que ce que l'audit a soulevé et que
-personne n'a fermé.
-
-Le contrat est celui du ticket, pas le tien :
-
-- la nouvelle fonction est `brickHit(ball, bricks)`, exportée de `game/neon.js` ;
-- elle est pure : elle rend le tableau de toutes les briques vivantes que la
-  balle chevauche, et ne modifie rien ;
-- `frame()` se comporte exactement comme avant, y compris quand la balle
-  chevauche plusieurs briques : chacune meurt dans la même frame, avec un
-  incrément de combo chacune. Ce comportement est épinglé par un test avant de
-  déplacer la logique, avec une balle de rayon 7 centrée dans l'espace entre
-  deux briques voisines.
-
-Le coder ne voit que le texte de son pas : nomme les fichiers, redis la partie
-du contrat que le pas touche, et dis à quoi ressemble « fini ». Chaque pas
-commence par son test rouge, écrit dans `game/neon.test.js`, et finit sur une
-suite verte : le test rouge et le code qui le fait passer vont dans le même
-pas, jamais dans deux.
-
-## code
-Exécute le pas décrit sous `item.text`, et lui seul.
-
-Quand `step.previous.review` suit, le reviewer n'a pas approuvé ton dernier
-changement : traite chaque remarque et chaque obligation de `step.ledger`, ou
-dis clairement pourquoi tu ne le fais pas. `step.previous.tests` donne la
-sortie de la suite après ce changement.
-
-## review
-Relis le changement fait pour le pas décrit sous `item.text`. Le rapport du
-coder est sous `code`, le changement sous `diff`, la sortie de la suite sous
-`tests`. Le rapport est une affirmation, le diff et le code sont la preuve.
-Approuve, ou soulève ce qui doit encore changer.
-
-## audit
-Relis tout le changement sous `diff` contre le ticket désigné sous `input`.
-`steps` dit comment la relecture de chaque pas s'est terminée : un pas qui n'a
-pas convergé n'est pas fait tant que le code ne le montre pas. `suite` dit si
-les tests du projet passent. `round.ledger` porte ce qu'un audit précédent a
-soulevé et que personne n'a fermé.
-
-Approuve le tout, ou soulève chaque correction sur sa propre ligne.
-```
+<<<@/../scripts/flows/issue2.md{md}
 
 Algunas observaciones sobre este flow
 
 - Los pasos se suceden en el mismo árbol, como tus `/step`.
-- Tres intentos por paso y dos rondas como máximo. Un tope es obligatorio en cada bucle: sin él, un modelo que nunca converge se ejecutaría hasta agotar el presupuesto. Si tu flow falla al alcanzar este límite, combo te lo dirá.
-- El contrato del ticket se escribe en la sección del planner para asegurarse de que las peticiones del usuario figuren en él. La fase de exploración puede ocultarlas.
-- `retry: 1` en cada agente. En el primer run real de este flow, el planner escribió un muy buen plan, pero en texto libre, sin usar la herramienta prevista, y el run se detuvo. Un segundo intento, con el error ya señalado, fue suficiente.
-- Cada paso termina en una suite en verde. Otro run planificó un paso «escribir los tests en rojo» solo, sin el código. El bucle exige una suite en verde, por lo tanto este paso no podía completarse y quemó sus tres intentos. Cuando un bucle no converge, mira primero si su condición era alcanzable.
+- Tres intentos por paso y dos vueltas como máximo. Un techo es obligatorio en cada bucle: sin él, un modelo que nunca converja seguiría funcionando hasta agotar el presupuesto. Si tu flujo falla al alcanzar este límite, combo te lo dirá.
+- El contrato del ticket está escrito en la sección del planner para asegurar que las solicitudes del usuario figuren allí. La fase de exploración puede ocultarlas.
+- `retry: 1` en cada agente. En la primera ejecución real de este flujo, el planner escribió un plan muy bueno, pero en texto libre, sin utilizar la herramienta prevista, y la ejecución se detuvo. Un segundo intento, con el error nombrado, fue suficiente. El segundo intento no siempre basta: en una ejecución de octubre de 2026, el reviewer del primer paso emitió dos veces un rechazo justificado en prosa sin llamar a `verdict`, y el paso falló sin que el coder tuviera un segundo intento. `on-fail: continue` permitió pasar a los siguientes pasos, que retomaron este trabajo, y la auditoría aprobó el conjunto, algo que solo la traza permitía comprender.
+- Cada paso termina con una suite verde. Otra ejecución planificó un paso de «escribir los tests rojos» solo, sin el código. El bucle exige una suite verde, por lo que este paso no podía completarse y agotó sus tres intentos. Cuando un bucle no converge, comprueba primero si su condición era alcanzable.
 
 Aquí se añaden dos roles. El tester (`scripts/agents/tester.md`) permite verificar si los tests existen y si hay que añadir más. El auditor (`scripts/agents/auditor.md`) se asegura de que el trabajo se realiza en su totalidad y de que no se haya olvidado nada, mientras que el reviewer solo ve un paso. Lo que plantea permanece abierto mientras nadie lo haya tratado, y el flow arranca una segunda ronda.
 
@@ -285,15 +159,17 @@ Coloca los agentes, el flow y el script de tests en tu clon de NÉON:
 cd /chemin/vers/neon
 mkdir -p .pi/agents .pi/flows .pi/checks
 cp /chemin/vers/hands-on-harness/scripts/agents/*.md .pi/agents/
-# Collez le flow ci-dessus dans .pi/flows/issue2.md
+cp /chemin/vers/hands-on-harness/scripts/flows/issue2.md .pi/flows/
 printf '#!/usr/bin/env bash\nnpm test\n' > .pi/checks/test.sh
 
 printf '.pi/\nruns/\n' >> .gitignore
 git add .gitignore && git commit -m "ignorer .pi et runs"
 
-pi install -l git:github.com/AI-for-dev/combo
+pi install -l npm:@ai-for-dev/combo
 pi
 ```
+
+Las dos líneas añadidas al `.gitignore` son necesarias, porque el `diff` que leen el reviewer y el auditor cuenta también los archivos que git no sigue: sin ellas, los agentes, los paquetes instalados en `.pi/` y los rastros de `runs/` aparecerían allí.
 
 En el primer lanzamiento, Pi te pregunta si confías en la carpeta del proyecto: sin eso, no carga ni `.pi/` ni combo. Elige «Trust».
 
@@ -310,7 +186,7 @@ El primer comando lista los flows encontrados, el segundo muestra el plan de `is
 /run issue2 traite le ticket #2 d'ISSUES.md
 ```
 
-Pi dibuja el flow encima del prompt mientras avanza. La tarjeta de observación aparece después de la nota de impacto; a continuación, todo lo que hacías a mano se encadena sin ti.
+Pi dibuja el flujo encima del prompt mientras avanza, y todo lo que hacías a mano se encadena sin ti. Calcula unos veinte minutos en ILaaS con gemma-4-31b: nuestra ejecución de octubre de 2026 duró 20 min 27 s.
 
 Al final, haz tus propias verificaciones, las del módulo anterior: `npm test`, la lista de exports, `git diff` y la traza en `runs/<horodatage>/`. No te conformes con el veredicto del flow.
 :::
@@ -397,9 +273,9 @@ Las paradas humanas son elecciones de diseño. Colócalas donde un error cueste 
 
 Este módulo produce tres piezas.
 
-1. Tu flow `.pi/flows/issue2.md` y el script `.pi/checks/test.sh`, versionados junto con tus agentes, en la versión que hayas adaptado.
-2. La traza de un run completo, el directorio `runs/<horodatage>/` de un `/run issue2` sobre el ticket #2.
-3. La línea «workflows» de la ficha de decisión, a continuación.
+1. Tu flow `.pi/flows/issue2.md` y el script `.pi/checks/test.sh`, conservados con tus agentes en la versión que has adaptado. El `.gitignore` los mantiene fuera del repositorio de NÉON: guárdalos en otro lugar si quieres versionarlos.
+2. La traza de una ejecución completa, el directorio `runs/<horodatage>/` de un `/run issue2` sobre el ticket #2.
+3. La línea « workflows » de la ficha de decisión, a continuación.
 
 ::: tip Criterio de éxito
 Puedes explicar, con la traza en mano, por qué una ejecución terminó o no: qué paso no convergió, si la suite de pruebas estaba en rojo, qué dejó abierto el auditor. Puedes hacer evolucionar tu flujo de trabajo para intentar conseguir un harness que siga tu forma de trabajar y confiar en el resultado.
