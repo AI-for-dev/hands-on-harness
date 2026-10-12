@@ -218,9 +218,7 @@ doit pas changer.
 
 ## plan
 Découpe le ticket désigné sous `input` en petits pas, avec la note d'impact et
-le plan de tests comme carte. `remark` porte la remarque de la personne qui a
-lancé le run, vide si elle n'en a pas fait. Quand `round.ledger` n'est pas
-vide, c'est un second tour : ne planifie que ce que l'audit a soulevé et que
+le plan de tests comme carte. Quand `round.ledger` n'est pas vide, c'est un second tour : ne planifie que ce que l'audit a soulevé et que
 personne n'a fermé.
 
 Le contrat est celui du ticket, pas le tien :
@@ -269,7 +267,7 @@ Quelques remarques sur ce flow
 - Les pas se suivent dans le même arbre, comme vos `/step`.
 - Trois essais par pas et deux tours au plus. Un plafond est obligatoire sur chaque boucle : sans lui, un modèle qui ne converge jamais tournerait jusqu'à épuisement du budget. Si votre flow échoue en atteignant cette limite, combo vous le dira.
 - Le contrat du ticket est écrit dans la section du planner pour s'assurer que les demandes de l'utilisateur y figurent bien. La phase d'exploration peut les occulter.
-- `retry: 1` sur chaque agent. Au premier run réel de ce flow, le planner a écrit un très bon plan, mais en texte libre, sans utiliser l'outil prévu, et le run s'est arrêté. Un second essai, avec l'erreur nommée, a suffi.
+- `retry: 1` sur chaque agent. Au premier run réel de ce flow, le planner a écrit un très bon plan, mais en texte libre, sans utiliser l'outil prévu, et le run s'est arrêté. Un second essai, avec l'erreur nommée, a suffi. Le second essai ne suffit pas toujours : sur un run d'octobre 2026, le reviewer du premier pas a rendu deux fois un refus justifié en prose sans appeler `verdict`, et le pas a échoué sans que le coder ait eu de second essai. `on-fail: continue` a laissé passer aux pas suivants, qui ont repris ce travail, et l'audit a approuvé l'ensemble, ce que seule la trace permettait de comprendre.
 - Chaque pas finit sur une suite verte. Un autre run a planifié un pas « écrire les tests rouges » seul, sans le code. La boucle exige une suite verte, ce pas ne pouvait donc pas aboutir et il a brûlé ses trois essais. Quand une boucle ne converge pas, regardez d'abord si sa condition était atteignable.
 
 Deux rôles sont ajoutés ici. Le testeur (`scripts/agents/tester.md`) permet de vérifier si les tests existent et s'il faut en ajouter. L'auditeur (`scripts/agents/auditor.md`) s'assure que le travail est réalisé dans sa globalité et que rien n'a été oublié alors que le reviewer ne voit qu'un pas. Ce qu'il soulève reste ouvert tant que personne ne l'a traité, et le flow repart pour un second tour.
@@ -291,9 +289,11 @@ printf '#!/usr/bin/env bash\nnpm test\n' > .pi/checks/test.sh
 printf '.pi/\nruns/\n' >> .gitignore
 git add .gitignore && git commit -m "ignorer .pi et runs"
 
-pi install -l git:github.com/AI-for-dev/combo
+pi install -l npm:@ai-for-dev/combo
 pi
 ```
+
+Les deux lignes ajoutées au `.gitignore` sont nécessaires, parce que le `diff` que lisent le reviewer et l'auditeur compte aussi les fichiers que git ne suit pas : sans elles, les agents, les paquets installés sous `.pi/` et les traces de `runs/` y entreraient.
 
 Au premier lancement, Pi vous demande si vous faites confiance au dossier du projet : sans cela, il ne charge ni `.pi/` ni combo. Choisissez « Trust ».
 
@@ -310,7 +310,7 @@ La première commande liste les flows trouvés, la seconde affiche le plan de `i
 /run issue2 traite le ticket #2 d'ISSUES.md
 ```
 
-Pi dessine le flow au-dessus de l'invite pendant qu'il avance. La carte de remarque apparaît après la note d'impact ; ensuite, tout ce que vous faisiez à la main s'enchaîne sans vous.
+Pi dessine le flow au-dessus de l'invite pendant qu'il avance, et tout ce que vous faisiez à la main s'enchaîne sans vous. Comptez une vingtaine de minutes sur ILaaS avec gemma-4-31b : notre run d'octobre 2026 a duré 20 min 27 s.
 
 À la fin, faites vos propres vérifications, celles du module précédent : `npm test`, la liste des exports, `git diff` et la trace dans `runs/<horodatage>/`. Ne vous contentez pas du verdict du flow.
 :::
@@ -397,7 +397,7 @@ Les arrêts humains sont des choix de conception. Placez-les là où une erreur 
 
 Ce module produit trois pièces.
 
-1. Votre flow `.pi/flows/issue2.md` et le script `.pi/checks/test.sh`, versionnés avec vos agents, dans la version que vous avez adaptée.
+1. Votre flow `.pi/flows/issue2.md` et le script `.pi/checks/test.sh`, conservés avec vos agents dans la version que vous avez adaptée. Le `.gitignore` les tient hors du dépôt de NÉON : gardez-les ailleurs si vous voulez les versionner.
 2. La trace d'un run complet, le répertoire `runs/<horodatage>/` d'un `/run issue2` sur le ticket #2.
 3. La ligne « workflows » de la fiche de décision, ci-dessous.
 
