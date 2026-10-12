@@ -45,7 +45,7 @@ Una llamada al modelo se factura en tres partidas, expresadas por millón de tok
 | `deepseek-v4-flash` | 0,14 $  | 0,28 $ | 0,0028 $         |
 | `deepseek-v4-pro`   | 1,74 $  | 3,48 $ | 0,0145 $         |
 
-Estas tarifas son las publicadas por [opencode Zen](https://opencode.ai/docs/zen/). Las mediciones del [acto 3](./act3-trysquare) corren sobre ILaaS, que no factura nada a los participantes de esta formación, y por eso cuentan tokens en lugar de euros. Ambas se leen de la misma forma, con la salvedad de que un contador de tokens no te avisa cuando estás gastando.
+Estas tarifas son las publicadas por [opencode Zen](https://opencode.ai/docs/zen/). ILaaS, por su parte, no factura nada a los participantes de esta formación. Así que contarás tokens en lugar de euros. Ambos se leen de la misma forma, pero un contador de tokens no te avisa cuando gastas.
 
 De ello se desprenden dos brechas. La primera separa los dos modelos, ya que el `pro` cuesta 12,4 veces más que el `flash` a tarifa nominal. Es una primera manera de darse cuenta de que un modelo posee más capacidades que otro. La segunda brecha, mucho más amplia, separa la entrada de la lectura de caché: un factor **50** en `flash` y **120** en `pro`.
 
@@ -122,7 +122,7 @@ Además de la corrección del bug, queremos empezar a definir un marco y verific
 
 La primera restricción es demasiado fuerte en un marco general. La idea aquí es sobre todo ver cómo se comporta el modelo y si respeta esta restricción escrita.
 
-Este módulo te hace manipular las palancas a mano, en una o dos ejecuciones, para ver qué cambia cada una en la sesión y en el diff. El [módulo 3.1](./act3-contexte) retoma la misma tarea y las mismas palancas con veinte repeticiones por configuración, lo que permite decir cuáles cambian realmente el resultado.
+Este módulo te hace manipular las palancas a mano, en una o dos ejecuciones, para ver qué cambia cada una en la sesión y en el diff.
 
 ### Los controles, a mano
 
@@ -142,7 +142,7 @@ git clone --branch etalon-v1 https://github.com/AI-for-dev/neon neon-model-yyy
 
 y luego trabaja en el directorio correspondiente al modelo probado.
 
-Lee los dos diffs, luego los dos `/session`. Anota tus observaciones sin sacar conclusiones: el [módulo 3.0](./act3-trysquare) explica por qué dos ejecuciones no bastan para desempatar entre dos modelos.
+Lee los dos diffs, luego los dos `/session`. Anota tus observaciones sin sacar conclusiones: dos ejecuciones no bastan para decidir entre dos modelos.
 :::
 
 #### El esfuerzo de razonamiento
@@ -175,12 +175,12 @@ Esta restricción te obliga a hacer el trabajo de refactorización continua desc
 
 También podemos apoyarnos en otros archivos y decirlo en `AGENTS.md`, para que el agente los lea cuando sea necesario. Por ejemplo, podemos indicarle que las convenciones están en `CONTRIBUTING.md`, la arquitectura en `README.md` y el historial en git.
 
-Sobre las veinte ejecuciones del issue #1 con la petición descuidada que mide el [módulo 3.1](./act3-contexte), **ninguna lanzó la suite de pruebas** y **ninguna añadió un caso**.
+Con una petición descuidada, el agente por lo general no ejecuta la suite de pruebas ni añade ningún caso.
 
-::: info Ejercicio (en clase)
-Escribe el `AGENTS.md` de NÉON a partir de tus propias ejecuciones en lugar de las nuestras: relee los diffs que acabas de producir y busca lo que el agente hizo sin que se le pidiera, u omitió cuando se le pedía. Haz que lance los tests cada vez que modifique el código y que añada casos si no hay cobertura.
+::: info Ejercicio (en aula)
+Escribe el `AGENTS.md` de NÉON partiendo de tus propias ejecuciones: relee los diffs que acabas de producir y busca lo que el agente hizo sin que se lo pidieras, o lo que omitió aunque se lo pidieras. Haz que lance las pruebas cada vez que modifique el código y que añada alguna si no hay cobertura.
 
-Aquí tienes el punto de partida, para discutir y enmendar. Es el mismo archivo que usan las mediciones del [módulo 3.1](./act3-contexte), versionado con el experimento:
+Aquí tienes la base de partida, para discutirla y enmendarla:
 
 <<<@/../scripts/trysquare-campaign/briques/AGENTS.md{md}
 
@@ -189,7 +189,7 @@ Aquí tienes el punto de partida, para discutir y enmendar. Es el mismo archivo 
 ::: warning Un `AGENTS.md` puede ocultar otro
 Pi acumula estos archivos, empezando por tu `~/.pi/agent/AGENTS.md` personal, luego por cada directorio padre hacia arriba, y por último por el directorio actual. Un archivo de reglas personal se cuela así en todas tus mediciones sin que te enteres.
 
-El flag `--no-context-files`, abreviado `-nc`, desactiva este descubrimiento, lo cual es indispensable para medir limpiamente. La herramienta de medición del acto 3 trabaja en un clon desechable donde solo se deposita el archivo `AGENTS.md` del directorio actual (NÉON).
+El flag `--no-context-files`, abreviado `-nc`, desactiva este descubrimiento, algo indispensable para medir con limpieza.
 :::
 
 #### El prompt de sistema
@@ -197,7 +197,7 @@ El flag `--no-context-files`, abreviado `-nc`, desactiva este descubrimiento, lo
 Pi permite reemplazar por completo su prompt de sistema con un `.pi/SYSTEM.md` en la raíz del proyecto o con un `~/.pi/agent/SYSTEM.md` global. La opción `--system-prompt` obedece una regla ligeramente diferente, ya que los archivos de contexto y los skills se siguen añadiendo por encima, de modo que nunca se parte del todo de una página en blanco.
 
 ::: info Ejercicio (en autonomía)
-Crea un `.pi/SYSTEM.md` de tres líneas. Es la pieza que las mediciones del [módulo 3.1](./act3-contexte) depositan en el clon para la configuración `-system_prompt`:
+Crea un `.pi/SYSTEM.md` de tres líneas, por ejemplo:
 
 <<<@/../scripts/trysquare-campaign/briques/SYSTEM-minimal.md
 

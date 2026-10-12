@@ -208,7 +208,7 @@ De même, le fichier `files/home/.pi/agent/models.json` renseigne les modèles d
                     "reasoning": true
                 },
                 {
-                    "id": "qwen-3.6-35b-instruct",
+                    "id": "qwen-3.8-27b",
                     "contextWindow": 256000
                 }
             ]

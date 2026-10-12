@@ -73,7 +73,7 @@ If everything went well, you can use Pi. Launch a first interactive session with
 
 ![](/figures/pi.png)
 
-You will see the various elements that make up Pi (context, skills, extensions) as well as the model used by default at the bottom right (here `(ilaas) qwen-3.6-35b-instruct`).
+There you see the different elements that make up Pi (context, skills, extensions) along with the model used by default, at the bottom right.
 
 You can play with it by asking it questions, observe the loop and see how it answers you. Then try the non-interactive mode with `pi -p`, which runs a request and returns control.
 

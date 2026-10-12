@@ -45,7 +45,7 @@ A call to the model is billed in three line items, expressed per million tokens.
 | `deepseek-v4-flash` | 0.14 $ | 0.28 $ | 0.0028 $         |
 | `deepseek-v4-pro`   | 1.74 $ | 3.48 $ | 0.0145 $         |
 
-These rates are the ones published by [opencode Zen](https://opencode.ai/docs/zen/). The measurements of [act 3](./act3-trysquare) run on ILaaS, which bills nothing to the participants of this training, and therefore count tokens rather than euros. The two read the same way, except that a token counter does not warn you when you spend.
+These rates are the ones published by [opencode Zen](https://opencode.ai/docs/zen/). ILaaS, for its part, charges the participants of this training nothing. You will therefore count tokens there rather than euros. The two read the same way, but a token counter does not warn you when you spend.
 
 Two gaps stand out. The first separates the two models, since the `pro` costs 12.4 times more than the `flash` at list price. It is a first way to realize that a model has more capabilities than another. The second gap, far wider, separates input from cache reads: a factor of **50** on `flash` and **120** on `pro`.
 
@@ -122,7 +122,7 @@ In addition to fixing the bug, we want to start defining a framework and check t
 
 The first constraint is too strong in a general setting. The point here is mostly to see how the model behaves and whether it respects this written constraint.
 
-This module has you manipulate the levers by hand, on one or two runs, to see what each one changes in the session and in the diff. [Module 3.1](./act3-contexte) reuses the same task and the same levers with twenty repetitions per configuration, which makes it possible to say which ones actually change the result.
+This module has you work the levers by hand, over one or two runs, to see what each one changes in the session and in the diff.
 
 ### The knobs, by hand
 
@@ -142,7 +142,7 @@ git clone --branch etalon-v1 https://github.com/AI-for-dev/neon neon-model-yyy
 
 then work in the directory corresponding to the model being tested.
 
-Read both diffs, then both `/session`. Note your observations without drawing any conclusion: [module 3.0](./act3-trysquare) explains why two runs are not enough to separate two models.
+Read both diffs, then both `/session`. Note your observations without drawing conclusions: two runs are not enough to tell two models apart.
 :::
 
 #### The reasoning effort
@@ -175,12 +175,12 @@ This constraint forces you to do the continuous refactoring work described above
 
 We can also rely on other files and say so in `AGENTS.md`, so that the agent reads them when needed. For example, we can tell it that the conventions are in `CONTRIBUTING.md`, the architecture in `README.md`, and the history in git.
 
-Of the twenty runs of issue #1 with the neglected request measured by [module 3.1](./act3-contexte), **none ran the test suite** and **none added a case**.
+With a neglected request, the agent usually does not run the test suite and adds no cases.
 
 ::: info Exercise (in class)
-Write NÉON's `AGENTS.md` based on your own runs rather than ours: re-read the diffs you just produced and look for what the agent did without being asked, or omitted when it was asked. Make sure it runs the tests every time it modifies the code, and adds some if there is no coverage.
+Write NÉON's `AGENTS.md` starting from your own runs: reread the diffs you just produced and look for what the agent did without being asked, or omitted though it had been asked. Make it run the tests every time it changes code and add tests where there is no coverage.
 
-Here is the starting point, to discuss and amend. It is the very file [module 3.1](./act3-contexte)'s measurements use, versioned with the experiment:
+Here is the starting base, to discuss and amend:
 
 <<<@/../scripts/trysquare-campaign/briques/AGENTS.md{md}
 
@@ -189,15 +189,15 @@ Here is the starting point, to discuss and amend. It is the very file [module 3.
 ::: warning One `AGENTS.md` can hide another
 Pi accumulates these files, starting from your personal `~/.pi/agent/AGENTS.md`, then each parent directory going up, then the current directory. A personal rules file therefore slips into all your measurements without your knowledge.
 
-The `--no-context-files` flag, abbreviated `-nc`, disables this discovery, which is essential to measure cleanly. The act 3 measurement tool works in a throwaway clone where only the current directory's (NÉON) `AGENTS.md` file is placed.
+The `--no-context-files` flag, abbreviated `-nc`, disables this discovery, which is essential to measure cleanly.
 :::
 
 #### The system prompt
 
 Pi lets you replace its system prompt entirely with a `.pi/SYSTEM.md` at the project root or a global `~/.pi/agent/SYSTEM.md`. The `--system-prompt` option works slightly differently: context files and skills are still added on top, so you never quite start from a blank page.
 
-::: info Exercise (on your own)
-Create a three-line `.pi/SYSTEM.md`. It is the piece [module 3.1](./act3-contexte)'s measurements place in the clone for the `-system_prompt` configuration:
+::: info Exercise (self-paced)
+Create a three-line `.pi/SYSTEM.md`, for example:
 
 <<<@/../scripts/trysquare-campaign/briques/SYSTEM-minimal.md
 

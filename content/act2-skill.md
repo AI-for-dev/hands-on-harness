@@ -7,7 +7,7 @@
 - Réviser une procédure à partir des sessions lues, en la testant avec plusieurs modèles
 :::
 
-Le module précédent vous a permis de vous familiariser avec le contexte et avec la façon d'interagir avec lui. Vous avez également pu voir des écarts de comportement en fonction du modèle choisi. Les mesures du [module 3.1](./act3-contexte) montrent aussi que la description détaillée de l'issue #1 dans `ISSUES.md` change beaucoup le résultat, à condition que le prompt y renvoie. Avec la demande négligée, aucune des vingt exécutions ne traite le rebond dans le coin d'une brique. Quand le prompt nomme l'issue, quatorze sur vingt le font.
+Le module précédent vous a permis de vous familiariser avec le contexte et avec la façon d'interagir avec lui. Vous avez également pu voir des écarts de comportement en fonction du modèle choisi. La description détaillée de l'issue #1 dans `ISSUES.md` aide aussi beaucoup le modèle à corriger le bug, à condition que le prompt y renvoie.
 
 Dans la vraie vie, vous demanderez à corriger le bug sans une explication aussi poussée, parce que vous ne saurez pas forcément évaluer l'ensemble des effets de bord de ce bug.
 

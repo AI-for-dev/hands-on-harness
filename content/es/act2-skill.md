@@ -7,7 +7,7 @@
 - Revisar un procedimiento a partir de las sesiones leídas, probándolo con varios modelos
 :::
 
-El módulo anterior te permitió familiarizarte con el contexto y con la forma de interactuar con él. También pudiste ver diferencias de comportamiento según el modelo elegido. Las mediciones del [módulo 3.1](./act3-contexte) también muestran que la descripción detallada del issue #1 en `ISSUES.md` cambia mucho el resultado, siempre que el prompt haga referencia a él. Con la solicitud descuidada, ninguna de las veinte ejecuciones trata el rebote en la esquina de un ladrillo. Cuando el prompt nombra el issue, catorce de veinte lo hacen.
+El módulo anterior te permitió familiarizarte con el contexto y con la forma de interactuar con él. También pudiste ver diferencias de comportamiento según el modelo elegido. La descripción detallada del issue #1 en `ISSUES.md` ayuda también mucho al modelo a corregir el bug, siempre que el prompt la referencie.
 
 En la vida real, pedirás corregir el bug sin una explicación tan detallada, porque no sabrás necesariamente evaluar todos los efectos secundarios de ese bug.
 

@@ -7,7 +7,7 @@
 - Revise a procedure from the sessions you read, by testing it with several models
 :::
 
-The previous module let you become familiar with the context and with how to interact with it. You also saw differences in behavior depending on the chosen model. The measurements from [module 3.1](./act3-contexte) also show that the detailed description of issue #1 in `ISSUES.md` changes the result a lot, provided the prompt refers to it. With the neglected request, none of the twenty runs handles the bounce in the corner of a brick. When the prompt names the issue, fourteen out of twenty do.
+The previous module got you familiar with the context and with how to interact with it. You also saw behavioral differences depending on the model chosen. The detailed description of issue #1 in `ISSUES.md` also helps the model a lot to fix the bug, provided the prompt points to it.
 
 In the real world, you will ask to fix the bug without such a thorough explanation, because you won't necessarily know how to assess all the side effects of that bug.
 

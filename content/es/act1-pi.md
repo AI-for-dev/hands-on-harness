@@ -73,7 +73,7 @@ Si todo ha ido bien, puedes usar Pi. Inicia una primera sesión interactiva con 
 
 ![](/figures/pi.png)
 
-Ahí ves los diferentes elementos que componen Pi (contexto, skills, extensiones) así como el modelo utilizado por defecto abajo a la derecha (aquí `(ilaas) qwen-3.6-35b-instruct`).
+Ahí ves los distintos elementos que componen Pi (contexto, skills, extensiones), así como el modelo usado por defecto, abajo a la derecha.
 
 Puedes jugar con él haciéndole preguntas, observar el bucle y ver cómo te responde. Prueba luego el modo no interactivo con `pi -p`, que ejecuta una consulta y devuelve el control.
 
