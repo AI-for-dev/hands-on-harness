@@ -121,14 +121,14 @@
   },
   "act2-workflows.md": {
     "en": {
-      "unitHash": "e9fe190d8168a35c61e4eeee5a005e239e9c3a2d260c24a50701fa584d18b0bb",
+      "unitHash": "e43cd28a5cf6202e545bc6c7b2c9437b6f86baa47c768a53298a2ed8844df4de",
       "model": "pi:ilaas/gemma-4-31b",
-      "translatedAt": "2026-10-12T10:23:12.067Z"
+      "translatedAt": "2026-10-12T11:28:05.460Z"
     },
     "es": {
-      "unitHash": "9d7bdaff73fe783b129184b1d8c1edc07fdee507852962706add2936d7d546f1",
+      "unitHash": "18cf124a926f7a54dc24f8b7fd16a81b80214772d54980b08d7773fb9507888d",
       "model": "pi:ilaas/gemma-4-31b",
-      "translatedAt": "2026-10-12T10:24:10.325Z"
+      "translatedAt": "2026-10-12T11:29:03.934Z"
     }
   },
   "historique.md": {
