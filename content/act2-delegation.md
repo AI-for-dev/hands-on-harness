@@ -80,8 +80,8 @@ Les fichiers d'agents du projet vivent dans `.pi/agents/`, ceux de votre machine
 Le modèle d'un sous-agent n'est jamais hérité de la session parente. Il vient d'un argument passé à l'appel, à défaut du fichier de pipeline, à défaut de l'en-tête de l'agent, et en dernier recours des réglages de Pi : le plus proche du travail l'emporte. Un agent qui ne déclare rien et qu'on lance sans argument tourne donc sur votre `~/.pi/agent/settings.json`, c'est-à-dire sur ce qui s'y trouve ce jour-là.
 :::
 
-::: warning Les agents du projet passent avant les vôtres
-combo charge par défaut les agents du projet, ceux de votre machine et les siens, et quand deux agents portent le même nom, c'est celui du projet qui tourne. Comme les fichiers de `.pi/agents/` viennent du dépôt que vous avez cloné et que quelqu'un d'autre a pu les écrire, lisez-les avant de répondre `Trust` à la question que Pi pose au premier lancement dans un dossier. Si un agent du projet masque un agent du même nom dans `~/.pi/agent/agents/`, combo le signale dans le résultat de l'appel, et vous retrouvez le vôtre en demandant la portée `user`.
+::: warning Comprendre la hiérarchie de agents
+Comme la plupart des configurations Pi que vous avez pu voir depuis le début de cette formation, combo charge par défaut les agents du projet, ceux de votre machine et les siens. Lorsque deux agents portent le même nom, c'est celui du projet qui l'emporte. Comme les fichiers de `.pi/agents/` viennent du dépôt que vous avez cloné et que quelqu'un d'autre a pu les écrire, lisez-les avant de répondre `Trust` à la question que Pi pose au premier lancement dans un dossier. Si un agent du projet masque un agent du même nom dans `~/.pi/agent/agents/`, combo le signale dans le résultat de l'appel, et vous retrouvez le vôtre en demandant la portée `user`.
 
 Vous pouvez avoir la liste de vos agents via la commande :
 
@@ -214,14 +214,14 @@ Vous pouvez également dire dans votre demande le modèle que vous souhaitez uti
 utilise le subagent "coder" avec le modèle qwen-3.8-27b d'ilaas pour la tâche "Lance npm test et rapporte le résultat."
 ```
 
-Le modèle doit être déclaré dans votre `~/.pi/agent/models.json`, comme ceux de l'[installation de Pi](./act1-pi), sinon combo refuse l'appel avec `Model "qwen-3.8-27b" not found for provider "ilaas"`. Avec `/step`, présentée plus loin, l'option `--model ilaas/qwen-3.8-27b` a le même effet. Nous avons écarté `qwen-3.6-35b-instruct` de cet exemple : en octobre 2026, lancé comme `coder` sur ILaaS, il a interrompu sa réponse (`Stream ended without finish_reason`) à chacun de nos trois essais.
+Le modèle doit être déclaré dans votre `~/.pi/agent/models.json`, comme ceux de l'[installation de Pi](./act1-pi), sinon combo refuse l'appel avec `Model "qwen-3.8-27b" not found for provider "ilaas"`. Avec `/step`, présentée plus loin, l'option `--model ilaas/qwen-3.8-27b` a le même effet.
 :::
 
 ### Le tour de boucle, à la main
 
 Vous tenez maintenant le rôle d'orchestrateur que le module suivant automatisera. Ouvrez la session principale avec l'extension chargée, et parcourez la chaîne un pas à la fois avec `/step`. Cette commande fait partie de combo. Si vous ne l'avez pas dans la console de Pi, c'est qu'il n'est pas bien installé.
 
-Cette commande `/step <agent> <instruction>` lance l'agent que vous nommez sur ce que vous tapez, plus la sortie du pas précédent (c'est fait automatiquement). Sa réponse est **écrite dans la transcription sans entrer dans le contexte du modèle** : la session principale voit défiler les rapports sans les lire, donc sans pouvoir agir dessus. Si la session principale lisait le rapport d'exploration, elle pourrait choisir elle-même la suite à partir de conclusions que vous n'avez pas validées, alors que nous voulons que ce soit vous qui décidiez de l'étape d'après. Nous l'avons constaté en passant par l'outil `subagent` : une fois la note d'`explorer` reçue sur le ticket #2, la session principale a relu elle-même les fichiers, puis modifié `game/neon.js` et ses tests sans qu'on le lui demande. La fenêtre principale vous sert donc de console, et non plus d'interlocuteur comme dans les modules précédents. Quand un résultat mérite d'être discuté avec le modèle, la commande `/quote` fait entrer la sortie du pas précédent dans le contexte, sans copier-coller.
+Cette commande `/step <agent> <instruction>` lance l'agent que vous nommez sur ce que vous tapez, plus la sortie du pas précédent (c'est fait automatiquement). Sa réponse est écrite dans la transcription sans entrer dans le contexte du modèle : la session principale voit défiler les rapports sans les lire, donc sans pouvoir agir dessus. Si la session principale lisait le rapport d'exploration, elle pourrait choisir elle-même la suite à partir de conclusions que vous n'avez pas validées, alors que nous voulons que ce soit vous qui décidiez de l'étape d'après. Quand un résultat mérite d'être discuté avec le modèle, la commande `/quote` fait entrer la sortie du pas précédent dans le contexte, sans copier-coller.
 
 La boucle comporte six étapes :
 

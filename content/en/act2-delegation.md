@@ -80,8 +80,8 @@ The project's agent files live in `.pi/agents/`, your machine's in `~/.pi/agent/
 A sub-agent's model is never inherited from its parent session. It comes from an argument passed to the call, otherwise from the pipeline file, otherwise from the agent header, and as a last resort from Pi's settings: the closest to the work wins. An agent that declares nothing and is run without an argument therefore runs on your `~/.pi/agent/settings.json`, that is, on whatever is in there that day.
 :::
 
-::: warning Project agents take precedence over yours
-By default, combo loads project agents, those on your machine, and its own; when two agents have the same name, the project agent is the one that runs. Since the files in `.pi/agents/` come from the repository you cloned and may have been written by someone else, read them before answering `Trust` to the question Pi asks when first launched in a folder. If a project agent masks an agent with the same name in `~/.pi/agent/agents/`, combo flags this in the call result, and you can access yours by requesting the `user` scope.
+::: warning Understanding the agent hierarchy
+Like most Pi configurations you may have seen since the start of this training, combo loads the project agents, those on your machine, and its own by default. When two agents share the same name, the project one wins. Since the files in `.pi/agents/` come from the repository you cloned and someone else may have written them, read them before answering `Trust` to the question Pi asks on first launch in a folder. If a project agent masks an agent with the same name in `~/.pi/agent/agents/`, combo reports it in the call result, and you get yours back by requesting the `user` scope.
 
 You can get the list of your agents via the command:
 
@@ -214,14 +214,14 @@ You can also specify in your request the model you want to use, as in the follow
 utilise le subagent "coder" avec le modèle qwen-3.8-27b d'ilaas pour la tâche "Lance npm test et rapporte le résultat."
 ```
 
-The model must be declared in your `~/.pi/agent/models.json`, like those in the [Pi installation](./act1-pi), otherwise combo refuses the call with `Model "qwen-3.8-27b" not found for provider "ilaas"`. With `/step`, presented later, the `--model ilaas/qwen-3.8-27b` option has the same effect. We excluded `qwen-3.6-35b-instruct` from this example: in October 2026, when run as `coder` on ILaaS, it interrupted its response (`Stream ended without finish_reason`) in each of our three attempts.
+The model has to be declared in your `~/.pi/agent/models.json`, like those in the [Pi installation](./act1-pi), otherwise combo refuses the call with `Model "qwen-3.8-27b" not found for provider "ilaas"`. With `/step`, presented further on, the `--model ilaas/qwen-3.8-27b` option has the same effect.
 :::
 
 ### Running the loop by hand
 
 You now hold the orchestrator role that the next module will automate. Open the main session with the extension loaded, and walk the chain one step at a time with `/step`. This command is part of combo. If you do not have it in the Pi console, then it is not properly installed.
 
-This `/step <agent> <instruction>` command runs the agent you name on what you type, plus the output of the previous step (this is done automatically). Its response is **written in the transcript without entering the model's context**: the main session sees the reports scroll by without reading them, and therefore without being able to act on them. If the main session read the exploration report, it could choose the next steps itself based on conclusions you have not validated, whereas we want you to decide the next step. We observed this when using the `subagent` tool: once the `explorer` note for ticket #2 was received, the main session re-read the files itself, then modified `game/neon.js` and its tests without being asked. The main window therefore serves as your console, and no longer as an interlocutor as in the previous modules. When a result deserves to be discussed with the model, the `/quote` command puts the output of the previous step into the context, without copy-pasting.
+This `/step <agent> <instruction>` command runs the agent you name on what you type, plus the previous step's output (this happens automatically). Its answer is written to the transcript without entering the model's context: the main session sees the reports scroll by without reading them, so it cannot act on them. If the main session read the exploration report, it could choose the next move itself from conclusions you haven't validated, whereas we want you to decide the next step. When a result deserves to be discussed with the model, the `/quote` command brings the previous step's output into the context, with no copy-paste.
 
 The loop has six steps:
 
