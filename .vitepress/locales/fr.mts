@@ -54,6 +54,10 @@ export const fr: LocaleSpecificConfig<DefaultTheme.Config> = {
         text: 'Conclusion',
         items: [{ text: 'À vous de jouer', link: '/a-vous-de-jouer' }]
       },
+      {
+        text: 'Annexes',
+        items: [{ text: 'Annexes et glossaire', link: '/annexes' }]
+      },
       // {
       //   text: 'Acte 2 — Reconstruction (suite)',
       //   items: [
@@ -69,12 +73,6 @@ export const fr: LocaleSpecificConfig<DefaultTheme.Config> = {
       //   items: [
       //     { text: '4.0 De l\'issue au commit, en autonomie', link: '/act4-revelation' },
       //     { text: '4.1 Remplacez NÉON par votre cas', link: '/act4-capstone' }
-      //   ]
-      // },
-      // {
-      //   text: 'Annexes',
-      //   items: [
-      //     { text: 'Annexes et glossaire', link: '/annexes' }
       //   ]
       // }
     ],

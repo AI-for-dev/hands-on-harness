@@ -50,6 +50,10 @@ export const es: LocaleSpecificConfig<DefaultTheme.Config> = {
       {
         text: 'Conclusión',
         items: [{ text: 'Ahora te toca a ti', link: '/es/a-vous-de-jouer' }]
+      },
+      {
+        text: 'Anexos',
+        items: [{ text: 'Anexos y glosario', link: '/es/annexes' }]
       }
     ],
     outline: { level: [2, 3], label: 'En esta página' },
