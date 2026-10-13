@@ -20,7 +20,8 @@ export const fr: LocaleSpecificConfig<DefaultTheme.Config> = {
         items: [
           { text: 'Présentation', link: '/' },
           { text: 'La méthode', link: '/methode' },
-          { text: 'Le fil rouge : NÉON', link: '/fil-rouge' }
+          { text: 'Le fil rouge : NÉON', link: '/fil-rouge' },
+          { text: 'Débuter avec la formation', link: '/debuter' }
         ]
       },
       {
