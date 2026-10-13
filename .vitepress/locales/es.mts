@@ -17,7 +17,8 @@ export const es: LocaleSpecificConfig<DefaultTheme.Config> = {
         items: [
           { text: 'Presentación', link: '/es/' },
           { text: 'El método', link: '/es/methode' },
-          { text: 'El hilo conductor: NÉON', link: '/es/fil-rouge' }
+          { text: 'El hilo conductor: NÉON', link: '/es/fil-rouge' },
+          { text: 'Empezar con la formación', link: '/es/debuter' }
         ]
       },
       {

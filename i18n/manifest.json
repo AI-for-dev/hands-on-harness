@@ -1,14 +1,14 @@
 {
   "index.md": {
     "en": {
-      "unitHash": "45b55211d9340760f905dc91e938a84c30ba8b884b02d7931ddcfc73cffff66f",
+      "unitHash": "dcc8c762576d33063a2d37fc1ee0d8512f160b105bd26ce51b50150dc0fcfe5b",
       "model": "pi:opencode-go/deepseek-v4.1-flash",
-      "translatedAt": "2026-10-13T04:57:38.679Z"
+      "translatedAt": "2026-10-13T06:22:41.411Z"
     },
     "es": {
-      "unitHash": "45b55211d9340760f905dc91e938a84c30ba8b884b02d7931ddcfc73cffff66f",
+      "unitHash": "dcc8c762576d33063a2d37fc1ee0d8512f160b105bd26ce51b50150dc0fcfe5b",
       "model": "pi:opencode-go/deepseek-v4.1-flash",
-      "translatedAt": "2026-10-13T04:57:42.638Z"
+      "translatedAt": "2026-10-13T06:22:44.644Z"
     }
   },
   "act1-harness.md": {
@@ -201,6 +201,18 @@
       "unitHash": "379e4311ea1e33e8c1457b21494a037da8269fd429af2f5a606130892f7612bd",
       "model": "pi:opencode-go/deepseek-v4.1-flash",
       "translatedAt": "2026-10-13T04:57:33.271Z"
+    }
+  },
+  "debuter.md": {
+    "en": {
+      "unitHash": "0c246489d702a21c30c2e9768e0600a5c9ede58b5c7ef6d1fb8d6c52aa5d0ea7",
+      "model": "pi:opencode-go/deepseek-v4.1-flash",
+      "translatedAt": "2026-10-13T06:22:15.782Z"
+    },
+    "es": {
+      "unitHash": "0c246489d702a21c30c2e9768e0600a5c9ede58b5c7ef6d1fb8d6c52aa5d0ea7",
+      "model": "pi:opencode-go/deepseek-v4.1-flash",
+      "translatedAt": "2026-10-13T06:22:35.379Z"
     }
   }
 }

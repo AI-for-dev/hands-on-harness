@@ -1965,6 +1965,88 @@
       ]
     }
   },
+  "debuter.md": {
+    "en": {
+      "rules": "ad0069665eaaa0bf",
+      "body": [
+        "953193be44b350da:4266fa9572df051d",
+        "baae3ed679704d9e:4dd197b09af1f941",
+        "51eb4466893d0500:7f5744df5b05364c",
+        "45f42b07c2bff7da:f409b242579fe0af",
+        "f1d940e7b8652c26:0597151c1859dd18",
+        "7f340db5247c182d:ac0f5e1d07c89cae",
+        "469896a292fb0050:ce92c076b3e089af",
+        "fbf2308ae00060ec:4f2ce19fb3fbf5c3",
+        "3a35782c1cc1beec:3c7e1358b91a17b7",
+        "816f49ccefe7d1ea:5e5eb552b9105035",
+        "4ee0d0fdc2470634:6291e54742276e22",
+        "605328b0018892fa:605328b0018892fa",
+        "0b4762c0ee4839bb:219dc67ce77da13d",
+        "2db333927b83580e:df677bc1503c6716",
+        "d985edae82dc9e51:4ceb64501cc05c8b",
+        "317c2b69fd067a2b:3059e0ec321598f7",
+        "8bd1be7e55627fc6:9b29570beaea1343",
+        "74c7a1ad7184247a:c6a4c62d223af4ce",
+        "f6fa75184e3fc880:8af478e0c0dfb248",
+        "1f9ef1d2ae60cb36:1f9ef1d2ae60cb36",
+        "ee485d79740d4e86:c0587e7a3424ccae",
+        "58d285a8a0846e1e:58d285a8a0846e1e",
+        "ee056b7f212560fe:dc8afeae4804f8e5",
+        "6d6eda063080c12b:7eda62f7dce5bc1e",
+        "333b2a4179a07e54:333b2a4179a07e54",
+        "8061880d767860fe:469b9888fc59f6d9",
+        "783be7f134a4d9cc:bce8ca0dead79483",
+        "933dad7f18093a20:933dad7f18093a20",
+        "b8e34e2f30878e54:aa82e944e03180e7",
+        "4c91eedbfd214817:e186e24033518dc0",
+        "ec6f06b3ef343a0c:df8228a64ed5b0da",
+        "3227101bed621a4a:99a0f64561f4aacc",
+        "4c617807f7a02e30:e6766e020459a4bc",
+        "209b007e25e533d9:edb384747ab954c3",
+        "51095e61d206cea1:acb86938a025741f"
+      ]
+    },
+    "es": {
+      "rules": "ad0069665eaaa0bf",
+      "body": [
+        "953193be44b350da:1ed1db2f63d345ef",
+        "baae3ed679704d9e:260e18a958a18e6f",
+        "51eb4466893d0500:69edf08e7bb5179e",
+        "45f42b07c2bff7da:b0a205b3cc33bf6e",
+        "f1d940e7b8652c26:ac988ffeb7595fe2",
+        "7f340db5247c182d:690cfe24d25986d8",
+        "469896a292fb0050:056b3e70d7c1428b",
+        "fbf2308ae00060ec:2ed5b95d4fa14496",
+        "3a35782c1cc1beec:93ca9fe8d38dc55b",
+        "816f49ccefe7d1ea:6efa07ba6c9cd39b",
+        "4ee0d0fdc2470634:57f83244ecf40fdf",
+        "605328b0018892fa:605328b0018892fa",
+        "0b4762c0ee4839bb:aa0560984d509740",
+        "2db333927b83580e:f4b76e8bb02e987b",
+        "d985edae82dc9e51:cc66a0e0f1085e95",
+        "317c2b69fd067a2b:14d58b25e10e2aa4",
+        "8bd1be7e55627fc6:3b870050b82763d7",
+        "74c7a1ad7184247a:76d7ab4b70ce1cf8",
+        "f6fa75184e3fc880:ac207fea1c61c01d",
+        "1f9ef1d2ae60cb36:1f9ef1d2ae60cb36",
+        "ee485d79740d4e86:631664414d38670e",
+        "58d285a8a0846e1e:58d285a8a0846e1e",
+        "ee056b7f212560fe:654bbd783e176933",
+        "6d6eda063080c12b:21041369bdec9e3a",
+        "333b2a4179a07e54:333b2a4179a07e54",
+        "8061880d767860fe:149b34839dae9e44",
+        "783be7f134a4d9cc:eb7f3600413ac39c",
+        "933dad7f18093a20:933dad7f18093a20",
+        "b8e34e2f30878e54:5db70b4606a3051c",
+        "4c91eedbfd214817:7b9963c0c6ae19c7",
+        "ec6f06b3ef343a0c:c7e13afc2c4cc961",
+        "3227101bed621a4a:6b9dd5dc6bb03a50",
+        "4c617807f7a02e30:8afe50d3487b8e43",
+        "209b007e25e533d9:6e6729e56ce25539",
+        "51095e61d206cea1:5a3c155fc9687b06"
+      ]
+    }
+  },
   "fil-rouge.md": {
     "en": {
       "rules": "ad0069665eaaa0bf",
@@ -2059,7 +2141,7 @@
         "2e237f77c3e5a877:5e0c8918fccb9b00",
         "30fc1233a2f9a959:30fc1233a2f9a959",
         "81a8085d6a1767ab:c8e9e064a44e9bb5",
-        "5de71c51c7eecb42:4c6a16fe0a81b426",
+        "273cbaf5ffe79055:0b1d178f9868238f",
         "644d961f4f2787b5:6f6f45b4d95ae785",
         "ec46c740ae486027:0135e4ecc2670aa5"
       ]
@@ -2077,7 +2159,7 @@
         "2e237f77c3e5a877:275e9bd77f150988",
         "30fc1233a2f9a959:30fc1233a2f9a959",
         "81a8085d6a1767ab:d915e4426d494b98",
-        "5de71c51c7eecb42:f848b29457dae657",
+        "273cbaf5ffe79055:e5ecaf9b2b57a6ab",
         "644d961f4f2787b5:b48c002616dcfdf2",
         "ec46c740ae486027:25f0085ab9e5950f"
       ]

@@ -17,7 +17,8 @@ export const en: LocaleSpecificConfig<DefaultTheme.Config> = {
         items: [
           { text: 'Overview', link: '/en/' },
           { text: 'The Method', link: '/en/methode' },
-          { text: 'The Running Theme: NÉON', link: '/en/fil-rouge' }
+          { text: 'The Running Theme: NÉON', link: '/en/fil-rouge' },
+          { text: 'Getting started', link: '/en/debuter' }
         ]
       },
       {
