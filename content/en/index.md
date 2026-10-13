@@ -4,7 +4,7 @@
 
 ## Context and positioning
 
-This material was created for the [IA4Dev training](https://ia4dev-2026.sciencesconf.org/), which takes place from October 19 to 22, 2026. Using Large Language Models (LLMs), for coding as for other tasks, raises significant legal (for example, ownership of the produced code), social, and environmental questions. During the training, we invited several people to speak on these subjects, but we do not develop them in this material; interested readers will nevertheless find some references on these questions in the appendix.
+This material was created for the [IA4Dev training](https://ia4dev-2026.sciencesconf.org/), held from October 19 to 22, 2026. Using Large Language Models (LLM), whether to write code or for other tasks, raises important legal (ownership of the code produced, for example), social and environmental questions. During the training, we had several people speak on these topics, but we do not develop them in this material; interested readers will nonetheless find a few references on these questions [in the annexes](./annexes).
 
 Building training on AI applied to software development therefore raises a question: are we implicitly promoting the use of AI for coding? Our choice not to address the legal, social, and environmental aspects here makes it even more critical, since it relegates to the appendix what should perhaps be the primary information, the one that lets everyone take an informed stance.
 

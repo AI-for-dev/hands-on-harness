@@ -4,7 +4,7 @@
 
 ## Contexte et positionnement
 
-Ce support a été créé pour la [formation IA4Dev](https://ia4dev-2026.sciencesconf.org/), qui se tient du 19 au 22 octobre 2026. L'utilisation des Large Language Models (LLM), pour coder comme pour d'autres tâches, pose des questions juridiques (la propriété du code produit, par exemple), sociales et environnementales importantes. Pendant la formation, nous avons fait intervenir plusieurs personnes sur ces sujets, mais nous ne les développons pas dans ce support ; les personnes intéressées trouveront toutefois quelques références sur ces questions en annexe.
+Ce support a été créé pour la [formation IA4Dev](https://ia4dev-2026.sciencesconf.org/), qui se tient du 19 au 22 octobre 2026. L'utilisation des Large Language Models (LLM), pour coder comme pour d'autres tâches, pose des questions juridiques (la propriété du code produit, par exemple), sociales et environnementales importantes. Pendant la formation, nous avons fait intervenir plusieurs personnes sur ces sujets, mais nous ne les développons pas dans ce support ; les personnes intéressées trouveront toutefois quelques références sur ces questions [en annexe](./annexes).
 
 Construire une formation sur l'IA appliquée au développement logiciel pose donc une question : fait-on, de manière implicite, la promotion de l'usage de l'IA pour coder ? Notre choix de ne pas traiter ici les aspects juridiques, sociaux et environnementaux la rend plus critique encore, puisqu'il relègue en annexe ce qui devrait peut-être constituer l'information première, celle qui permet à chacun de se positionner en connaissance de cause.
 

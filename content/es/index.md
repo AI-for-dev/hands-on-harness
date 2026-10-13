@@ -4,7 +4,7 @@
 
 ## Contexto y posicionamiento
 
-Este material ha sido creado para la [formación IA4Dev](https://ia4dev-2026.sciencesconf.org/), que se celebra del 19 al 22 de octubre de 2026. El uso de los grandes modelos de lenguaje (LLM), tanto para programar como para otras tareas, plantea importantes cuestiones jurídicas (por ejemplo, la propiedad del código producido), sociales y ambientales. Durante la formación, invitamos a varias personas a hablar sobre estos temas, pero no los desarrollamos en este material; sin embargo, las personas interesadas encontrarán algunas referencias sobre estas cuestiones en el anexo.
+Este material se creó para la [formación IA4Dev](https://ia4dev-2026.sciencesconf.org/), que se celebra del 19 al 22 de octubre de 2026. El uso de los Large Language Models (LLM), tanto para programar como para otras tareas, plantea cuestiones jurídicas (la propiedad del código producido, por ejemplo), sociales y medioambientales importantes. Durante la formación contamos con varias personas que intervinieron sobre estos temas, pero no los desarrollamos en este material; quienes estén interesados encontrarán algunas referencias sobre estas cuestiones [en el anexo](./annexes).
 
 Construir una formación sobre la IA aplicada al desarrollo de software plantea, pues, una pregunta: ¿se promueve de manera implícita el uso de la IA para programar? Nuestra decisión de no tratar aquí los aspectos jurídicos, sociales y medioambientales la vuelve aún más crítica, ya que relega al anexo lo que quizá debería constituir la información principal, la que permite a cada cual posicionarse con pleno conocimiento de causa.
 
