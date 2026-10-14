@@ -19,7 +19,7 @@ Here are six runs of the same configuration on NÉON's issue #1, the one that [m
 | duration       | 16 s   | 38 s   | 50 s   | 31 s    | 20 s   | 9 s     |
 | criterion met  | yes    | yes    | yes    | **no**  | yes    | **no**  |
 
-The cost varies by less than a quarter, the number of turns takes two values, and the answer changes one time in three. A single run of this configuration would have given you, depending on the draw, "the base fixes the bug" or "the base does not fix it". The dispersion can also bear on the cost rather than the answer: the best-equipped configuration of [module 3.1](./act3-contexte) consumes between 42,731 and 2,420,677 input tokens depending on the run, a spread of **×57**.
+Cost varies by less than a quarter, the turn count takes two values, and the answer changes one run in three. A single run of this configuration would have given you, depending on the draw, "the base fixes the bug" or "the base does not fix it".
 
 The modules in this act therefore measure the levers of act 2 with a tool that repeats each configuration and accounts for this dispersion.
 
@@ -96,7 +96,7 @@ If the harness worked directly in the working tree, each run would modify the re
 
 A **validation** is an executable, in the language of your choice, that receives the path of a `context.json` file describing the run (the clone, the diff, the agent's session) and writes to its standard output a JSON object with two fields: `metrics`, the measured values, and `reasons`, the justification for each. The type of a metric decides its aggregation: a boolean becomes a success rate and a number a median.
 
-The scenario's `metrics` list is a contract: a validation that omits a declared metric makes the run invalid instead of scoring it false. The `reasons` field is optional, and we always fill it, because a column uniformly at zero looks like agent behaviour and may just as well be a flaw in the validation. [Module 3.1](./act3-contexte) shows an example, where the shape of the `npm test` command changes from one model to another.
+The scenario's `metrics` list is a contract: a validation that omits a declared metric makes the run invalid instead of marking it as wrong. The `reasons` field is optional, and we always fill it in, because a column that is uniformly zero looks like agent behavior and may just as well be a flaw in the validation. A validation that recognizes test launches by a precise form of the `npm test` command, for example, will mark as wrong a model that launches them another way, and it is by reading `reasons` that you catch it.
 
 The `context.json` file is archived with the run, which lets you rescore an already paid-for matrix after fixing a validation, without rerunning the model.
 

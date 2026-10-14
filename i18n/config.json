@@ -1,35 +1,68 @@
 {
   "sourceLang": "fr",
   "targetLangs": [
-    { "code": "en", "label": "English" },
-    { "code": "es", "label": "Español" }
+    {
+      "code": "en",
+      "label": "English"
+    },
+    {
+      "code": "es",
+      "label": "Español"
+    }
   ],
   "contentDir": "content",
   "promptVersion": 1,
   "concurrency": 4,
   "frontMatterSkipKeys": [
-    "layout", "link", "href", "url", "icon", "image", "src", "name",
-    "permalink", "id", "class", "theme", "lang", "order", "next", "prev",
-    "editLink", "navbar", "sidebar", "pattern", "type", "target", "rel"
+    "layout",
+    "link",
+    "href",
+    "url",
+    "icon",
+    "image",
+    "src",
+    "name",
+    "permalink",
+    "id",
+    "class",
+    "theme",
+    "lang",
+    "order",
+    "next",
+    "prev",
+    "editLink",
+    "navbar",
+    "sidebar",
+    "pattern",
+    "type",
+    "target",
+    "rel"
   ],
   "backend": "pi",
   "backends": {
     "pi": {
       "command": "pi",
-      "provider": "ilaas",
-      "model": "gemma-4-31b",
+      "provider": "opencode-go",
+      "model": "deepseek-v4.1-flash",
       "thinking": null
     },
     "ollama": {
       "baseUrl": "http://localhost:11434",
       "model": "mistral:latest",
-      "options": { "temperature": 0, "seed": 42, "num_ctx": 8192 }
+      "options": {
+        "temperature": 0,
+        "seed": 42,
+        "num_ctx": 8192
+      }
     },
     "openai_compatible": {
       "baseUrl": "http://localhost:1234/v1",
       "apiKey": "not-needed",
       "model": "local-model",
-      "options": { "temperature": 0, "seed": 42 }
+      "options": {
+        "temperature": 0,
+        "seed": 42
+      }
     }
   }
 }

@@ -137,7 +137,7 @@ Les quatre fichiers sont versionnés dans `scripts/agents/`, et vous les copiere
 
 #### `planner` : découper le travail en petits pas
 
-`planner` reçoit le ticket et la note d'impact, et rend un **plan**, c'est-à-dire une liste ordonnée de pas. Chaque pas indique ce qu'il faut faire, les seuls fichiers qu'il peut toucher, le test rouge à écrire en premier, et un critère de fin que vous pouvez vérifier avec `npm test`. Un pas doit être assez petit pour que `coder` le termine en une seule invocation, et le prompt donne une règle simple : « si tu hésites, découpe ». Cette contrainte vient du [module 3.1](./act3-contexte), où quatre exécutions sur vingt écrivent les tests rouges demandés par un ticket long, puis s'arrêtent sans jamais ouvrir `game/neon.js`. Si un pas ajoute un export à `game/neon.js`, `planner` doit l'écrire sur une ligne `api:`, pour que `reviewer` puisse se prononcer.
+`planner` reçoit le ticket et la note d'impact, et rend un **plan**, c'est-à-dire une liste ordonnée de pas. Chaque pas indique ce qu'il faut faire, les seuls fichiers qu'il peut toucher, le test rouge à écrire en premier, et un critère de fin que vous pouvez vérifier avec `npm test`. Un pas doit être assez petit pour que `coder` le termine en une seule invocation, et le prompt donne une règle simple : « si tu hésites, découpe ». Si un pas ajoute un export à `game/neon.js`, `planner` doit l'écrire sur une ligne `api:`, pour que `reviewer` puisse se prononcer.
 
 ::: details L'agent `planner`
 
@@ -274,7 +274,7 @@ Faites relire le code par un autre agent que celui qui l'a écrit. `reviewer` ne
 
 Déclarez tous les champs d'un agent, même quand la valeur par défaut vous convient. Sans `model:`, l'agent tourne sur le modèle configuré ce jour-là dans vos réglages ; sans `tools:`, il reçoit les outils de lecture ; sans `name`, il n'est pas chargé du tout.
 
-Découpez le travail en pas assez petits pour qu'un agent les termine. Le découpage en rôles ne donne pas plus de capacité au modèle, et un `coder` qui recevrait le plan entier d'un coup risquerait de décrocher comme au [module 3.1](./act3-contexte). Nous faisons l'hypothèse que des petits pas donnent un meilleur résultat, et le module suivant permet de la mesurer.
+Découpez le travail en pas assez petits pour qu'un agent les termine. Le découpage en rôles ne donne pas plus de capacité au modèle, et un `coder` qui recevrait le plan entier d'un coup risquerait de s'arrêter avant la fin. Nous faisons l'hypothèse que des petits pas donnent un meilleur résultat, et le module suivant permet de la mesurer.
 
 Enfin, faites la boucle à la main avant de l'automatiser. Votre journal contient les décisions que l'orchestrateur devra prendre seul : à quel agent passer la main, quand revenir en arrière, et sur quel critère.
 

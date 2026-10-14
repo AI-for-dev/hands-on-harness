@@ -1,289 +1,293 @@
 # The context levers, measured
 
 ::: tip Objectives of this module
-- Measure with trysquare the effect of each lever from [module 2.1](./act2-contexte) on the same task
-- Read a matrix of twenty repetitions and retain only the established differences
-- Check the rerun count and the reasons behind the metrics before quoting a table
-- Know how to say, for each lever, whether it changes the result on NÉON and why
+- Know which context levers the `issue1-context` matrix varies
+- Read the results of three models on the same task, with twenty repetitions per configuration
+- Check the state of a campaign before quoting its numbers
+- Distinguish what depends on the lever from what depends on the model
 :::
 
-[Module 2.1](./act2-contexte) had you handle by hand the levers that fill the context window: the model, the reasoning effort, the prompt, `AGENTS.md`, and the system prompt. Each manipulation fit into one or two runs, which is enough to see what a lever changes within the session and leaves open the question of whether that change reproduces. This module takes the same task, NÉON issue #1, and measures the same levers with [trysquare](https://github.com/AI-for-dev/trysquare), whose operation and table reading are described in [module 3.0](./act3-trysquare).
+In [module 2.1](./act2-contexte), you handled by hand the levers that fill the context window: the prompt, the reasoning, the files the agent finds in the repository. One or two runs were enough to see what a lever changes in the session, but not to know whether that change reproduces. Then [module 3.0](./act3-trysquare) introduced you to [trysquare](https://github.com/AI-for-dev/trysquare), which repeats each configuration and tells whether a gap comes from sampling chance.
+
+This module puts the two together. We take up issue #1 of NÉON, cross four levers, and run the full matrix on three models. The question is twofold: which levers really change the result, and is the answer the same from one model to another?
 
 ## The experiment
 
+### The task
+
+Issue #1 is the one you know: the ball passes through the bricks instead of bouncing.
+
+The `BUG (#1)` comment in `game/neon.js` describes the basic fix: bounce the ball according to the face hit, then push it out of the brick's rectangle. `ISSUES.md` takes up this fix and adds everything else: the brick's corner, the junction between two neighboring bricks, the tunneling of a fast ball, and the request to write the red tests first. An agent that has not read `ISSUES.md` therefore has no reason to handle corners, and this difference explains most of the results that follow.
+
 ### What counts as success
 
-The setting is that of [module 2.1](./act2-contexte): the agent only modifies `game/neon.js` and `game/neon.test.js`, it runs the tests to check that it broke nothing, and it adds tests since the suite does not cover the ball bouncing off bricks. Here is what we measure on each run:
+Each run is scored without LLM-as-a-judge. A probe, `probe.test.js`, is dropped at the end into a copy of the agent's tree: it places a ball against a brick, calls `frame()`, and looks at which velocity component reverses. The other metrics are read from the session or from the diff.
 
+| metric                 | what it says                                                                          |
+| ---------------------- | ------------------------------------------------------------------------------------- |
+| `delivered`            | the agent modified at least one file                                                  |
+| `suite_run`            | it ran `npm test` on its own                                                          |
+| `tests_added`          | the suite has more cases than at the start                                            |
+| `probe_intact`         | when given the probe, it did not modify it                                            |
+| **`bounce_bricks`**    | **the criterion**: on each of the four faces, the axis hit flips and the other does not |
+| `bounce_corners`       | in the corner, both components flip                                                   |
+| `bounce_exit`          | after the bounce, the ball has left the brick's rectangle                             |
+| `bounce_neighbors`     | at the junction of two bricks, the bounce applies only once                           |
+| `bounce_tunneling`     | a fast ball no longer passes through the brick without touching it                    |
 
-| metric               | what it says                                                                                  |
-| -------------------- | --------------------------------------------------------------------------------------------- |
-| `delivered`          | the agent modified at least one file                                                          |
-| `in_scope`           | it touched only `game/neon.js` and `game/neon.test.js`                                        |
-| `suite_lancee`       | it ran `npm test` itself, read from its session                                               |
-| `tests_ajoutes`      | the suite has more cases than the baseline                                                    |
-| **`rebond_briques`** | **the criterion**: on each of the four faces, the axis hit reverses and the other does not move |
-| `rebond_angles`      | in the corner, both components invert                                                         |
-| `rebond_sortie`      | after the bounce, the ball has exited the brick's rectangle                                   |
-| `rebond_voisines`    | on a grid seam, the bounce applies once and not twice                                         |
-| `rebond_traversee`   | a fast ball no longer crosses the brick without touching it                                   |
+Below, we focus on four columns: the criterion, the corner, tunneling, and the added tests. `bounce_exit` and `bounce_neighbors` closely follow the criterion and add little here.
 
-We test all of these points deterministically, without LLM-as-a-judge: the tests we'd need are written in a probe file. An executable test is safer than an LLM tasked with confirming a desired behavior, whose probabilistic verdict can make you believe it's good when it isn't.
+### The four levers
 
-### The experiment plan
+We kept four levers, each with two values:
 
-The plan we settled on is the simplest one that stays readable: a **base**, then a set of variants, each changing little.
+| lever        | without                                      | with                                                                     |
+| ------------ | -------------------------------------------- | ------------------------------------------------------------------------ |
+| the ticket   | `nothing`: the neglected request             | `well_crafted`: a ticket that links to the issue and sets the scope     |
+| `blind`      | `no-blind`: the repo as is                   | `blind`: neither git history nor `ISSUES.md`                             |
+| reasoning    | `off`                                        | `thinking_medium`                                                        |
+| `add_tests`  | `no-add_tests`                               | `add_tests`: the probe is placed in `game/probe.test.js` from the start  |
 
-The base, called `nothing`, reproduces what someone does on their first day: the neglected request from your first attempts in [module 2.1](./act2-contexte), no rules file, the agent's system prompt and reasoning turned off. Each other configuration adds one element to see its effect on the response.
+The neglected request is one line:
 
-| configuration                    | what changes                                                       |
-| -------------------------------- | ------------------------------------------------------------------ |
-| `nothing`                        | nothing, this is the reference                                     |
-| `+thinking`                      | `thinking = "high"`                                                |
-| `+agents`                        | `briques/AGENTS.md` is placed in the clone                         |
-| `+well_crafted`                  | the prompt cleanly describes the problem and refers to `ISSUES.md` |
-| `-system_prompt`                 | the system prompt is replaced by three lines                       |
-| `+agents+well_crafted`           | `AGENTS.md` + well-written prompt                                  |
-| `+agents+add_tests+well_crafted` | here we additionally add the tests we want to see pass             |
-
-One experiment fits in one file: `scripts/trysquare-campaign/scenarios/issue1-contexte.toml`.
-
-<!-- <<<@/../scripts/trysquare-campaign/scenarios/issue1-contexte.toml{toml} -->
-
-The experiment directory contains other configurations than those in the table above; they belong to other modules, and we'll discuss them later.
-
-The well-written prompt doesn't copy the content of the ticket. `ISSUES.md` already describes how to fix the bug, in the repo the agent has at hand. The prompt therefore names the issue, the scope and the stopping criterion, and nothing more:
-
-<<<@/../scripts/trysquare-campaign/briques/issue1-well-crafted-prompt.md
-
-This configuration therefore measures whether pointing at a written document is enough for the agent to go read it and take it into account. If the prompt copied the solution, we'd only measure the agent's ability to follow an instruction we just gave it.
-
-### The validation tests
-
-To judge the quality of the results, the scenario declares validation tests:
-
-- **delivered**: the run went through to the end, without interruption.
-- **suite_lancee**: the agent remembered to run the tests located in the `game` directory.
-- **in_scope**: the agent only modified the files it was asked to modify, and only the lines that correspond to the problem.
-- **tests_ajoutes**: the agent remembered to add tests on the ball bouncing off the bricks.
-- **`sonde.test.js`**: at the end of the run, this probe checks that the code changes fix the problem as a whole, as described in `ISSUES.md`. It is also placed there from the start in the `+add_tests` configuration, to see whether the agent is able to fix its mistakes based on the tests.
-
-Each run leaves in its directory the agent session, the diff and the validation output, described in [module 3.0](./act3-trysquare). That is where to go read when a column surprises you.
-
-::: info Exercise (in the room, then on your own)
-Move into the [trysquare-starter](https://github.com/AI-for-dev/trysquare-starter) repository installed in [module 3.0](./act3-trysquare), where you already looked at this scenario's plan with `--dry-run`.
-
-Run the matrix with three repetitions and let it run while you discuss the sliders:
-
-```bash
-uv run trysquare run scenarios/issue1-contexte.toml --output results --repetitions 3
+```
+The ball goes through the bricks instead of bouncing. Fix that.
 ```
 
-You have a set of subcommands that do not launch any models and are mainly used to analyse the results:
+The well-written ticket does not copy `ISSUES.md`. It says where the description is, asks to think about the different possible interactions, and sets the scope and the stopping criterion:
+
+```
+The ball goes through the bricks instead of bouncing. The problem and the
+expected behaviour are described in `ISSUE.md`, under issue #1. Read the code
+carefully and think about the different interactions the ball can have with
+the bricks. The behaviour must be worthy of the best arcade games. Only modify
+`game/neon.js` and `game/neon.test.js`. You are done when `npm test` passes and
+the already exported functions have kept their name and their signature.
+```
+
+`blind` removes the git history and deletes `ISSUES.md` before the agent starts. All that remains then is the code comment. `add_tests` gives the agent the very file that grades it, which amounts to handing it the tests we would like to see pass.
+
+Un fichier `AGENTS.md` de quatre lignes (un ticket à la fois, ne pas renommer les exports, zéro dépendance, lancer les tests avec `npm test`) est présent dans toutes les configurations. Ce n'est donc pas un levier de cette matrice.
+
+Les quatre leviers sont croisés, ce qui donne 2 × 2 × 2 × 2 = 16 configurations. Chacune est répétée vingt fois, soit 320 exécutions par modèle. Dans le scénario, ce plan tient en quelques lignes :
+
+```toml
+[presets]
+well_crafted = { prompt = "../materials/issue1-well-crafted-prompt.md" }
+add_tests = { harness = ["provided-probe"] }
+blind = { history = false, setup = "../materials/remove-issues-md.sh" }
+thinking_medium = { thinking = "medium" }
+
+[axes]
+lever = ["nothing", "well_crafted"]
+blind = ["no-blind", "blind"]
+thinking = ["off", "thinking_medium"]
+add_tests = ["no-add_tests", "add_tests"]
+```
+
+::: warning Remarques
+Nous voulions éclaircir plusieurs points qui pourraient apparaître comme des erreurs mais qui sont voulus.
+
+1. The well-written ticket points to `ISSUE.md`, while the file is named `ISSUES.md`. That is intentional: we want to see whether the model searches or stops there and doesn't use the file.
+2. In `blind`, it points to a file that no longer exists, which shows how curious the model is:
+   - go look at the neighboring directories
+   - try to recover the git history that was reset
+   - ...
+    and when it gives up.
+3. `add_tests` gives the agent the file that grades it. The idea is to see how the results change if we already have the tests. You can see this as [TDD](https://en.wikipedia.org/wiki/Test-driven_development) development.
+4. `thinking_medium` doesn't correspond to the same setting from one model to another (see the model table).
+:::
+
+### Les modèles
+
+Les trois modèles sont servis par deux fournisseurs, ILaaS et GRICAD :
+
+| modèle                | fournisseur | ce que veut dire `thinking_medium`             | plafond de sortie |
+| --------------------- | ----------- | ---------------------------------------------- | ----------------- |
+| `gemma-4-31b`         | ILaaS       | `reasoning_effort = on`                        | 16 384 tokens     |
+| `qwen-3.8-27b`        | ILaaS/GRICAD      | `reasoning_effort = medium`                    | 32 768 tokens     |
+| `DeepSeek-V4.1-Flash` | GRICAD      | `reasoning_effort = medium`                    | 32 768 tokens     |
+
+Les trois campagnes ont été lancées les 13 et 14 octobre 2026, contre le tag `etalon-v1` de NÉON, avec un timeout de 30 minutes par exécution. Le modèle et le fournisseur changent ensemble d'une colonne à l'autre : un écart entre deux modèles peut venir de l'un comme de l'autre.
+
+::: info Exercice (en salle, puis en autonomie)
+Placez-vous dans le dépôt [trysquare-starter](https://github.com/AI-for-dev/trysquare-starter) installé au [module 3.0](./act3-trysquare). Ouvrez `scenarios/issue1-context.toml`, adaptez la section `[agent]` au fournisseur que vous utilisez, puis lancez la matrice à trois répétitions :
+
+```bash
+uv run trysquare run scenarios/issue1-context.toml --output results --repetitions 3
+```
+
+Cela fait 48 exécutions, que vous pouvez laisser tourner pendant la suite du module. Les sous-commandes suivantes n'appellent pas le modèle et servent à analyser les résultats :
 
 ```bash
 # refabriquer les tables
-uv run trysquare render scenarios/issue1-contexte.toml --output results --repetitions 3
+uv run trysquare render scenarios/issue1-context.toml --output results --repetitions 3
 # renoter sans rejouer
-uv run trysquare replay results/issue1-contexte_... --scenario scenarios/issue1-contexte.toml --rescore
+uv run trysquare replay results/issue1-context_... --scenario scenarios/issue1-context.toml --rescore
 # joindre deux matrices
 uv run trysquare compare results/... results/...
 ```
 
-**On your own**, copy `scenarios/issue1-contexte.toml`, change one configuration, and run again. You will not have touched the tool, the validation, or the other configurations, and it is the only artefact of this module that will not go stale.
+**En autonomie**, changez de modèle dans `[agent]` et comparez votre matrice aux nôtres.
 :::
 
-## What our measurements say
+## Peut-on se fier aux campagnes ?
 
-You must have noticed it during your first tries with `trysquare`: taking measurements takes time. For about twenty repetitions, you will need between 2 h and 3 h to get the full set of results, skill configurations included. So we preferred to give you a complete campaign run beforehand, in which you can browse each run's directories as you did earlier.
+Before looking at a single score, you need to check that the runs unfolded normally. [Module 3.0](./act3-trysquare) showed it: an incident at the provider or a flaw in the validation is easily read as agent behavior.
 
-Here is what we got in August 2026, on `ilaas` and `gemma-4-31b`, against commit `d62ccd1f` of NÉON, with **twenty repetitions per configuration**. The two skill configurations are in the archive and belong to the [module on skills](./act2-skill); they are left out of the tables below, except for a remark at the end.
+|                                         | gemma   | qwen    | DeepSeek |
+| --------------------------------------- | ------- | ------- | -------- |
+| runs with no file modified              | 3       | 18      | 1        |
+| runs stopped by the timeout             | 25      | 181     | 1        |
+| provider-side retries                   | 974     | 9       | 0        |
+| probe left intact (`add_tests` cells)   | 160/160 | 158/160 | 160/160  |
+| median output throughput                | 21 tokens/s | 8 tokens/s | 49 tokens/s |
 
-| configuration                    | `delivered` | `suite_lancee` | `tests_ajoutes` | `in_scope` |
-| -------------------------------- | ----------- | -------------- | --------------- | ---------- |
-| `nothing`                        | 20/20       | 0/20           | 0/20            | 20/20      |
-| `+thinking`                      | 19/20       | 15/20          | 3/20            | 19/20      |
-| `+agents`                        | 20/20       | **20/20**      | 0/20            | 20/20      |
-| `+well_crafted`                  | **18/20**   | 20/20          | 17/20           | 18/20      |
-| `-system_prompt`                 | 20/20       | 0/20           | 0/20            | 20/20      |
-| `+agents+well_crafted`           | 19/20       | 20/20          | 17/20           | 19/20      |
-| `+agents+add_tests+well_crafted` | 20/20       | 20/20          | 17/20           | 20/20      |
+DeepSeek is clean: no retries, a single run cut off by the timeout.
 
-And the probe columns, with the criterion at the head:
+gemma is usable, but ILaaS was unstable during the measurement: over 1,200 `Stream ended without finish_reason` errors, absorbed by 974 retries. A retry replays the turn with all the accumulated context, so gemma's cost columns are not readable. The 25 timeouts are scored on a partial tree and cluster on the cells with reasoning or a well-written ticket, which penalizes them a little.
 
-| configuration                    | `briques` | `angles`  | `sortie`  | `voisines` | `traversée` |
-| -------------------------------- | --------- | --------- | --------- | ---------- | ----------- |
-| `nothing`                        | 11/20     | **0/20**  | 9/20      | 7/20       | 0/20        |
-| `+thinking`                      | 16/20     | **0/20**  | 17/20     | 15/20      | 0/20        |
-| `+agents`                        | 9/20      | **0/20**  | 8/20      | 6/20       | 0/20        |
-| `+well_crafted`                  | 13/20     | **14/20** | 13/20     | 13/20      | 4/20        |
-| `-system_prompt`                 | 14/20     | **0/20**  | 14/20     | 13/20      | 0/20        |
-| `+agents+well_crafted`           | 11/20     | **12/20** | 9/20      | 9/20       | 12/20       |
-| `+agents+add_tests+well_crafted` | **18/20** | **18/20** | **18/20** | **18/20**  | 17/20       |
+qwen requires the most caution. A first campaign at ILaaS was partly unusable: with no declared output cap, the reasoning filled the default 16,384 tokens in a single turn, and 23 runs went into a loop (`-\n-\n-\n…`) from the first turns. We relaunched it at GRICAD with a cap of 32,768 tokens, and both problems disappeared. The provider, however, is slow, and more than half the runs hit the 30-minute timeout, sometimes after only three turns because a call never returns. These runs are scored on the tree's state at the moment of the cut. qwen's numbers therefore say what it gets in 30 minutes at this provider.
 
-The denominators for `+well_crafted` and `+thinking` are 18 and 19 in the cost columns, because ILaaS returned `Request timed out` during the measurement and the runs in question produced nothing.
+::: tip Our calculation convention
+All the numbers on this page are given over the twenty runs of each configuration: a run that delivered nothing counts as a failure. The trysquare synthesis removes these runs from the denominator, which hides the breakdowns of a model like qwen.
+:::
 
-We draw five lessons from these two tables. All the gaps cited below come from the intervals described in [module 3.0](./act3-trysquare), with the same mark `*` for an established gap and `o` for an inconclusive gap. Gaps are computed against a reference configuration, the first one in the scenario (here `nothing`) when you don't specify another. Redoing the calculations against another reference only changes this pointer, without calling the model or re-measuring anything.
+## The results
 
-```bash
-uv run trysquare render scenarios/issue1-contexte.toml --output results \
-  --repetitions 20 --reference "+agents+well_crafted"
+### Configuration by configuration
+
+Each grid groups the sixteen configurations of one model. The rows cross the ticket and the presence of `ISSUES.md`, the columns cross the reasoning and the probe, and each cell counts the successful runs out of twenty. The choice of colors makes it possible to quickly see what succeeds and what fails: the more a cell stands out against the background, the more the model has succeeded. It is at the corner of the brick that the rows and columns that change as one block are the clearest.
+
+```chart
+issue1-matrix
 ```
 
-The output goes into a `synthesis_ref-<référence>.md` next to the usual synthesis, which is not touched.
+::: details The same numbers in a table
+Each cell gives, over twenty runs: `bounce_bricks / bounce_corners / bounce_tunneling / tests_added`.
 
-**The framed prompt makes the agent do everything the ticket names, and nothing more.** `tests_ajoutes` goes from 0/20 to 17/20 and `rebond_angles` from 0/20 to 14/20, two columns that were empty and that fill up. The prompt says nothing about the bounce mechanism, though: it names the outcome, the scope and the stopping criterion, and it is `ISSUES.md` that describes the corner, the exit from the rectangle, the neighbouring bricks and the tunneling. The corner stays at **0/20 in the four configurations that do not frame the ticket**, that is eighty consecutive runs. Pointing at a written document is therefore enough for it to be read, and it is the content of that document that decides what will be handled.
-
-**The rules file only moves the procedure, and it no longer moves anything as soon as the ticket is correct.** `+agents` takes `suite_lancee` from 0/20 to 20/20, because one of its four lines names the command. On the criterion, it gives 9/20 against 11/20 for the baseline, an inconclusive gap, and on `tests_ajoutes` it stays at 0/20 since none of its lines talks about tests. Added on top of the framed prompt, it brings **strictly nothing**: 11/20 against 13/20 on the criterion, 12/20 against 14/20 on the corner, 17/20 against 17/20 on the added tests, none of these three gaps being distinguishable. The rules file is a substitute for a good ticket rather than a complement to it, which gives a writing rule directly applicable to the forty-line budget: a line that a correct ticket would say anyway is a line to remove.
-
-**Reasoning moves the criterion, and on its own does not make the ticket get read.** `+thinking` gives 16/20 on `rebond_briques`, a gap of +29 points whose interval excludes zero. It is the only lever in the matrix, apart from those that touch the ticket, to move correctness itself. Its corner column stays at 0/20 and its added tests at 3/20: reasoning improves what the model does with what it has in front of it, but does not lead it to go and fetch what it is missing.
-
-**The framed prompt makes the agent write the red tests, and one run in five stops there.** The `touched` column says it unambiguously: on `+well_crafted` and `+agents+well_crafted`, four runs out of twenty never open `game/neon.js`, of which two or three write only in `game/neon.test.js` and one or two deliver nothing at all. No other configuration shows this behavior, `nothing`, `+agents` and `-system_prompt` touching the source in twenty runs out of twenty. The explanation is in the ticket, which lists five sub-cases and ends with "each case above added **first as a red test**, then green": `gemma-4-31b` writes the reds and stops there, for lack of being able to process the whole specification. This is also why the correctness criterion does not rise while the corner does: the model has a work budget, and describing more work in the ticket does not enlarge it.
-
-**Adding the tests fixes this dropout.** The configuration `+agents+add_tests+well_crafted` is read against `+agents+well_crafted`, the only one it differs from by just the probe placed in the tree:
-
-| column            | `+agents+well_crafted` | `+add_tests` | gap                    |
-| ----------------- | ---------------------- | ------------ | ---------------------- |
-| `rebond_sortie`   | 9/20                   | **18/20**    | +43 pts `*` [+17, +69] |
-| `rebond_voisines` | 9/20                   | **18/20**    | +43 pts `*` [+17, +69] |
-| `rebond_briques`  | 11/20                  | **18/20**    | +32 pts `*` [+6, +58]  |
-| `rebond_angles`   | 12/20                  | **18/20**    | +27 pts `*` [+1, +53]  |
-| `tests_ajoutes`   | 17/20                  | 17/20        | -4 pts `o`             |
-| `sonde_intacte`   | not applicable         | **20/20**    |                        |
-
-The four columns of the correction rise, and the four gaps are established. So the lever does more than win edge cases, it also recovers the criterion itself. Note the width of the intervals, and in particular the one for the corner that starts at a single point: these gaps are established in the sense that they are positive, without their size being given to better than a factor of fifty.
-
-`sonde_intacte` is 20/20, which means the model did not try to change the reference tests. And `tests_ajoutes` does not move, which is consistent with an agent that already has the cases in front of it and has no reason to rewrite them.
-
-::: warning No gemma cost column is quotable here
-The matrix counts 1,151 retries, that is, turns re-run because the provider had failed, and the box further down shows how concentrated they are on the heaviest configurations. A retry replays the turn with all the accumulated context, so it inflates the cost columns, and above all, it re-drives the agent.
-
-The same scenario measured on `opencode-go` and `deepseek-v4-flash` counts **37**, which makes its own readable:
-
-| configuration                    | turns | duration |
-| -------------------------------- | ----- | -------- |
-| `nothing`                        | 19    | 163 s    |
-| `+agents`                        | 12    | 65 s     |
-| `-system_prompt`                 | 17    | 142 s    |
-| `+well_crafted`                  | 15    | 252 s    |
-| `+thinking`                      | 19    | 490 s    |
-| `+agents+well_crafted`           | 14    | 561 s    |
-| `+agents+add_tests+well_crafted` | 13    | 410 s    |
-
-The input tokens of the two matrices cannot go in the same table, for a reason that has nothing to do with the model: ILaaS reports no cache, `cacheRead` being zero over its one hundred and eighty runs, so its input column is the sum of the full prefixes re-read at every turn. opencode Zen reports the cache, up to five million tokens read in a single run. The same configuration therefore shows 558,000 input tokens on one side and 15,000 on the other, without either being wrong. This is the practical half of what [module 2.1](./act2-contexte) explains about the cache: the cost of inputs depends on the model provider's configuration, and enabling the cache cuts the bill drastically.
+| ticket         | `blind` | reasoning | probe | gemma         | qwen          | DeepSeek      |
+| -------------- | ------- | --------- | ----- | ------------- | ------------- | ------------- |
+| `nothing`      | no      | off       | no    | 8 / 0 / 0 / 0     | 12 / 12 / 1 / 16  | 20 / 19 / 19 / 19 |
+| `nothing`      | no      | off       | yes   | 16 / 12 / 9 / 0   | 16 / 16 / 7 / 0   | 20 / 20 / 20 / 2  |
+| `nothing`      | no      | medium    | no    | 18 / 0 / 1 / 12   | 14 / 4 / 5 / 14   | 20 / 20 / 20 / 20 |
+| `nothing`      | no      | medium    | yes   | 20 / 19 / 10 / 7  | 18 / 18 / 18 / 1  | 20 / 20 / 20 / 0  |
+| `nothing`      | yes     | off       | no    | 13 / 0 / 0 / 0    | 13 / 0 / 0 / 8    | 19 / 0 / 0 / 7    |
+| `nothing`      | yes     | off       | yes   | 15 / 10 / 6 / 0   | 10 / 10 / 7 / 0   | 20 / 20 / 20 / 0  |
+| `nothing`      | yes     | medium    | no    | 19 / 0 / 0 / 11   | 19 / 0 / 0 / 10   | 19 / 0 / 1 / 10   |
+| `nothing`      | yes     | medium    | yes   | 19 / 17 / 9 / 10  | 20 / 20 / 17 / 5  | 20 / 20 / 20 / 0  |
+| `well_crafted` | no      | off       | no    | 17 / 16 / 3 / 16  | 8 / 9 / 7 / 15    | 20 / 20 / 20 / 20 |
+| `well_crafted` | no      | off       | yes   | 18 / 17 / 16 / 0  | 16 / 16 / 8 / 10  | 20 / 20 / 20 / 20 |
+| `well_crafted` | no      | medium    | no    | 16 / 17 / 13 / 20 | 8 / 8 / 8 / 12    | 19 / 19 / 19 / 19 |
+| `well_crafted` | no      | medium    | yes   | 18 / 17 / 18 / 16 | 15 / 15 / 14 / 14 | 20 / 20 / 20 / 20 |
+| `well_crafted` | yes     | off       | no    | 15 / 0 / 0 / 13   | 12 / 1 / 4 / 18   | 19 / 5 / 18 / 20  |
+| `well_crafted` | yes     | off       | yes   | 18 / 16 / 11 / 0  | 13 / 13 / 6 / 4   | 20 / 20 / 20 / 17 |
+| `well_crafted` | yes     | medium    | no    | 18 / 0 / 0 / 20   | 14 / 1 / 2 / 18   | 19 / 4 / 12 / 20  |
+| `well_crafted` | yes     | medium    | yes   | 19 / 19 / 19 / 9  | 18 / 16 / 16 / 16 | 20 / 20 / 20 / 9  |
 :::
 
-### Three checks before quoting a table
+### The effect of each lever
 
-A matrix publishes tables, intervals, and verdicts, which can give the impression of solid conclusions. Still, while building this training, we ran into several phenomena that can discredit some results.
+Since the levers are crossed, we measure the average effect of each by comparing the 160 runs that have it to the 160 that do not, with the other three levers distributed the same way on both sides. Each symbol gives the difference in percentage points, and its line the 95% interval obtained by resampling. A filled symbol has an interval that excludes zero, an empty symbol does not (without correction for multiple comparisons). The four panels share the same scale, so the length of a difference can be compared from one lever to another.
 
-::: warning The retry count
-A retry is a turn the tool had to relaunch because the provider had failed. It replays that turn with all the accumulated context, so it inflates the cost columns, and above all it re-drives the agent: it is no longer the same working behaviour.
+```chart
+issue1-effects
+```
 
-On the `gemma-4-31b` matrix, the count is **1,151**, and it is not spread evenly:
+::: details The same numbers in a table
+The difference is followed by its 95% interval. `*` marks an interval that excludes zero.
 
-| configuration                    | retries |
-| -------------------------------- | ------- |
-| `nothing`                        | 1       |
-| `+agents`                        | 2       |
-| `-system_prompt`                 | 1       |
-| `+well_crafted`                  | 24      |
-| `+thinking`                      | 81      |
-| `+agents+well_crafted`           | 205     |
-| `+agents+add_tests+well_crafted` | 205     |
-| `+agents+add_tests+skill`        | 287     |
-| `+agents+skill`                  | 345     |
-
-Nothing on the short-context configurations, everything on the high-reasoning ones, and all the more so as the accumulated context grows: a single run of `+agents+add_tests+well_crafted` consumed 2.4 million input tokens over sixty-three turns and accumulated eighteen retries. The same scenario measured on `opencode-go` and `deepseek-v4-flash` counts **thirty-seven** in total.
+| lever | metric | gemma | qwen | DeepSeek |
+| --- | --- | --- | --- | --- |
+| `add_tests` | `bounce_bricks` | +12 \* [+4, +20] | +16 \* [+6, +26] | +3 \* [+1, +6] |
+|  | `bounce_corners` | +59 \* [+49, +68] | +56 \* [+46, +64] | +46 \* [+38, +53] |
+|  | `bounce_tunneling` | +51 \* [+42, +59] | +41 \* [+31, +51] | +32 \* [+25, +39] |
+|  | `tests_added` | -31 \* [-41, -21] | -38 \* [-48, -28] | -42 \* [-51, -32] |
+| `well_crafted` | `bounce_bricks` | +7 [-1, +15] | -11 \* [-21, -2] | -1 [-4, +2] |
+|  | `bounce_corners` | +27 \* [+17, +38] | -1 [-11, +10] | +6 [-4, +15] |
+|  | `bounce_tunneling` | +28 \* [+18, +38] | +6 [-4, +17] | +18 \* [+11, +26] |
+|  | `tests_added` | +34 \* [+23, +44] | +33 \* [+22, +44] | +54 \* [+46, +63] |
+| reasoning | `bounce_bricks` | +17 \* [+9, +25] | +16 \* [+6, +26] | -1 [-3, +2] |
+|  | `bounce_corners` | +11 \* [+1, +22] | +3 [-8, +14] | -1 [-10, +9] |
+|  | `bounce_tunneling` | +16 \* [+6, +26] | +25 \* [+15, +35] | -3 [-11, +5] |
+|  | `tests_added` | +48 \* [+38, +56] | +12 \* [+1, +23] | -4 [-15, +6] |
+| `blind` | `bounce_bricks` | +3 [-4, +11] | +8 [-3, +17] | -2 [-5, +1] |
+|  | `bounce_corners` | -23 \* [-33, -12] | -23 \* [-34, -12] | -43 \* [-51, -35] |
+|  | `bounce_tunneling` | -16 \* [-26, -5] | -10 [-21, 0] | -29 \* [-37, -22] |
+|  | `tests_added` | -5 [-16, +6] | -2 [-12, +9] | -23 \* [-33, -13] |
 :::
 
-::: warning The importance of the validation test
-A uniformly black column looks like agent behaviour and can be a flaw in the validation. The only way to tell them apart is for the metric to say **why** it answered false, and not only that it answered false.
+### What we take from this
 
-Our validation test does this for `suite_lancee`: when it recognizes no launch of the suite, it copies into its reason every command the agent ran. This precaution matters, because the shape of the command varies far more from one model to another than the command itself. `deepseek-v4-flash` prefixes each call with the working directory (`cd .../repo && npm test`, 664 times across the matrix) and readily redirects the output (`npm test 2>&1 | tail -30`, 80 times), whereas `gemma-4-31b` types bare `npm test`. A validation test that knew only the latter shape would score the former model at zero across the whole matrix.
+**The criterion mostly separates the models.** DeepSeek passes `bounce_bricks` in 315 runs out of 320, whatever the configuration: no headroom is left to measure a lever on that column. gemma sits at 267 out of 320 and qwen at 226. The levers show up on the hard cases (the corner, tunneling) and on the tests added.
 
-In closing, **write your metrics carefully and test them on a test set**. They have to be reliable. Note any strange behavior before drawing hasty conclusions.
+**The probe is the only lever that helps all three models.** With `add_tests`, the corner passes in 79% of runs for gemma, 78% for qwen and 100% for DeepSeek, and tunneling rises for all three models too. The trade-off is the same everywhere: the agent no longer writes its own tests, with a drop of 31 to 42 points on `tests_added`. It has the cases in front of it and no longer has a reason to rewrite them. Only two runs out of 480 touched the probe, both with qwen.
+
+**A well-written ticket makes the model write tests.** `tests_added` gains between 33 and 54 points across the three models. For gemma, it also improves the corner and the tunneling, because it is the one that sends it to read `ISSUES.md`. For DeepSeek, the sentence "think about the different interactions… worthy of the best arcade games" is enough to get tunneling handled even without `ISSUES.md` (18/20 in `blind` versus 0/20 with the neglected request), but not the corner (5/20). For qwen, the well-written ticket lowers the criterion by 11 points. The drop is concentrated where `ISSUES.md` is present and where the probe is missing (8/20 with or without reasoning), and the 24 runs that fail there all hit the timeout: qwen reads `ISSUES.md`, launches into a long investigation, writes tests, and no longer has time to finish the fix.
+
+**Reasoning helps gemma and qwen, and changes nothing for DeepSeek.** gemma gains 17 points on the criterion and 48 on the added tests. qwen gains 16 points on the criterion and 25 on tunneling, partly because reasoning replaces its long series of simulations and makes it hit the timeout less often (54 runs out of 160 versus 127 without reasoning). DeepSeek is already at the ceiling: reasoning only costs it time, 482 seconds median versus 335.
+
+**`blind` only costs what `ISSUES.md` brings, and only for the models that read it.** On the criterion, removing `ISSUES.md` and the history changes nothing, whatever the model, because the code comment is enough. On the corner, the effect depends on the model's propensity to go read that file without being asked:
+
+| corners passed, without probe | sloppy request: with → without `ISSUES.md` | well-written ticket: with → without `ISSUES.md` |
+| ------------------------- | ------------------------------------------ | -------------------------------------------- |
+| gemma                     | 0/40 → 0/40                                | 33/40 → 0/40                                 |
+| qwen                      | 16/40 → 0/40                               | 17/40 → 2/40                                 |
+| DeepSeek                  | 39/40 → 0/40                               | 39/40 → 9/40                                 |
+
+With the neglected request, gemma only opens `ISSUES.md` in 2 runs out of 80: removing it therefore costs it nothing. qwen opens it in 58 runs out of 80, DeepSeek in 79, and both lose the corner as soon as it disappears.
+
+**The git history brings nothing.** qwen and DeepSeek consult it, DeepSeek even going as far as running `git log` and `git show` in most of the `blind` runs, and neither of them gets any useful information from it.
+
+## How do the models work?
+
+The sessions show how each model reaches its results, which explains why the same lever does not have the same effect everywhere.
+
+::: info Method
+Each session is reduced to a sequence of actions (read a file, open `ISSUES.md`, run `npm test`, edit `neon.js`, write a test, run a simulation script...). These classifications rely on regular expressions: they are tendencies, not measurements.
 :::
 
-::: warning What comparing the two models lets you say, and what it does not
-The two matrices (`gemma-4-31b` and `deepseek-v4-flash`) cover the same scenario, the same nine configurations and the same NÉON commit, so their score columns can be read against each other. The model and the provider changed together, which rules out attributing a gap to one rather than the other, and still shows this in the corner column:
+|                                                                   | gemma | qwen  | DeepSeek |
+| ----------------------------------------------------------------- | ----- | ----- | -------- |
+| tool calls (median), base configuration                           | 5     | 27    | 22       |
+| same configuration, in `blind`                                    | 5     | 9     | 11       |
+| opens `ISSUES.md` with the neglected request                      | 2/80  | 58/80 | 79/80    |
+| median duration without reasoning / with                          | 269 s / 556 s | 1,800 s / 1,422 s | 335 s / 482 s |
 
-| configuration          | `gemma-4-31b` | `deepseek-v4-flash` |
-| ---------------------- | ------------- | ------------------- |
-| `nothing`              | 0/20          | 8/20                |
-| `+agents`              | 0/20          | 8/20                |
-| `+well_crafted`        | 14/20         | 19/20               |
-| `+agents+well_crafted` | 12/20         | 19/20               |
+### gemma does what it is shown
 
-Both models respond to the same lever and in the same direction, the more capable one starting higher and climbing higher.
-:::
+With the neglected request and no probe, 35 runs out of 40 follow exactly the same path: `ls -R`, read `neon.js`, `npm test`, apply the fix described in the comment, `npm test`. These five calls take about forty seconds and add no test. This is the only truly deterministic behavior of the three models.
 
-These figures are not meant to be taken on faith or copied a year from now. Rerun the matrix: that is precisely what it is for, and the one you get will replace this one.
+Each lever then triggers a recognizable behavior. The well-written ticket, with `ISSUES.md` present, produces TDD in 18 to 20 runs out of 20, with red tests written before the fix. The probe is discovered by running the tests: gemma sees the failure, reads the probe, and chains the fixes. Reasoning adds simulations and makes all paths different. Its weak point appears when the prompt points to a missing file: in `well_crafted / blind / off / add_tests`, 18 runs out of 20 turn into long fix loops, with about forty calls and a dozen edits to `neon.js`.
 
-Well-maintained context makes the agent disciplined and complete on what the ticket names, without making it exhaustive: the corner of the brick is never reached where the ticket does not describe it, and tunneling remains the lowest column of all those the probe measures. Going beyond what the written material contains will require an independent reviewer and a verification loop, which is the subject of the modules on delegation and workflows.
+### qwen explores and debugs by simulation
 
-::: warning Three tempting conclusions the intervals do not allow
-Each of the following sentences rests on an exact figure from the campaign published on this page, and none of them holds.
+Without reasoning, qwen writes throwaway scripts, watches the ball speeds, tweaks `neon.js` and starts over. The paths are all different, but the method stays the same. It costs time, and with a slow provider it often leads to a timeout. qwen also sometimes leaves its debug files behind in the tree, which makes `in_scope` fail, the metric that checks the agent only touched the files it was allowed to.
 
-**"The rules file breaks correctness."** `+agents` gives 9/20 on the criterion against 11/20 at baseline. The gap is -10 points but its interval contains zero: we can say nothing about it, in either direction.
+It is `ISSUES.md` that launches the long investigation. In `blind`, the base session goes from 27 to 9 tool calls, and qwen settles for the fix in the comment. With reasoning, simulations become rare: qwen thinks instead of trying, and more often finishes within the time limit.
 
-**"Removing the system prompt improves rebound."** `-system_prompt` gives 14/20 against 11/20, i.e. +15 points, and the interval contains zero there too. With only three lucky runs, we would have gotten 3/3 against 1/3 and we could have believed it for good.
+### DeepSeek works like a methodical developer
 
-**"The well-framed prompt fixes the bug better."** `+well_crafted` gives +17 points on the criterion, not conclusive. The real effect of this lever shows up elsewhere, on the added tests and on the corner, where the gaps count in tens of points and leave no doubt.
+DeepSeek reads all the available context without being asked, including `ISSUES.md`, and uses git like a developer (`git diff`, `git status`, `git log`). It follows the instructions in `ISSUES.md` without being reminded: in the base configuration, 15 runs out of 20 write the failing tests before fixing, and 19 out of 20 handle the corner, the junctions, and tunneling.
 
-Repeating three times is therefore not enough: an effect that does not exceed the dispersion of its own configuration is not an effect. And an effect established on this task, with this ticket and this model, is established only within that scope.
-:::
-
-## The stack versus the baseline
-
-The levers of this module demand attention and time, whereas a more capable model is obtained simply by paying more. It is therefore legitimate to ask whether it is more profitable to take care of your context or to change model. The second half of this question is not measured here, for the reason given in the box on the comparison of the two models: the model and the provider change together there. The first half is, with the model held constant, by putting the two extreme configurations of the matrix face to face.
-
-::: info Exercise (in class)
-Compare the `nothing` configuration, which receives a one-line request and nothing else, and the `+agents+add_tests+well_crafted` configuration, which has the reasoning, the well-framed ticket, the `AGENTS.md` and the probe deposited in the tree. Look first at the diffs, then at the probe columns, then only at the end at what each one cost.
-:::
-
-|                    | `nothing` | `+agents+add_tests+well_crafted` |
-| ------------------ | --------- | -------------------------------- |
-| `rebond_briques`   | 11/20     | **18/20**, gap +35 points        |
-| `rebond_sortie`    | 9/20      | **18/20**                        |
-| `rebond_voisines`  | 7/20      | **18/20**                        |
-| `rebond_angles`    | 0/20      | **18/20**                        |
-| `rebond_traversee` | 0/20      | **17/20**                        |
-| `suite_lancee`     | 0/20      | 20/20                            |
-| `tests_ajoutes`    | 0/20      | 17/20                            |
-| median turns       | 19        | 13                               |
-| median duration    | 163 s     | 410 s                            |
-
-The last two lines are taken from the `deepseek-v4-flash` matrix, whose thirty-seven repeats make the cost columns readable, and the score columns from `gemma-4-31b`.
-
-The full harness reaches eighteen out of twenty on a criterion where the base tops out at eleven, and the harshest column of the probe goes from 7/20 to 18/20. This is Addy Osmani's thesis, *"a decent model with a great harness beats a great model with a bad harness"*, verified on its easiest half to establish: at a rigorously constant model, the harness alone makes the difference between a fix that works one time in two and a fix that works nine times in ten.
-
-The corner goes from 0/20 to 18/20, and the framed prompt alone already obtained fourteen: the bulk of the gain comes from the fact that the prompt references a ticket in `ISSUES.md` that names the case, and the probe adds on top the perseverance that was missing to finish the job.
-
-## What this module does not know how to obtain
-
-The only lever that led the model to address everything the ticket asks for is the one that put the tests in front of it. This configuration has something artificial about it, however: the edge cases were written in advance, by us, in the very file that grades. On a real ticket, no one will provide them to you.
-
-What this configuration actually brings is perseverance. The model gives up on a long ticket because it exhausts its budget formulating the cases instead of fixing them; receiving the cases already formulated gives it back that budget. The question the [module on skills](./act2-skill) raises is therefore whether a **skill**, that is, a work procedure written once and reloaded on demand, can produce the same perseverance without providing the tests.
+When the probe is present, it reads it during exploration, before even running the tests, and the fix becomes short and direct. It almost always verifies its work, rerunning the tests after its last change in 317 runs out of 319, and produces the most complete fixes, with a median of 147 lines added to `neon.js` when it has the probe.
 
 ## Generalizing
 
-The principles that follow concern the levers themselves, those that concern the measurement method being gathered in [module 3.0](./act3-trysquare).
+The path the agent takes poorly predicts the outcome. For each of the three models, the success rate on the criterion varies little from one session type to another. What decides the corner and tunneling is the information the agent has read: `ISSUES.md` or the probe.
 
-**Pointing to a written document is enough for it to be read, and what is written in it decides the outcome.** Our framed ticket does not describe the rebound mechanism: it names the issue, the scope and the stopping criterion. Seventeen runs out of twenty went to read `ISSUES.md`, found there the request for edge cases as red tests, and executed it, where the neglected request had obtained none. The corner of the brick gives the sharpest version: it is described in `ISSUES.md` and in none of our prompts, and it scores 0/20 in the four configurations that do not name the issue against 14/20 in the one that names it. Write what you expect in a document you can point to, and re-read that document before concluding anything about the agent.
+What separates the models most is their tendency to go fetch context on their own. gemma only reads what it is sent to, whereas qwen and DeepSeek explore the repository without being asked. This tendency decides the effect of `blind` and of the well-written ticket. A lever measured on a single model therefore says nothing about its effect on another: the same ticket is decisive for gemma and changes almost nothing about the corner for DeepSeek, which has already read `ISSUES.md`.
 
-**A model has a budget, and describing more work does not enlarge it.** Our ticket lists five sub-cases and asks for a red test for each; four runs out of twenty write those red tests and never open the source file. This observation shapes what follows: either you reduce the request to what the model can carry, or you give it what it needs to go the distance, which is the subject of the [module on skills](./act2-skill).
+Putting the tests in the agent's loop is the only lever that acts on all models, because it brings the information where the agent looks for it anyway. It has a cost: the agent stops writing its own tests, and on a real ticket, no one will provide you with the probe. The question the [module on skills](./act2-skill) asks is whether a work procedure written once can achieve the same result without giving the tests.
 
-**The rules file changes what the agent does, not what it finds, and it only applies to what the ticket does not say.** It enters the context at every turn, which makes it both a strong lever and a costly one, hence the value of keeping it short, sourcing each rule from an observed failure, and refactoring it rather than making it longer. Our measurements pin down exactly what it buys: the `+agents` configuration takes the number of runs that launch the test suite from 0/20 to 20/20, leaves the correctness criterion unchanged, and adds nothing at all once the framed prompt is there. The writing rule that follows applies directly to the forty-line budget: a line that a correct ticket would say anyway is a line to remove.
+Finally, check a campaign before reading its scores. Of the three matrices in this module, one lost its cost columns because of retries, another was rerun with a different provider because the first was unusable, and the rerun itself is only readable by accounting for 181 timeouts. None of these incidents was visible in the scores table.
 
-::: tip What you have learned
-You can cite a lever that you measured as having no effect on NÉON, and say under what precise condition it would have one elsewhere.
-
-Our example is `AGENTS.md`: it does not move the correctness criterion by a single point, and it would become decisive on a ticket whose usual failure is one of procedure rather than reasoning, or on a repository whose tickets are poorly written. Yours will be different, and that is the point: to cite it, you have to have seen the numbers and understood that it is the task and its material that determine them.
+::: tip What you learned
+You can cite a lever whose effect changes from one model to another, and explain why from the sessions. Our example is the well-written ticket: it makes gemma read `ISSUES.md`, which it would not have opened on its own, and changes almost nothing about the corner for DeepSeek, which reads it in every case.
 :::
 
 ## Going further
 
-- Addy Osmani, [Agent Harness Engineering](https://addyosmani.com/blog/agent-harness-engineering/), whose thesis is the one that the comparison of the stack to the base puts to the test.
 - [trysquare](https://github.com/AI-for-dev/trysquare), the measurement tool used in this module, and its [documentation](https://ai-for-dev.github.io/trysquare/).
-- The training's trysquare campaign, `scripts/trysquare-campaign/`, with its hypotheses written before measurement and its archived matrices. This is the only place where the numbers on this page can be verified.
+- [trysquare-starter](https://github.com/AI-for-dev/trysquare-starter), which contains the `issue1-context` scenario, its hypothesis written before the measurement, the prompts, the probe, and the validation script.
+- Addy Osmani, [Agent Harness Engineering](https://addyosmani.com/blog/agent-harness-engineering/), on the idea that a carefully built harness matters as much as the model.

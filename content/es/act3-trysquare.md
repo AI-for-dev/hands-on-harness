@@ -19,7 +19,7 @@ Aquí tienes seis ejecuciones de la misma configuración sobre la issue #1 de N�
 | duración           | 16 s   | 38 s   | 50 s   | 31 s    | 20 s   | 9 s     |
 | criterio alcanzado | sí     | sí     | sí     | **no**  | sí     | **no**  |
 
-El coste varía en menos de un cuarto, el número de turnos toma dos valores, y la respuesta cambia una de cada tres veces. Una única ejecución de esta configuración te habría dado, según el sorteo, «la base corrige el bug» o «la base no lo corrige». La dispersión también puede afectar al coste en lugar de a la respuesta: la configuración mejor equipada del [módulo 3.1](./act3-contexte) consume entre 42 731 y 2 420 677 tokens de entrada según la ejecución, es decir, una amplitud de **×57**.
+El coste varía en menos de un cuarto, el número de turnos toma dos valores, y la respuesta cambia una vez de cada tres. Una única ejecución de esta configuración te habría dado, según el sorteo, «la base corrige el bug» o «la base no lo corrige».
 
 Los módulos de este acto miden, por tanto, las palancas del acto 2 con una herramienta que repite cada configuración y tiene en cuenta esta dispersión.
 
@@ -96,7 +96,7 @@ Si el dispositivo trabajara directamente en el árbol de trabajo, cada ejecució
 
 Una **validación** es un ejecutable, en el lenguaje que elijas, que recibe la ruta de un archivo `context.json` que describe la ejecución (el clon, el diff, la sesión del agente) y escribe en su salida estándar un objeto JSON con dos campos: `metrics`, los valores medidos, y `reasons`, la justificación de cada uno. El tipo de una métrica decide su agregación: un booleano se convierte en una tasa de éxito y un número en una mediana.
 
-La lista `metrics` del escenario es un contrato: una validación que omite una métrica declarada vuelve la ejecución inválida en lugar de puntuarla como falsa. El campo `reasons` es opcional, y nosotros siempre lo rellenamos, porque una columna uniformemente a cero se parece a un comportamiento del agente y puede igual de bien ser un defecto de la validación. El [módulo 3.1](./act3-contexte) muestra un ejemplo, donde la forma del comando `npm test` cambia de un modelo a otro.
+La lista `metrics` del escenario es un contrato: una validación que omite una métrica declarada hace que la ejecución sea inválida en vez de marcarla como falsa. El campo `reasons` es opcional, y nosotros siempre lo rellenamos, porque una columna uniformemente a cero se parece a un comportamiento del agente y bien podría ser también un defecto de la validación. Una validación que reconoce el lanzamiento de los tests por una forma precisa del comando `npm test`, por ejemplo, marcará como falso a un modelo que los lance de otra manera, y es leyendo `reasons` como te das cuenta.
 
 El archivo `context.json` se archiva con la ejecución, lo que permite volver a puntuar una matriz ya pagada después de corregir una validación, sin relanzar el modelo.
 

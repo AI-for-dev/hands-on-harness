@@ -52,7 +52,7 @@ Suivez les modules dans l'ordre du sommaire, mais en ne gardant d'abord que la c
 | [2.4 Les workflows](./act2-workflows)          | « Comprendre »                                                              | le flow du ticket #2 et son adaptation           |
 | [2.5 Les hooks](./act2-hooks)                  | les deux extensions                                                         |                                                  |
 | [3.0 Mesurer un agent](./act3-trysquare)       | l'introduction et « Comment lire un écart ? »                               | l'installation de trysquare                      |
-| [3.1 Les leviers du contexte](./act3-contexte) | « Ce que disent nos mesures »                                               | la campagne de mesures                           |
+| [3.1 Les leviers du contexte](./act3-contexte) | « Les résultats » et « Généraliser »                                        | l'exercice qui relance la matrice                |
 
 Le [glossaire](./annexes#glossaire) explique les termes de la formation.
 

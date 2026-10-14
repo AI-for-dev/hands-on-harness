@@ -137,7 +137,7 @@ The four files are versioned in `scripts/agents/`, and you'll copy them into the
 
 #### `planner`: break the work into small steps
 
-`planner` receives the ticket and the impact note, and returns a **plan**, that is, an ordered list of steps. Each step states what to do, the only files it may touch, the red test to write first, and a completion criterion you can check with `npm test`. A step must be small enough for `coder` to finish it in a single invocation, and the prompt gives one simple rule: "if you hesitate, split it". That constraint comes from [module 3.1](./act3-contexte), where four runs out of twenty write the red tests a long ticket asks for, then stop without ever opening `game/neon.js`. If a step adds an export to `game/neon.js`, `planner` must write it on an `api:` line, so that `reviewer` can rule on it.
+`planner` receives the ticket and the impact note, and returns a **plan**, that is, an ordered list of steps. Each step states what to do, the only files it may touch, the red test to write first, and a completion criterion you can check with `npm test`. A step must be small enough for `coder` to complete in a single invocation, and the prompt gives a simple rule: "if you hesitate, split it." If a step adds an export to `game/neon.js`, `planner` must write it on an `api:` line, so that `reviewer` can weigh in.
 
 ::: details The `planner` agent
 
@@ -274,7 +274,7 @@ Have the code reviewed by an agent other than the one that wrote it. `reviewer` 
 
 Declare all the fields of an agent, even when the default value suits you. Without `model:`, the agent runs on the model configured that day in your settings; without `tools:`, it receives the reading tools; without `name`, it is not loaded at all.
 
-Cut the work into steps small enough for an agent to finish them. Splitting into roles does not give the model more capacity, and a `coder` that received the whole plan at once would risk dropping out as in [module 3.1](./act3-contexte). We make the hypothesis that small steps give a better result, and the next module lets you measure it.
+Cut the work into steps small enough for an agent to finish them. Splitting by role does not give the model more capability, and a `coder` that received the whole plan at once would risk stopping before the end. We make the hypothesis that small steps give a better result, and the next module lets you measure it.
 
 Finally, run the loop by hand before automating it. Your journal contains the decisions the orchestrator will have to make alone: which agent to hand over to, when to go back, and on what criterion.
 
