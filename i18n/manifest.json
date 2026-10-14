@@ -159,12 +159,12 @@
     "en": {
       "unitHash": "65aee88744bf8b998d3ed07d59b18950f0965e09bfc8ac2b0360711402f6985d",
       "model": "pi:opencode-go/deepseek-v4.1-flash",
-      "translatedAt": "2026-10-14T17:12:41.280Z"
+      "translatedAt": "2026-10-14T17:16:55.816Z"
     },
     "es": {
       "unitHash": "65aee88744bf8b998d3ed07d59b18950f0965e09bfc8ac2b0360711402f6985d",
       "model": "pi:opencode-go/deepseek-v4.1-flash",
-      "translatedAt": "2026-10-14T17:13:20.960Z"
+      "translatedAt": "2026-10-14T17:17:31.835Z"
     }
   },
   "act3-trysquare.md": {
@@ -207,12 +207,12 @@
     "en": {
       "unitHash": "4eeb1c60879961beb259adfe36e7c504918ac38e18c74d86c4f7e10b089c9ea4",
       "model": "pi:opencode-go/deepseek-v4.1-flash",
-      "translatedAt": "2026-10-14T17:08:53.811Z"
+      "translatedAt": "2026-10-14T17:17:48.900Z"
     },
     "es": {
       "unitHash": "4eeb1c60879961beb259adfe36e7c504918ac38e18c74d86c4f7e10b089c9ea4",
       "model": "pi:opencode-go/deepseek-v4.1-flash",
-      "translatedAt": "2026-10-14T17:09:23.282Z"
+      "translatedAt": "2026-10-14T17:18:22.077Z"
     }
   }
 }
