@@ -19,6 +19,15 @@ const originalQuoteLabel: Record<string, string> = {
   es: 'Texto original'
 }
 
+// A ```chart block names one of the interactive charts of
+// .vitepress/theme/charts/. The name sits in a fence so that
+// scripts/i18n/translate.mjs copies it untouched into the translations, and the
+// chart picks its labels from the page language.
+const charts: Record<string, string> = {
+  'issue1-matrix': 'Issue1Matrix',
+  'issue1-effects': 'Issue1Effects'
+}
+
 // Language of a page from its path relative to content/: en/ and es/ hold the
 // translations, everything else is the French source.
 function pageLanguage(relativePath: string): string {
@@ -83,6 +92,11 @@ export default defineConfig({
         const info = token.info.trim()
         if (info === 'mermaid') {
           return `<Mermaid code="${encodeURIComponent(token.content)}" />`
+        }
+        if (info === 'chart') {
+          const name = charts[token.content.trim()]
+          if (!name) throw new Error(`unknown chart "${token.content.trim()}"`)
+          return `<${name} />\n`
         }
         const quote = info.match(/^quote\s+(\S+)$/)
         if (quote) {

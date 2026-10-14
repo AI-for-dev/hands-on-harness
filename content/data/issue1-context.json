@@ -1,0 +1,652 @@
+{
+  "source": "trysquare-starter/results-2026-10-13",
+  "runsPerCell": 20,
+  "models": [
+    {
+      "id": "gemma",
+      "label": "gemma-4-31b"
+    },
+    {
+      "id": "qwen",
+      "label": "qwen-3.8-27b"
+    },
+    {
+      "id": "deepseek",
+      "label": "DeepSeek-V4.1-Flash"
+    }
+  ],
+  "metrics": [
+    "bounce_bricks",
+    "bounce_corners",
+    "bounce_tunneling",
+    "tests_added"
+  ],
+  "rows": [
+    [
+      "nothing",
+      "no-blind"
+    ],
+    [
+      "nothing",
+      "blind"
+    ],
+    [
+      "well_crafted",
+      "no-blind"
+    ],
+    [
+      "well_crafted",
+      "blind"
+    ]
+  ],
+  "cols": [
+    [
+      "off",
+      "no-add_tests"
+    ],
+    [
+      "off",
+      "add_tests"
+    ],
+    [
+      "thinking_medium",
+      "no-add_tests"
+    ],
+    [
+      "thinking_medium",
+      "add_tests"
+    ]
+  ],
+  "cells": {
+    "gemma": {
+      "bounce_bricks": [
+        [
+          8,
+          16,
+          18,
+          20
+        ],
+        [
+          13,
+          15,
+          19,
+          19
+        ],
+        [
+          17,
+          18,
+          16,
+          18
+        ],
+        [
+          15,
+          18,
+          18,
+          19
+        ]
+      ],
+      "bounce_corners": [
+        [
+          0,
+          12,
+          0,
+          19
+        ],
+        [
+          0,
+          10,
+          0,
+          17
+        ],
+        [
+          16,
+          17,
+          17,
+          17
+        ],
+        [
+          0,
+          16,
+          0,
+          19
+        ]
+      ],
+      "bounce_tunneling": [
+        [
+          0,
+          9,
+          1,
+          10
+        ],
+        [
+          0,
+          6,
+          0,
+          9
+        ],
+        [
+          3,
+          16,
+          13,
+          18
+        ],
+        [
+          0,
+          11,
+          0,
+          19
+        ]
+      ],
+      "tests_added": [
+        [
+          0,
+          0,
+          12,
+          7
+        ],
+        [
+          0,
+          0,
+          11,
+          10
+        ],
+        [
+          16,
+          0,
+          20,
+          16
+        ],
+        [
+          13,
+          0,
+          20,
+          9
+        ]
+      ]
+    },
+    "qwen": {
+      "bounce_bricks": [
+        [
+          12,
+          16,
+          14,
+          18
+        ],
+        [
+          13,
+          10,
+          19,
+          20
+        ],
+        [
+          8,
+          16,
+          8,
+          15
+        ],
+        [
+          12,
+          13,
+          14,
+          18
+        ]
+      ],
+      "bounce_corners": [
+        [
+          12,
+          16,
+          4,
+          18
+        ],
+        [
+          0,
+          10,
+          0,
+          20
+        ],
+        [
+          9,
+          16,
+          8,
+          15
+        ],
+        [
+          1,
+          13,
+          1,
+          16
+        ]
+      ],
+      "bounce_tunneling": [
+        [
+          1,
+          7,
+          5,
+          18
+        ],
+        [
+          0,
+          7,
+          0,
+          17
+        ],
+        [
+          7,
+          8,
+          8,
+          14
+        ],
+        [
+          4,
+          6,
+          2,
+          16
+        ]
+      ],
+      "tests_added": [
+        [
+          16,
+          0,
+          14,
+          1
+        ],
+        [
+          8,
+          0,
+          10,
+          5
+        ],
+        [
+          15,
+          10,
+          12,
+          14
+        ],
+        [
+          18,
+          4,
+          18,
+          16
+        ]
+      ]
+    },
+    "deepseek": {
+      "bounce_bricks": [
+        [
+          20,
+          20,
+          20,
+          20
+        ],
+        [
+          19,
+          20,
+          19,
+          20
+        ],
+        [
+          20,
+          20,
+          19,
+          20
+        ],
+        [
+          19,
+          20,
+          19,
+          20
+        ]
+      ],
+      "bounce_corners": [
+        [
+          19,
+          20,
+          20,
+          20
+        ],
+        [
+          0,
+          20,
+          0,
+          20
+        ],
+        [
+          20,
+          20,
+          19,
+          20
+        ],
+        [
+          5,
+          20,
+          4,
+          20
+        ]
+      ],
+      "bounce_tunneling": [
+        [
+          19,
+          20,
+          20,
+          20
+        ],
+        [
+          0,
+          20,
+          1,
+          20
+        ],
+        [
+          20,
+          20,
+          19,
+          20
+        ],
+        [
+          18,
+          20,
+          12,
+          20
+        ]
+      ],
+      "tests_added": [
+        [
+          19,
+          2,
+          20,
+          0
+        ],
+        [
+          7,
+          0,
+          10,
+          0
+        ],
+        [
+          20,
+          20,
+          19,
+          20
+        ],
+        [
+          20,
+          17,
+          20,
+          9
+        ]
+      ]
+    }
+  },
+  "effects": {
+    "gemma": {
+      "add_tests": {
+        "bounce_bricks": {
+          "diff": 12,
+          "lo": 4,
+          "hi": 20
+        },
+        "bounce_corners": {
+          "diff": 59,
+          "lo": 49,
+          "hi": 68
+        },
+        "bounce_tunneling": {
+          "diff": 51,
+          "lo": 42,
+          "hi": 59
+        },
+        "tests_added": {
+          "diff": -31,
+          "lo": -41,
+          "hi": -21
+        }
+      },
+      "blind": {
+        "bounce_bricks": {
+          "diff": 3,
+          "lo": -4,
+          "hi": 11
+        },
+        "bounce_corners": {
+          "diff": -23,
+          "lo": -33,
+          "hi": -12
+        },
+        "bounce_tunneling": {
+          "diff": -16,
+          "lo": -26,
+          "hi": -5
+        },
+        "tests_added": {
+          "diff": -5,
+          "lo": -16,
+          "hi": 6
+        }
+      },
+      "well_crafted": {
+        "bounce_bricks": {
+          "diff": 7,
+          "lo": -1,
+          "hi": 15
+        },
+        "bounce_corners": {
+          "diff": 27,
+          "lo": 17,
+          "hi": 38
+        },
+        "bounce_tunneling": {
+          "diff": 28,
+          "lo": 18,
+          "hi": 38
+        },
+        "tests_added": {
+          "diff": 34,
+          "lo": 23,
+          "hi": 44
+        }
+      },
+      "thinking": {
+        "bounce_bricks": {
+          "diff": 17,
+          "lo": 9,
+          "hi": 25
+        },
+        "bounce_corners": {
+          "diff": 11,
+          "lo": 1,
+          "hi": 22
+        },
+        "bounce_tunneling": {
+          "diff": 16,
+          "lo": 6,
+          "hi": 26
+        },
+        "tests_added": {
+          "diff": 48,
+          "lo": 38,
+          "hi": 56
+        }
+      }
+    },
+    "qwen": {
+      "add_tests": {
+        "bounce_bricks": {
+          "diff": 16,
+          "lo": 6,
+          "hi": 26
+        },
+        "bounce_corners": {
+          "diff": 56,
+          "lo": 46,
+          "hi": 64
+        },
+        "bounce_tunneling": {
+          "diff": 41,
+          "lo": 31,
+          "hi": 51
+        },
+        "tests_added": {
+          "diff": -38,
+          "lo": -48,
+          "hi": -28
+        }
+      },
+      "blind": {
+        "bounce_bricks": {
+          "diff": 8,
+          "lo": -3,
+          "hi": 17
+        },
+        "bounce_corners": {
+          "diff": -23,
+          "lo": -34,
+          "hi": -12
+        },
+        "bounce_tunneling": {
+          "diff": -10,
+          "lo": -21,
+          "hi": 0
+        },
+        "tests_added": {
+          "diff": -2,
+          "lo": -12,
+          "hi": 9
+        }
+      },
+      "well_crafted": {
+        "bounce_bricks": {
+          "diff": -11,
+          "lo": -21,
+          "hi": -2
+        },
+        "bounce_corners": {
+          "diff": -1,
+          "lo": -11,
+          "hi": 10
+        },
+        "bounce_tunneling": {
+          "diff": 6,
+          "lo": -4,
+          "hi": 17
+        },
+        "tests_added": {
+          "diff": 33,
+          "lo": 22,
+          "hi": 44
+        }
+      },
+      "thinking": {
+        "bounce_bricks": {
+          "diff": 16,
+          "lo": 6,
+          "hi": 26
+        },
+        "bounce_corners": {
+          "diff": 3,
+          "lo": -8,
+          "hi": 14
+        },
+        "bounce_tunneling": {
+          "diff": 25,
+          "lo": 15,
+          "hi": 35
+        },
+        "tests_added": {
+          "diff": 12,
+          "lo": 1,
+          "hi": 23
+        }
+      }
+    },
+    "deepseek": {
+      "add_tests": {
+        "bounce_bricks": {
+          "diff": 3,
+          "lo": 1,
+          "hi": 6
+        },
+        "bounce_corners": {
+          "diff": 46,
+          "lo": 38,
+          "hi": 53
+        },
+        "bounce_tunneling": {
+          "diff": 32,
+          "lo": 25,
+          "hi": 39
+        },
+        "tests_added": {
+          "diff": -42,
+          "lo": -51,
+          "hi": -32
+        }
+      },
+      "blind": {
+        "bounce_bricks": {
+          "diff": -2,
+          "lo": -5,
+          "hi": 1
+        },
+        "bounce_corners": {
+          "diff": -43,
+          "lo": -51,
+          "hi": -35
+        },
+        "bounce_tunneling": {
+          "diff": -29,
+          "lo": -37,
+          "hi": -22
+        },
+        "tests_added": {
+          "diff": -23,
+          "lo": -33,
+          "hi": -13
+        }
+      },
+      "well_crafted": {
+        "bounce_bricks": {
+          "diff": -1,
+          "lo": -4,
+          "hi": 2
+        },
+        "bounce_corners": {
+          "diff": 6,
+          "lo": -4,
+          "hi": 15
+        },
+        "bounce_tunneling": {
+          "diff": 18,
+          "lo": 11,
+          "hi": 26
+        },
+        "tests_added": {
+          "diff": 54,
+          "lo": 46,
+          "hi": 63
+        }
+      },
+      "thinking": {
+        "bounce_bricks": {
+          "diff": -1,
+          "lo": -3,
+          "hi": 2
+        },
+        "bounce_corners": {
+          "diff": -1,
+          "lo": -10,
+          "hi": 9
+        },
+        "bounce_tunneling": {
+          "diff": -3,
+          "lo": -11,
+          "hi": 5
+        },
+        "tests_added": {
+          "diff": -4,
+          "lo": -15,
+          "hi": 6
+        }
+      }
+    }
+  }
+}

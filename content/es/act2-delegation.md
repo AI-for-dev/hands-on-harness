@@ -137,7 +137,7 @@ Los cuatro archivos están versionados en `scripts/agents/`, y los copiarás en 
 
 #### `planner` : dividir el trabajo en pasos pequeños
 
-`planner` recibe el ticket y la nota de impacto, y devuelve un **plan**, es decir, una lista ordenada de pasos. Cada paso indica qué hay que hacer, los únicos archivos que puede tocar, el test rojo que hay que escribir primero, y un criterio de fin que puedes verificar con `npm test`. Un paso debe ser lo bastante pequeño para que `coder` lo termine en una sola invocación, y el prompt da una regla simple: «si dudas, divide». Esta restricción viene del [módulo 3.1](./act3-contexte), donde cuatro ejecuciones de veinte escriben los tests rojos que pide un ticket largo, y luego se detienen sin abrir nunca `game/neon.js`. Si un paso añade un export a `game/neon.js`, `planner` debe escribirlo en una línea `api:`, para que `reviewer` pueda pronunciarse.
+`planner` recibe el ticket y la nota de impacto, y devuelve un **plan**, es decir, una lista ordenada de pasos. Cada paso indica qué hay que hacer, los únicos archivos que puede tocar, el test rojo que hay que escribir primero, y un criterio de fin que puedes verificar con `npm test`. Un paso debe ser lo bastante pequeño para que `coder` lo termine en una sola invocación, y el prompt da una regla simple: «si dudas, divide». Si un paso añade un export a `game/neon.js`, `planner` debe escribirlo en una línea `api:`, para que `reviewer` pueda pronunciarse.
 
 ::: details El agente `planner`
 
@@ -274,7 +274,7 @@ Haz que revise el código un agente distinto del que lo escribió. `reviewer` so
 
 Declara todos los campos de un agente, incluso cuando el valor por defecto te sirva. Sin `model:`, el agente se ejecuta sobre el modelo configurado ese día en tus ajustes; sin `tools:`, recibe las herramientas de lectura; sin `name`, no se carga en absoluto.
 
-Divide el trabajo en pasos lo bastante pequeños para que un agente los termine. El reparto en roles no le da más capacidad al modelo, y un `coder` que recibiera el plan entero de golpe podría perder el hilo como en el [módulo 3.1](./act3-contexte). Suponemos que los pasos pequeños dan un mejor resultado, y el módulo siguiente permite medirlo.
+Divide el trabajo en pasos lo bastante pequeños para que un agente los termine. El reparto por roles no le da más capacidad al modelo, y un `coder` que recibiera el plan completo de una vez correría el riesgo de detenerse antes del final. Partimos de la hipótesis de que los pasos pequeños dan un mejor resultado, y el módulo siguiente permite medirla.
 
 Por último, haz el bucle a mano antes de automatizarlo. Tu diario contiene las decisiones que el orquestador deberá tomar solo: a qué agente pasar el relevo, cuándo retroceder y con qué criterio.
 

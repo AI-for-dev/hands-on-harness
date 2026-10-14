@@ -19,7 +19,7 @@ Voici six exécutions de la même configuration sur l'issue #1 de NÉON, celle q
 | durée           | 16 s   | 38 s   | 50 s   | 31 s    | 20 s   | 9 s     |
 | critère atteint | oui    | oui    | oui    | **non** | oui    | **non** |
 
-Le coût varie de moins d'un quart, le nombre de tours prend deux valeurs, et la réponse change une fois sur trois. Une exécution unique de cette configuration vous aurait donné, selon le tirage, « la base corrige le bug » ou « la base ne le corrige pas ». La dispersion peut aussi porter sur le coût plutôt que sur la réponse : la configuration la mieux outillée du [module 3.1](./act3-contexte) consomme entre 42 731 et 2 420 677 tokens d'entrée selon l'exécution, soit une étendue de **×57**.
+Le coût varie de moins d'un quart, le nombre de tours prend deux valeurs, et la réponse change une fois sur trois. Une exécution unique de cette configuration vous aurait donné, selon le tirage, « la base corrige le bug » ou « la base ne le corrige pas ».
 
 Les modules de cet acte mesurent donc les leviers de l'acte 2 avec un outil qui répète chaque configuration et tient compte de cette dispersion.
 
@@ -96,7 +96,7 @@ Si le dispositif travaillait directement dans l'arbre de travail, chaque exécut
 
 Une **validation** est un exécutable, dans le langage de votre choix, qui reçoit le chemin d'un fichier `context.json` décrivant l'exécution (le clone, le diff, la session de l'agent) et écrit sur sa sortie standard un objet JSON avec deux champs : `metrics`, les valeurs mesurées, et `reasons`, la justification de chacune. Le type d'une métrique décide de son agrégation, un booléen devenant un taux de réussite et un nombre une médiane.
 
-La liste `metrics` du scénario est un contrat : une validation qui omet une métrique déclarée rend l'exécution invalide au lieu de la noter fausse. Le champ `reasons` est facultatif, et nous le remplissons toujours, parce qu'une colonne uniformément à zéro ressemble à un comportement de l'agent et peut tout aussi bien être un défaut de la validation. Le [module 3.1](./act3-contexte) en montre un exemple, où la forme de la commande `npm test` change d'un modèle à l'autre.
+La liste `metrics` du scénario est un contrat : une validation qui omet une métrique déclarée rend l'exécution invalide au lieu de la noter fausse. Le champ `reasons` est facultatif, et nous le remplissons toujours, parce qu'une colonne uniformément à zéro ressemble à un comportement de l'agent et peut tout aussi bien être un défaut de la validation. Une validation qui reconnaît le lancement des tests à une forme précise de la commande `npm test`, par exemple, notera faux un modèle qui les lance autrement, et c'est en lisant `reasons` qu'on s'en aperçoit.
 
 Le fichier `context.json` est archivé avec l'exécution, ce qui permet de renoter une matrice déjà payée après avoir corrigé une validation, sans relancer le modèle.
 
