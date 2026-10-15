@@ -42,8 +42,48 @@ function protectedTokenIssue(sourceText, translatedText) {
   return `code block markers: "${source}" in the source, "${translated}" in the translation`
 }
 
+// A model can hand the source back unchanged instead of translating it
+// (observed with opencode-go/deepseek-v4.1-flash, on whole chunks at a time).
+// Every structural signal then matches, so the echo needs its own check.
+//
+// Some segments legitimately stay the same in every language: a link
+// definition, a URL, an image, a list of English titles, "Version 1". What
+// sets an echo apart is French prose, recognised by its function words. Code,
+// link targets and code block markers are left out of the count, since they
+// are never translated.
+const FRENCH_FUNCTION_WORDS = new Set([
+  'le', 'la', 'les', 'un', 'une', 'des', 'du', 'de', 'au', 'aux', 'et', 'ou',
+  'mais', 'est', 'sont', 'dans', 'pour', 'avec', 'sans', 'sur', 'par', 'que',
+  'qui', 'ce', 'cette', 'ces', 'il', 'elle', 'on', 'nous', 'vous', 'ne', 'pas',
+  'se', 'son', 'sa', 'ses', 'leur'
+])
+// One function word can appear in a name or a title ("Musée de l'Homme"); two
+// or more mean a French sentence.
+const MIN_FUNCTION_WORDS = 2
+
+function frenchFunctionWordCount(text) {
+  const prose = text
+    .replace(/`[^`]*`/g, ' ')
+    .replace(/\]\([^)]*\)/g, '] ')
+    .replace(/https?:\/\/\S+/g, ' ')
+    .replace(/%%%PROTECTED_\d+%%%/g, ' ')
+  const words = prose.toLowerCase().split(/[^\p{L}]+/u)
+  return words.filter((word) => FRENCH_FUNCTION_WORDS.has(word)).length
+}
+
+export function isUntranslated(sourceText, translatedText) {
+  return (
+    sourceText.trim() === translatedText.trim() &&
+    frenchFunctionWordCount(sourceText) >= MIN_FUNCTION_WORDS
+  )
+}
+
 export function diffSignals(sourceText, translatedText) {
   const issues = []
+
+  if (isUntranslated(sourceText, translatedText)) {
+    issues.push('untranslated: the answer repeats the French source')
+  }
 
   const length = lengthIssue(sourceText, translatedText)
   if (length) issues.push(length)

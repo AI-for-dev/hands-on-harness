@@ -214,7 +214,7 @@ También puedes indicar en tu petición el modelo que quieres usar, como en el s
 utilise le subagent "coder" avec le modèle qwen-3.8-27b d'ilaas pour la tâche "Lance npm test et rapporte le résultat."
 ```
 
-Le modèle doit être déclaré dans votre `~/.pi/agent/models.json`, comme ceux de l'[installation de Pi](./act1-pi), sinon combo refuse l'appel avec `Model "qwen-3.8-27b" not found for provider "ilaas"`. Avec `/step`, présentée plus loin, l'option `--model ilaas/qwen-3.8-27b` a le même effet.
+El modelo debe estar declarado en tu `~/.pi/agent/models.json`, como los de la [instalación de Pi](./act1-pi), si no combo rechaza la llamada con `Model "qwen-3.8-27b" not found for provider "ilaas"`. Con `/step`, presentada más adelante, la opción `--model ilaas/qwen-3.8-27b` tiene el mismo efecto.
 :::
 
 ### La vuelta al bucle, a mano
