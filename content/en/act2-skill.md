@@ -265,8 +265,8 @@ A procedure must say when the work is done, with a criterion the agent can check
 
 Finally, a skill is tested like code. Run it with several models, read the sessions to see where the agent deviates from what you wrote, fix it and start again. A skill that works with one model can fail with another, and it will have to evolve along with the models.
 
-::: tip Ce que vous avez appris
-Vous savez dire quels problèmes de l'issue #1 vos tests couvrent avec chaque version du skill, lesquels manquent, et ce que vous avez changé dans le skill après avoir lu les sessions.
+::: tip What you learned
+You can say which problems from issue #1 your tests cover with each version of the skill, which ones are missing, and what you changed in the skill after reading the sessions.
 :::
 
 ## Going further

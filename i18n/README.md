@@ -201,7 +201,7 @@ translations from one model to the next. Four safeguards are in place:
    copied as is gets rewritten from the French without any model call.
 4. **Automatic integrity checks with retry** (`lib/validate.mjs`): tested for
    real, a small local model (mistral) once merged two paragraphs and made a
-   whole sentence disappear, along with reference `[3]`. Four signals are
+   whole sentence disappear, along with reference `[3]`. Five signals are
    compared between each source segment and its translation:
 
    - the number of blocks returned (as many as sent, otherwise there is no
@@ -211,7 +211,13 @@ translations from one model to the next. Four safeguards are in place:
    - the number of `[n]` references and of Markdown headings;
    - the length, which must not change order of magnitude: this is what
      catches a model inventing a whole paragraph instead of translating the
-     sentence it was given.
+     sentence it was given;
+   - the echo: a translation identical to its source that holds at least two
+     French function words (`le`, `est`, `dans`...) outside code and link
+     targets. `opencode-go/deepseek-v4.1-flash` sometimes returns whole chunks
+     in French, which passes every other check. Link definitions, URLs or a
+     heading such as "Version 1" stay the same in every language and have no
+     such words.
 
    On a mismatch, `translate.mjs` retries the call (up to three times: on a
    short fragment, failure is independent from one attempt to the next), then
@@ -220,6 +226,10 @@ translations from one model to the next. Four safeguards are in place:
    `needsReview: true` (with the details of the mismatch) in
    `i18n/manifest.json`, for easy spotting
    (`grep needsReview i18n/manifest.json`).
+
+   An echo already in a translated page is never reused: the dry run lists
+   the page as "to translate", and the next run sends only the echoed
+   segments to the model.
 
    The splitting, the segment index, the parallelism and these checks are
    covered by unit tests: `npm test`.

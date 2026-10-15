@@ -80,14 +80,14 @@
     "es": {
       "unitHash": "d3e232498b133cb609384e212a675cd70ef3916fb0c2c6b27d2b1ce3ad1a541b",
       "model": "pi:opencode-go/deepseek-v4.1-flash",
-      "translatedAt": "2026-10-15T06:29:22.016Z"
+      "translatedAt": "2026-10-15T06:48:03.979Z"
     }
   },
   "act2-skill.md": {
     "en": {
       "unitHash": "02b3a234cf58409f71f58621d77668ac0ec3789c40f275b276e957105a11833a",
       "model": "pi:opencode-go/deepseek-v4.1-flash",
-      "translatedAt": "2026-10-12T19:03:05.698Z"
+      "translatedAt": "2026-10-15T06:48:14.906Z"
     },
     "es": {
       "unitHash": "02b3a234cf58409f71f58621d77668ac0ec3789c40f275b276e957105a11833a",
@@ -116,7 +116,7 @@
     "es": {
       "unitHash": "6e98c78e84a5cf6a8eacd1c55104bbfa2eb791f22cc8090faee2583d2e36680a",
       "model": "pi:opencode-go/deepseek-v4.1-flash",
-      "translatedAt": "2026-10-14T17:06:45.833Z"
+      "translatedAt": "2026-10-15T06:48:08.361Z"
     }
   },
   "act2-workflows.md": {
@@ -152,7 +152,7 @@
     "es": {
       "unitHash": "b9eda88c9c7398562c9bba292256ba7f240569d9830a044b4d1532c9f129e83d",
       "model": "pi:opencode-go/deepseek-v4.1-flash",
-      "translatedAt": "2026-10-12T18:34:43.569Z"
+      "translatedAt": "2026-10-15T06:48:10.908Z"
     }
   },
   "act3-contexte.md": {

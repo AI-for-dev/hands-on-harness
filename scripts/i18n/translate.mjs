@@ -30,7 +30,7 @@ import {
 } from './lib/frontmatter.mjs'
 import { translateText, currentModelId } from './lib/backends.mjs'
 import { cleanupTranslationResponse, dropAddedContainerFence, restoreFirstLineIndent } from './lib/response-cleanup.mjs'
-import { diffSignals } from './lib/validate.mjs'
+import { diffSignals, isUntranslated } from './lib/validate.mjs'
 import { loadManifest, saveManifest, getEntry, setEntry } from './lib/manifest.mjs'
 import { splitBody, joinSegments, isPassthrough, buildChunks } from './lib/segments.mjs'
 import { mapWithConcurrency } from './lib/pool.mjs'
@@ -379,7 +379,9 @@ function planFile(sourceFile, relPath, ctx, lang, segmentIndex, force) {
       continue
     }
     const cached = reusableBody.get(segmentHash(segment))
-    if (cached !== undefined) translations[i] = cached
+    // A French paragraph handed back by the model is not a translation: it is
+    // sent again rather than reused.
+    if (cached !== undefined && !isUntranslated(segment, cached)) translations[i] = cached
     else if (isPassthrough(segment)) diagramPending.push(i)
     else pending.push(i)
   }
@@ -451,7 +453,9 @@ async function executePlan(plan, ctx, lang, concurrency) {
       // a visibly degraded answer (observed: a whole paragraph replaced by
       // "Bonjour"), we keep the previous one when it exists, and flag the page
       // for review either way.
-      const previous = plan.previousBody.get(segmentHash(plan.segments[segmentIndex]))
+      const source = plan.segments[segmentIndex]
+      const stored = plan.previousBody.get(segmentHash(source))
+      const previous = stored !== undefined && !isUntranslated(source, stored) ? stored : undefined
       plan.translations[segmentIndex] = previous ?? candidate.text
       const kept = previous
         ? ' (previous translation kept)'
@@ -576,7 +580,11 @@ async function main() {
       const entry = getEntry(manifest, relPath, lang.code)
       const targetFullPath = path.join(ROOT_DIR, config.contentDir, lang.code, relPath)
       const needsTranslation =
-        args.force || !entry || entry.unitHash !== unitHash || !existsSync(targetFullPath)
+        args.force ||
+        !entry ||
+        entry.unitHash !== unitHash ||
+        !existsSync(targetFullPath) ||
+        hasUntranslatedSegments(sourceContent, targetFullPath)
 
       if (!needsTranslation) {
         upToDateCount += 1
@@ -685,6 +693,21 @@ async function main() {
   if (args.dryRun && (translatedCount > 0 || needsReviewCount > 0)) {
     process.exit(1)
   }
+}
+
+// A page whose translation still holds a French paragraph handed back by the
+// model (see isUntranslated) is not up to date, whatever its manifest entry says:
+// the dry run reports it, and the next run sends that paragraph again.
+function hasUntranslatedSegments(sourceContent, targetFullPath) {
+  const sourceSegments = new Set(
+    splitBody(splitFrontmatter(sourceContent).body)
+      .segments.filter((segment) => !isPassthrough(segment))
+      .map((segment) => segment.trim())
+  )
+  const targetSegments = splitBody(splitFrontmatter(readFileSync(targetFullPath, 'utf8')).body).segments
+  return targetSegments.some(
+    (segment) => sourceSegments.has(segment.trim()) && isUntranslated(segment, segment)
+  )
 }
 
 // Pairs an already up-to-date translation with its source to feed the segment

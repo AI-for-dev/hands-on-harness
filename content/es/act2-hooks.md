@@ -230,7 +230,7 @@ export default function (pi: ExtensionAPI) {
 }
 ```
 
-L'extension enregistre trois handlers qui partagent deux variables, `codeChanged` et `retries`.
+La extensión registra tres handlers que comparten dos variables, `codeChanged` y `retries`.
 
 El handler de `tool_result` observa las herramientas que acaban de ejecutarse y levanta `codeChanged` en cuanto ha tenido lugar un `edit` o un `write`. Si le haces una simple pregunta al agente, no modifica nada, y los tests no se lanzan. Sin este indicador, un test ya en rojo antes de la sesión obligaría al agente a repararlo en cada pregunta.
 
