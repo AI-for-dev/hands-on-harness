@@ -45,14 +45,14 @@ A model call is billed in three line items, expressed per million tokens. Here a
 | `deepseek-v4.1-flash` | $0.30  | $1.20  | $0.006     |
 | `deepseek-v4-pro`     | $1.74  | $3.48  | $0.145     |
 
-The [opencode Go](https://opencode.ai/docs/go/) offering, which the exercises in this module use, bills these same models at a rate that varies by time of day, lower off-peak than at peak. ILaaS charges participants of this training nothing. You will therefore count tokens there rather than euros. Both read the same way, but a token counter does not warn you when you are spending.
+ILaaS bills nothing to participants in this training, so you will count tokens there rather than euros. Both read the same way, but a token counter does not warn you when you spend.
 
 Two gaps stand out. The first separates the two models, since `pro` costs 5.8 times more than `flash` on input and 2.9 times more on output. That is a first way to notice that one model has more capabilities than another. The second gap separates input from cache read: a factor of **50** on `flash` and **12** on `pro`.
 
 This second gap is what makes a code agent economically viable, because an agent rereads its full history at every turn and would otherwise pay twenty times the price of its context over a session of twenty turns.
 
 ::: warning A provider that reports the cache
-The sequence in the next exercise was measured on [opencode Go](https://opencode.ai/docs/zen/). It is a paid offering that requires an account. We chose it because ILaaS does not report cache reads: `cacheRead` is always zero there.
+The sequence in the following exercise was measured on [opencode Go](https://opencode.ai/docs/go/). It is a paid offering that requires an account. We chose it because ILaaS does not report cache reads: `cacheRead` is always zero there.
 
 If you work on ILaaS, replace `--provider opencode-go --model deepseek-v4.1-flash` with `--provider ilaas --model gemma-4-31b`, and the `pro` model with `qwen-3.8-27b`. You will see the input tokens and the effect of the model change, but the cache read column will stay empty. Do the same for the `codemode` exercise, further down.
 :::

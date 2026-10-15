@@ -45,14 +45,14 @@ Una llamada al modelo se factura en tres partidas, expresadas por millón de tok
 | `deepseek-v4.1-flash` | 0,30 $  | 1,20 $ | 0,006 $          |
 | `deepseek-v4-pro`     | 1,74 $  | 3,48 $ | 0,145 $          |
 
-La oferta [opencode Go](https://opencode.ai/docs/go/), que utilizan los ejercicios de este módulo, factura estos mismos modelos a una tarifa que varía según la hora, más baja en horas valle que en horas punta. ILaaS, por su parte, no factura nada a los participantes de esta formación. Así que ahí contarás tokens en lugar de euros. Ambos se leen de la misma forma, pero un contador de tokens no te avisa cuando gastas.
+ILaaS no factura nada a los participantes de esta formación, así que contarás tokens en lugar de euros. Ambos se leen igual, pero un contador de tokens no te avisa cuando gastas.
 
 De ahí se desprenden dos diferencias. La primera separa los dos modelos, ya que el `pro` cuesta 5,8 veces más que el `flash` en entrada y 2,9 veces más en salida. Es una primera forma de darse cuenta de que un modelo tiene más capacidades que otro. La segunda diferencia separa la entrada de la lectura de caché: un factor **50** en `flash` y **12** en `pro`.
 
 Esta segunda diferencia es lo que hace económicamente viable a un agente de código, porque un agente relee su historial completo en cada turno y, de otro modo, pagaría veinte veces el precio de su contexto a lo largo de una sesión de veinte turnos.
 
-::: warning Un proveedor que reporta el caché
-La secuencia del ejercicio siguiente se midió en [opencode Go](https://opencode.ai/docs/zen/). Es una oferta de pago que requiere una cuenta. La elegimos porque ILaaS no reporta la lectura de caché: `cacheRead` siempre vale cero.
+::: warning Un proveedor que reporta la caché
+La secuencia del siguiente ejercicio se midió en [opencode Go](https://opencode.ai/docs/go/). Es una oferta de pago que requiere una cuenta. La elegimos porque ILaaS no reporta la lectura de caché: `cacheRead` siempre vale cero ahí.
 
 Si trabajas en ILaaS, reemplaza `--provider opencode-go --model deepseek-v4.1-flash` por `--provider ilaas --model gemma-4-31b`, y el modelo `pro` por `qwen-3.8-27b`. Verás bien los tokens de entrada y el efecto del cambio de modelo, pero la columna de lectura de caché seguirá vacía. Haz lo mismo para el ejercicio sobre `codemode`, más adelante.
 :::
