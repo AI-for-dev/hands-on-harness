@@ -98,7 +98,7 @@ Medimos esta secuencia el 15 de octubre de 2026 y calculamos los costes con las 
 
 La caché se activa desde la segunda llamada, incluso dentro de un mismo turno, y los turnos 2 y 3 cuestan entre cuatro y cinco veces menos que la primera llamada. El cambio de modelo en el cuarto turno devuelve la lectura de caché a cero y hace pagar de nuevo todo el prefijo a tarifa completa: ese solo turno cuesta ocho veces más que el siguiente, con el mismo modelo.
 
-Los costes que Pi te mostrará serán más bajos, porque calcula el coste de una sesión `opencode-go` con las tarifas Go de las horas valle, la mitad de caras que las de Zen para `flash`. Si relanzas la secuencia en los minutos siguientes desde el mismo directorio, la primera llamada leerá además ya 1 664 tokens en caché, porque el proveedor conserva el prefijo de una sesión a otra.
+Si vuelves a lanzar la secuencia en los minutos siguientes desde el mismo directorio, la primera llamada ya leerá 1 664 tokens de caché, porque el proveedor conserva el prefijo de una sesión a otra.
 :::
 
 ::: warning Si `pi -p` se queda congelado sin mostrar nada

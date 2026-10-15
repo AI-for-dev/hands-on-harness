@@ -98,7 +98,7 @@ We measured this sequence on 15 October 2026 and computed the costs with the Zen
 
 The cache kicks in from the second call onward, including within a single turn, and turns 2 and 3 cost four to five times less than the first call. The model switch at the fourth turn resets the cache read to zero and makes the whole prefix be paid for again at full price: that single turn costs eight times more than the next one, with the model unchanged.
 
-The costs Pi shows you will be lower, because it computes the cost of an `opencode-go` session with the Go off-peak rates, half the price of Zen's for `flash`. If you rerun the sequence in the following minutes from the same directory, the first call will also already read 1,664 tokens from cache, because the provider keeps the prefix from one session to the next.
+If you rerun the sequence within the following minutes from the same directory, the first call will already read 1,664 tokens from cache, because the provider keeps the prefix from one session to the next.
 :::
 
 ::: warning If `pi -p` hangs without displaying anything

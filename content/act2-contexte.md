@@ -98,7 +98,7 @@ Nous avons mesuré cette séquence le 15 octobre 2026 et calculé les coûts ave
 
 Le cache s'active dès le deuxième appel, y compris à l'intérieur d'un même tour, et les tours 2 et 3 coûtent quatre à cinq fois moins cher que le premier appel. La bascule de modèle au quatrième tour remet la lecture de cache à zéro et fait repayer tout le préfixe au tarif plein : ce seul tour coûte huit fois plus cher que le suivant, à modèle identique.
 
-Les coûts que Pi vous affichera seront plus bas, parce qu'il calcule le coût d'une session `opencode-go` avec les tarifs Go des heures creuses, deux fois moins chers que ceux de Zen pour `flash`. Si vous relancez la séquence dans les minutes qui suivent depuis le même répertoire, le premier appel lira en outre déjà 1 664 tokens en cache, car le fournisseur garde le préfixe d'une session à l'autre.
+Si vous relancez la séquence dans les minutes qui suivent depuis le même répertoire, le premier appel lira déjà 1 664 tokens en cache, car le fournisseur garde le préfixe d'une session à l'autre.
 :::
 
 ::: warning Si `pi -p` se fige sans rien afficher
