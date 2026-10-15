@@ -73,14 +73,14 @@
   },
   "act2-contexte.md": {
     "en": {
-      "unitHash": "d3e232498b133cb609384e212a675cd70ef3916fb0c2c6b27d2b1ce3ad1a541b",
+      "unitHash": "9c805cedda39f4bac3332ce3625a3712205e3649253502cf27ed07882bbdcc73",
       "model": "pi:opencode-go/deepseek-v4.1-flash",
-      "translatedAt": "2026-10-15T06:29:15.536Z"
+      "translatedAt": "2026-10-15T08:06:29.566Z"
     },
     "es": {
-      "unitHash": "d3e232498b133cb609384e212a675cd70ef3916fb0c2c6b27d2b1ce3ad1a541b",
+      "unitHash": "9c805cedda39f4bac3332ce3625a3712205e3649253502cf27ed07882bbdcc73",
       "model": "pi:opencode-go/deepseek-v4.1-flash",
-      "translatedAt": "2026-10-15T06:48:03.979Z"
+      "translatedAt": "2026-10-15T08:06:39.463Z"
     }
   },
   "act2-skill.md": {

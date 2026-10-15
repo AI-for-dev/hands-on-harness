@@ -54,7 +54,7 @@ Esta segunda diferencia es lo que hace económicamente viable a un agente de có
 ::: warning Un proveedor que reporta el caché
 La secuencia del ejercicio siguiente se midió en [opencode Go](https://opencode.ai/docs/zen/). Es una oferta de pago que requiere una cuenta. La elegimos porque ILaaS no reporta la lectura de caché: `cacheRead` siempre vale cero.
 
-Si trabajas en ILaaS, sustituye `--provider opencode-go --model deepseek-v4-flash` por `--provider ilaas --model gemma-4-31b`, y el modelo `pro` por `qwen-3.8-27b`. Sí verás los tokens de entrada y el efecto del cambio de modelo, pero la columna de lectura de caché seguirá vacía. Haz lo mismo con el ejercicio sobre `codemode`, más adelante.
+Si trabajas en ILaaS, reemplaza `--provider opencode-go --model deepseek-v4.1-flash` por `--provider ilaas --model gemma-4-31b`, y el modelo `pro` por `qwen-3.8-27b`. Verás bien los tokens de entrada y el efecto del cambio de modelo, pero la columna de lectura de caché seguirá vacía. Haz lo mismo para el ejercicio sobre `codemode`, más adelante.
 :::
 
 ::: info Ejercicio (en sala)
@@ -66,13 +66,13 @@ Esta es la secuencia exacta que hemos medido, aquí en modo no interactivo para 
 git clone https://github.com/AI-for-dev/neon
 cd neon
 
-pi -p --provider opencode-go --model deepseek-v4-flash -nc -ns -np -ne \
+pi -p --provider opencode-go --model deepseek-v4.1-flash -nc -ns -np -ne \
   "Lis game/theme.js et dis en une phrase ce que fait ce fichier."
 
-pi -p -c --provider opencode-go --model deepseek-v4-flash -nc -ns -np -ne \
+pi -p -c --provider opencode-go --model deepseek-v4.1-flash -nc -ns -np -ne \
   "En une phrase, cite une couleur qui y est definie. Ne relis aucun fichier."
 
-pi -p -c --provider opencode-go --model deepseek-v4-flash -nc -ns -np -ne \
+pi -p -c --provider opencode-go --model deepseek-v4.1-flash -nc -ns -np -ne \
   "En une phrase, combien de couleurs au total ? Ne relis aucun fichier."
 
 pi -p -c --provider opencode-go --model deepseek-v4-pro -nc -ns -np -ne \
@@ -82,18 +82,23 @@ pi -p -c --provider opencode-go --model deepseek-v4-pro -nc -ns -np -ne \
   "En une phrase, redis ce nombre. Ne relis aucun fichier."
 ```
 
-Estos cinco turnos producen seis llamadas al modelo, porque el primero consume dos: una para solicitar la lectura de `theme.js`, y una segunda para responder una vez recibida la salida de la herramienta.
+Estos cinco turnos producen siete llamadas al modelo, porque el primero consume tres: el modelo busca primero el archivo con `bash`, lo lee y responde una vez que ha llegado la salida de la herramienta. De las diez pasadas que hicimos, siete siguieron este camino y tres leyeron el archivo directamente, en dos llamadas.
 
-| llamada | turno | prompt                     | modelo  | entrada | lectura de caché | costo          |
-| ------- | ----- | -------------------------- | ------- | ------- | ---------------- | -------------- |
-| 1       | 1     | «Lee `game/theme.js`...»   | `flash` | 1 675   | 0                | 0,000254 $     |
-| 2       | 1     | (continuación, tras la lectura) | `flash` | 307 | 1 664 | 0,000081 $ |
-| 3       | 2     | «menciona un color...»     | `flash` | 66      | 2 048            | 0,000053 $     |
-| 4       | 3     | «¿cuántos colores...?»     | `flash` | 118     | 2 048            | 0,000087 $     |
-| 5       | 4     | «confirma ese número...»   | `pro`   | 2 521   | **0**            | **0,005455 $** |
-| 6       | 5     | «repite ese número...»     | `pro`   | 148     | 2 432            | 0,000362 $     |
+Medimos esta secuencia el 15 de octubre de 2026 y calculamos los costes con las tarifas Zen de la tabla anterior:
 
-El caché se activa ya en la segunda llamada, incluso dentro de un mismo turno, y reduce el costo por un factor de tres a cinco. El cambio de modelo en el cuarto turno vuelve a poner la lectura de caché a cero y hace que todo el prefijo se vuelva a pagar a tarifa completa: ese solo turno cuesta quince veces más que el siguiente, con el mismo modelo.
+| llamada | turno | prompt                      | modelo  | entrada | salida | lectura de caché | coste          |
+| ------- | ----- | --------------------------- | ------- | ------- | ------ | ---------------- | -------------- |
+| 1       | 1     | « Lee `game/theme.js`... »  | `flash` | 1 718   | 92     | 0                | 0,000626 $     |
+| 2       | 1     | (lectura del archivo)       | `flash` | 621     | 138    | 1 664            | 0,000362 $     |
+| 3       | 1     | (respuesta)                 | `flash` | 472     | 70     | 2 176            | 0,000239 $     |
+| 4       | 2     | « cita un color... »        | `flash` | 182     | 53     | 2 560            | 0,000134 $     |
+| 5       | 3     | « cuántos colores... »      | `flash` | 130     | 82     | 2 688            | 0,000154 $     |
+| 6       | 4     | « confirma este número... » | `pro`   | 2 995   | 41     | **0**            | **0,005354 $** |
+| 7       | 5     | « repite este número... »   | `pro`   | 111     | 17     | 2 944            | 0,000679 $     |
+
+La caché se activa desde la segunda llamada, incluso dentro de un mismo turno, y los turnos 2 y 3 cuestan entre cuatro y cinco veces menos que la primera llamada. El cambio de modelo en el cuarto turno devuelve la lectura de caché a cero y hace pagar de nuevo todo el prefijo a tarifa completa: ese solo turno cuesta ocho veces más que el siguiente, con el mismo modelo.
+
+Los costes que Pi te mostrará serán más bajos, porque calcula el coste de una sesión `opencode-go` con las tarifas Go de las horas valle, la mitad de caras que las de Zen para `flash`. Si relanzas la secuencia en los minutos siguientes desde el mismo directorio, la primera llamada leerá además ya 1 664 tokens en caché, porque el proveedor conserva el prefijo de una sesión a otra.
 :::
 
 ::: warning Si `pi -p` se queda congelado sin mostrar nada
@@ -276,25 +281,25 @@ Actívalo también al inicio de la sesión en lugar de a mitad de camino: la lis
 En un clon de NÉON, plantea dos veces la misma pregunta que obligue a recorrer el repositorio, una vez con las herramientas por defecto y otra con `--tools +codemode`, por ejemplo:
 
 ```bash
-pi -p -nc --session-dir ./runs/without-codemode --provider opencode-go --model deepseek-v4-flash \
+pi -p -nc --session-dir ./runs/without-codemode --provider opencode-go --model deepseek-v4.1-flash \
   "Pour chaque fichier de game/, \
    donne le nombre de lignes, la liste des imports, \
    la liste des fonctions exportées avec leur ligne, et les fonctions exportées \
    qui ne sont utilisées dans aucun autre fichier de game/." < /dev/null
 
-pi -p -nc --session-dir ./runs/with-codemode --tools +codemode --provider opencode-go --model deepseek-v4-flash \
+pi -p -nc --session-dir ./runs/with-codemode --tools +codemode --provider opencode-go --model deepseek-v4.1-flash \
   "Pour chaque fichier de game/, \
    donne le nombre de lignes, la liste des imports, \
    la liste des fonctions exportées avec leur ligne, et les fonctions exportées \
    qui ne sont utilisées dans aucun autre fichier de game/." < /dev/null
 
-pi -p -nc --session-dir ./runs/with-codemode --tools +codemode --provider opencode-go --model deepseek-v4-flash \
+pi -p -nc --session-dir ./runs/with-codemode --tools +codemode --provider opencode-go --model deepseek-v4.1-flash \
   "Utilise l'outil codemode. Pour chaque fichier de game/, \
    donne le nombre de lignes, la liste des imports, \
    la liste des fonctions exportées avec leur ligne, et les fonctions exportées \
    qui ne sont utilisées dans aucun autre fichier de game/." < /dev/null
 
-pi -p -nc --session-dir ./runs/with-codemode --tools +codemode --provider opencode-go --model deepseek-v4-flash \
+pi -p -nc --session-dir ./runs/with-codemode --tools +codemode --provider opencode-go --model deepseek-v4.1-flash \
   "Utilise l'outil codemode, en une seule commande. Pour chaque fichier de game/, \
    donne le nombre de lignes, la liste des imports, \
    la liste des fonctions exportées avec leur ligne, et les fonctions exportées \
@@ -329,9 +334,9 @@ Las manipulaciones de este módulo te han mostrado lo que cada palanca cambia en
 
 Lo que hicimos en NÉON vale para cualquier agente de código, y no solo para Pi.
 
-El contexto se relee en cada turno, y la caché factura cincuenta veces más barato, en `deepseek-v4-flash`, la parte que no ha cambiado desde el turno anterior. Así que coloca al principio lo que permanece estable, el system prompt, los archivos de contexto y las herramientas, y al final lo que varía. Una marca temporal o un `git status` añadido al system prompt hace repagar todo lo que sigue a tarifa completa, en cada turno.
+El contexto se relee en cada turno, y la caché factura cincuenta veces menos, en `deepseek-v4.1-flash`, la parte que no ha cambiado desde el turno anterior. Coloca por tanto al principio lo que permanece estable, el system prompt, los archivos de contexto y las herramientas, y al final lo que varía. Una marca de tiempo o un `git status` añadido al system prompt hace repagar todo lo que sigue a tarifa completa, en cada turno.
 
-Cambiar de modelo o de lista de herramientas en mitad de una sesión pone la caché a cero. En la secuencia de cinco turnos del principio del módulo, el primer turno sobre `pro` cuesta quince veces más caro que el siguiente, sobre el mismo modelo.
+Cambiar de modelo o de lista de herramientas en mitad de la sesión reinicia la caché a cero. En la secuencia de cinco turnos del principio del módulo, el primer turno en `pro` cuesta ocho veces más caro que el siguiente, con el mismo modelo.
 
 Un ajuste propuesto por el harness no llega necesariamente hasta el modelo. Con `gemma-4-31b`, `--thinking max` envía la misma petición que `--thinking minimal`, y la ventana que Pi conoce es la que has declarado en `models.json`. Antes de fiarte de un ajuste, mira en la sesión qué ha cambiado.
 
