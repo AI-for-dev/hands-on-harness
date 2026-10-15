@@ -38,16 +38,16 @@ En una consulta tan trivial como «di solo OK», sin archivo de contexto, sin sk
 
 ### ¿Cuánto cuesta usar un LLM?
 
-Una llamada al modelo se factura en tres partidas, expresadas por millón de tokens. Estos son los precios de los dos modelos tomados de la oferta opencode Go:
+Una llamada al modelo se factura en tres partidas, expresadas por millón de tokens. Estas son las tarifas de los dos modelos publicados por [opencode Zen](https://opencode.ai/docs/zen/):
 
-| modelo              | entrada | salida | lectura de caché |
-| ------------------- | ------- | ------ | ---------------- |
-| `deepseek-v4-flash` | 0,14 $  | 0,28 $ | 0,0028 $         |
-| `deepseek-v4-pro`   | 1,74 $  | 3,48 $ | 0,0145 $         |
+| modelo                | entrada | salida | lectura de caché |
+| --------------------- | ------- | ------ | ---------------- |
+| `deepseek-v4.1-flash` | 0,30 $  | 1,20 $ | 0,006 $          |
+| `deepseek-v4-pro`     | 1,74 $  | 3,48 $ | 0,145 $          |
 
-Estas tarifas son las publicadas por [opencode Zen](https://opencode.ai/docs/zen/). ILaaS, por su parte, no factura nada a los participantes de esta formación. Así que contarás tokens en lugar de euros. Ambos se leen de la misma forma, pero un contador de tokens no te avisa cuando gastas.
+La oferta [opencode Go](https://opencode.ai/docs/go/), que utilizan los ejercicios de este módulo, factura estos mismos modelos a una tarifa que varía según la hora, más baja en horas valle que en horas punta. ILaaS, por su parte, no factura nada a los participantes de esta formación. Así que ahí contarás tokens en lugar de euros. Ambos se leen de la misma forma, pero un contador de tokens no te avisa cuando gastas.
 
-De ello se desprenden dos brechas. La primera separa los dos modelos, ya que el `pro` cuesta 12,4 veces más que el `flash` a tarifa nominal. Es una primera manera de darse cuenta de que un modelo posee más capacidades que otro. La segunda brecha, mucho más amplia, separa la entrada de la lectura de caché: un factor **50** en `flash` y **120** en `pro`.
+De ahí se desprenden dos diferencias. La primera separa los dos modelos, ya que el `pro` cuesta 5,8 veces más que el `flash` en entrada y 2,9 veces más en salida. Es una primera forma de darse cuenta de que un modelo tiene más capacidades que otro. La segunda diferencia separa la entrada de la lectura de caché: un factor **50** en `flash` y **12** en `pro`.
 
 Esta segunda diferencia es lo que hace económicamente viable a un agente de código, porque un agente relee su historial completo en cada turno y, de otro modo, pagaría veinte veces el precio de su contexto a lo largo de una sesión de veinte turnos.
 

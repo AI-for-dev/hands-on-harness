@@ -38,16 +38,16 @@ On a request as trivial as “just say OK”, with no context file, no skill, an
 
 ### What does using an LLM cost?
 
-A call to the model is billed in three line items, expressed per million tokens. Here are the rates for the two models taken from the opencode Go offering:
+A model call is billed in three line items, expressed per million tokens. Here are the rates of the two models published by [opencode Zen](https://opencode.ai/docs/zen/):
 
-| model               | input | output | cache read |
-| ------------------- | ------ | ------ | ---------------- |
-| `deepseek-v4-flash` | 0.14 $ | 0.28 $ | 0.0028 $         |
-| `deepseek-v4-pro`   | 1.74 $ | 3.48 $ | 0.0145 $         |
+| model                 | input  | output | cache read |
+| --------------------- | ------ | ------ | ---------- |
+| `deepseek-v4.1-flash` | $0.30  | $1.20  | $0.006     |
+| `deepseek-v4-pro`     | $1.74  | $3.48  | $0.145     |
 
-These rates are the ones published by [opencode Zen](https://opencode.ai/docs/zen/). ILaaS, for its part, charges the participants of this training nothing. You will therefore count tokens there rather than euros. The two read the same way, but a token counter does not warn you when you spend.
+The [opencode Go](https://opencode.ai/docs/go/) offering, which the exercises in this module use, bills these same models at a rate that varies by time of day, lower off-peak than at peak. ILaaS charges participants of this training nothing. You will therefore count tokens there rather than euros. Both read the same way, but a token counter does not warn you when you are spending.
 
-Two gaps stand out. The first separates the two models, since the `pro` costs 12.4 times more than the `flash` at list price. It is a first way to realize that a model has more capabilities than another. The second gap, far wider, separates input from cache reads: a factor of **50** on `flash` and **120** on `pro`.
+Two gaps stand out. The first separates the two models, since `pro` costs 5.8 times more than `flash` on input and 2.9 times more on output. That is a first way to notice that one model has more capabilities than another. The second gap separates input from cache read: a factor of **50** on `flash` and **12** on `pro`.
 
 This second gap is what makes a code agent economically viable, because an agent rereads its full history at every turn and would otherwise pay twenty times the price of its context over a session of twenty turns.
 
@@ -157,9 +157,9 @@ For this model, there are only two modes: thinking `on` or `off`.
 Redo the comparison between two genuinely distinct levels on your model, for example `off` and `high`, and measure the difference.
 :::
 
-Le raisonnement a bien un effet quand on le mesure entre deux niveaux réels. La leçon générale porte plutôt sur la confiance à accorder aux réglages : **un réglage exposé par le harnais n'est pas forcément transmis au modèle**, parce qu'entre la configuration que vous tapez et la requête qui part sur le serveur d'inférence se trouve une table de correspondance écrite par quelqu'un, qui peut être incomplète. Vous rencontrerez cette situation plusieurs fois dans la formation, et régulièrement dans votre travail. Prenez l'habitude de chercher où atterrit une configuration ou un flag avant de lui faire confiance.
+Reasoning does have an effect when you measure it between two real levels. The general lesson is more about how much trust to place in settings: **a setting exposed by the harness is not necessarily passed on to the model**, because between the configuration you type and the request that leaves for the inference server sits a mapping table written by someone, which may be incomplete. You will run into this situation several times during the training, and regularly in your work. Get into the habit of finding out where a configuration or flag actually lands before trusting it.
 
-#### `AGENTS.md`, the global configuration point
+### What we write
 
 #### `AGENTS.md`, the global configuration point
 
