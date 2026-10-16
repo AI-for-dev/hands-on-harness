@@ -8,7 +8,7 @@ A course on coding-agent harnesses: what sits between you and the model, how to 
 
 Run the same configuration six times on the first ticket of the course's practice repository, with the same model, the same reasoning effort, the same prompt and the same commit, and two of the six runs fail to fix the bug. On the best-equipped configuration of act 3, input tokens range from 42,731 to 2,420,677 depending on the run. A single run tells you very little, and the part you can act on is the harness around the model: what goes into the context window, which skills it can load, how the work is split between agents, and which rules are enforced by code rather than only written in a markdown file. In one of our experiments, a cleanup instruction placed in a `SKILL.md` was followed less than one time in three, which is why the course asks the same question of every piece of the harness: can the model ignore it, or does the harness guarantee it?
 
-We could have written a catalogue of tools with installation recipes, but that kind of material is out of date within a few months. The course is built around the functional pieces every harness needs instead (context, skills, delegation, workflows, hooks, sandboxing, evaluation). For each one we start from the situation where things go wrong, rebuild a minimal version on Pi, then draw out the principle that still holds once you switch to Claude Code, Codex or whatever comes next.
+We could have written a catalogue of tools with installation recipes, but that kind of material is out of date within a few months. The course is built around the functional pieces every harness needs instead (context, skills, hooks, delegation, workflows, sandboxing, evaluation). For each one we start from the situation where things go wrong, rebuild a minimal version on Pi, then draw out the principle that still holds once you switch to Claude Code, Codex or whatever comes next.
 
 ## What will you do?
 
@@ -17,7 +17,7 @@ You work on a single repository from start to finish: [NÉON](https://github.com
 | Act            | What it covers                                                                                                          |
 | -------------- | ----------------------------------------------------------------------------------------------------------------------- |
 | 1. Foundations | A working picture of LLMs in 2026, of what a harness is made of, and of Pi as a minimal starting point                  |
-| 2. Rebuilding  | A sandbox, then context, skills, sub-agents, workflows and hooks, each one written by hand and tested on NÉON's tickets |
+| 2. Rebuilding  | A sandbox, then context, skills, hooks, sub-agents and workflows, each one written by hand and tested on NÉON's tickets |
 | 3. Evaluating  | Repeating the same task many times, to tell a real improvement from sampling noise                                      |
 | Your turn      | Pointers to carry the method over to your own repository, and to the tools that already go further                      |
 

@@ -48,9 +48,9 @@ Suivez les modules dans l'ordre du sommaire, mais en ne gardant d'abord que la c
 | Premier ticket                                 | l'exercice ci-dessous                                                       |                                                  |
 | [2.1 Le contexte](./act2-contexte)             | « Comprendre », le choix du modèle, l'effort de raisonnement et `AGENTS.md` | le prompt système, la fenêtre bridée, `codemode` |
 | [2.2 Les skills](./act2-skill)                 | « Comprendre » et la version 1 de `playtester`                              | la version 2 (`dynamic-playtester`)              |
-| [2.3 La délégation](./act2-delegation)         | « Comprendre » et l'exercice sur les outils de chaque agent                 | le tour de boucle complet                        |
-| [2.4 Les workflows](./act2-workflows)          | « Comprendre »                                                              | le flow du ticket #2 et son adaptation           |
-| [2.5 Les hooks](./act2-hooks)                  | les deux extensions                                                         |                                                  |
+| [2.3 Les hooks](./act2-hooks)                  | les deux extensions                                                         |                                                  |
+| [2.4 La délégation](./act2-delegation)         | « Comprendre » et l'exercice sur les outils de chaque agent                 | le tour de boucle complet                        |
+| [2.5 Les workflows](./act2-workflows)          | « Comprendre »                                                              | le flow du ticket #2 et son adaptation           |
 | [3.0 Mesurer un agent](./act3-trysquare)       | l'introduction et « Comment lire un écart ? »                               | l'installation de trysquare                      |
 | [3.1 Les leviers du contexte](./act3-contexte) | « Les résultats » et « Généraliser »                                        | l'exercice qui relance la matrice                |
 

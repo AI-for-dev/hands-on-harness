@@ -6,10 +6,10 @@
 
 Deux cellules, un seul levier. `agent-seul` reçoit le ticket cadré et la
 convention du projet. `+roles` reçoit exactement le même brief, plus les six
-rôles du module 2.4 dans `.pi/agents/` et l'outil `subagent` pour les appeler.
+rôles du module 2.5 dans `.pi/agents/` et l'outil `subagent` pour les appeler.
 L'agent garde la barre : rien ne l'oblige à déléguer.
 
-C'est une question voisine de celle que le module 2.4 laisse ouverte, et non la
+C'est une question voisine de celle que le module 2.5 laisse ouverte, et non la
 même. Le module demande si **son pipeline** fait mieux qu'un agent seul, avec un
 enchaînement écrit en code qu'aucun modèle ne réinterprète. Ici, c'est le modèle
 qui décide de déléguer et à qui. Si les deux formes divergent, l'écart est un

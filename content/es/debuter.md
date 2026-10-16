@@ -39,18 +39,18 @@ pi --version
 
 Sigue los módulos en el orden del índice, pero quedándote al principio solo con la columna «por hacer». La columna «puede esperar» contiene lo que exige más herramientas o más tiempo.
 
-| module                                         | por hacer                                                                   | puede esperar                                    |
+| módulo                                         | por hacer                                                                   | puede esperar                                    |
 | ---------------------------------------------- | --------------------------------------------------------------------------- | ------------------------------------------------ |
 | [Los LLM en 2026](./act1-llm)                  | todo                                                                        | las lecturas de «Referencias»                    |
 | [Por qué un harness](./act1-harness)           | todo, leyendo rápido «Las siete piezas»                                     |                                                  |
 | [Pi](./act1-pi)                                | la instalación, los primeros comandos, la instalación de combo              |                                                  |
 | [2.0 El sandbox](./act2-sandbox)               | «Comprender» y el ejercicio con `pi-permission-system`                      | Docker Sandboxes (`sbx`)                         |
 | Primer ticket                                  | el ejercicio de abajo                                                       |                                                  |
-| [2.1 El contexto](./act2-contexte)             | «Comprender», la elección del modelo, el esfuerzo de razonamiento y `AGENTS.md` | el system prompt, la ventana limitada, `codemode` |
+| [2.1 El contexto](./act2-contexte)             | «Comprender», la elección del modelo, el esfuerzo de razonamiento y `AGENTS.md` | el system prompt, la ventana restringida, `codemode` |
 | [2.2 Los skills](./act2-skill)                 | «Comprender» y la versión 1 de `playtester`                                 | la versión 2 (`dynamic-playtester`)              |
-| [2.3 La delegación](./act2-delegation)         | «Comprender» y el ejercicio sobre las herramientas de cada agente           | la vuelta de bucle completa                      |
-| [2.4 Los workflows](./act2-workflows)          | «Comprender»                                                                | el flow del ticket #2 y su adaptación            |
-| [2.5 Los hooks](./act2-hooks)                  | las dos extensiones                                                         |                                                  |
+| [2.3 Los hooks](./act2-hooks)                  | las dos extensiones                                                         |                                                  |
+| [2.4 La delegación](./act2-delegation)         | «Comprender» y el ejercicio sobre las herramientas de cada agente           | la vuelta completa del bucle                     |
+| [2.5 Los workflows](./act2-workflows)          | «Comprender»                                                                | el flow del ticket #2 y su adaptación            |
 | [3.0 Medir un agente](./act3-trysquare)        | la introducción y «¿Cómo leer una diferencia?»                              | la instalación de trysquare                      |
 | [3.1 Las palancas del contexto](./act3-contexte) | «Los resultados» y «Generalizar»                                          | el ejercicio que relanza la matriz               |
 

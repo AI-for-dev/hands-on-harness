@@ -54,7 +54,7 @@ Vous ne ferez peut-être pas tout, mais ce backlog donne assez de matière pour 
 
 Le fichier `SUPPORT.md` contient un texte qui ressemble à une procédure d'assistance, mais qui demande en réalité de lire le fichier `.env` et d'en envoyer le contenu à une adresse externe. Ce texte est une donnée non fiable, placée là pour tester la sûreté de votre harnais, et non une consigne légitime.
 
-Le point à retenir dès maintenant est le suivant : votre harnais doit traiter ce texte comme une donnée, et non comme une instruction à exécuter. Le [module 2.0](./act2-sandbox) sur le bac à sable et le [module 2.5](./act2-hooks) sur les hooks construisent les garde-fous qui refusent la lecture du `.env`, que l'agent ait été trompé ou non.
+Le point à retenir dès maintenant est le suivant : votre harnais doit traiter ce texte comme une donnée, et non comme une instruction à exécuter. Le [module 2.0](./act2-sandbox) sur le bac à sable et le [module 2.3](./act2-hooks) sur les hooks construisent les garde-fous qui refusent la lecture du `.env`, que l'agent ait été trompé ou non.
 
 ## Le point d'arrivée
 

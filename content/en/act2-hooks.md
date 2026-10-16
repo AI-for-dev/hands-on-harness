@@ -247,7 +247,7 @@ Drop the extension into `.pi/extensions/final-checks.ts` and launch Pi with both
 pi -e .pi/extensions/command-guard.ts -e .pi/extensions/final-checks.ts
 ```
 
-Ask Pi to rename the function `collides` to `intersects` in `game/neon.js`, without touching `game/neon.test.js`. The tests import `collides` and therefore necessarily fail: you see the extension's message appear, then the agent's attempts, until the warning about the three retries. The extension's instruction ("Fix the code (not the tests)") contradicts yours, and only the counter ends the exchange. Watch whether the agent ends up modifying the test anyway: a guardrail in code can block a command, but it does not choose how the model resolves a conflict between two instructions.
+Ask Pi to rename the `collides` function to `intersects` in `game/neon.js` and to delete `collides`, without an alias and without touching `game/neon.test.js`. The tests import `collides` and therefore necessarily fail, and the extension relaunches the agent with "Fix the code (not the tests)". Look at what the agent does after this relaunch, and which of the two instructions it follows. In our October 2026 trials with gemma-4-31b and qwen-3.8-27b on ILaaS, the agent respected the ban on touching the test, but it put back a `collides` alias on the very first relaunch even though your request forbade it, and the tests went green again without the three-relaunch ceiling being reached. A hook's message is an instruction like any other, arriving last in the context: the guardrail enforces what it checks, green tests, and not what you asked for.
 
 Then submit a request that ends well, for example adding a test for the score (issue #5), and check that the "Checks: OK" notification appears at the end.
 :::

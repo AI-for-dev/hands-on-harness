@@ -39,20 +39,20 @@ pi --version
 
 Follow the modules in the order of the table of contents, but at first only keep the "to do" column. The "can wait" column contains what demands more tools or more time.
 
-| module                                   | to do                                                                        | can wait                                          |
-| ---------------------------------------- | ---------------------------------------------------------------------------- | ------------------------------------------------- |
-| [LLMs in 2026](./act1-llm)               | everything                                                                   | the "References" readings                         |
-| [Why a harness](./act1-harness)          | everything, skimming "The seven building blocks"                             |                                                   |
-| [Pi](./act1-pi)                          | the installation, the first commands, installing combo                       |                                                   |
-| [2.0 The sandbox](./act2-sandbox)        | "Understanding" and the exercise with `pi-permission-system`                 | Docker Sandboxes (`sbx`)                          |
-| First ticket                             | the exercise below                                                           |                                                   |
-| [2.1 Context](./act2-contexte)           | "Understanding", the model choice, the reasoning effort and `AGENTS.md`      | the system prompt, the constrained window, `codemode` |
-| [2.2 Skills](./act2-skill)               | "Understanding" and version 1 of `playtester`                                | version 2 (`dynamic-playtester`)                  |
-| [2.3 Delegation](./act2-delegation)      | "Understanding" and the exercise on each agent's tools                       | the full loop round                               |
-| [2.4 Workflows](./act2-workflows)        | "Understanding"                                                              | the ticket #2 flow and its adaptation             |
-| [2.5 Hooks](./act2-hooks)                | both extensions                                                              |                                                   |
-| [3.0 Measuring an agent](./act3-trysquare) | the introduction and "How to read a gap?"                                  | installing trysquare                              |
-| [3.1 The context levers](./act3-contexte) | "The results" and "Generalizing"                                            | the exercise that reruns the matrix               |
+| module                                         | to do                                                                       | can wait                                         |
+| ---------------------------------------------- | --------------------------------------------------------------------------- | ------------------------------------------------ |
+| [LLMs in 2026](./act1-llm)                     | everything                                                                  | the "References" readings                        |
+| [Why a harness](./act1-harness)                | everything, skimming "The seven building blocks"                            |                                                  |
+| [Pi](./act1-pi)                                | the installation, the first commands, installing combo                      |                                                  |
+| [2.0 The sandbox](./act2-sandbox)              | "Understanding" and the exercise with `pi-permission-system`                | Docker Sandboxes (`sbx`)                         |
+| First ticket                                   | the exercise below                                                          |                                                  |
+| [2.1 Context](./act2-contexte)                 | "Understanding", the model choice, the reasoning effort and `AGENTS.md`     | the system prompt, the constrained window, `codemode` |
+| [2.2 Skills](./act2-skill)                     | "Understanding" and version 1 of `playtester`                               | version 2 (`dynamic-playtester`)                 |
+| [2.3 Hooks](./act2-hooks)                      | both extensions                                                             |                                                  |
+| [2.4 Delegation](./act2-delegation)            | "Understanding" and the exercise on each agent's tools                      | the full loop turn                               |
+| [2.5 Workflows](./act2-workflows)              | "Understanding"                                                            | the ticket #2 flow and its adaptation            |
+| [3.0 Measuring an agent](./act3-trysquare)     | the introduction and "How to read a gap?"                                   | installing trysquare                             |
+| [3.1 The levers of context](./act3-contexte)   | "The results" and "Generalizing"                                            | the exercise that reruns the matrix              |
 
 The [glossary](./annexes#glossaire) explains the terms used in the training.
 
