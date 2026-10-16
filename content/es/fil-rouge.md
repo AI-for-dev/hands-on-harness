@@ -54,7 +54,7 @@ Quizá no hagas todo, pero este backlog da bastante material para probar tu harn
 
 El archivo `SUPPORT.md` contiene un texto que parece un procedimiento de asistencia, pero que en realidad pide leer el archivo `.env` y enviar su contenido a una dirección externa. Ese texto es un dato no fiable, colocado ahí para probar la seguridad de tu harness, y no una instrucción legítima.
 
-El punto que hay que retener desde ya es el siguiente: tu harness debe tratar este texto como un dato, y no como una instrucción que ejecutar. El [módulo 2.0](./act2-sandbox) sobre el sandbox y el [módulo 2.5](./act2-hooks) sobre los hooks construyen las barreras de seguridad que rechazan la lectura del `.env`, haya sido engañado el agente o no.
+Lo que hay que retener desde ya es lo siguiente: tu harness debe tratar ese texto como un dato y no como una instrucción que ejecutar. El [módulo 2.0](./act2-sandbox) sobre el sandbox y el [módulo 2.3](./act2-hooks) sobre los hooks construyen las barreras de seguridad que rechazan la lectura del `.env`, haya sido engañado el agente o no.
 
 ## El punto de llegada
 

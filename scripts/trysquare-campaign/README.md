@@ -206,7 +206,7 @@ métrique après coup sur des exécutions déjà payées.
 
 ### `issue2-delegation` : le découpage en rôles, sur l'issue #2
 
-La question que le module 2.4 laisse ouverte. Deux cellules, un seul levier :
+La question que le module 2.5 laisse ouverte. Deux cellules, un seul levier :
 `agent-seul` reçoit le ticket cadré et la convention du projet, `+roles` reçoit le
 même brief plus les six rôles du module dans `.pi/agents/` et l'extension combo qui
 fournit l'outil pour les appeler. Les rôles sont cités là où ils sont versionnés,

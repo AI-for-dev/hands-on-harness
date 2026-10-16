@@ -64,7 +64,7 @@ Terms are listed alphabetically. The English equivalent is given in parentheses 
 
 **`codemode`**: Pi tool that lets the model write a script calling the other tools, so that only the filtered result comes back into the context. See [2.1](./act2-contexte).
 
-**combo**: Pi extension written for the training, which spawns subagents and runs flows. See [2.3](./act2-delegation) and [2.4](./act2-workflows).
+**combo**: a Pi extension written for the training, which launches sub-agents and runs flows. See [2.4](./act2-delegation) and [2.5](./act2-workflows).
 
 **Compaction**: summary of the oldest messages, triggered when the context approaches the window size. See [2.1](./act2-contexte).
 
@@ -80,19 +80,19 @@ Terms are listed alphabetically. The English equivalent is given in parentheses 
 
 **Evaluation**: comparison of configurations on the same task, repeating each configuration because the result varies from one run to the next. A **test**, by contrast, answers yes or no. See [3.0](./act3-trysquare).
 
-**Extension**: TypeScript code loaded by Pi, which adds tools, commands or hooks. See [Le harnais de départ : Pi](./act1-pi) and [2.5](./act2-hooks).
+**Extension**: TypeScript code loaded by Pi that adds tools, commands or hooks. See [The starting harness: Pi](./act1-pi) and [2.3](./act2-hooks).
 
-**Fan-out**: workflow pattern where several agents work in parallel on the same input. See [2.4](./act2-workflows).
+**Fan-out**: workflow pattern where several agents work in parallel on the same input. See [2.5](./act2-workflows).
 
 **Context window** (*context window*): maximum number of tokens the model can take into account at once. The **context** is what fills it: system prompt, rule files, tool descriptions, your question and the history. See [2.1](./act2-contexte).
 
-**Flow**: in combo, a task graph described in YAML and Markdown, whose nodes are subagents or scripts and whose chaining is decided by the code. See [2.4](./act2-workflows).
+**Flow**: in combo, a task graph described in YAML and markdown, whose nodes are sub-agents or scripts and whose chaining is decided by the code. See [2.5](./act2-workflows).
 
-**Guide and sensor**: Birgitta Böckeler's vocabulary. A guide acts before the agent to steer it, a sensor acts after to help it correct itself. See [2.5](./act2-hooks).
+**Guide and sensor**: Birgitta Böckeler's vocabulary. A guide acts before the agent to steer it, a sensor acts after to help it self-correct. See [2.3](./act2-hooks).
 
 **Harness**: everything surrounding the model to make it a useful and safe agent: loop, tools, context management, permissions, verification. See [Why a harness](./act1-harness).
 
-**Hook**: a function run by the harness at a precise moment in the loop, for example before each tool call or when the agent is about to hand back control. Its effect does not depend on the model. See [2.5](./act2-hooks).
+**Hook**: function run by the harness at a precise point in the loop, for example before each tool call or when the agent is about to hand back control. Its effect does not depend on the model. See [2.3](./act2-hooks).
 
 **Prompt injection**: text read by the agent, in a file or a web page, that passes itself off as an instruction. NÉON's `SUPPORT.md` is an example. See [2.0](./act2-sandbox).
 
@@ -104,7 +104,7 @@ Terms are listed alphabetically. The English equivalent is given in parentheses 
 
 **Mixture of Experts** (MoE): an architecture that activates only part of the network at each token. You then have to distinguish **total parameters** from **active parameters**. See [LLMs in 2026](./act1-llm).
 
-**Toolset**: the list of tools available to an agent, declared in the `tools:` field of its file. A tool absent from the toolset cannot be called. See [2.3](./act2-delegation).
+**Toolset**: the list of tools available to an agent, declared in the `tools:` field of its file. A tool absent from the toolset cannot be called. See [2.4](./act2-delegation).
 
 **System prompt**: text placed at the beginning of the context that describes to the model its role, its tools and its conventions. See [2.1](./act2-contexte).
 
@@ -120,7 +120,7 @@ Terms are listed alphabetically. The English equivalent is given in parentheses 
 
 **Probe**: reference test file that trysquare uses to check whether a run actually fixes the bug. See [3.1](./act3-contexte).
 
-**Subagent** (*subagent*): session started by the main agent with its own context, tools and model. Only its conclusion comes back into the main context. See [2.3](./act2-delegation).
+**Subagent** (*subagent*): session launched by the main agent with its own context, tools and model. Only its conclusion comes back into the main context. See [2.4](./act2-delegation).
 
 **Token**: text fragment, the basic unit the model reads and produces. Providers bill per million tokens. See [LLMs in 2026](./act1-llm).
 
@@ -130,4 +130,4 @@ Terms are listed alphabetically. The English equivalent is given in parentheses 
 
 **Validation**: in trysquare, an executable that scores a run and returns metrics with their reasons. See [3.0](./act3-trysquare).
 
-**Workflow** (workflow): sequence of steps decided by code, as opposed to an agent that decides the next step itself. See [2.4](./act2-workflows).
+**Workflow**: a sequence of steps decided by code, as opposed to an agent that decides the next step on its own. See [2.5](./act2-workflows).

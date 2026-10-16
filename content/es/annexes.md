@@ -64,7 +64,7 @@ Los términos están clasificados por orden alfabético. El equivalente inglés 
 
 **`codemode`**: herramienta de Pi que permite al modelo escribir un script que llama a las demás herramientas, para que solo el resultado filtrado vuelva al contexto. Ver [2.1](./act2-contexte).
 
-**combo**: extensión de Pi escrita para la formación, que lanza subagentes y despliega flows. Ver [2.3](./act2-delegation) y [2.4](./act2-workflows).
+**combo**: extensión de Pi escrita para la formación, que lanza subagentes y despliega flows. Ver [2.4](./act2-delegation) y [2.5](./act2-workflows).
 
 **Compactación**: resumen de los mensajes más antiguos, que se activa cuando el contexto se acerca al tamaño de la ventana. Ver [2.1](./act2-contexte).
 
@@ -80,19 +80,19 @@ Los términos están clasificados por orden alfabético. El equivalente inglés 
 
 **Evaluación**: comparación de configuraciones sobre una misma tarea, repitiendo cada configuración porque el resultado varía de una ejecución a otra. Un **test**, en cambio, responde sí o no. Ver [3.0](./act3-trysquare).
 
-**Extensión**: código TypeScript cargado por Pi, que añade herramientas, comandos o hooks. Ver [El harness de partida: Pi](./act1-pi) y [2.5](./act2-hooks).
+**Extensión** : código TypeScript que Pi carga, y que añade herramientas, comandos o hooks. Ver [El harness de partida: Pi](./act1-pi) y [2.3](./act2-hooks).
 
-**Fan-out**: patrón de workflow en el que varios agentes trabajan en paralelo sobre la misma entrada. Ver [2.4](./act2-workflows).
+**Fan-out** : patrón de workflow en el que varios agentes trabajan en paralelo sobre la misma entrada. Ver [2.5](./act2-workflows).
 
 **Ventana de contexto** (*context window*): número máximo de tokens que el modelo puede tener en cuenta a la vez. El **contexto** es lo que la llena: prompt del sistema, archivos de reglas, descripciones de herramientas, tu pregunta y el historial. Ver [2.1](./act2-contexte).
 
-**Flow** : en combo, grafo de tareas descrito en YAML y en markdown, cuyos nodos son subagentes o scripts y cuyo encadenamiento lo decide el código. Ver [2.4](./act2-workflows).
+**Flow** : en combo, grafo de tareas descrito en YAML y en markdown, cuyos nodos son subagentes o scripts y cuya secuencia decide el código. Ver [2.5](./act2-workflows).
 
-**Guía y sensor** (*guide and sensor*) : vocabulario de Birgitta Böckeler. Una guía actúa antes del agente para orientarlo, un sensor actúa después para ayudarlo a corregirse. Ver [2.5](./act2-hooks).
+**Guía y sensor** (*guide and sensor*) : vocabulario de Birgitta Böckeler. Una guía actúa antes del agente para orientarlo, un sensor actúa después para ayudarlo a corregirse. Ver [2.3](./act2-hooks).
 
 **Harness** (*harness*) : todo lo que rodea al modelo para convertirlo en un agente útil y seguro: bucle, herramientas, gestión del contexto, permisos, verificación. Ver [Por qué un harness](./act1-harness).
 
-**Hook** : función ejecutada por el harness en un momento preciso del bucle, por ejemplo antes de cada llamada a herramienta o cuando el agente está a punto de devolver el control. Su efecto no depende del modelo. Ver [2.5](./act2-hooks).
+**Hook** : función que el harness ejecuta en un momento preciso del bucle, por ejemplo antes de cada llamada a una herramienta o cuando el agente está a punto de devolver el control. Su efecto no depende del modelo. Ver [2.3](./act2-hooks).
 
 **Inyección de prompt** (*prompt injection*) : texto leído por el agente, en un archivo o una página web, que se hace pasar por una instrucción. El `SUPPORT.md` de NÉON es un ejemplo. Ver [2.0](./act2-sandbox).
 
@@ -104,7 +104,7 @@ Los términos están clasificados por orden alfabético. El equivalente inglés 
 
 **Mezcla de expertos** (*Mixture of Experts*, MoE) : arquitectura que solo activa una parte de la red en cada token. Hay que distinguir entonces los **parámetros totales** y los **parámetros activos**. Ver [Los LLM en 2026](./act1-llm).
 
-**Conjunto de herramientas** : lista de las herramientas de las que dispone un agente, declarada en el campo `tools:` de su archivo. Una herramienta ausente del conjunto no se puede llamar. Ver [2.3](./act2-delegation).
+**Panoplia**: lista de las herramientas de las que dispone un agente, declarada en el campo `tools:` de su archivo. Una herramienta ausente de la panoplia no se puede invocar. Ver [2.4](./act2-delegation).
 
 **System prompt** (*system prompt*) : texto colocado al principio del contexto que describe al modelo su rol, sus herramientas y sus convenciones. Ver [2.1](./act2-contexte).
 
@@ -120,7 +120,7 @@ Los términos están clasificados por orden alfabético. El equivalente inglés 
 
 **Sonda**: archivo de tests de referencia que trysquare usa para verificar que una ejecución corrige realmente el bug. Ver [3.1](./act3-contexte).
 
-**Subagente** (*subagent*): sesión lanzada por el agente principal con su propio contexto, sus herramientas y su modelo. Solo su conclusión vuelve al contexto principal. Ver [2.3](./act2-delegation).
+**Subagente** (*subagent*): sesión lanzada por el agente principal con su propio contexto, sus herramientas y su modelo. Solo su conclusión vuelve al contexto principal. Ver [2.4](./act2-delegation).
 
 **Token**: fragmento de texto, unidad básica que el modelo lee y produce. Los proveedores facturan por millón de tokens. Ver [Los LLM en 2026](./act1-llm).
 
@@ -130,4 +130,4 @@ Los términos están clasificados por orden alfabético. El equivalente inglés 
 
 **Validación**: en trysquare, ejecutable que puntúa una ejecución y devuelve métricas con sus razones. Ver [3.0](./act3-trysquare).
 
-**Workflow** (flujo de trabajo): encadenamiento de etapas decidido por código, por oposición a un agente que decide él mismo lo que sigue. Ver [2.4](./act2-workflows).
+**Workflow** (flujo de trabajo): encadenamiento de etapas decidido por código, por oposición a un agente que decide por sí mismo lo que sigue. Ver [2.5](./act2-workflows).

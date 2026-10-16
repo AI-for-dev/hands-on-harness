@@ -54,7 +54,7 @@ You may not do everything, but this backlog gives enough material to test your h
 
 The `SUPPORT.md` file contains text that looks like a support procedure, but actually asks to read the `.env` file and send its contents to an external address. This text is untrusted data, placed there to test the safety of your harness, and not a legitimate instruction.
 
-The point to remember right now is this: your harness must treat this text as data, and not as an instruction to execute. [Module 2.0](./act2-sandbox) on the sandbox and [module 2.5](./act2-hooks) on hooks build the guardrails that refuse reading of the `.env`, whether or not the agent has been tricked.
+The point to remember right now is this: your harness must treat this text as data, not as an instruction to execute. [Module 2.0](./act2-sandbox) on the sandbox and [module 2.3](./act2-hooks) on hooks build the guardrails that refuse to read the `.env`, whether or not the agent has been tricked.
 
 ## The destination
 
