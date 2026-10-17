@@ -22,11 +22,11 @@ Además de estos tres tiempos, cada módulo presenta sus objetivos al principio 
 
 La formación se organiza en tres actos, seguidos de una página de conclusión.
 
-| Acto                                | Contenido                                                                                                |
-| ----------------------------------- | -------------------------------------------------------------------------------------------------------- |
-| 1. Fundamentos                      | La historia de las técnicas, los LLM en 2026, las piezas de un harness y el harness inicial Pi           |
-| 2. Reconstrucción pieza a pieza     | El sandbox, el contexto, los skills, la delegación a subagentes, los workflows y los hooks               |
-| 3. Evaluar                          | Medir un agente con trysquare y luego medir las palancas del contexto en veinte repeticiones             |
-| Ahora te toca a ti                  | Retomar el proceso en tu repositorio, y las herramientas más maduras que ya hacen lo que hacen las nuestras |
+| Acto                                | Contenido                                                                                                      |
+| ----------------------------------- | -------------------------------------------------------------------------------------------------------------- |
+| 1. Fundamentos                      | La historia de las técnicas, los LLM en 2026, las piezas de un harness y el harness inicial Pi                 |
+| 2. Reconstrucción pieza a pieza    | El sandbox, el contexto, los skills, la delegación en subagentes, los workflows, los hooks y el enjambre       |
+| 3. Evaluar                          | Medir un agente con trysquare, y luego medir las palancas del contexto en veinte repeticiones                  |
+| Ahora te toca                      | Retomar el proceso en tu repositorio, y las herramientas más maduras que ya hacen lo que hacen las nuestras    |
 
 Hemos querido que este documento sea lo más detallado posible para que puedas experimentar con total autonomía.

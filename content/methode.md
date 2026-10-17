@@ -22,11 +22,11 @@ En plus de ces trois temps, chaque module donne ses objectifs au début, puis, �
 
 La formation s'organise en trois actes, suivis d'une page de conclusion.
 
-| Acte                                | Contenu                                                                                                  |
-| ----------------------------------- | -------------------------------------------------------------------------------------------------------- |
-| 1. Fondations                       | L'historique des techniques, les LLM en 2026, les briques d'un harnais et le harnais de départ Pi        |
-| 2. Reconstruction brique par brique | Le bac à sable, le contexte, les skills, la délégation à des sous-agents, les workflows et les hooks     |
-| 3. Évaluer                          | Mesurer un agent avec trysquare, puis mesurer les leviers du contexte sur vingt répétitions              |
-| À vous de jouer                     | Reprendre la démarche sur votre dépôt, et les outils plus aboutis qui font déjà ce que font les nôtres   |
+| Acte                                | Contenu                                                                                                        |
+| ----------------------------------- | -------------------------------------------------------------------------------------------------------------- |
+| 1. Fondations                       | L'historique des techniques, les LLM en 2026, les briques d'un harnais et le harnais de départ Pi              |
+| 2. Reconstruction brique par brique | Le bac à sable, le contexte, les skills, la délégation à des sous-agents, les workflows, les hooks et l'essaim |
+| 3. Évaluer                          | Mesurer un agent avec trysquare, puis mesurer les leviers du contexte sur vingt répétitions                    |
+| À vous de jouer                     | Reprendre la démarche sur votre dépôt, et les outils plus aboutis qui font déjà ce que font les nôtres         |
 
 Nous avons voulu ce document le plus détaillé possible afin que vous puissiez expérimenter en toute autonomie.

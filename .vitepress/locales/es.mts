@@ -38,7 +38,8 @@ export const es: LocaleSpecificConfig<DefaultTheme.Config> = {
           { text: '2.2 Las habilidades', link: '/es/act2-skill' },
           { text: '2.3 Los hooks', link: '/es/act2-hooks' },
           { text: '2.4 La delegación', link: '/es/act2-delegation' },
-          { text: '2.5 Los flujos de trabajo', link: '/es/act2-workflows' }
+          { text: '2.5 Los flujos de trabajo', link: '/es/act2-workflows' },
+          { text: '2.6 El enjambre', link: '/es/act2-swarm' }
         ]
       },
       {

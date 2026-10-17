@@ -22,11 +22,11 @@ In addition to these three stages, each module states its objectives at the begi
 
 The training is organized into three acts, followed by a conclusion page.
 
-| Act                                 | Content                                                                                                  |
-| ----------------------------------- | -------------------------------------------------------------------------------------------------------- |
-| 1. Foundations                      | The history of the techniques, LLMs in 2026, the building blocks of a harness and the starting harness Pi |
-| 2. Rebuilding block by block        | The sandbox, context, skills, delegation to sub-agents, workflows and hooks                              |
-| 3. Evaluating                       | Measuring an agent with trysquare, then measuring the context levers over twenty repetitions             |
-| Your turn                           | Taking the approach to your own repository, and the more mature tools that already do what ours do       |
+| Act                                | Content                                                                                                        |
+| ---------------------------------- | -------------------------------------------------------------------------------------------------------------- |
+| 1. Foundations                     | The history of the techniques, LLMs in 2026, the building blocks of a harness and the starting harness Pi      |
+| 2. Rebuilding brick by brick       | The sandbox, context, skills, delegation to sub-agents, workflows, hooks and the swarm                         |
+| 3. Evaluating                      | Measuring an agent with trysquare, then measuring the context levers over twenty repetitions                   |
+| Your turn                          | Applying the approach to your own repository, and the more mature tools that already do what ours do           |
 
 We wanted this document to be as detailed as possible so you can experiment on your own.
