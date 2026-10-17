@@ -125,7 +125,7 @@ Personne n'a défendu autre chose que Julia, si bien qu'il n'y a pas eu de déba
 
 ### Imposer le désaccord
 
-Pour qu'il y ait débat, il faut donner aux membres des positions de départ différentes. Votre première idée sera sans doute de faire choisir à chacun un langage au départ, ce que `--claim` permet : chaque langage devient une chose à prendre, `--hold 1` limite chaque membre à une seule, et un membre qui demande un langage déjà pris doit choisir parmi ceux qui restent libres.
+Pour qu'il y ait débat, il faut donner aux membres des positions de départ différentes. Votre première idée sera sans doute de faire choisir à chacun un langage au départ, ce que `--claim` permet : chaque langage devient une chose à prendre, `--hold 1` limite chaque membre à une seule, et un membre qui demande un langage déjà pris est refusé et invité à choisir parmi ceux qui restent libres.
 
 ```
 /swarm --members 3 --claim Python,Julia,C++ --hold 1 --until agree --rounds 4 --agent debater Quel langage choisir pour écrire un nouveau logiciel de calcul scientifique ? Chacun de vous défend au départ le langage qu'il a pris.
@@ -193,7 +193,7 @@ Le raisonnement des débatteurs, que la session HTML de chacun conserve, répond
 
 Chacun traite son camp comme une identité et l'accord comme la reddition des autres, et la conclusion de son raisonnement est la même à chaque tour : « Maintain my vote ». Deux éléments renforcent ce blocage. Le prompt des débatteurs les pousse à tenir (« agreeing to be done with it […] is worse than still disagreeing »), et la question ne donne aucun critère, si bien que chacun ramène le débat sur l'axe où son langage gagne : la performance pour C++, l'écosystème pour Python, le coût humain pour Julia, où personne ne peut être battu.
 
-Pour vérifier cette lecture, nous avons ajouté une seule phrase à la question, sans rien changer d'autre : « Le but n'est pas de gagner : c'est de trouver la réponse que les autres peuvent aussi tenir. » Nous avons aussi lancé les mêmes essais sur deux autres modèles, `qwen3.8-flash` et `deepseek-v4.1-flash` en les imposant à tous les membres avec `--model`.
+Pour vérifier cette lecture, nous avons ajouté une seule phrase à la question, sans rien changer d'autre : « Le but n'est pas de gagner : c'est de trouver la réponse que les autres peuvent aussi tenir. » Nous avons aussi lancé les mêmes essais sur deux autres modèles, `qwen3.8-flash` et `deepseek-v4.1-flash`, en les imposant à tous les membres avec `--model`.
 
 | condition                                   | gemma-4-31b                         | qwen3.8-flash                               | deepseek-v4.1-flash                 |
 | ------------------------------------------- | ----------------------------------- | ------------------------------------------- | ----------------------------------- |

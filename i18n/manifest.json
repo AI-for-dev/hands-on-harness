@@ -217,14 +217,14 @@
   },
   "act2-swarm.md": {
     "en": {
-      "unitHash": "e4f9ab8bdba495b3f4974ad143d4ffbbe04c9c441bfcc921992e4ac99ae6bbe4",
+      "unitHash": "53646309544c672dfdea664209e13b7d58e248efe243a816f81ba94eb5e36c70",
       "model": "pi:opencode-go/deepseek-v4.1-flash",
-      "translatedAt": "2026-10-17T14:09:24.658Z"
+      "translatedAt": "2026-10-17T14:13:08.476Z"
     },
     "es": {
-      "unitHash": "e4f9ab8bdba495b3f4974ad143d4ffbbe04c9c441bfcc921992e4ac99ae6bbe4",
+      "unitHash": "53646309544c672dfdea664209e13b7d58e248efe243a816f81ba94eb5e36c70",
       "model": "pi:opencode-go/deepseek-v4.1-flash",
-      "translatedAt": "2026-10-17T14:09:32.912Z"
+      "translatedAt": "2026-10-17T14:13:40.329Z"
     }
   }
 }
