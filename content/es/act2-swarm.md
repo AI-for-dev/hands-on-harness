@@ -125,14 +125,14 @@ Nadie defendió otra cosa que Julia, así que no hubo debate. Tres copias de un 
 
 ### Imponer el desacuerdo
 
-Para que haya debate, hay que dar a los miembros posiciones de partida diferentes. Tu primera idea será sin duda hacer que cada uno elija un lenguaje al inicio, lo que `--claim` permite: cada lenguaje se convierte en una cosa que tomar, `--hold 1` limita cada miembro a una sola, y a un miembro que pide un lenguaje ya tomado se le rechaza y aprende cuál queda libre.
+Para que haya debate, hay que dar a los miembros posiciones de partida diferentes. Tu primera idea será seguramente hacer que cada uno elija un lenguaje al principio, lo que `--claim` permite: cada lenguaje se convierte en algo que se puede tomar, `--hold 1` limita cada miembro a uno solo, y un miembro que pide un lenguaje ya tomado debe elegir entre los que siguen libres.
 
 ```
 /swarm --members 3 --claim Python,Julia,C++ --hold 1 --until agree --rounds 4 --agent debater Quel langage choisir pour écrire un nouveau logiciel de calcul scientifique ? Chacun de vous défend au départ le langage qu'il a pris.
 ```
 
 ::: info Ejercicio (en sala)
-Lanza este comando y mira, en la sesión HTML de cada miembro, qué lenguaje pidió, qué le respondió la herramienta, y por qué lenguaje votó después.
+Lanza este comando y observa, en herdr o en la sesión HTML de cada miembro, qué lenguaje pidió, qué le respondió la herramienta y por qué lenguaje votó después.
 :::
 
 En nuestro caso, las tres copias de gemma pidieron Julia las tres. `debater#3` la obtuvo, y las otras dos recibieron este rechazo:
@@ -193,7 +193,7 @@ El razonamiento de los debatientes, que la sesión HTML de cada uno conserva, re
 
 Cada uno trata su bando como una identidad y el acuerdo como la rendición de los demás, y la conclusión de su razonamiento es la misma en cada ronda: « Maintain my vote ». Dos elementos refuerzan este bloqueo. El prompt de los debatientes los empuja a mantenerse firmes (« agreeing to be done with it […] is worse than still disagreeing »), y la pregunta no da ningún criterio, de modo que cada uno lleva el debate al eje donde su lenguaje gana: el rendimiento para C++, el ecosistema para Python, el coste humano para Julia, donde nadie puede ser derrotado.
 
-Para verificar esta lectura, añadimos una sola frase a la pregunta, sin cambiar nada más: « El objetivo no es ganar: es encontrar la respuesta que los demás también pueden sostener. » También lanzamos las mismas pruebas sobre otros dos modelos, `qwen3.8-flash` y `deepseek-v4.1-flash`, servidos por [OpenCode Go](https://opencode.ai), imponiéndolos a todos los miembros con `--model`.
+Para verificar esta lectura, añadimos una sola frase a la pregunta, sin cambiar nada más: « El objetivo no es ganar: es encontrar la respuesta que los demás también pueden sostener. » También lanzamos los mismos ensayos en otros dos modelos, `qwen3.8-flash` y `deepseek-v4.1-flash`, imponiéndolos a todos los miembros con `--model`.
 
 | condición                                   | gemma-4-31b                         | qwen3.8-flash                               | deepseek-v4.1-flash                 |
 | ------------------------------------------- | ----------------------------------- | ------------------------------------------- | ----------------------------------- |

@@ -217,14 +217,14 @@
   },
   "act2-swarm.md": {
     "en": {
-      "unitHash": "3cb45d8eb7eb8ce7be70bb56b88ce1fafd776b2962a0d020bec1e6cecc2e2306",
-      "model": "pi:ilaas/gemma-4-31b",
-      "translatedAt": "2026-10-17T13:55:28.707Z"
+      "unitHash": "e4f9ab8bdba495b3f4974ad143d4ffbbe04c9c441bfcc921992e4ac99ae6bbe4",
+      "model": "pi:opencode-go/deepseek-v4.1-flash",
+      "translatedAt": "2026-10-17T14:09:24.658Z"
     },
     "es": {
-      "unitHash": "3cb45d8eb7eb8ce7be70bb56b88ce1fafd776b2962a0d020bec1e6cecc2e2306",
-      "model": "pi:ilaas/gemma-4-31b",
-      "translatedAt": "2026-10-17T13:56:15.348Z"
+      "unitHash": "e4f9ab8bdba495b3f4974ad143d4ffbbe04c9c441bfcc921992e4ac99ae6bbe4",
+      "model": "pi:opencode-go/deepseek-v4.1-flash",
+      "translatedAt": "2026-10-17T14:09:32.912Z"
     }
   }
 }

@@ -125,14 +125,14 @@ No one defended anything other than Julia, so there was no debate. Three copies 
 
 ### Imposing disagreement
 
-For a debate to happen, members must be given different starting positions. Your first idea will probably be to have each member pick a language at the start, which `--claim` allows: each language becomes a thing to claim, `--hold 1` limits each member to one, and a member who asks for an already-claimed language is refused and learns which one is still free.
+For there to be debate, members need different starting positions. Your first idea will probably be to have each member pick a language at the start, which `--claim` allows: each language becomes something to claim, `--hold 1` limits each member to one, and a member who asks for an already claimed language must choose among those still free.
 
 ```
 /swarm --members 3 --claim Python,Julia,C++ --hold 1 --until agree --rounds 4 --agent debater Quel langage choisir pour écrire un nouveau logiciel de calcul scientifique ? Chacun de vous défend au départ le langage qu'il a pris.
 ```
 
 ::: info Exercise (in class)
-Run this command and look, in each member's HTML session, at which language it asked for, what the tool answered, and which language it voted for next.
+Run this command and watch, under herdr or in each member's HTML session, which language it asked for, what the tool answered, and which language it voted for next.
 :::
 
 In our case, all three copies of gemma asked for Julia. `debater#3` got it, and the other two received this refusal:
@@ -193,7 +193,7 @@ The debaters' reasoning, which each one's HTML session keeps, answers the questi
 
 Each one treats their camp as an identity and agreement as the others' surrender, and the conclusion of their reasoning is the same on every turn: "Maintain my vote". Two things reinforce this deadlock. The debaters' prompt pushes them to hold out ("agreeing to be done with it […] is worse than still disagreeing"), and the question gives no criterion, so each one brings the debate back to the axis where their language wins: performance for C++, ecosystem for Python, human cost for Julia, where nobody can be beaten.
 
-To check this reading, we added a single sentence to the question, changing nothing else: "The goal is not to win: it's to find the answer that the others can also hold." We also ran the same trials on two other models, `qwen3.8-flash` and `deepseek-v4.1-flash`, served by [OpenCode Go](https://opencode.ai), imposing them on all members with `--model`.
+To check this reading, we added a single sentence to the question, without changing anything else: "The goal is not to win: it is to find the answer the others can also hold." We also ran the same trials on two other models, `qwen3.8-flash` and `deepseek-v4.1-flash`, forcing them on all members with `--model`.
 
 | condition                                    | gemma-4-31b                        | qwen3.8-flash                                  | deepseek-v4.1-flash                |
 | -------------------------------------------- | ---------------------------------- | ---------------------------------------------- | ---------------------------------- |
