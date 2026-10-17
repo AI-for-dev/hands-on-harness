@@ -49,7 +49,8 @@ export const fr: LocaleSpecificConfig<DefaultTheme.Config> = {
         text: 'Acte 3 - Évaluer',
         items: [
           { text: '3.0 Mesurer un agent : trysquare', link: '/act3-trysquare' },
-          { text: '3.1 Les leviers du contexte, mesurés', link: '/act3-contexte' }
+          { text: '3.1 Les leviers du contexte, mesurés', link: '/act3-contexte' },
+          { text: '3.2 Les compétences, mesurées', link: '/act3-skill' }
         ]
       },
       {

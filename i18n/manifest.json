@@ -226,5 +226,17 @@
       "model": "pi:opencode-go/deepseek-v4.1-flash",
       "translatedAt": "2026-10-17T14:13:40.329Z"
     }
+  },
+  "act3-skill.md": {
+    "en": {
+      "unitHash": "c4f466ec1bfa2116068d1e26306ac84a818b78fa4a9b48b77b263d56a282db34",
+      "model": "pi:opencode-go/deepseek-v4.1-flash",
+      "translatedAt": "2026-10-17T14:18:42.148Z"
+    },
+    "es": {
+      "unitHash": "c4f466ec1bfa2116068d1e26306ac84a818b78fa4a9b48b77b263d56a282db34",
+      "model": "pi:opencode-go/deepseek-v4.1-flash",
+      "translatedAt": "2026-10-17T14:24:59.403Z"
+    }
   }
 }

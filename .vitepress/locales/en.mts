@@ -46,7 +46,8 @@ export const en: LocaleSpecificConfig<DefaultTheme.Config> = {
         text: 'Act 3 - Evaluating',
         items: [
           { text: '3.0 Measuring an agent: trysquare', link: '/en/act3-trysquare' },
-          { text: '3.1 The context levers, measured', link: '/en/act3-contexte' }
+          { text: '3.1 The context levers, measured', link: '/en/act3-contexte' },
+          { text: '3.2 Skills, measured', link: '/en/act3-skill' }
         ]
       },
       {

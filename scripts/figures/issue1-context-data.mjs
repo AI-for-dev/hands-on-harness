@@ -16,6 +16,7 @@
 import { readFileSync, writeFileSync, mkdirSync } from 'node:fs'
 import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
+import { gap, rng } from './lib/stats.mjs'
 
 const OUT = join(dirname(fileURLToPath(import.meta.url)), '../../content/data/issue1-context.json')
 
@@ -46,21 +47,7 @@ const COLS = [
   ['thinking_medium', 'add_tests']
 ]
 
-const BOOTSTRAP_DRAWS = 4000
 const SEED = 20261013
-
-// Générateur pseudo-aléatoire à graine (mulberry32), pour que les intervalles
-// soient identiques d'une génération à l'autre.
-function rng(seed) {
-  let a = seed >>> 0
-  return () => {
-    a = (a + 0x6d2b79f5) >>> 0
-    let t = a
-    t = Math.imul(t ^ (t >>> 15), t | 1)
-    t ^= t + Math.imul(t ^ (t >>> 7), t | 61)
-    return ((t ^ (t >>> 14)) >>> 0) / 4294967296
-  }
-}
 
 const passes = (run, metric) => run.metrics?.[metric] === true
 
@@ -72,23 +59,6 @@ function leverOn(cell, lever) {
     thinking: thinking !== 'off',
     add_tests: addTests === 'add_tests'
   }[lever]
-}
-
-const mean = (xs) => xs.reduce((s, x) => s + x, 0) / xs.length
-
-// Intervalle à 95 % de la différence de deux proportions, par rééchantillonnage
-// de chaque groupe.
-function bootstrap(a, b, random) {
-  const diffs = []
-  for (let i = 0; i < BOOTSTRAP_DRAWS; i++) {
-    let sa = 0
-    let sb = 0
-    for (let j = 0; j < a.length; j++) sa += a[Math.floor(random() * a.length)]
-    for (let j = 0; j < b.length; j++) sb += b[Math.floor(random() * b.length)]
-    diffs.push(sa / a.length - sb / b.length)
-  }
-  diffs.sort((x, y) => x - y)
-  return [diffs[Math.floor(0.025 * BOOTSTRAP_DRAWS)], diffs[Math.floor(0.975 * BOOTSTRAP_DRAWS)]]
 }
 
 const root = process.argv[2]
@@ -131,12 +101,7 @@ for (const model of MODELS) {
     for (const metric of METRICS) {
       const on = runs.filter((r) => leverOn(r.cell, lever)).map((r) => (passes(r, metric) ? 1 : 0))
       const off = runs.filter((r) => !leverOn(r.cell, lever)).map((r) => (passes(r, metric) ? 1 : 0))
-      const [lo, hi] = bootstrap(on, off, random)
-      out.effects[model.id][lever][metric] = {
-        diff: Math.round(100 * (mean(on) - mean(off))),
-        lo: Math.round(100 * lo),
-        hi: Math.round(100 * hi)
-      }
+      out.effects[model.id][lever][metric] = gap(on, off, random)
     }
   }
 }
