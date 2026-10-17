@@ -53,7 +53,7 @@ The third is the agreement, with `--until agree`. combo then adds a voting instr
 
 ### The debater
 
-combo ships a `debater` agent built for this module. Its toolkit is limited to the `board` tool: it reads no file and writes nothing, so the debate does not depend on the repository you launch it in. Its prompt asks it to defend the side its brief names, to publish one vote per round with the argument the others have not yet addressed, to reply with `re` to what is objected against it, and to change its vote when another is right, but never merely to be done.
+combo provides a `debater` agent made for this module. Its toolkit is limited to the `board` tool: it reads no files and writes nothing, so the debate does not depend on the repository in which you run it. Its prompt asks it to defend the side assigned by its system prompt, to publish a vote per turn with the argument that others have not yet addressed, to respond with `re` to objections, and to change its vote when another is right, but never just to end the debate.
 
 ::: details combo's `debater` agent
 
@@ -143,7 +143,7 @@ In our case, all three copies of gemma asked for Julia. `debater#3` got it, and 
 
 Neither of the two took Python or C++. They voted Julia as if they had obtained it, and the swarm stopped on a first-round agreement, in 105 seconds. The mechanism worked, since Julia had only one holder, but it forces no one to defend what's left. combo's documentation reports the same thing on gemma-4-31b and qwen-3.6-35b-instruct: a rejected debater took no other camp in two runs out of four.
 
-A member therefore only defends a position if it is written in its brief, and copies of the same agent share the same brief.
+A member therefore only defends a position if it is written in their system prompt, and copies of the same agent share the same prompt.
 
 ### One agent per camp
 

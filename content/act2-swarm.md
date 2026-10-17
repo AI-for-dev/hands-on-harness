@@ -53,7 +53,7 @@ Le troisième est l'accord, avec `--until agree`. combo ajoute alors à la quest
 
 ### Le débatteur
 
-combo livre un agent `debater` fait pour ce module. Sa panoplie se limite à l'outil `board` : il ne lit aucun fichier et n'écrit rien, si bien que le débat ne dépend pas du dépôt dans lequel vous le lancez. Son prompt lui demande de défendre le camp que son brief nomme, de publier un vote par tour avec l'argument que les autres n'ont pas encore traité, de répondre avec `re` à ce qu'on lui objecte, et de changer de vote quand un autre a raison, mais jamais pour en finir.
+combo livre un agent `debater` fait pour ce module. Sa panoplie se limite à l'outil `board` : il ne lit aucun fichier et n'écrit rien, si bien que le débat ne dépend pas du dépôt dans lequel vous le lancez. Son prompt lui demande de défendre le camp que lui attribue son prompt système, de publier un vote par tour avec l'argument que les autres n'ont pas encore traité, de répondre avec `re` à ce qu'on lui objecte, et de changer de vote quand un autre a raison, mais jamais pour en finir.
 
 ::: details L'agent `debater` de combo
 
@@ -143,7 +143,7 @@ Chez nous, les trois copies de gemma ont demandé Julia toutes les trois. `debat
 
 Aucun des deux n'a pris Python ni C++. Ils ont voté Julia comme s'ils l'avaient obtenu, et l'essaim s'est arrêté sur un accord au premier tour, en 105 secondes. Le mécanisme a fonctionné, puisque Julia n'a eu qu'un seul détenteur, mais il n'oblige personne à défendre ce qui reste. La documentation de combo rapporte la même chose sur gemma-4-31b et qwen-3.6-35b-instruct : un débatteur refusé n'a pris aucun autre camp dans deux exécutions sur quatre.
 
-Un membre ne défend donc une position que si elle est écrite dans son brief, et des copies d'un même agent partagent le même brief.
+Un membre ne défend donc une position que si elle est écrite dans son prompt système, et des copies d'un même agent partagent le même prompt.
 
 ### Un agent par camp
 

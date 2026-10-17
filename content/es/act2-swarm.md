@@ -53,7 +53,7 @@ El tercero es el acuerdo, con `--until agree`. combo añade entonces a la pregun
 
 ### Le débatteur
 
-combo entrega un agente `debater` hecho para este módulo. Su panoplia se limita a la herramienta `board`: no lee ningún archivo y no escribe nada, de modo que el debate no depende del repositorio en el que lo lances. Su prompt le pide defender el bando que nombra su brief, publicar un voto por turno con el argumento que los otros aún no han tratado, responder con `re` a lo que se le objeta, y cambiar de voto cuando otro tiene razón, pero nunca para acabar.
+`combo` proporciona un agente `debater` diseñado para este módulo. Sus herramientas se limitan a la herramienta `board`: no lee ningún archivo ni escribe nada, por lo que el debate no depende del repositorio en el que lo lances. Su prompt le pide que defienda el bando que le asigna su system prompt, que publique un voto por turno con el argumento que los demás aún no hayan tratado, que responda con `re` a lo que se le objete y que cambie su voto cuando otro tenga razón, pero nunca para terminar la discusión.
 
 ::: details L'agent `debater` de combo
 
@@ -143,7 +143,7 @@ En nuestro caso, las tres copias de gemma pidieron Julia las tres. `debater#3` l
 
 Ninguno de los dos eligió Python ni C++. Votaron por Julia como si la hubieran obtenido, y el enjambre se detuvo en un acuerdo en la primera ronda, en 105 segundos. El mecanismo funcionó, ya que Julia solo tuvo un poseedor, pero no obliga a nadie a defender lo que queda. La documentación de combo reporta lo mismo sobre gemma-4-31b y qwen-3.6-35b-instruct: un debatiente rechazado no tomó ningún otro bando en dos ejecuciones de cada cuatro.
 
-Un miembro solo defiende una posición si está escrita en su brief, y las copias de un mismo agente comparten el mismo brief.
+Por lo tanto, un miembro solo defiende una posición si está escrita en su system prompt, y las copias de un mismo agente comparten el mismo prompt.
 
 ### Un agente por bando
 
