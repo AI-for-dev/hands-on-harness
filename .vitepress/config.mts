@@ -25,7 +25,9 @@ const originalQuoteLabel: Record<string, string> = {
 // chart picks its labels from the page language.
 const charts: Record<string, string> = {
   'issue1-matrix': 'Issue1Matrix',
-  'issue1-effects': 'Issue1Effects'
+  'issue1-effects': 'Issue1Effects',
+  'issue1-skill-matrix': 'Issue1SkillMatrix',
+  'issue1-skill-effects': 'Issue1SkillEffects'
 }
 
 // Language of a page from its path relative to content/: en/ and es/ hold the

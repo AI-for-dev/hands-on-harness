@@ -1,0 +1,440 @@
+{
+  "source": "trysquare-starter/results-2026-10-17",
+  "runsPerCell": 20,
+  "models": [
+    {
+      "id": "gemma",
+      "label": "gemma-4-31b"
+    },
+    {
+      "id": "qwen",
+      "label": "qwen-3.8-27b"
+    },
+    {
+      "id": "deepseek",
+      "label": "DeepSeek-V4.1-Flash"
+    }
+  ],
+  "configs": [
+    "nothing",
+    "playtester",
+    "dynamic_playtester"
+  ],
+  "references": [
+    "context_without_probe",
+    "context_with_probe"
+  ],
+  "groups": {
+    "fix": [
+      "bounce_bricks",
+      "bounce_corners",
+      "bounce_tunneling"
+    ],
+    "tests": [
+      "detects_axis",
+      "detects_corner",
+      "detects_neighbors",
+      "detects_tunneling",
+      "tests_sound"
+    ]
+  },
+  "comparisons": [
+    "playtester-nothing",
+    "dynamic_playtester-nothing",
+    "dynamic_playtester-playtester"
+  ],
+  "effectMetrics": [
+    "bounce_corners",
+    "bounce_tunneling",
+    "detects_axis",
+    "detects_corner",
+    "detects_neighbors"
+  ],
+  "cells": {
+    "gemma": {
+      "nothing": {
+        "bounce_bricks": 14,
+        "bounce_corners": 0,
+        "bounce_tunneling": 0,
+        "detects_axis": 4,
+        "detects_corner": 0,
+        "detects_neighbors": 0,
+        "detects_tunneling": 0,
+        "tests_sound": 3
+      },
+      "playtester": {
+        "bounce_bricks": 20,
+        "bounce_corners": 20,
+        "bounce_tunneling": 17,
+        "detects_axis": 5,
+        "detects_corner": 5,
+        "detects_neighbors": 1,
+        "detects_tunneling": 8,
+        "tests_sound": 1
+      },
+      "dynamic_playtester": {
+        "bounce_bricks": 16,
+        "bounce_corners": 0,
+        "bounce_tunneling": 12,
+        "detects_axis": 8,
+        "detects_corner": 1,
+        "detects_neighbors": 1,
+        "detects_tunneling": 4,
+        "tests_sound": 4
+      }
+    },
+    "qwen": {
+      "nothing": {
+        "bounce_bricks": 17,
+        "bounce_corners": 0,
+        "bounce_tunneling": 0,
+        "detects_axis": 0,
+        "detects_corner": 0,
+        "detects_neighbors": 0,
+        "detects_tunneling": 0,
+        "tests_sound": 0
+      },
+      "playtester": {
+        "bounce_bricks": 9,
+        "bounce_corners": 9,
+        "bounce_tunneling": 8,
+        "detects_axis": 9,
+        "detects_corner": 9,
+        "detects_neighbors": 7,
+        "detects_tunneling": 7,
+        "tests_sound": 6
+      },
+      "dynamic_playtester": {
+        "bounce_bricks": 5,
+        "bounce_corners": 4,
+        "bounce_tunneling": 1,
+        "detects_axis": 7,
+        "detects_corner": 4,
+        "detects_neighbors": 0,
+        "detects_tunneling": 1,
+        "tests_sound": 4
+      }
+    },
+    "deepseek": {
+      "nothing": {
+        "bounce_bricks": 20,
+        "bounce_corners": 0,
+        "bounce_tunneling": 0,
+        "detects_axis": 0,
+        "detects_corner": 0,
+        "detects_neighbors": 0,
+        "detects_tunneling": 0,
+        "tests_sound": 0
+      },
+      "playtester": {
+        "bounce_bricks": 20,
+        "bounce_corners": 20,
+        "bounce_tunneling": 19,
+        "detects_axis": 20,
+        "detects_corner": 20,
+        "detects_neighbors": 18,
+        "detects_tunneling": 18,
+        "tests_sound": 16
+      },
+      "dynamic_playtester": {
+        "bounce_bricks": 20,
+        "bounce_corners": 12,
+        "bounce_tunneling": 17,
+        "detects_axis": 20,
+        "detects_corner": 10,
+        "detects_neighbors": 1,
+        "detects_tunneling": 17,
+        "tests_sound": 5
+      }
+    }
+  },
+  "reference": {
+    "gemma": {
+      "context_without_probe": {
+        "bounce_bricks": 19,
+        "bounce_corners": 0,
+        "bounce_tunneling": 0
+      },
+      "context_with_probe": {
+        "bounce_bricks": 19,
+        "bounce_corners": 17,
+        "bounce_tunneling": 9
+      }
+    },
+    "qwen": {
+      "context_without_probe": {
+        "bounce_bricks": 19,
+        "bounce_corners": 0,
+        "bounce_tunneling": 0
+      },
+      "context_with_probe": {
+        "bounce_bricks": 20,
+        "bounce_corners": 20,
+        "bounce_tunneling": 17
+      }
+    },
+    "deepseek": {
+      "context_without_probe": {
+        "bounce_bricks": 19,
+        "bounce_corners": 0,
+        "bounce_tunneling": 1
+      },
+      "context_with_probe": {
+        "bounce_bricks": 20,
+        "bounce_corners": 20,
+        "bounce_tunneling": 20
+      }
+    }
+  },
+  "effects": {
+    "gemma": {
+      "playtester-nothing": {
+        "bounce_corners": {
+          "diff": 100,
+          "lo": 100,
+          "hi": 100
+        },
+        "bounce_tunneling": {
+          "diff": 85,
+          "lo": 70,
+          "hi": 100
+        },
+        "detects_axis": {
+          "diff": 5,
+          "lo": -20,
+          "hi": 30
+        },
+        "detects_corner": {
+          "diff": 25,
+          "lo": 5,
+          "hi": 45
+        },
+        "detects_neighbors": {
+          "diff": 5,
+          "lo": 0,
+          "hi": 15
+        }
+      },
+      "dynamic_playtester-nothing": {
+        "bounce_corners": {
+          "diff": 0,
+          "lo": 0,
+          "hi": 0
+        },
+        "bounce_tunneling": {
+          "diff": 60,
+          "lo": 40,
+          "hi": 80
+        },
+        "detects_axis": {
+          "diff": 20,
+          "lo": -10,
+          "hi": 45
+        },
+        "detects_corner": {
+          "diff": 5,
+          "lo": 0,
+          "hi": 15
+        },
+        "detects_neighbors": {
+          "diff": 5,
+          "lo": 0,
+          "hi": 15
+        }
+      },
+      "dynamic_playtester-playtester": {
+        "bounce_corners": {
+          "diff": -100,
+          "lo": -100,
+          "hi": -100
+        },
+        "bounce_tunneling": {
+          "diff": -25,
+          "lo": -50,
+          "hi": 0
+        },
+        "detects_axis": {
+          "diff": 15,
+          "lo": -15,
+          "hi": 45
+        },
+        "detects_corner": {
+          "diff": -20,
+          "lo": -40,
+          "hi": 0
+        },
+        "detects_neighbors": {
+          "diff": 0,
+          "lo": -15,
+          "hi": 15
+        }
+      }
+    },
+    "qwen": {
+      "playtester-nothing": {
+        "bounce_corners": {
+          "diff": 45,
+          "lo": 25,
+          "hi": 65
+        },
+        "bounce_tunneling": {
+          "diff": 40,
+          "lo": 20,
+          "hi": 60
+        },
+        "detects_axis": {
+          "diff": 45,
+          "lo": 25,
+          "hi": 65
+        },
+        "detects_corner": {
+          "diff": 45,
+          "lo": 25,
+          "hi": 65
+        },
+        "detects_neighbors": {
+          "diff": 35,
+          "lo": 15,
+          "hi": 55
+        }
+      },
+      "dynamic_playtester-nothing": {
+        "bounce_corners": {
+          "diff": 20,
+          "lo": 5,
+          "hi": 40
+        },
+        "bounce_tunneling": {
+          "diff": 5,
+          "lo": 0,
+          "hi": 15
+        },
+        "detects_axis": {
+          "diff": 35,
+          "lo": 15,
+          "hi": 55
+        },
+        "detects_corner": {
+          "diff": 20,
+          "lo": 5,
+          "hi": 40
+        },
+        "detects_neighbors": {
+          "diff": 0,
+          "lo": 0,
+          "hi": 0
+        }
+      },
+      "dynamic_playtester-playtester": {
+        "bounce_corners": {
+          "diff": -25,
+          "lo": -50,
+          "hi": 5
+        },
+        "bounce_tunneling": {
+          "diff": -35,
+          "lo": -60,
+          "hi": -10
+        },
+        "detects_axis": {
+          "diff": -10,
+          "lo": -40,
+          "hi": 20
+        },
+        "detects_corner": {
+          "diff": -25,
+          "lo": -50,
+          "hi": 5
+        },
+        "detects_neighbors": {
+          "diff": -35,
+          "lo": -55,
+          "hi": -15
+        }
+      }
+    },
+    "deepseek": {
+      "playtester-nothing": {
+        "bounce_corners": {
+          "diff": 100,
+          "lo": 100,
+          "hi": 100
+        },
+        "bounce_tunneling": {
+          "diff": 95,
+          "lo": 85,
+          "hi": 100
+        },
+        "detects_axis": {
+          "diff": 100,
+          "lo": 100,
+          "hi": 100
+        },
+        "detects_corner": {
+          "diff": 100,
+          "lo": 100,
+          "hi": 100
+        },
+        "detects_neighbors": {
+          "diff": 90,
+          "lo": 75,
+          "hi": 100
+        }
+      },
+      "dynamic_playtester-nothing": {
+        "bounce_corners": {
+          "diff": 60,
+          "lo": 40,
+          "hi": 80
+        },
+        "bounce_tunneling": {
+          "diff": 85,
+          "lo": 70,
+          "hi": 100
+        },
+        "detects_axis": {
+          "diff": 100,
+          "lo": 100,
+          "hi": 100
+        },
+        "detects_corner": {
+          "diff": 50,
+          "lo": 30,
+          "hi": 70
+        },
+        "detects_neighbors": {
+          "diff": 5,
+          "lo": 0,
+          "hi": 15
+        }
+      },
+      "dynamic_playtester-playtester": {
+        "bounce_corners": {
+          "diff": -40,
+          "lo": -60,
+          "hi": -20
+        },
+        "bounce_tunneling": {
+          "diff": -10,
+          "lo": -30,
+          "hi": 5
+        },
+        "detects_axis": {
+          "diff": 0,
+          "lo": 0,
+          "hi": 0
+        },
+        "detects_corner": {
+          "diff": -50,
+          "lo": -70,
+          "hi": -30
+        },
+        "detects_neighbors": {
+          "diff": -85,
+          "lo": -100,
+          "hi": -65
+        }
+      }
+    }
+  }
+}
