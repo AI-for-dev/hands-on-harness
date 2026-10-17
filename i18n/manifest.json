@@ -61,14 +61,14 @@
   },
   "methode.md": {
     "en": {
-      "unitHash": "e0c3e04cf5f51ec9f60aa59eca8406b93b9a41b9fc58c9756de97575c5730615",
+      "unitHash": "e31ee5ce5f28860377e73a49c9ff60d7080f0ed3fd1d37f9f6a8c7db2f19cda4",
       "model": "pi:opencode-go/deepseek-v4.1-flash",
-      "translatedAt": "2026-10-12T18:36:38.059Z"
+      "translatedAt": "2026-10-17T13:23:13.921Z"
     },
     "es": {
-      "unitHash": "e0c3e04cf5f51ec9f60aa59eca8406b93b9a41b9fc58c9756de97575c5730615",
+      "unitHash": "e31ee5ce5f28860377e73a49c9ff60d7080f0ed3fd1d37f9f6a8c7db2f19cda4",
       "model": "pi:opencode-go/deepseek-v4.1-flash",
-      "translatedAt": "2026-10-12T18:36:45.376Z"
+      "translatedAt": "2026-10-17T13:23:26.512Z"
     }
   },
   "act2-contexte.md": {
@@ -193,14 +193,14 @@
   },
   "annexes.md": {
     "en": {
-      "unitHash": "e9b479b53f587797bab0517f55232abc942abdf849f4210cff948b434e2354ba",
+      "unitHash": "ad27ae908e12eba93a10d07cc65e219173408eb44432b55102d8dffc7959b972",
       "model": "pi:opencode-go/deepseek-v4.1-flash",
-      "translatedAt": "2026-10-16T17:35:16.513Z"
+      "translatedAt": "2026-10-17T13:23:04.411Z"
     },
     "es": {
-      "unitHash": "e9b479b53f587797bab0517f55232abc942abdf849f4210cff948b434e2354ba",
+      "unitHash": "ad27ae908e12eba93a10d07cc65e219173408eb44432b55102d8dffc7959b972",
       "model": "pi:opencode-go/deepseek-v4.1-flash",
-      "translatedAt": "2026-10-16T17:36:19.850Z"
+      "translatedAt": "2026-10-17T13:23:08.562Z"
     }
   },
   "debuter.md": {
@@ -213,6 +213,18 @@
       "unitHash": "0373b484d57f6dfe6061566d225e0a37e4d613b04929560b0f62f0ec42bce82b",
       "model": "pi:opencode-go/deepseek-v4.1-flash",
       "translatedAt": "2026-10-16T17:36:34.501Z"
+    }
+  },
+  "act2-swarm.md": {
+    "en": {
+      "unitHash": "502eb46a3e1e67752885c6e7ed95d52ff5a0151675322732dfc49c06c5b4a10a",
+      "model": "pi:opencode-go/deepseek-v4.1-flash",
+      "translatedAt": "2026-10-17T13:21:48.197Z"
+    },
+    "es": {
+      "unitHash": "502eb46a3e1e67752885c6e7ed95d52ff5a0151675322732dfc49c06c5b4a10a",
+      "model": "pi:opencode-go/deepseek-v4.1-flash",
+      "translatedAt": "2026-10-17T13:22:59.020Z"
     }
   }
 }

@@ -76,6 +76,8 @@ Los términos están clasificados por orden alfabético. El equivalente inglés 
 
 **Esfuerzo de razonamiento** (*thinking level*): ajuste que deja al modelo producir más o menos tokens de reflexión antes de responder. Ver [Los LLM en 2026](./act1-llm) y [2.1](./act2-contexte).
 
+**Enjambre** (*swarm*): varios agentes sobre una misma tarea, que intercambian mediante una tabla común y deciden ellos mismos qué hacen con el mensaje de otro, en lugar de seguir una secuencia escrita de antemano. Ver [2.6](./act2-swarm).
+
 **Patrón**: etiqueta congelada del repositorio NÉON (por ejemplo `etalon-v1`) que cada ejecución clona, para que todas partan del mismo código. Ver [3.0](./act3-trysquare).
 
 **Evaluación**: comparación de configuraciones sobre una misma tarea, repitiendo cada configuración porque el resultado varía de una ejecución a otra. Un **test**, en cambio, responde sí o no. Ver [3.0](./act3-trysquare).
@@ -121,6 +123,8 @@ Los términos están clasificados por orden alfabético. El equivalente inglés 
 **Sonda**: archivo de tests de referencia que trysquare usa para verificar que una ejecución corrige realmente el bug. Ver [3.1](./act3-contexte).
 
 **Subagente** (*subagent*): sesión lanzada por el agente principal con su propio contexto, sus herramientas y su modelo. Solo su conclusión vuelve al contexto principal. Ver [2.4](./act2-delegation).
+
+**Tablero** (*board*): en combo, registro compartido por los miembros de un enjambre, donde solo se pueden añadir mensajes y donde el autor de cada uno queda inscrito por el propio tablero. Ver [2.6](./act2-swarm).
 
 **Token**: fragmento de texto, unidad básica que el modelo lee y produce. Los proveedores facturan por millón de tokens. Ver [Los LLM en 2026](./act1-llm).
 

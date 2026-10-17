@@ -76,6 +76,8 @@ Les termes sont classés par ordre alphabétique. L'équivalent anglais est donn
 
 **Effort de raisonnement** (*thinking level*) : réglage qui laisse le modèle produire plus ou moins de tokens de réflexion avant de répondre. Voir [Les LLM en 2026](./act1-llm) et [2.1](./act2-contexte).
 
+**Essaim** (*swarm*) : plusieurs agents sur une même tâche, qui échangent par un tableau commun et décident eux-mêmes de ce qu'ils font du message d'un autre, au lieu de suivre un enchaînement écrit à l'avance. Voir [2.6](./act2-swarm).
+
 **Étalon** : tag figé du dépôt NÉON (par exemple `etalon-v1`) que chaque exécution clone, pour que toutes partent du même code. Voir [3.0](./act3-trysquare).
 
 **Évaluation** : comparaison de configurations sur une même tâche, en répétant chaque configuration parce que le résultat varie d'une exécution à l'autre. Un **test**, lui, répond par oui ou par non. Voir [3.0](./act3-trysquare).
@@ -121,6 +123,8 @@ Les termes sont classés par ordre alphabétique. L'équivalent anglais est donn
 **Sonde** : fichier de tests de référence que trysquare utilise pour vérifier qu'une exécution corrige vraiment le bug. Voir [3.1](./act3-contexte).
 
 **Sous-agent** (*subagent*) : session lancée par l'agent principal avec son propre contexte, ses outils et son modèle. Seule sa conclusion revient dans le contexte principal. Voir [2.4](./act2-delegation).
+
+**Tableau** (*board*) : dans combo, journal partagé par les membres d'un essaim, où l'on ne peut qu'ajouter des messages et où l'auteur de chacun est inscrit par le tableau lui-même. Voir [2.6](./act2-swarm).
 
 **Token** : fragment de texte, unité de base que le modèle lit et produit. Les fournisseurs facturent au million de tokens. Voir [Les LLM en 2026](./act1-llm).
 

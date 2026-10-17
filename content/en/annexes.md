@@ -76,6 +76,8 @@ Terms are listed alphabetically. The English equivalent is given in parentheses 
 
 **Reasoning effort** (*thinking level*): setting that lets the model produce more or fewer thinking tokens before answering. See [Les LLM en 2026](./act1-llm) and [2.1](./act2-contexte).
 
+**Swarm** (*swarm*): several agents on the same task, exchanging through a shared board and deciding for themselves what to do with another's message, instead of following a sequence written in advance. See [2.6](./act2-swarm).
+
 **Reference tag**: frozen tag of the NÉON repo (for example `etalon-v1`) that each run clones, so that all start from the same code. See [3.0](./act3-trysquare).
 
 **Evaluation**: comparison of configurations on the same task, repeating each configuration because the result varies from one run to the next. A **test**, by contrast, answers yes or no. See [3.0](./act3-trysquare).
@@ -121,6 +123,8 @@ Terms are listed alphabetically. The English equivalent is given in parentheses 
 **Probe**: reference test file that trysquare uses to check whether a run actually fixes the bug. See [3.1](./act3-contexte).
 
 **Subagent** (*subagent*): session launched by the main agent with its own context, tools and model. Only its conclusion comes back into the main context. See [2.4](./act2-delegation).
+
+**Board** (*board*): in combo, a log shared by the members of a swarm, to which you can only append messages and where the author of each is recorded by the board itself. See [2.6](./act2-swarm).
 
 **Token**: text fragment, the basic unit the model reads and produces. Providers bill per million tokens. See [LLMs in 2026](./act1-llm).
 
