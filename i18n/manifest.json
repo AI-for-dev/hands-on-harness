@@ -205,14 +205,14 @@
   },
   "debuter.md": {
     "en": {
-      "unitHash": "0373b484d57f6dfe6061566d225e0a37e4d613b04929560b0f62f0ec42bce82b",
-      "model": "pi:opencode-go/deepseek-v4.1-flash",
-      "translatedAt": "2026-10-16T17:36:23.607Z"
+      "unitHash": "034289f498f27b6626c6d7daea47bf92dac4bf7e7474e1d80104dd1870fba803",
+      "model": "pi:ilaas/gemma-4-31b",
+      "translatedAt": "2026-10-18T04:09:47.154Z"
     },
     "es": {
-      "unitHash": "0373b484d57f6dfe6061566d225e0a37e4d613b04929560b0f62f0ec42bce82b",
-      "model": "pi:opencode-go/deepseek-v4.1-flash",
-      "translatedAt": "2026-10-16T17:36:34.501Z"
+      "unitHash": "034289f498f27b6626c6d7daea47bf92dac4bf7e7474e1d80104dd1870fba803",
+      "model": "pi:ilaas/gemma-4-31b",
+      "translatedAt": "2026-10-18T04:11:41.236Z"
     }
   },
   "act2-swarm.md": {

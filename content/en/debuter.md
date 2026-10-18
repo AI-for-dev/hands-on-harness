@@ -25,7 +25,7 @@ The module on hooks asks you to write a bit of TypeScript. If you don't know it,
 - **[Pi](https://pi.dev)**, the coding agent for the training. The module [The starting harness: Pi](./act1-pi) explains how to install it and declare your models.
 - **Access to a model.** In the classroom, an [ILaaS](https://www.ilaas.fr/) API key is provided to you. On your own, you can use any provider Pi knows how to call.
 
-Other tools are only used in certain parts: [Docker Sandboxes](https://docs.docker.com/ai/sandboxes/) for the second half of the sandbox, [uv](https://docs.astral.sh/uv/) for act 3, [herdr](https://herdr.dev) to watch the subagents work. You can leave them aside to start.
+Other tools are only used in certain sections: [Docker Sandboxes](https://docs.docker.com/ai/sandboxes/) for the second half of the sandbox, an [opencode Go](https://opencode.ai/docs/go/) account (paid) to see cache reads in the context module, [herdr](https://herdr.dev) to watch sub-agents work and follow the swarm board, and [uv](https://docs.astral.sh/uv/) for act 3. You can set them aside to get started.
 
 Check your installation with these commands:
 
@@ -39,20 +39,22 @@ pi --version
 
 Follow the modules in the order of the table of contents, but at first only keep the "to do" column. The "can wait" column contains what demands more tools or more time.
 
-| module                                         | to do                                                                       | can wait                                         |
-| ---------------------------------------------- | --------------------------------------------------------------------------- | ------------------------------------------------ |
-| [LLMs in 2026](./act1-llm)                     | everything                                                                  | the "References" readings                        |
-| [Why a harness](./act1-harness)                | everything, skimming "The seven building blocks"                            |                                                  |
-| [Pi](./act1-pi)                                | the installation, the first commands, installing combo                      |                                                  |
-| [2.0 The sandbox](./act2-sandbox)              | "Understanding" and the exercise with `pi-permission-system`                | Docker Sandboxes (`sbx`)                         |
-| First ticket                                   | the exercise below                                                          |                                                  |
-| [2.1 Context](./act2-contexte)                 | "Understanding", the model choice, the reasoning effort and `AGENTS.md`     | the system prompt, the constrained window, `codemode` |
-| [2.2 Skills](./act2-skill)                     | "Understanding" and version 1 of `playtester`                               | version 2 (`dynamic-playtester`)                 |
-| [2.3 Hooks](./act2-hooks)                      | both extensions                                                             |                                                  |
-| [2.4 Delegation](./act2-delegation)            | "Understanding" and the exercise on each agent's tools                      | the full loop turn                               |
-| [2.5 Workflows](./act2-workflows)              | "Understanding"                                                            | the ticket #2 flow and its adaptation            |
-| [3.0 Measuring an agent](./act3-trysquare)     | the introduction and "How to read a gap?"                                   | installing trysquare                             |
-| [3.1 The levers of context](./act3-contexte)   | "The results" and "Generalizing"                                            | the exercise that reruns the matrix              |
+| module                                         | to do                                                                                          | can wait                                                                      |
+| ---------------------------------------------- | ------------------------------------------------------------------------------------------------ | --------------------------------------------------------------------------------- |
+| [LLMs in 2026](./act1-llm)                     | everything                                                                                     | the "References" readings                                                   |
+| [Why a harness](./act1-harness)               | everything, skimming through "The seven building blocks"                                        |                                                                                    |
+| [Pi](./act1-pi)                                | installation, first commands, combo installation                                              |                                                                                    |
+| [2.0 The sandbox](./act2-sandbox)             | "Understand" and the exercise with `pi-permission-system`                                         | Docker Sandboxes (`sbx`)                                                   |
+| First ticket                                   | the exercise below                                                                              |                                                                                    |
+| [2.1 Context](./act2-contexte)                | "Understand", model choice, reasoning effort, and `AGENTS.md`                                     | the system prompt, the capped window, `codemode`                                 |
+| [2.2 Skills](./act2-skill)                     | "Understand" and version 1 of `playtester`                                                     | version 2 (`dynamic-playtester`)                                              |
+| [2.3 Hooks](./act2-hooks)                      | the two extensions                                                                              |                                                                                    |
+| [2.4 Delegation](./act2-delegation)           | "Understand", the exercise on each agent's tools, and the one comparing the two windows | the full loop cycle and trace reading                                          |
+| [2.5 Workflows](./act2-workflows)              | "Understand"                                                                                    | the flow of ticket #2 and its adaptation                                       |
+| [2.6 Swarm](./act2-swarm)                       | "Understand" and the debate on a question it can resolve                                      | the three copies of `debater`, `--claim`, and model comparison                |
+| [3.0 Measuring an agent](./act3-trysquare)      | the introduction and "How to read a gap?"                                                     | trysquare installation                                                      |
+| [3.1 Context levers](./act3-contexte)          | "The results", "How do models work?" and "Generalizing"                                     | "Can we trust the campaigns?" and the exercise that re-runs the matrix |
+| [3.2 Skills, measured](./act3-skill)           | "The results", "How do models work?" and "Generalizing"                                     | "Can we trust the campaigns?" and the exercise that re-runs the matrix |
 
 The [glossary](./annexes#glossaire) explains the terms used in the training.
 
@@ -106,12 +108,12 @@ In our trial with `gemma-4-31b`, Pi added two tests, capped the multiplier at 10
 
 These habits come up in every module. Adopt them now.
 
-- **Read the diff again.** The agent's summary says what it thinks it did. The diff says what it did.
+- **Review the diff.** The agent's summary says what it thinks it did. The diff says what it actually did.
 - **Run the tests yourself.** A green suite reported by the agent is not a green suite.
-- **Check the added tests.** The agent can add trivial tests and miss the essential.
-- **Work on a branch, in a clone or a worktree.** You must be able to undo everything at any time.
-- **Do not commit what you do not understand.** If a modification escapes you, ask the agent to explain it, or discard it.
+- **Verify that the added tests fail when the behavior breaks.** The agent may add trivial tests and miss the essentials.
+- **Work on a branch, in a clone, or in a worktree.** You must be able to undo everything at any time.
+- **Do not commit what you do not understand.** If you don't understand a change, ask the agent to explain it, or discard it.
 
 ::: tip What you have learned
-You know what to install to follow the training and where to go in the modules. You had an agent fix a ticket, and you know how to check its work: read the diff again, run the tests yourself and make sure a written test makes sense.
+You know what to install to follow the training and how to navigate the modules. You had an agent fix a ticket, and you know how to verify its work: reviewing the diff, running the tests yourself, and ensuring that a written test makes sense.
 :::
