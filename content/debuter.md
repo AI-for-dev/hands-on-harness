@@ -54,6 +54,7 @@ Suivez les modules dans l'ordre du sommaire, mais en ne gardant d'abord que la c
 | [2.6 L'essaim](./act2-swarm)                   | « Comprendre » et le débat sur une question qu'il peut trancher                                  | les trois copies de `debater`, `--claim` et la comparaison des modèles   |
 | [3.0 Mesurer un agent](./act3-trysquare)       | l'introduction et « Comment lire un écart ? »                                                    | l'installation de trysquare                                              |
 | [3.1 Les leviers du contexte](./act3-contexte) | « Les résultats », « Comment travaillent les modèles ? » et « Généraliser »                      | « Peut-on se fier aux campagnes ? » et l'exercice qui relance la matrice |
+| [3.2 Les compétences, mesurées](./act3-skill)  | « Les résultats », « Comment travaillent les modèles ? » et « Généraliser »                      | « Peut-on se fier aux campagnes ? » et l'exercice qui relance la matrice |
 
 Le [glossaire](./annexes#glossaire) explique les termes de la formation.
 

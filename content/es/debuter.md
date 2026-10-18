@@ -39,21 +39,22 @@ pi --version
 
 Sigue los módulos en el orden del índice, pero quedándote al principio solo con la columna «por hacer». La columna «puede esperar» contiene lo que exige más herramientas o más tiempo.
 
-| módulo                                         | por hacer                                                                                          | puede esperar                                                            |
-| ---------------------------------------------- | ------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------ |
-| [Los LLM en 2026](./act1-llm)                  | todo                                                                                             | las lecturas de « Referencias »                                           |
-| [Por qué un harness](./act1-harness)          | todo, leyendo rápidamente « Los siete bloques »                                                        |                                                                          |
+| módulo                                          | a hacer                                                                                         | puede esperar                                                            |
+| ---------------------------------------------- | ---------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------ |
+| [Los LLM en 2026](./act1-llm)                  | todo                                                                                           | las lecturas de « Referencias »                                           |
+| [Por qué un harness](./act1-harness)          | todo, leyendo rápido « Los siete bloques »                                                       |                                                                          |
 | [Pi](./act1-pi)                                | la instalación, los primeros comandos, la instalación de combo                                 |                                                                          |
-| [2.0 El sandbox](./act2-sandbox)              | « Comprender » y el ejercicio con `pi-permission-system`                                         | Docker Sandboxes (`sbx`)                                                 |
-| Primer ticket                                 | el ejercicio de abajo                                                                            |                                                                          |
-| [2.1 El contexto](./act2-contexte)             | « Comprender », la elección del modelo, el esfuerzo de razonamiento y `AGENTS.md`                      | el system prompt, la ventana limitada, `codemode`                         |
-| [2.2 Los skills](./act2-skill)                 | « Comprender » y la versión 1 de `playtester`                                                   | la versión 2 (`dynamic-playtester`)                                      |
-| [2.3 Los hooks](./act2-hooks)                  | las dos extensiones                                                                              |                                                                          |
-| [2.4 La delegación](./act2-delegation)         | « Comprender », el ejercicio sobre las herramientas de cada agente y el que compara las dos ventanas | el ciclo de bucle completo y la lectura del trace                      |
-| [2.5 Los workflows](./act2-workflows)          | « Comprender »                                                                                   | el flujo del ticket #2 y su adaptación                                   |
-| [2.6 El swarm](./act2-swarm)                   | « Comprender » y el debate sobre una cuestión que pueda resolver                                  | las tres copias de `debater`, `--claim` y la comparación de los modelos   |
-| [3.0 Medir un agente](./act3-trysquare)       | la introducción y « ¿Cómo leer una desviación? »                                                    | la instalación de trysquare                                              |
-| [3.1 Las palancas del contexto](./act3-contexte) | « Los resultados », « ¿Cómo trabajan los modelos? » y « Generalizar »                      | « ¿Se puede confiar en las campañas? » y el ejercicio que reinicia la matriz |
+| [2.0 El sandbox](./act2-sandbox)               | « Comprender » y el ejercicio con `pi-permission-system`                                         | Docker Sandboxes (`sbx`)                                                 |
+| Primer ticket                                  | el ejercicio de abajo                                                                           |                                                                          |
+| [2.1 El contexto](./act2-contexte)            | « Comprender », la elección del modelo, el esfuerzo de razonamiento y `AGENTS.md`                      | el system prompt, la ventana limitada, `codemode`                         |
+| [2.2 Los skills](./act2-skill)                | « Comprender » y la versión 1 de `playtester`                                                   | la versión 2 (`dynamic-playtester`)                                      |
+| [2.3 Los hooks](./act2-hooks)                   | las dos extensiones                                                                              |                                                                          |
+| [2.4 La delegación](./act2-delegation)        | « Comprender », el ejercicio sobre las herramientas de cada agente y el que compara las dos ventanas | el ciclo de bucle completo y la lectura de la traza                      |
+| [2.5 Los workflows](./act2-workflows)           | « Comprender »                                                                                   | el flujo del ticket #2 y su adaptación                                   |
+| [2.6 El enjambre](./act2-swarm)                | « Comprender » y el debate sobre una cuestión que pueda resolver                                  | las tres copias de `debater`, `--claim` y la comparación de los modelos   |
+| [3.0 Medir un agente](./act3-trysquare)        | la introducción y « ¿Cómo leer una desviación? »                                                    | la instalación de trysquare                                              |
+| [3.1 Las palancas del contexto](./act3-contexte) | « Los resultados », « ¿Cómo trabajan los modelos? » y « Generalizar »                      | « ¿Podemos confiar en las campañas? » y el ejercicio que reinicia la matriz |
+| [3.2 Las competencias, medidas](./act3-skill) | « Los resultados », « ¿Cómo trabajan los modelos? » y « Generalizar »                      | « ¿Podemos confiar en las campañas? » y el ejercicio que reinicia la matriz |
 
 El [glosario](./annexes#glossaire) explica los términos de la formación.
 
