@@ -82,7 +82,7 @@ These are the three models from module 3.1, this time all served by GRICAD:
 | `qwen-3.8-27b`        | `medium`     | 60 min  |
 | `DeepSeek-V4.1-Flash` | `medium`     | 30 min  |
 
-The campaigns were launched on 17 October 2026, against the `etalon-v1` tag, with an output cap of 32,768 tokens per turn. Each configuration is repeated twenty times, giving 60 runs per model. The timeout is longer than in module 3.1 because a skill keeps the agent working longer.
+The campaigns were launched on 17 October 2026, against the tag `etalon-v1`, with an output cap of 32,768 tokens per turn. Each configuration is repeated twenty times, that is 60 runs per model. The timeout is longer than in module 3.1 because a skill keeps the agent working for longer. The raw results are in the `resultats/issue1-skill_*` directories of the [act's Zenodo archive](https://doi.org/10.5281/zenodo.23452689).
 
 ::: info Exercise (in class, then on your own)
 Go into [trysquare-starter](https://github.com/AI-for-dev/trysquare-starter), open `scenarios/issue1-skill.toml` and adapt the `[agent]` section to your provider. Run the matrix with three repetitions:

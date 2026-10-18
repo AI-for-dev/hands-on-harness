@@ -160,6 +160,10 @@ Count the runs the plan announces and estimate what they would cost in time, fro
 
 The other subcommands work on an already measured matrix and also do not call a model: `render` rebuilds the tables, possibly against another reference, `replay --rescore` rescores the archived runs after a validation fix, `compare` puts two matrices side by side and refuses what is not comparable, and `watch` follows in the browser a matrix in progress and the session of each run while the agent writes it.
 
+::: info Results from act 3
+The campaigns from modules 3.1 and 3.2 are archived on Zenodo: [Measuring context and skills of a coding agent on a brick-breaker bug](https://doi.org/10.5281/zenodo.23452689). For each of the 1,140 runs, the archive keeps the configuration, the produced diff, the agent's full session and the validator output, along with the trysquare summary for each model. Open `resultats/index.html` in a browser to browse the sessions. The file `evaluation-acte3.zip` weighs 211 MB: download and unzip it before the session, since the exercises in the next two modules compare your matrices against ours.
+:::
+
 ## Further reading
 
 - The [trysquare documentation](https://ai-for-dev.github.io/trysquare/), in particular its pages on writing a scenario, writing a validation and measurement invariants.
