@@ -25,7 +25,7 @@ Le module sur les hooks demande d'écrire un peu de TypeScript. Si vous ne le co
 - **[Pi](https://pi.dev)**, l'agent de code de la formation. Le module [Le harnais de départ : Pi](./act1-pi) explique comment l'installer et déclarer vos modèles.
 - **Un accès à un modèle.** En salle, une clé d'API [ILaaS](https://www.ilaas.fr/) vous est fournie. Seul, vous pouvez utiliser n'importe quel fournisseur que Pi sait appeler.
 
-D'autres outils ne servent que dans certaines parties : [Docker Sandboxes](https://docs.docker.com/ai/sandboxes/) pour la seconde moitié du bac à sable, [uv](https://docs.astral.sh/uv/) pour l'acte 3, [herdr](https://herdr.dev) pour regarder les sous-agents travailler. Vous pouvez les laisser de côté pour commencer.
+D'autres outils ne servent que dans certaines parties : [Docker Sandboxes](https://docs.docker.com/ai/sandboxes/) pour la seconde moitié du bac à sable, un compte [opencode Go](https://opencode.ai/docs/go/) (payant) pour voir la lecture de cache dans le module sur le contexte, [herdr](https://herdr.dev) pour regarder les sous-agents travailler et suivre le tableau de l'essaim, [uv](https://docs.astral.sh/uv/) pour l'acte 3. Vous pouvez les laisser de côté pour commencer.
 
 Vérifiez votre installation avec ces commandes :
 
@@ -39,20 +39,21 @@ pi --version
 
 Suivez les modules dans l'ordre du sommaire, mais en ne gardant d'abord que la colonne « à faire ». La colonne « peut attendre » contient ce qui demande plus d'outils ou plus de temps.
 
-| module                                         | à faire                                                                     | peut attendre                                    |
-| ---------------------------------------------- | --------------------------------------------------------------------------- | ------------------------------------------------ |
-| [Les LLM en 2026](./act1-llm)                  | tout                                                                        | les lectures de « Références »                   |
-| [Pourquoi un harnais](./act1-harness)          | tout, en lisant vite « Les sept briques »                                   |                                                  |
-| [Pi](./act1-pi)                                | l'installation, les premières commandes, l'installation de combo            |                                                  |
-| [2.0 Le bac à sable](./act2-sandbox)           | « Comprendre » et l'exercice avec `pi-permission-system`                    | Docker Sandboxes (`sbx`)                         |
-| Premier ticket                                 | l'exercice ci-dessous                                                       |                                                  |
-| [2.1 Le contexte](./act2-contexte)             | « Comprendre », le choix du modèle, l'effort de raisonnement et `AGENTS.md` | le prompt système, la fenêtre bridée, `codemode` |
-| [2.2 Les skills](./act2-skill)                 | « Comprendre » et la version 1 de `playtester`                              | la version 2 (`dynamic-playtester`)              |
-| [2.3 Les hooks](./act2-hooks)                  | les deux extensions                                                         |                                                  |
-| [2.4 La délégation](./act2-delegation)         | « Comprendre » et l'exercice sur les outils de chaque agent                 | le tour de boucle complet                        |
-| [2.5 Les workflows](./act2-workflows)          | « Comprendre »                                                              | le flow du ticket #2 et son adaptation           |
-| [3.0 Mesurer un agent](./act3-trysquare)       | l'introduction et « Comment lire un écart ? »                               | l'installation de trysquare                      |
-| [3.1 Les leviers du contexte](./act3-contexte) | « Les résultats » et « Généraliser »                                        | l'exercice qui relance la matrice                |
+| module                                         | à faire                                                                                          | peut attendre                                                            |
+| ---------------------------------------------- | ------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------ |
+| [Les LLM en 2026](./act1-llm)                  | tout                                                                                             | les lectures de « Références »                                           |
+| [Pourquoi un harnais](./act1-harness)          | tout, en lisant vite « Les sept briques »                                                        |                                                                          |
+| [Pi](./act1-pi)                                | l'installation, les premières commandes, l'installation de combo                                 |                                                                          |
+| [2.0 Le bac à sable](./act2-sandbox)           | « Comprendre » et l'exercice avec `pi-permission-system`                                         | Docker Sandboxes (`sbx`)                                                 |
+| Premier ticket                                 | l'exercice ci-dessous                                                                            |                                                                          |
+| [2.1 Le contexte](./act2-contexte)             | « Comprendre », le choix du modèle, l'effort de raisonnement et `AGENTS.md`                      | le prompt système, la fenêtre bridée, `codemode`                         |
+| [2.2 Les skills](./act2-skill)                 | « Comprendre » et la version 1 de `playtester`                                                   | la version 2 (`dynamic-playtester`)                                      |
+| [2.3 Les hooks](./act2-hooks)                  | les deux extensions                                                                              |                                                                          |
+| [2.4 La délégation](./act2-delegation)         | « Comprendre », l'exercice sur les outils de chaque agent et celui qui compare les deux fenêtres | le tour de boucle complet et la lecture de la trace                      |
+| [2.5 Les workflows](./act2-workflows)          | « Comprendre »                                                                                   | le flow du ticket #2 et son adaptation                                   |
+| [2.6 L'essaim](./act2-swarm)                   | « Comprendre » et le débat sur une question qu'il peut trancher                                  | les trois copies de `debater`, `--claim` et la comparaison des modèles   |
+| [3.0 Mesurer un agent](./act3-trysquare)       | l'introduction et « Comment lire un écart ? »                                                    | l'installation de trysquare                                              |
+| [3.1 Les leviers du contexte](./act3-contexte) | « Les résultats », « Comment travaillent les modèles ? » et « Généraliser »                      | « Peut-on se fier aux campagnes ? » et l'exercice qui relance la matrice |
 
 Le [glossaire](./annexes#glossaire) explique les termes de la formation.
 
@@ -108,10 +109,10 @@ Ces réflexes reviennent dans tous les modules. Prenez-les dès maintenant.
 
 - **Relisez le diff.** Le résumé de l'agent dit ce qu'il pense avoir fait. Le diff dit ce qu'il a fait.
 - **Lancez les tests vous-même.** Une suite verte indiquée par l'agent n'est pas une suite verte.
-- **Vérifiez que les tests ajoutés.** L'agent peut ajouter des tests triviaux et passer à coté de l'essentiel.
+- **Vérifiez que les tests ajoutés échouent quand le comportement casse.** L'agent peut ajouter des tests triviaux et passer à côté de l'essentiel.
 - **Travaillez sur une branche, dans un clone ou un worktree.** Vous devez pouvoir tout annuler à tout moment.
 - **Ne commitez pas ce que vous ne comprenez pas.** Si une modification vous échappe, demandez à l'agent de l'expliquer, ou jetez-la.
 
 ::: tip Ce que vous avez appris
-Vous savez ce qu'il faut installer pour suivre la formation et par où passer dans les modules. Vous avez fait corriger un ticket par un agent, et vous savez vérifier son travail : relire le diff, lancer les tests vous-même et vous assurer qu'un test écrit à du sens.
+Vous savez ce qu'il faut installer pour suivre la formation et par où passer dans les modules. Vous avez fait corriger un ticket par un agent, et vous savez vérifier son travail : relire le diff, lancer les tests vous-même et vous assurer qu'un test écrit a du sens.
 :::

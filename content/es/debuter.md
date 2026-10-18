@@ -25,7 +25,7 @@ El módulo sobre los hooks pide escribir un poco de TypeScript. Si no lo conoces
 - **[Pi](https://pi.dev)**, el agente de código de la formación. El módulo [El harness de partida: Pi](./act1-pi) explica cómo instalarlo y declarar tus modelos.
 - **Acceso a un modelo.** En el aula, se te proporciona una clave de API de [ILaaS](https://www.ilaas.fr/). Por tu cuenta, puedes usar cualquier proveedor que Pi sepa llamar.
 
-Otras herramientas solo sirven en algunas partes: [Docker Sandboxes](https://docs.docker.com/ai/sandboxes/) para la segunda mitad del sandbox, [uv](https://docs.astral.sh/uv/) para el acto 3, [herdr](https://herdr.dev) para ver trabajar a los subagentes. Puedes dejarlas de lado para empezar.
+Otras herramientas solo sirven en algunas partes: [Docker Sandboxes](https://docs.docker.com/ai/sandboxes/) para la segunda mitad del sandbox, una cuenta de [opencode Go](https://opencode.ai/docs/go/) (de pago) para ver la lectura de caché en el módulo sobre el contexto, [herdr](https://herdr.dev) para ver trabajar a los subagentes y seguir el tablero del enjambre, [uv](https://docs.astral.sh/uv/) para el acto 3. Puedes dejarlas de lado para empezar.
 
 Verifica tu instalación con estos comandos:
 
@@ -39,20 +39,21 @@ pi --version
 
 Sigue los módulos en el orden del índice, pero quedándote al principio solo con la columna «por hacer». La columna «puede esperar» contiene lo que exige más herramientas o más tiempo.
 
-| módulo                                         | por hacer                                                                   | puede esperar                                    |
-| ---------------------------------------------- | --------------------------------------------------------------------------- | ------------------------------------------------ |
-| [Los LLM en 2026](./act1-llm)                  | todo                                                                        | las lecturas de «Referencias»                    |
-| [Por qué un harness](./act1-harness)           | todo, leyendo rápido «Las siete piezas»                                     |                                                  |
-| [Pi](./act1-pi)                                | la instalación, los primeros comandos, la instalación de combo              |                                                  |
-| [2.0 El sandbox](./act2-sandbox)               | «Comprender» y el ejercicio con `pi-permission-system`                      | Docker Sandboxes (`sbx`)                         |
-| Primer ticket                                  | el ejercicio de abajo                                                       |                                                  |
-| [2.1 El contexto](./act2-contexte)             | «Comprender», la elección del modelo, el esfuerzo de razonamiento y `AGENTS.md` | el system prompt, la ventana restringida, `codemode` |
-| [2.2 Los skills](./act2-skill)                 | «Comprender» y la versión 1 de `playtester`                                 | la versión 2 (`dynamic-playtester`)              |
-| [2.3 Los hooks](./act2-hooks)                  | las dos extensiones                                                         |                                                  |
-| [2.4 La delegación](./act2-delegation)         | «Comprender» y el ejercicio sobre las herramientas de cada agente           | la vuelta completa del bucle                     |
-| [2.5 Los workflows](./act2-workflows)          | «Comprender»                                                                | el flow del ticket #2 y su adaptación            |
-| [3.0 Medir un agente](./act3-trysquare)        | la introducción y «¿Cómo leer una diferencia?»                              | la instalación de trysquare                      |
-| [3.1 Las palancas del contexto](./act3-contexte) | «Los resultados» y «Generalizar»                                          | el ejercicio que relanza la matriz               |
+| módulo                                         | por hacer                                                                                          | puede esperar                                                            |
+| ---------------------------------------------- | ------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------ |
+| [Los LLM en 2026](./act1-llm)                  | todo                                                                                             | las lecturas de « Referencias »                                           |
+| [Por qué un harness](./act1-harness)          | todo, leyendo rápidamente « Los siete bloques »                                                        |                                                                          |
+| [Pi](./act1-pi)                                | la instalación, los primeros comandos, la instalación de combo                                 |                                                                          |
+| [2.0 El sandbox](./act2-sandbox)              | « Comprender » y el ejercicio con `pi-permission-system`                                         | Docker Sandboxes (`sbx`)                                                 |
+| Primer ticket                                 | el ejercicio de abajo                                                                            |                                                                          |
+| [2.1 El contexto](./act2-contexte)             | « Comprender », la elección del modelo, el esfuerzo de razonamiento y `AGENTS.md`                      | el system prompt, la ventana limitada, `codemode`                         |
+| [2.2 Los skills](./act2-skill)                 | « Comprender » y la versión 1 de `playtester`                                                   | la versión 2 (`dynamic-playtester`)                                      |
+| [2.3 Los hooks](./act2-hooks)                  | las dos extensiones                                                                              |                                                                          |
+| [2.4 La delegación](./act2-delegation)         | « Comprender », el ejercicio sobre las herramientas de cada agente y el que compara las dos ventanas | el ciclo de bucle completo y la lectura del trace                      |
+| [2.5 Los workflows](./act2-workflows)          | « Comprender »                                                                                   | el flujo del ticket #2 y su adaptación                                   |
+| [2.6 El swarm](./act2-swarm)                   | « Comprender » y el debate sobre una cuestión que pueda resolver                                  | las tres copias de `debater`, `--claim` y la comparación de los modelos   |
+| [3.0 Medir un agente](./act3-trysquare)       | la introducción y « ¿Cómo leer una desviación? »                                                    | la instalación de trysquare                                              |
+| [3.1 Las palancas del contexto](./act3-contexte) | « Los resultados », « ¿Cómo trabajan los modelos? » y « Generalizar »                      | « ¿Se puede confiar en las campañas? » y el ejercicio que reinicia la matriz |
 
 El [glosario](./annexes#glossaire) explica los términos de la formación.
 
@@ -106,12 +107,12 @@ En nuestro ensayo con `gemma-4-31b`, Pi añadió dos pruebas, limitó el multipl
 
 Estos reflejos se repiten en todos los módulos. Adquiérelos desde ahora.
 
-- **Revisa el diff.** El resumen del agente dice lo que cree haber hecho. El diff dice lo que hizo.
-- **Lanza las pruebas tú mismo.** Una suite en verde indicada por el agente no es una suite en verde.
-- **Verifica las pruebas añadidas.** El agente puede añadir pruebas triviales y pasar por alto lo esencial.
-- **Trabaja en una rama, en un clon o en un worktree.** Debes poder anular todo en cualquier momento.
-- **No hagas commit de lo que no entiendas.** Si un cambio se te escapa, pide al agente que lo explique, o descártalo.
+- **Revisa el diff.** El resumen del agente dice lo que cree haber hecho. El diff dice lo que ha hecho.
+- **Ejecuta las pruebas tú mismo.** Una suite en verde indicada por el agente no es una suite en verde.
+- **Verifica que las pruebas añadidas fallen cuando el comportamiento se rompa.** El agente puede añadir pruebas triviales y pasar por alto lo esencial.
+- **Trabaja en una rama, en un clone o en un worktree.** Debes poder cancelarlo todo en cualquier momento.
+- **No hagas commit de lo que no entiendas.** Si una modificación se te escapa, pide al agente que la explique, o descártala.
 
 ::: tip Lo que has aprendido
-Sabes qué hay que instalar para seguir la formación y por dónde pasar en los módulos. Has hecho corregir un ticket por un agente, y sabes verificar su trabajo: releer el diff, lanzar las pruebas tú mismo y asegurarte de que una prueba escrita tiene sentido.
+Sabes qué instalar para seguir la formación y cómo moverte por los módulos. Has hecho que un agente corrija un ticket y sabes verificar su trabajo: revisar el diff, ejecutar las pruebas tú mismo y asegurarte de que una prueba escrita tenga sentido.
 :::
