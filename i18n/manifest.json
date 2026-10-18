@@ -133,14 +133,14 @@
   },
   "historique.md": {
     "en": {
-      "unitHash": "751c53cdbb2ba7d0ea934c5f183f5edbb09ab271368f965c03836434d7ba0139",
-      "model": "pi:opencode-go/deepseek-v4-flash",
-      "translatedAt": "2026-09-28T14:53:32.885Z"
+      "unitHash": "3fc6d277a6c259995f1a04cc9c0abfac92207a322bb115ae6e2fec3fc62b4b0f",
+      "model": "pi:ilaas/gemma-4-31b",
+      "translatedAt": "2026-10-18T04:25:02.659Z"
     },
     "es": {
-      "unitHash": "751c53cdbb2ba7d0ea934c5f183f5edbb09ab271368f965c03836434d7ba0139",
-      "model": "pi:opencode-go/deepseek-v4-flash",
-      "translatedAt": "2026-09-28T14:56:11.310Z"
+      "unitHash": "3fc6d277a6c259995f1a04cc9c0abfac92207a322bb115ae6e2fec3fc62b4b0f",
+      "model": "pi:ilaas/gemma-4-31b",
+      "translatedAt": "2026-10-18T04:26:31.336Z"
     }
   },
   "act2-hooks.md": {
