@@ -52,7 +52,7 @@ Los estudios de METR y de Anthropic coinciden con lo que la formación repite: r
 
 ## ¿Dónde encontrar los datos del acto 3?
 
-Los resultados presentados en los módulos [3.1](./act3-contexte) y [3.2](./act3-skill) están archivados en Zenodo: Loic Gouarin y Max Beligné, [Measuring context and skills of a coding agent on a brick-breaker bug: raw data of the hands-on-harness act 3 evaluation](https://doi.org/10.5281/zenodo.23452689) (octubre de 2026, licencia CC BY-SA 4.0). El archivo contiene la experiencia trysquare, las 1 140 ejecuciones de ambas campañas con sus sesiones y sus diffs, y los scripts que calculan las cifras de los gráficos del curso.
+Los resultados presentados en los módulos [3.1](./act3-contexte) y [3.2](./act3-skill) están archivados en Zenodo: [Measuring context and skills of a coding agent on a brick-breaker bug: raw data of the hands-on-harness act 3 evaluation](https://doi.org/10.5281/zenodo.23452689) (octubre de 2026, licencia CC BY-SA 4.0). El archivo contiene la experiencia trysquare, las 1 140 ejecuciones de las dos campañas con sus sesiones y sus diffs, y los scripts que calculan las cifras de los gráficos del curso.
 
 ## Glosario
 

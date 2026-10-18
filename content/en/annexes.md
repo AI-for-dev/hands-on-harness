@@ -52,7 +52,7 @@ The METR and Anthropic studies echo what the training repeats: reviewing the dif
 
 ## Where to find the act 3 data?
 
-The results presented in modules [3.1](./act3-contexte) and [3.2](./act3-skill) are archived on Zenodo: Loic Gouarin and Max Beligné, [Measuring context and skills of a coding agent on a brick-breaker bug: raw data of the hands-on-harness act 3 evaluation](https://doi.org/10.5281/zenodo.23452689) (October 2026, CC BY-SA 4.0 license). The archive contains the trysquare experiment, the 1,140 runs of both campaigns with their sessions and diffs, and the scripts that compute the numbers in the course charts.
+The results presented in modules [3.1](./act3-contexte) and [3.2](./act3-skill) are archived on Zenodo: [Measuring context and skills of a coding agent on a brick-breaker bug: raw data of the hands-on-harness act 3 evaluation](https://doi.org/10.5281/zenodo.23452689) (October 2026, CC BY-SA 4.0 license). The archive holds the trysquare experiment, the 1,140 runs of both campaigns with their sessions and diffs, and the scripts that compute the numbers in the course charts.
 
 ## Glossary
 

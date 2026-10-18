@@ -193,14 +193,14 @@
   },
   "annexes.md": {
     "en": {
-      "unitHash": "72bce7bcd7f9b2ede233246d1c5db3f28320fbfa8e17ca294f6486a15d618d05",
+      "unitHash": "5c16e5ecd150b0c0f6def74866d0432517f7f1f4c4a3477da338b5a428460db6",
       "model": "pi:opencode-go/deepseek-v4.1-flash",
-      "translatedAt": "2026-10-18T17:02:43.937Z"
+      "translatedAt": "2026-10-18T17:16:35.322Z"
     },
     "es": {
-      "unitHash": "72bce7bcd7f9b2ede233246d1c5db3f28320fbfa8e17ca294f6486a15d618d05",
+      "unitHash": "5c16e5ecd150b0c0f6def74866d0432517f7f1f4c4a3477da338b5a428460db6",
       "model": "pi:opencode-go/deepseek-v4.1-flash",
-      "translatedAt": "2026-10-18T17:02:50.206Z"
+      "translatedAt": "2026-10-18T17:16:42.793Z"
     }
   },
   "debuter.md": {
