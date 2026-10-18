@@ -1,6 +1,6 @@
 # Anexos y glosario
 
-Esta página ofrece primero lecturas sobre las cuestiones jurídicas, sociales y ambientales que plantea el uso de los LLM en general y después, más concretamente, en el marco del desarrollo de software. Hemos elegido no tratarlas en este soporte, como explica la [introducción](./), pero cuentan para decidir si usas estas herramientas, y cómo. Termina con un glosario de los términos empleados en la formación, con su equivalente inglés y el módulo donde se explican.
+Esta página ofrece primero lecturas sobre las cuestiones jurídicas, sociales y ambientales que plantea el uso de los LLM en general y después, más concretamente, en el ámbito del desarrollo de software. Hemos decidido no tratarlas en este material, como explica la [introducción](./), pero cuentan para decidir si usas estas herramientas, y cómo. A continuación indica dónde encontrar los datos del acto 3 y termina con un glosario de los términos empleados en la formación, con su equivalente inglés y el módulo donde se explican.
 
 ## ¿Qué lecturas para formarse una opinión sobre los riesgos?
 
@@ -49,6 +49,10 @@ Para estimar el impacto de tus propios usos, la biblioteca [EcoLogits](https://g
 - Siddhant Khare, [AI fatigue is real and nobody talks about it](https://siddhantkhare.com/writing/ai-fatigue-is-real) (febrero de 2026). El autor, mantenedor de [OpenFGA](https://openfga.dev/), relata el agotamiento profesional que atravesó a finales de 2025 mientras trabajaba cada día con agentes. Una tarea de tres horas le llevaba cuarenta y cinco minutos, pero la carga y las expectativas aumentaron en la misma medida, y sus jornadas se llenaron de relecturas y de decisiones que tomar sobre código que no había escrito, lo que lo agotaba más que escribir. Describe también la carrera por las nuevas herramientas, los prompts reformulados sin fin y la dificultad de razonar sin asistente durante una revisión de diseño. Este testimonio, que no se apoya en ninguna medición, reunió más de trescientos comentarios en [Hacker News](https://news.ycombinator.com/item?id=46934404).
 
 Los estudios de METR y de Anthropic coinciden con lo que la formación repite: releer el diff, lanzar los tests tú mismo y entender lo que el agente escribió siguen siendo tu trabajo.
+
+## ¿Dónde encontrar los datos del acto 3?
+
+Los resultados presentados en los módulos [3.1](./act3-contexte) y [3.2](./act3-skill) están archivados en Zenodo: [Measuring context and skills of a coding agent on a brick-breaker bug: raw data of the hands-on-harness act 3 evaluation](https://doi.org/10.5281/zenodo.23452689) (octubre de 2026, licencia CC BY-SA 4.0). El archivo contiene la experiencia trysquare, las 1 140 ejecuciones de las dos campañas con sus sesiones y sus diffs, y los scripts que calculan las cifras de los gráficos del curso.
 
 ## Glosario
 

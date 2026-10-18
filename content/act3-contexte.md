@@ -108,7 +108,7 @@ Les trois modèles sont servis par deux fournisseurs, ILaaS et GRICAD :
 | `qwen-3.8-27b`        | ILaaS/GRICAD      | `reasoning_effort = medium`                    | 32 768 tokens     |
 | `DeepSeek-V4.1-Flash` | GRICAD      | `reasoning_effort = medium`                    | 32 768 tokens     |
 
-Les trois campagnes ont été lancées les 13 et 14 octobre 2026, contre le tag `etalon-v1` de NÉON, avec un timeout de 30 minutes par exécution. Le modèle et le fournisseur changent ensemble d'une colonne à l'autre : un écart entre deux modèles peut venir de l'un comme de l'autre.
+Les trois campagnes ont été lancées les 13 et 14 octobre 2026, contre le tag `etalon-v1` de NÉON, avec un timeout de 30 minutes par exécution. Le modèle et le fournisseur changent ensemble d'une colonne à l'autre : un écart entre deux modèles peut venir de l'un comme de l'autre. Les résultats bruts des trois campagnes, sessions de l'agent comprises, sont dans les répertoires `resultats/issue1-context_*` de l'[archive Zenodo de l'acte](https://doi.org/10.5281/zenodo.23452689).
 
 ::: info Exercice (en salle, puis en autonomie)
 Placez-vous dans le dépôt [trysquare-starter](https://github.com/AI-for-dev/trysquare-starter) installé au [module 3.0](./act3-trysquare). Ouvrez `scenarios/issue1-context.toml`, adaptez la section `[agent]` au fournisseur que vous utilisez, puis lancez la matrice à trois répétitions :
@@ -128,7 +128,7 @@ uv run trysquare replay results/issue1-context_... --scenario scenarios/issue1-c
 uv run trysquare compare results/... results/...
 ```
 
-**En autonomie**, changez de modèle dans `[agent]` et comparez votre matrice aux nôtres.
+**En autonomie**, changez de modèle dans `[agent]` et comparez votre matrice aux nôtres, que vous trouverez dans l'archive Zenodo.
 :::
 
 ## Peut-on se fier aux campagnes ?

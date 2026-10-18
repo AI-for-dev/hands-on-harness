@@ -82,7 +82,7 @@ Son los tres modelos del módulo 3.1, esta vez todos servidos por GRICAD:
 | `qwen-3.8-27b`        | `medium`     | 60 min  |
 | `DeepSeek-V4.1-Flash` | `medium`     | 30 min  |
 
-Las campañas se lanzaron el 17 de octubre de 2026, contra la etiqueta `etalon-v1`, con un límite de salida de 32 768 tokens por turno. Cada configuración se repite veinte veces, es decir, 60 ejecuciones por modelo. El timeout es más largo que en el módulo 3.1 porque un skill hace trabajar al agente durante más tiempo.
+Las campañas se lanzaron el 17 de octubre de 2026, contra la etiqueta `etalon-v1`, con un límite de salida de 32 768 tokens por turno. Cada configuración se repite veinte veces, es decir, 60 ejecuciones por modelo. El timeout es más largo que en el módulo 3.1 porque un skill hace trabajar al agente durante más tiempo. Los resultados brutos están en los directorios `resultats/issue1-skill_*` del [archivo Zenodo del acto](https://doi.org/10.5281/zenodo.23452689).
 
 ::: info Ejercicio (en sala, luego en autonomía)
 Ubícate en [trysquare-starter](https://github.com/AI-for-dev/trysquare-starter), abre `scenarios/issue1-skill.toml` y adapta la sección `[agent]` a tu proveedor. Lanza la matriz con tres repeticiones:

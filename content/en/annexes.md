@@ -1,6 +1,6 @@
 # Appendices and glossary
 
-This page first gives readings on the legal, social and environmental questions raised by the use of LLMs in general, and then more specifically in the context of software development. We chose not to cover them in this material, as the [introduction](./) explains, but they matter for deciding whether, and how, you use these tools. It ends with a glossary of the terms used in the training, with their English equivalent and the module where they are explained.
+This page first gives readings on the legal, social and environmental questions raised by the use of LLMs in general, and then more specifically in the context of software development. We chose not to cover them in this material, as the [introduction](./) explains, but they matter for deciding whether, and how, you use these tools. It then points to where to find the data for act 3 and ends with a glossary of the terms used in the training, with their English equivalent and the module where they are explained.
 
 ## What readings to form an opinion on the risks?
 
@@ -49,6 +49,10 @@ To estimate the impact of your own usage, the [EcoLogits](https://github.com/gen
 - Siddhant Khare, [AI fatigue is real and nobody talks about it](https://siddhantkhare.com/writing/ai-fatigue-is-real) (February 2026). The author, a maintainer of [OpenFGA](https://openfga.dev/), recounts the burnout he went through at the end of 2025 while working daily with agents. A three-hour task took him forty-five minutes, but the workload and expectations rose by as much, and his days filled up with reviews and decisions to make on code he had not written, which drained him more than writing. He also describes the race for new tools, endlessly reworded prompts, and the difficulty of reasoning without an assistant during a design review. This account, which rests on no measurement, gathered more than three hundred comments on [Hacker News](https://news.ycombinator.com/item?id=46934404).
 
 The METR and Anthropic studies echo what the training repeats: reviewing the diff, running the tests yourself, and understanding what the agent wrote remain your job.
+
+## Where to find the act 3 data?
+
+The results presented in modules [3.1](./act3-contexte) and [3.2](./act3-skill) are archived on Zenodo: [Measuring context and skills of a coding agent on a brick-breaker bug: raw data of the hands-on-harness act 3 evaluation](https://doi.org/10.5281/zenodo.23452689) (October 2026, CC BY-SA 4.0 license). The archive holds the trysquare experiment, the 1,140 runs of both campaigns with their sessions and diffs, and the scripts that compute the numbers in the course charts.
 
 ## Glossary
 

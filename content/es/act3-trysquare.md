@@ -160,6 +160,10 @@ Cuenta las ejecuciones que anuncia el plan y estima cuánto costarían en tiempo
 
 Los otros subcomandos trabajan sobre una matriz ya medida y tampoco llaman a un modelo: `render` rehace las tablas, posiblemente contra otra referencia, `replay --rescore` vuelve a puntuar las ejecuciones archivadas tras una corrección de validación, `compare` pone dos matrices una al lado de la otra rechazando lo que no es comparable, y `watch` sigue en el navegador una matriz en curso y la sesión de cada ejecución mientras el agente la escribe.
 
+::: info Los resultados del acto
+Las campañas de los módulos 3.1 y 3.2 están archivadas en Zenodo: [Measuring context and skills of a coding agent on a brick-breaker bug](https://doi.org/10.5281/zenodo.23452689). Para cada una de las 1 140 ejecuciones, el archivo guarda la configuración, el diff producido, la sesión completa del agente y la salida del validador, junto con la síntesis de trysquare para cada modelo. Abre `resultats/index.html` en un navegador para recorrer las sesiones. El archivo `evaluation-acte3.zip` pesa 211 MB: descárgalo y descomprímelo antes de la sesión, ya que los ejercicios de los dos módulos siguientes comparan tus matrices con las nuestras.
+:::
+
 ## Para profundizar
 
 - La [documentación de trysquare](https://ai-for-dev.github.io/trysquare/), en particular sus páginas sobre la escritura de un escenario, la escritura de una validación y los invariantes de medida.
