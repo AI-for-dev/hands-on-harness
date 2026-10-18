@@ -77,21 +77,14 @@ Ahí ves los distintos elementos que componen Pi (contexto, skills, extensiones)
 
 Puedes jugar con él haciéndole preguntas, observar el bucle y ver cómo te responde. Prueba luego el modo no interactivo con `pi -p`, que ejecuta una consulta y devuelve el control.
 
+Como se mencionó en la introducción de esta parte, Pi viene con cuatro herramientas, `read`, `bash`, `edit` y `write`, y cada llamada que el modelo hace a una de ellas se muestra en el hilo de la sesión.
+
+::: info Ejercicio (en clase)
+Desde el prompt, intenta activar cada una de estas herramientas a través de tu pregunta.
+:::
+
 ## Los primeros comandos útiles
 
-- Las herramientas
-
-  Como se dijo en la introducción de esta parte, Pi viene con cuatro herramientas. Para obtener la lista, te basta con escribir
-
-  ```
-  /tools
-  ```
-
-  Deberías ver al menos las herramientas read, bash, edit y write.
-
-  ::: info Ejercicio (en sala)
-  A partir del prompt, intenta desencadenar cada una de estas herramientas con tu pregunta.
-  :::
 - El árbol de tu sesión
 
   Puede ser útil navegar por tu sesión y retomar desde una de las etapas de tu conversación. Para ello, hay que usar el comando

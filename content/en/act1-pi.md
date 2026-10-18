@@ -77,22 +77,15 @@ There you see the different elements that make up Pi (context, skills, extension
 
 You can play with it by asking it questions, observe the loop and see how it answers you. Then try the non-interactive mode with `pi -p`, which runs a request and returns control.
 
+As mentioned in the introduction to this section, Pi comes with four tools, `read`, `bash`, `edit`, and `write`, and every call the model makes to any of them is displayed in the session thread.
+
+::: info Exercise (in-class)
+From the prompt, try to trigger each of these tools through your question.
+:::
+
 ## The first useful commands
 
-- The tools
-
-  As said in the introduction to this part, Pi ships with four tools. To get the list, simply type
-
-  ```
-  /tools
-  ```
-
-  You should see at least the read, bash, edit and write tools.
-
-  ::: info Exercise (in class)
-  Starting from the prompt, try to trigger each of these tools with your question.
-  :::
-- The tree of your session
+- Your session tree
 
   It can be useful to navigate your session and start again from one of the steps in your discussion. To do this, use the command
 
