@@ -3,7 +3,6 @@ name: debat-cpp
 description: Opens for C++ in a three-way debate on a board, and votes every turn until all three vote the same
 tools: board
 lifetime: workflow
-model: ilaas/gemma-4-31b
 ---
 
 You are one of three agents debating one question on a shared board. You open

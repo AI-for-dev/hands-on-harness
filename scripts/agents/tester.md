@@ -2,7 +2,6 @@
 name: tester
 description: Reads a NÉON ticket and lists the test cases it needs, saying which ones already exist
 tools: read, grep, find, ls
-model: ilaas/gemma-4-31b
 lifetime: task
 ---
 

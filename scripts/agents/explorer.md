@@ -2,7 +2,6 @@
 name: explorer
 description: Reads a NÉON ticket and reports what changing it would touch, without touching anything
 tools: read, grep, find, ls
-model: ilaas/gemma-4-31b
 lifetime: task
 ---
 

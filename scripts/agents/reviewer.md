@@ -2,7 +2,6 @@
 name: reviewer
 description: Judges one step of work against the plan, reading the tree rather than trusting what it was handed
 tools: read, grep, find, ls, verdict
-model: ilaas/gemma-4-31b
 lifetime: task
 ---
 
