@@ -2,7 +2,6 @@
 name: planner
 description: Turns a NÉON ticket and its impact note into an ordered list of small steps a coder can execute one at a time
 tools: read, grep, find, ls
-model: ilaas/gemma-4-31b
 lifetime: task
 ---
 

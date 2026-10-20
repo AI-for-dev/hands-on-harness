@@ -2,7 +2,6 @@
 name: coder
 description: Executes exactly one step of a NÉON work plan - writes the red test, then the code that turns it green
 tools: read, grep, find, ls, edit, write
-model: ilaas/gemma-4-31b
 lifetime: task
 ---
 

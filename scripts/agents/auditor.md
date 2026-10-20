@@ -2,7 +2,6 @@
 name: auditor
 description: Reads the finished work as a whole against the ticket, and either approves or names what must still change
 tools: read, grep, find, ls, verdict
-model: ilaas/gemma-4-31b
 lifetime: task
 ---
 
